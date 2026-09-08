@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>body{margin:0;background:#DCDDE1;font-family:'Outfit',system-ui,sans-serif;color:#000119}a{color:#000119}a:hover{color:#E3001A}</style></helmet>
+
+<div style="padding:48px 52px 64px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;margin-bottom:36px">
+<div>
+<div style="display:flex;align-items:center;gap:11px">
+<div style="display:flex;align-items:flex-end;gap:3px;height:18px"><div style="width:3px;height:18px;background:#000119"></div><div style="width:3px;height:18px;background:#000119"></div><div style="width:3px;height:18px;background:#000119"></div><div style="width:3px;height:18px;background:#FFD032"></div></div>
+<div style="font:600 18px/1 'Outfit',sans-serif">Fluxo A · Entrada e configuração · 7 telas</div>
+</div>
+<div style="margin-top:12px;font:300 15px/1.55 'Outfit',sans-serif;color:#4A4E60;max-width:70ch">Fidelidade média, usando os componentes já definidos no board. A6 é a tela-chave: a política declarada aqui é o que o app aplica sozinho depois.</div>
+</div>
+<div style="font:600 10px/1.8 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase;text-align:right">Meta do fluxo<br>chegar na home com dado real</div>
+</div>
+
+<div style="display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px"><span style="font:700 12px/1 'Outfit',sans-serif;padding:4px 8px;background:#000119;color:#FFFFFF;border-radius:5px">A1</span><span style="font:600 13px/1.3 'Outfit',sans-serif">Splash</span></div>
+<div style="width:390px;height:844px;background:#000119;border:1px solid #C9CBD2;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px">
+<div style="display:flex;align-items:flex-end;gap:7px;height:64px"><div style="width:10px;height:64px;background:#FFFFFF;border-radius:2px"></div><div style="width:10px;height:64px;background:#FFFFFF;border-radius:2px"></div><div style="width:10px;height:64px;background:#FFFFFF;border-radius:2px"></div><div style="width:10px;height:64px;background:#FFD032;border-radius:2px"></div></div>
+<div style="font:600 26px/1 'Outfit',sans-serif;color:#FFFFFF;letter-spacing:-.02em">Aula em Dia</div>
+<div style="font:400 13px/1 'Outfit',sans-serif;color:#6E7284">A conta das aulas, sem discussão</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px"><span style="font:700 12px/1 'Outfit',sans-serif;padding:4px 8px;background:#000119;color:#FFFFFF;border-radius:5px">A2</span><span style="font:600 13px/1.3 'Outfit',sans-serif">Boas-vindas</span></div>
+<div style="width:390px;height:844px;background:#F1F2F4;border:1px solid #C9CBD2;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<div style="background:#000119;color:#FFFFFF;padding:14px 20px 26px">
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums"><span>9:41</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:26px;display:flex;align-items:flex-end;gap:4px;height:22px"><div style="width:4px;height:22px;background:#FFFFFF"></div><div style="width:4px;height:22px;background:#FFFFFF"></div><div style="width:4px;height:22px;background:#FFFFFF"></div><div style="width:4px;height:22px;background:#FFD032"></div></div>
+<div style="margin-top:18px;font:600 27px/1.2 'Outfit',sans-serif;letter-spacing:-.03em">Aula em Dia</div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:24px 20px 0;display:flex;flex-direction:column;gap:16px">
+<div style="flex:none"><div style="font:800 15px/1 'Outfit',sans-serif;color:#FFD032">01</div><div style="margin-top:8px;font:600 19px/1.3 'Outfit',sans-serif">Você define a política de faltas uma vez.</div><div style="margin-top:6px;font:400 14px/1.5 'Outfit',sans-serif;color:#8A8E9C">Prazo de aviso, se falta avisada devolve a aula, quantas reposições cabem no pacote.</div></div>
+<div style="flex:none;height:1px;background:#E7E9EE"></div>
+<div style="flex:none"><div style="font:800 15px/1 'Outfit',sans-serif;color:#FFD032">02</div><div style="margin-top:8px;font:600 19px/1.3 'Outfit',sans-serif">O app aplica a regra e mostra o saldo.</div><div style="margin-top:6px;font:400 14px/1.5 'Outfit',sans-serif;color:#8A8E9C">Cada aula registrada em dois toques, com o efeito no saldo visível antes de confirmar.</div></div>
+<div style="flex:none;height:1px;background:#E7E9EE"></div>
+<div style="flex:none"><div style="font:800 15px/1 'Outfit',sans-serif;color:#FFD032">03</div><div style="margin-top:8px;font:600 19px/1.3 'Outfit',sans-serif">A reposição vira três horários prontos.</div><div style="margin-top:6px;font:400 14px/1.5 'Outfit',sans-serif;color:#8A8E9C">Calculados contra sua agenda real. O aluno confirma pelo navegador.</div></div>
+</div>
+<div style="padding:14px 20px 20px">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Começar</div>
+<div style="margin-top:9px;height:44px;display:flex;align-items:center;justify-content:center;font:600 14px/1 'Outfit',sans-serif;color:#8A8E9C;cursor:pointer" style-hover="color:#000119">Já tenho conta</div>
+<div style="margin-top:6px;height:4px;width:120px;background:#C9CBD2;border-radius:2px;margin-left:auto;margin-right:auto"></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px"><span style="font:700 12px/1 'Outfit',sans-serif;padding:4px 8px;background:#000119;color:#FFFFFF;border-radius:5px">A3</span><span style="font:600 13px/1.3 'Outfit',sans-serif">Entrar ou criar conta</span></div>
+<div style="width:390px;height:844px;background:#F1F2F4;border:1px solid #C9CBD2;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<div style="background:#000119;color:#FFFFFF;padding:14px 20px 22px">
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums"><span>9:41</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:22px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">Acesso</div>
+<div style="margin-top:8px;font:600 22px/1.2 'Outfit',sans-serif;letter-spacing:-.02em">Entrar no Aula em Dia</div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:16px 20px 0;display:flex;flex-direction:column;gap:10px">
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:14px 16px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">E-mail</div>
+<div style="margin-top:9px;font:400 15px/1 'Outfit',sans-serif;color:#000119">camila.torres@gmail.com</div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1.5px solid #000119;border-radius:8px;padding:14px 16px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Senha</div>
+<div style="margin-top:9px;display:flex;justify-content:space-between;align-items:center"><span style="font:600 15px/1 'Outfit',sans-serif;letter-spacing:.18em">••••••••</span><span style="font:600 12px/1 'Outfit',sans-serif;color:#8A8E9C">mostrar</span></div>
+</div>
+<div style="flex:none;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C;padding:0 2px">Esqueci minha senha</div>
+<div style="flex:none;display:flex;align-items:center;gap:12px;margin-top:6px"><div style="flex:1;height:1px;background:#E7E9EE"></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C">ou</div><div style="flex:1;height:1px;background:#E7E9EE"></div></div>
+<div style="flex:none;height:52px;background:#FFFFFF;border:1px solid #C9CBD2;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15px/1 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#000119">Continuar com Google</div>
+<div style="flex:none;margin-top:4px;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:14px 16px">
+<div style="font:600 13.5px/1.3 'Outfit',sans-serif">Primeira vez aqui?</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#8A8E9C">A configuração leva 3 minutos e termina com seu primeiro aluno cadastrado.</div>
+<div style="margin-top:12px;height:44px;border:1.5px solid #000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 14px/1 'Outfit',sans-serif;cursor:pointer" style-hover="background:#FFF6D9">Criar conta</div>
+</div>
+</div>
+<div style="padding:14px 20px 20px">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Entrar</div>
+<div style="margin-top:14px;height:4px;width:120px;background:#C9CBD2;border-radius:2px;margin-left:auto;margin-right:auto"></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px"><span style="font:700 12px/1 'Outfit',sans-serif;padding:4px 8px;background:#000119;color:#FFFFFF;border-radius:5px">A4</span><span style="font:600 13px/1.3 'Outfit',sans-serif">Onboarding · seu perfil</span></div>
+<div style="width:390px;height:844px;background:#F1F2F4;border:1px solid #C9CBD2;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<div style="background:#000119;color:#FFFFFF;padding:14px 20px 20px">
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums"><span>9:43</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:20px;display:flex;gap:5px"><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#252840"></div><div style="flex:1;height:4px;border-radius:2px;background:#252840"></div><div style="flex:1;height:4px;border-radius:2px;background:#252840"></div></div>
+<div style="margin-top:16px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">Passo 1 de 4</div>
+<div style="margin-top:8px;font:600 22px/1.2 'Outfit',sans-serif;letter-spacing:-.02em">Quem é você</div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:16px 20px 0;display:flex;flex-direction:column;gap:10px">
+<div style="flex:none;background:#FFFFFF;border:1.5px solid #000119;border-radius:8px;padding:14px 16px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Como seus alunos te chamam</div>
+<div style="margin-top:9px;font:600 17px/1 'Outfit',sans-serif">Camila Torres</div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:14px 16px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">O que você ensina</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
+<div style="height:36px;display:flex;align-items:center;padding:0 13px;background:#000119;color:#FFFFFF;border-radius:6px;font:600 13px/1 'Outfit',sans-serif">Inglês</div>
+<div style="height:36px;display:flex;align-items:center;padding:0 13px;background:#000119;color:#FFFFFF;border-radius:6px;font:600 13px/1 'Outfit',sans-serif">Violão</div>
+<div style="height:36px;display:flex;align-items:center;padding:0 13px;background:#F1F2F4;color:#8A8E9C;border-radius:6px;font:600 13px/1 'Outfit',sans-serif">Matemática</div>
+<div style="height:36px;display:flex;align-items:center;padding:0 13px;background:#F1F2F4;color:#8A8E9C;border-radius:6px;font:600 13px/1 'Outfit',sans-serif">Música</div>
+<div style="height:36px;display:flex;align-items:center;padding:0 13px;background:#F1F2F4;color:#8A8E9C;border-radius:6px;font:600 13px/1 'Outfit',sans-serif">Reforço escolar</div>
+<div style="height:36px;display:flex;align-items:center;padding:0 13px;border:1px dashed #C9CBD2;color:#8A8E9C;border-radius:6px;font:600 13px/1 'Outfit',sans-serif">+ outra</div>
+</div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:14px 16px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Quantos alunos hoje</div>
+<div style="display:flex;gap:7px;margin-top:11px">
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 14px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">1–5</div>
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;background:#000119;color:#FFFFFF;border-radius:6px;font:600 14px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">6–15</div>
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 14px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">16+</div>
+</div>
+</div>
+</div>
+<div style="padding:14px 20px 20px">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Continuar</div>
+<div style="margin-top:14px;height:4px;width:120px;background:#C9CBD2;border-radius:2px;margin-left:auto;margin-right:auto"></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px"><span style="font:700 12px/1 'Outfit',sans-serif;padding:4px 8px;background:#000119;color:#FFFFFF;border-radius:5px">A5</span><span style="font:600 13px/1.3 'Outfit',sans-serif">Onboarding · sua disponibilidade</span></div>
+<div style="width:390px;height:844px;background:#F1F2F4;border:1px solid #C9CBD2;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<div style="background:#000119;color:#FFFFFF;padding:14px 20px 20px">
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums"><span>9:44</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:20px;display:flex;gap:5px"><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#252840"></div><div style="flex:1;height:4px;border-radius:2px;background:#252840"></div></div>
+<div style="margin-top:16px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">Passo 2 de 4</div>
+<div style="margin-top:8px;font:600 22px/1.2 'Outfit',sans-serif;letter-spacing:-.02em">Quando você dá aula</div>
+<div style="margin-top:9px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#9A9DAD">Toque e arraste. É a base do cálculo de reposição.</div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:16px 20px 0;display:flex;flex-direction:column;gap:10px">
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:14px 12px">
+<div style="display:grid;grid-template-columns:38px repeat(6,1fr);gap:5px;align-items:center">
+<div></div><div style="font:600 10px/1 'Outfit',sans-serif;color:#8A8E9C;text-align:center">SEG</div><div style="font:600 10px/1 'Outfit',sans-serif;color:#8A8E9C;text-align:center">TER</div><div style="font:600 10px/1 'Outfit',sans-serif;color:#8A8E9C;text-align:center">QUA</div><div style="font:600 10px/1 'Outfit',sans-serif;color:#8A8E9C;text-align:center">QUI</div><div style="font:600 10px/1 'Outfit',sans-serif;color:#8A8E9C;text-align:center">SEX</div><div style="font:600 10px/1 'Outfit',sans-serif;color:#8A8E9C;text-align:center">SÁB</div>
+<div style="font:500 10.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">8–12</div>
+<div style="height:44px;border-radius:6px;background:#F1F2F4"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div>
+<div style="font:500 10.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">14–17</div>
+<div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div>
+<div style="font:500 10.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">17–20</div>
+<div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div>
+<div style="font:500 10.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">20–22</div>
+<div style="height:44px;border-radius:6px;background:#F1F2F4"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div><div style="height:44px;border-radius:6px;background:#000119"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div><div style="height:44px;border-radius:6px;background:#F1F2F4"></div>
+</div>
+<div style="margin-top:13px;padding-top:12px;border-top:1px solid #E7E9EE;display:flex;justify-content:space-between;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums"><span>13 blocos · 26h por semana</span><span>Domingo fechado</span></div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 16px;display:flex;align-items:center;gap:13px">
+<div style="width:44px;height:26px;border-radius:13px;background:#000119;padding:3px;display:flex;justify-content:flex-end;flex:none"><div style="width:20px;height:20px;border-radius:50%;background:#FFFFFF"></div></div>
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Outfit',sans-serif">Aceitar reposição fora desses blocos</div><div style="margin-top:3px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Só quando não houver outra saída</div></div>
+</div>
+</div>
+<div style="padding:14px 20px 20px">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Continuar</div>
+<div style="margin-top:14px;height:4px;width:120px;background:#C9CBD2;border-radius:2px;margin-left:auto;margin-right:auto"></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px"><span style="font:700 12px/1 'Outfit',sans-serif;padding:4px 8px;background:#FFD032;color:#000119;border-radius:5px">A6</span><span style="font:600 13px/1.3 'Outfit',sans-serif">Onboarding · política de faltas · tela-chave</span></div>
+<div style="width:390px;height:844px;background:#F1F2F4;border:2px solid #000119;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<div style="background:#000119;color:#FFFFFF;padding:14px 20px 20px">
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums"><span>9:45</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:20px;display:flex;gap:5px"><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#252840"></div></div>
+<div style="margin-top:16px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">Passo 3 de 4</div>
+<div style="margin-top:8px;font:600 22px/1.2 'Outfit',sans-serif;letter-spacing:-.02em">Sua política de faltas</div>
+<div style="margin-top:9px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#9A9DAD">O app passa a aplicar isso sozinho, do mesmo jeito para todos.</div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:14px 20px 0;display:flex;flex-direction:column;gap:9px">
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 15px">
+<div style="font:600 13.5px/1.3 'Outfit',sans-serif">Prazo mínimo de aviso</div>
+<div style="display:flex;gap:6px;margin-top:10px">
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 13.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">4h</div>
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 13.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">12h</div>
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#000119;color:#FFFFFF;border-radius:6px;font:600 13.5px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">24h</div>
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 13.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">48h</div>
+</div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 15px;display:flex;align-items:center;gap:13px">
+<div style="width:44px;height:26px;border-radius:13px;background:#000119;padding:3px;display:flex;justify-content:flex-end;flex:none"><div style="width:20px;height:20px;border-radius:50%;background:#FFFFFF"></div></div>
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Outfit',sans-serif">Falta avisada devolve a aula</div><div style="margin-top:3px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Dentro do prazo, o saldo não é debitado</div></div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 15px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Outfit',sans-serif">Reposições por pacote</div><div style="margin-top:3px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Depois do limite, a falta debita</div></div>
+<div style="display:flex;align-items:center;gap:11px;flex:none"><div style="width:38px;height:38px;border-radius:6px;background:#F1F2F4;display:flex;align-items:center;justify-content:center;font:600 17px/1 'Outfit',sans-serif;color:#8A8E9C">−</div><div style="font:800 20px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums;min-width:18px;text-align:center">3</div><div style="width:38px;height:38px;border-radius:6px;background:#000119;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:600 17px/1 'Outfit',sans-serif">+</div></div>
+</div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 15px">
+<div style="font:600 13.5px/1.3 'Outfit',sans-serif">Validade do pacote</div>
+<div style="display:flex;gap:6px;margin-top:10px">
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 13px/1 'Outfit',sans-serif;color:#8A8E9C">30 dias</div>
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#000119;color:#FFFFFF;border-radius:6px;font:600 13px/1 'Outfit',sans-serif">60 dias</div>
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 13px/1 'Outfit',sans-serif;color:#8A8E9C">sem prazo</div>
+</div>
+</div>
+<div style="flex:none;background:#000119;border-radius:8px;padding:14px 16px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase">Como o aluno vai ler</div>
+<div style="margin-top:9px;font:400 13.5px/1.5 'Outfit',sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums">Avisando com 24h ou mais, a aula volta para o seu saldo e pode ser reposta, até 3 vezes por pacote. O pacote vale 60 dias.</div>
+</div>
+</div>
+<div style="padding:14px 20px 20px;background:linear-gradient(to top,#F1F2F4 72%,rgba(241,242,244,0))">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Salvar política</div>
+<div style="margin-top:14px;height:4px;width:120px;background:#C9CBD2;border-radius:2px;margin-left:auto;margin-right:auto"></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px"><span style="font:700 12px/1 'Outfit',sans-serif;padding:4px 8px;background:#000119;color:#FFFFFF;border-radius:5px">A7</span><span style="font:600 13px/1.3 'Outfit',sans-serif">Onboarding · primeiro aluno e pacote</span></div>
+<div style="width:390px;height:844px;background:#F1F2F4;border:1px solid #C9CBD2;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<div style="background:#000119;color:#FFFFFF;padding:14px 20px 20px">
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums"><span>9:47</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:20px;display:flex;gap:5px"><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div><div style="flex:1;height:4px;border-radius:2px;background:#FFD032"></div></div>
+<div style="margin-top:16px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">Passo 4 de 4</div>
+<div style="margin-top:8px;font:600 22px/1.2 'Outfit',sans-serif;letter-spacing:-.02em">Seu primeiro aluno</div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:14px 20px 0;display:flex;flex-direction:column;gap:9px">
+<div style="flex:none;background:#FFFFFF;border:1.5px solid #000119;border-radius:8px;padding:13px 15px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Nome</div>
+<div style="margin-top:8px;font:600 16.5px/1 'Outfit',sans-serif">Marina Alves</div>
+</div>
+<div style="flex:none;display:flex;gap:9px">
+<div style="flex:1;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 15px"><div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Disciplina</div><div style="margin-top:8px;font:600 15px/1 'Outfit',sans-serif">Inglês</div></div>
+<div style="flex:1;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 15px"><div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Horário fixo</div><div style="margin-top:8px;font:600 15px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">Ter e qui, 18h</div></div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;padding:13px 15px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Primeiro pacote</div>
+<div style="display:flex;gap:6px;margin-top:10px">
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 13.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">4 aulas</div>
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#000119;color:#FFFFFF;border-radius:6px;font:600 13.5px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">8 aulas</div>
+<div style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;background:#F1F2F4;border-radius:6px;font:600 13.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">12 aulas</div>
+</div>
+<div style="display:flex;gap:9px;margin-top:9px">
+<div style="flex:1;background:#F1F2F4;border-radius:6px;padding:10px 12px"><div style="font:400 10.5px/1 'Outfit',sans-serif;color:#8A8E9C">Valor</div><div style="margin-top:5px;font:600 15px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">R$ 640,00</div></div>
+<div style="flex:1;background:#F1F2F4;border-radius:6px;padding:10px 12px"><div style="font:400 10.5px/1 'Outfit',sans-serif;color:#8A8E9C">Validade</div><div style="margin-top:5px;font:600 15px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">30/11</div></div>
+</div>
+</div>
+<div style="flex:none;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden">
+<div style="padding:11px 15px;border-bottom:1px solid #E7E9EE;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Como vai ficar na home</div>
+<div style="display:flex">
+<div style="flex:1;padding:13px 15px"><div style="font:600 15.5px/1.2 'Outfit',sans-serif">Marina Alves</div><div style="margin-top:4px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Inglês · terça e quinta, 18h</div><div style="margin-top:9px;font:400 11.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">0 usadas · validade 30/11</div></div>
+<div style="width:76px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 24px/.9 'Outfit',sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-.04em">8</div><div style="margin-top:5px;font:600 8.5px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase">aulas</div></div>
+</div>
+</div>
+</div>
+<div style="padding:14px 20px 20px;background:linear-gradient(to top,#F1F2F4 72%,rgba(241,242,244,0))">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Criar e ir para a home</div>
+<div style="margin-top:9px;height:44px;display:flex;align-items:center;justify-content:center;font:600 14px/1 'Outfit',sans-serif;color:#8A8E9C;cursor:pointer" style-hover="color:#000119">Cadastrar depois</div>
+<div style="margin-top:6px;height:4px;width:120px;background:#C9CBD2;border-radius:2px;margin-left:auto;margin-right:auto"></div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</x-dc>
+</body>
+</html>

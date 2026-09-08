@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://api.fontshare.com" crossorigin><link href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@300,400,500,700,900,variable&display=swap" rel="stylesheet"><style>body{margin:0;background:#DCDDE1;font-family:'Satoshi','Outfit',system-ui,sans-serif;color:#141E30;--tela:#F0F3F7;--caixa:#F0F3F7;--cartao:#FFFFFF;--linha:#E2E8F0;--texto:#141E30;--texto-medio:#35577D;--suave:#6E819B;--fraco:#B7C0CE;--inativo:#D3DAE4;--topo:#141E30;--topo-texto:#FFFFFF;--topo-fraco:#8FA8C4;--topo-cartao:#24395B;--elevado:#141E30;--elevado-suave:#A6B6CE;--botao:#141E30;--botao-texto:#FFFFFF;--botao-hover:#24395B;--desab-fg:#9AA6B8;--hover:#F7FAFD;--amarelo-fraco:#FFF6D9;--vermelho:#E3001A;--vermelho-fraco:#FFF0F2;--verde:#1E7A55}[data-tema="escuro"]{--tela:#141E30;--caixa:#22304C;--cartao:#1B2740;--linha:#2C3E5C;--texto:#E9EDF4;--texto-medio:#C2CCDD;--suave:#93A2BC;--fraco:#46587A;--inativo:#33456A;--topo:#0E1626;--topo-texto:#FFFFFF;--topo-fraco:#8299B8;--topo-cartao:#24365A;--elevado:#24365A;--elevado-suave:#A6B6CE;--botao:#E9EDF4;--botao-texto:#0E1626;--botao-hover:#FFFFFF;--desab-fg:#5D6E8C;--hover:#22304C;--amarelo-fraco:#33301C;--vermelho:#FF4D5E;--vermelho-fraco:#3A1A20;--verde:#35B37E}a{color:#141E30}a:hover{color:#E3001A}*{box-sizing:border-box}[data-tema],[data-tema] *{scrollbar-width:thin;scrollbar-color:var(--fraco) transparent}[data-tema] ::-webkit-scrollbar{width:5px;height:5px}[data-tema] ::-webkit-scrollbar-track{background:transparent}[data-tema] ::-webkit-scrollbar-thumb{background:var(--fraco);border-radius:99px}[data-tema] ::-webkit-scrollbar-thumb:hover{background:var(--suave)}[data-tema] ::-webkit-scrollbar-corner{background:transparent}</style></helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px">
+<div data-tema="{{ tema }}" style="width:390px;height:844px;background:var(--tela);color:var(--texto);border-radius:14px;overflow:hidden;border:1px solid rgb(201,203,210);display:flex;flex-direction:column;position:relative">
+
+<sc-if value="{{ notaVisivel }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:52px;right:14px;z-index:9;padding:5px 9px;background:#FFD032;color:#0E1626;border-radius:5px;font:600 9.5px/1 'Satoshi',sans-serif;letter-spacing:.12em;text-transform:uppercase;pointer-events:none">{{ notaFluxo }}</div>
+</sc-if>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:16px;right:16px;bottom:88px;z-index:9;background:var(--elevado);border-radius:8px;padding:13px 15px;display:flex;gap:11px;align-items:center">
+<div style="width:4px;align-self:stretch;background:#FFD032;border-radius:2px;flex:none"></div>
+<div style="flex:1;font:500 13px/1.4 'Satoshi',sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums">{{ toast }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 64px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>14:20</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+<div>
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.18em;color:var(--topo-fraco);text-transform:uppercase">Quinta, 28 de agosto</div>
+<div style="margin-top:9px;font:600 24px/1.15 'Satoshi',sans-serif;letter-spacing:-.02em">Meus alunos</div>
+</div>
+<div style="text-align:right"><div style="font:800 30px/1 'Satoshi',sans-serif;color:#FFD032;font-variant-numeric:tabular-nums;letter-spacing:-.04em">{{ aulasHoje }}</div><div style="margin-top:4px;font:600 9px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--topo-fraco);text-transform:uppercase">aulas hoje</div></div>
+</div>
+</div>
+
+<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 10px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:7px;flex:none">
+<sc-for list="{{ filtros }}" as="f" hint-placeholder-count="3">
+<div onClick="{{ f.pick }}" style="height:32px;display:flex;align-items:center;padding:0 13px;border-radius:6px;font:600 12px/1 'Satoshi',sans-serif;cursor:pointer;background:{{ f.bg }};color:{{ f.fg }};border:1px solid {{ f.bd }}">{{ f.label }}</div>
+</sc-for>
+</div>
+
+<sc-for list="{{ lista }}" as="s" hint-placeholder-count="4">
+<div onClick="{{ s.open }}" style="background:var(--cartao);border-radius:8px;overflow:hidden;flex:none;cursor:pointer;border:{{ s.borda }}" style-hover="border-color:var(--suave)">
+<sc-if value="{{ s.faixa }}" hint-placeholder-val="{{ false }}">
+<div style="padding:6px 14px;font:600 10px/1.2 'Satoshi',sans-serif;letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;gap:10px;background:{{ s.faixaBg }};color:{{ s.faixaFg }}"><span>{{ s.faixa }}</span><span style="font-variant-numeric:tabular-nums">{{ s.faixaDir }}</span></div>
+</sc-if>
+<div style="display:flex">
+<div style="flex:1;padding:13px 14px;min-width:0">
+<div style="font:600 15.5px/1.2 'Satoshi',sans-serif;color:{{ s.nomeCor }}">{{ s.name }}</div>
+<div style="margin-top:4px;font:400 12px/1.4 'Satoshi',sans-serif;color:var(--suave)">{{ s.linha2 }}</div>
+<sc-if value="{{ s.temPacote }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:3px;margin-top:10px">
+<sc-for list="{{ s.dots }}" as="d" hint-placeholder-count="8"><div style="width:10px;height:5px;border-radius:3px;background:{{ d.bg }}"></div></sc-for>
+</div>
+</sc-if>
+<div style="margin-top:9px;font:400 11.5px/1 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ s.linha3 }}</div>
+</div>
+<div style="width:76px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;background:{{ s.caixaBg }};border-left:{{ s.caixaBorda }}">
+<div style="font:800 24px/.9 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.04em;color:{{ s.numCor }}">{{ s.numero }}</div>
+<div style="margin-top:5px;font:600 8.5px/1.15 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase;text-align:center">{{ s.unidade }}</div>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="padding:12px 20px 14px;flex:none;background:linear-gradient(to top,var(--tela) 72%,transparent)">
+<div onClick="{{ irRegistrar }}" style="height:52px;background:var(--botao);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Satoshi',sans-serif;color:var(--botao-texto);cursor:pointer" style-hover="background:var(--botao-hover)">Registrar aula</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAluno }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 64px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>14:20</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div onClick="{{ voltar }}" style="margin-top:18px;display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Satoshi',sans-serif;color:var(--suave);cursor:pointer" style-hover="color:#FFFFFF"><span style="font-size:15px;line-height:1">←</span> Alunos</div>
+<div style="margin-top:16px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+<div style="min-width:0">
+<div style="font:600 22px/1.2 'Satoshi',sans-serif;letter-spacing:-.02em">{{ atual.name }}</div>
+<div style="margin-top:6px;font:400 12.5px/1.4 'Satoshi',sans-serif;color:var(--suave)">{{ atual.linha2 }}</div>
+</div>
+<div style="text-align:right;flex:none"><div style="font:800 34px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.04em;color:{{ atual.numCor }}">{{ atual.numero }}</div><div style="margin-top:4px;font:600 9px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--topo-fraco);text-transform:uppercase">restam</div></div>
+</div>
+</div>
+
+<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 16px;display:flex;flex-direction:column;gap:12px">
+
+<sc-if value="{{ atual.pausado }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--caixa);border-radius:8px;padding:14px 16px;flex:none">
+<div style="font:600 14px/1.25 'Satoshi',sans-serif;color:var(--texto-medio)">Aulas pausadas</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave)">Fora da lista de registro até o pagamento ser regularizado.</div>
+<div onClick="{{ retomar }}" style="margin-top:11px;display:inline-flex;height:38px;align-items:center;padding:0 14px;border:1.5px solid var(--texto);border-radius:8px;font:600 13px/1 'Satoshi',sans-serif;cursor:pointer;background:var(--cartao)" style-hover="background:var(--amarelo-fraco)">Retomar as aulas</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atual.pendenteReposicao }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--cartao);border:1px solid var(--linha);border-left:4px solid #FFD032;border-radius:8px;padding:14px 16px;flex:none">
+<div style="font:600 14px/1.25 'Satoshi',sans-serif">Reposição pendente</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ atual.pendenteTexto }}</div>
+<div onClick="{{ irReposicao }}" style="margin-top:11px;display:inline-flex;height:38px;align-items:center;padding:0 14px;background:#FFD032;color:#0E1626;border-radius:8px;font:600 13px/1 'Satoshi',sans-serif;cursor:pointer" style-hover="background:#F5C41E">Ver sugestões</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atual.temAgendada }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--cartao);border:1px solid var(--linha);border-left:4px solid var(--verde);border-radius:8px;padding:14px 16px;flex:none">
+<div style="font:600 14px/1.25 'Satoshi',sans-serif">Reposição confirmada</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ atual.agendadaTexto }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atual.emAtraso }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ irInadimplencia }}" style="background:var(--elevado);border-radius:8px;padding:14px 16px;display:flex;gap:12px;flex:none;cursor:pointer">
+<div style="width:4px;align-self:stretch;background:var(--vermelho);border-radius:2px;flex:none"></div>
+<div style="flex:1"><div style="font:600 14px/1.25 'Satoshi',sans-serif;color:#FFFFFF">Pagamento em atraso</div><div style="margin-top:4px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--elevado-suave);font-variant-numeric:tabular-nums">{{ atual.atrasoTexto }}</div></div>
+<div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--topo-fraco);align-self:center">›</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atual.temPacote }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--cartao);border:1px solid var(--linha);border-radius:8px;padding:15px 16px;flex:none">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">Pacote atual</div>
+<div style="font:400 11.5px/1 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ atual.validadeTexto }}</div>
+</div>
+<div style="display:flex;gap:3px;margin-top:13px">
+<sc-for list="{{ atual.dots }}" as="d" hint-placeholder-count="8"><div style="flex:1;height:6px;border-radius:3px;background:{{ d.bg }}"></div></sc-for>
+</div>
+<div style="margin-top:11px;display:flex;justify-content:space-between;font:400 12px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums"><span>{{ atual.usadasTexto }}</span><span>{{ atual.reposicoesTexto }}</span></div>
+</div>
+</sc-if>
+
+<div style="flex:none">
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase;margin-bottom:9px">Extrato</div>
+<div style="border:1px solid var(--linha);border-radius:8px;overflow:hidden;background:var(--cartao)">
+<sc-for list="{{ atual.extrato }}" as="e" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--linha)">
+<div style="width:36px;flex:none;font:500 11px/1.3 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ e.d }}</div>
+<div style="flex:1;min-width:0"><div style="font:600 13.5px/1.3 'Satoshi',sans-serif">{{ e.t }}</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave)">{{ e.s }}</div></div>
+<div style="text-align:right;flex:none"><div style="font:700 13.5px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;color:{{ e.cor }}">{{ e.deltaTexto }}</div><div style="margin-top:4px;font:400 11px/1 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ e.saldoTexto }}</div></div>
+</div>
+</sc-for>
+<sc-if value="{{ atual.extratoVazio }}" hint-placeholder-val="{{ false }}">
+<div style="padding:28px 20px;text-align:center;font:400 13px/1.5 'Satoshi',sans-serif;color:var(--suave)">Nenhum lançamento ainda.</div>
+</sc-if>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:9px;flex:none;padding-bottom:4px">
+<sc-if value="{{ atual.podeRegistrar }}" hint-placeholder-val="{{ true }}">
+<div onClick="{{ registrarDesteAluno }}" style="height:50px;background:var(--botao);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15px/1 'Satoshi',sans-serif;color:var(--botao-texto);cursor:pointer" style-hover="background:var(--botao-hover)">Registrar aula</div>
+</sc-if>
+<sc-if value="{{ atual.semPacote }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ criarPacote }}" style="height:50px;background:var(--botao);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15px/1 'Satoshi',sans-serif;color:var(--botao-texto);cursor:pointer" style-hover="background:var(--botao-hover)">Criar pacote de 8 aulas</div>
+</sc-if>
+<sc-if value="{{ atual.podeRenovar }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ renovarPacote }}" style="height:48px;background:var(--cartao);border:1.5px solid var(--texto);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 14.5px/1 'Satoshi',sans-serif;cursor:pointer" style-hover="background:var(--amarelo-fraco)">Renovar pacote</div>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRegistrar }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 62px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>14:20</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div onClick="{{ voltar }}" style="margin-top:18px;display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Satoshi',sans-serif;color:var(--suave);cursor:pointer" style-hover="color:#FFFFFF"><span style="font-size:15px;line-height:1">←</span> Voltar</div>
+<div style="margin-top:14px;font:600 22px/1.2 'Satoshi',sans-serif;letter-spacing:-.02em">Registrar aula</div>
+<div style="margin-top:6px;font:400 12.5px/1.4 'Satoshi',sans-serif;color:var(--suave)">{{ registrarSub }}</div>
+</div>
+
+<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 12px;display:flex;flex-direction:column;gap:8px">
+
+<sc-if value="{{ precisaEscolherAluno }}" hint-placeholder-val="{{ false }}">
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase;margin-bottom:2px">Qual aluno</div>
+<sc-for list="{{ selecionaveis }}" as="s" hint-placeholder-count="3">
+<div onClick="{{ s.pick }}" style="display:flex;align-items:center;gap:13px;min-height:64px;padding:12px 15px;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;cursor:pointer;flex:none" style-hover="border-color:var(--suave)">
+<div style="flex:1;min-width:0"><div style="font:600 15px/1.25 'Satoshi',sans-serif">{{ s.name }}</div><div style="margin-top:3px;font:400 12px/1.4 'Satoshi',sans-serif;color:var(--suave)">{{ s.linha2 }}</div></div>
+<div style="display:flex;align-items:center;gap:6px;padding:7px 11px;background:var(--caixa);border-radius:6px;flex:none"><span style="font:800 15px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em">{{ s.numero }}</span><span style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.14em;color:var(--suave);text-transform:uppercase">aulas</span></div>
+</div>
+</sc-for>
+</sc-if>
+
+<sc-if value="{{ mostraDesfechos }}" hint-placeholder-val="{{ true }}">
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase;margin-bottom:2px">O que aconteceu</div>
+<sc-for list="{{ desfechos }}" as="o" hint-placeholder-count="4">
+<div onClick="{{ o.pick }}" style="flex:none;padding:12px 15px;background:var(--cartao);border-radius:8px;cursor:pointer;border:{{ o.borda }}" style-hover="border-color:var(--suave)">
+<div style="display:flex;align-items:center;gap:13px;min-height:40px">
+<div style="width:20px;height:20px;border-radius:50%;flex:none;background:var(--cartao);border:{{ o.radio }}"></div>
+<div style="flex:1;min-width:0"><div style="font:600 15px/1.25 'Satoshi',sans-serif">{{ o.title }}</div><div style="margin-top:3px;font:400 12px/1.4 'Satoshi',sans-serif;color:var(--suave)">{{ o.sub }}</div></div>
+<div style="font:700 14px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;flex:none;color:{{ o.cor }}">{{ o.efeito }}</div>
+</div>
+<sc-if value="{{ o.pedeAviso }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--linha)">
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.14em;color:var(--suave);text-transform:uppercase">Avisou com quanta antecedência</div>
+<div style="margin-top:9px;display:flex;gap:7px">
+<sc-for list="{{ avisoOpcoes }}" as="a" hint-placeholder-count="3">
+<div onClick="{{ a.pick }}" style="height:36px;display:flex;align-items:center;padding:0 14px;border-radius:6px;font:600 12.5px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;background:{{ a.bg }};color:{{ a.fg }};border:1px solid {{ a.bd }}">{{ a.label }}</div>
+</sc-for>
+</div>
+<div style="margin-top:10px;font:400 12px/1.45 'Satoshi',sans-serif;color:var(--suave)">{{ avisoNota }}</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</sc-if>
+</div>
+
+<sc-if value="{{ mostraDesfechos }}" hint-placeholder-val="{{ true }}">
+<div style="padding:12px 20px 14px;flex:none;background:linear-gradient(to top,var(--tela) 72%,transparent)">
+<div onClick="{{ confirmarRegistro }}" style="height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Satoshi',sans-serif;cursor:{{ confirmarCursor }};background:{{ confirmarBg }};color:{{ confirmarFg }}">Confirmar</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isResultado }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--cartao)">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 70px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--cartao)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>14:20</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:34px;font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.18em;color:var(--topo-fraco);text-transform:uppercase">Registrado</div>
+<div style="margin-top:12px;font:600 24px/1.2 'Satoshi',sans-serif;letter-spacing:-.02em">{{ resultadoTitulo }}</div>
+<div style="margin-top:22px;display:flex;align-items:flex-end;gap:14px">
+<div><div style="font:800 40px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.04em;color:{{ resultadoCor }}">{{ resultadoSaldo }}</div><div style="margin-top:5px;font:600 9px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--topo-fraco);text-transform:uppercase">aulas restam</div></div>
+<div style="font:500 13px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums;padding-bottom:4px">{{ resultadoDelta }}</div>
+</div>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:22px 20px;display:flex;flex-direction:column;gap:12px">
+<div style="font:400 15px/1.6 'Satoshi',sans-serif;color:var(--texto-medio);text-wrap:pretty">{{ resultadoTexto }}</div>
+<sc-if value="{{ resultadoPedeReposicao }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--caixa);border-radius:8px;padding:14px 16px">
+<div style="font:600 13.5px/1.3 'Satoshi',sans-serif">Próximo passo</div>
+<div style="margin-top:5px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave)">Escolha o horário da reposição agora ou deixe pendente na lista de alunos.</div>
+</div>
+</sc-if>
+<sc-if value="{{ resultadoLimite }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--caixa);border-radius:8px;padding:14px 16px">
+<div style="font:600 13.5px/1.3 'Satoshi',sans-serif">Sem reposição</div>
+<div style="margin-top:5px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ resultadoLimiteTexto }}</div>
+</div>
+</sc-if>
+</div>
+<div style="padding:12px 20px 20px;flex:none;display:flex;flex-direction:column;gap:9px">
+<sc-if value="{{ resultadoPedeReposicao }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ irReposicao }}" style="height:52px;background:#FFD032;color:#0E1626;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Satoshi',sans-serif;cursor:pointer" style-hover="background:#F5C41E">Escolher horário</div>
+</sc-if>
+<div onClick="{{ irHome }}" style="height:50px;border:1.5px solid var(--texto);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15px/1 'Satoshi',sans-serif;cursor:pointer" style-hover="background:var(--amarelo-fraco)">Voltar aos alunos</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isReposicao }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 62px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>14:20</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div onClick="{{ voltar }}" style="margin-top:18px;display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Satoshi',sans-serif;color:var(--suave);cursor:pointer" style-hover="color:#FFFFFF"><span style="font-size:15px;line-height:1">←</span> Voltar</div>
+<div style="margin-top:14px;font:600 22px/1.2 'Satoshi',sans-serif;letter-spacing:-.02em">Escolher horário</div>
+<div style="margin-top:6px;font:400 12.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ reposicaoSub }}</div>
+</div>
+
+<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 12px;display:flex;flex-direction:column;gap:9px">
+<sc-if value="{{ reposicaoBloqueada }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--caixa);border-radius:8px;padding:14px 16px;flex:none">
+<div style="font:600 14px/1.25 'Satoshi',sans-serif;color:var(--texto-medio)">Limite de reposições atingido</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ reposicaoBloqueioTexto }}</div>
+<div onClick="{{ irPolitica }}" style="margin-top:11px;display:inline-flex;height:38px;align-items:center;padding:0 14px;border:1.5px solid var(--texto);border-radius:8px;font:600 13px/1 'Satoshi',sans-serif;cursor:pointer;background:var(--cartao)" style-hover="background:var(--amarelo-fraco)">Rever política</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ reposicaoLiberada }}" hint-placeholder-val="{{ true }}">
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase;margin-bottom:2px">{{ janelasTitulo }}</div>
+<sc-for list="{{ janelas }}" as="j" hint-placeholder-count="3">
+<div onClick="{{ j.pick }}" style="flex:none;background:var(--cartao);border-radius:8px;overflow:hidden;cursor:pointer;border:{{ j.borda }}" style-hover="border-color:var(--suave)">
+<sc-if value="{{ j.melhor }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFD032;color:#0E1626;padding:6px 15px;font:600 10px/1.2 'Satoshi',sans-serif;letter-spacing:.14em;text-transform:uppercase">Melhor opção</div>
+</sc-if>
+<div style="padding:13px 15px;display:flex;align-items:center;gap:13px">
+<div style="width:20px;height:20px;border-radius:50%;flex:none;background:var(--cartao);border:{{ j.radio }}"></div>
+<div style="flex:1;min-width:0">
+<div style="display:flex;align-items:baseline;gap:8px"><div style="font:600 15px/1.25 'Satoshi',sans-serif">{{ j.dia }}</div><div style="font:700 15px/1.25 'Satoshi',sans-serif;font-variant-numeric:tabular-nums">{{ j.hora }}</div></div>
+<div style="margin-top:4px;font:400 12px/1.45 'Satoshi',sans-serif;color:var(--suave);text-wrap:pretty">{{ j.motivo }}</div>
+</div>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{ podeEstender }}" hint-placeholder-val="{{ true }}">
+<div onClick="{{ estenderValidade }}" style="flex:none;margin-top:3px;height:46px;display:flex;align-items:center;justify-content:center;border:1px solid var(--linha);border-radius:8px;font:600 13.5px/1 'Satoshi',sans-serif;color:var(--suave);cursor:pointer;background:var(--cartao)" style-hover="border-color:var(--suave);color:var(--texto)">Estender validade em 15 dias</div>
+</sc-if>
+</sc-if>
+</div>
+
+<sc-if value="{{ reposicaoLiberada }}" hint-placeholder-val="{{ true }}">
+<div style="padding:12px 20px 14px;flex:none;background:linear-gradient(to top,var(--tela) 72%,transparent)">
+<div onClick="{{ confirmarReposicao }}" style="height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Satoshi',sans-serif;cursor:{{ reposicaoCursor }};background:{{ reposicaoBg }};color:{{ reposicaoFg }}">Confirmar e avisar o aluno</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isFinanceiro }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 64px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>10:20</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:20px;font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.18em;color:var(--topo-fraco);text-transform:uppercase">Agosto de 2026</div>
+<div style="margin-top:8px;font:600 22px/1.2 'Satoshi',sans-serif;letter-spacing:-.02em">Financeiro</div>
+<div style="margin-top:16px;display:flex;gap:9px">
+<sc-for list="{{ resumoFinanceiro }}" as="r" hint-placeholder-count="3">
+<div style="flex:1;background:var(--topo-cartao);border-radius:8px;padding:12px 13px"><div style="font:600 9px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--topo-fraco);text-transform:uppercase">{{ r.rotulo }}</div><div style="margin-top:8px;font:800 19px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:{{ r.cor }}">{{ r.valor }}</div></div>
+</sc-for>
+</div>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 16px;display:flex;flex-direction:column;gap:10px">
+
+<sc-if value="{{ temAtrasos }}" hint-placeholder-val="{{ true }}">
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;overflow:hidden">
+<div style="padding:11px 15px;border-bottom:1px solid var(--linha);display:flex;justify-content:space-between;align-items:center"><span style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">Em atraso</span><span style="font:600 11.5px/1 'Satoshi',sans-serif;color:var(--vermelho);font-variant-numeric:tabular-nums">{{ atrasoContagem }}</span></div>
+<sc-for list="{{ atrasos }}" as="c" hint-placeholder-count="2">
+<div onClick="{{ c.abrir }}" style="display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--linha);cursor:pointer" style-hover="background:var(--hover)"><div style="flex:1;min-width:0"><div style="font:600 14.5px/1.25 'Satoshi',sans-serif">{{ c.name }}</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ c.detalhe }}</div></div><div style="font:700 14px/1 'Satoshi',sans-serif;color:var(--vermelho);font-variant-numeric:tabular-nums;flex:none">{{ c.valor }}</div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ temAVencer }}" hint-placeholder-val="{{ true }}">
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;overflow:hidden">
+<div style="padding:11px 15px;border-bottom:1px solid var(--linha);font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">A vencer</div>
+<sc-for list="{{ aVencer }}" as="c" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--linha)"><div style="flex:1;min-width:0"><div style="font:600 14.5px/1.25 'Satoshi',sans-serif">{{ c.name }}</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ c.detalhe }}</div></div><div style="font:700 14px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;flex:none">{{ c.valor }}</div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ temPagos }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;overflow:hidden">
+<div style="padding:11px 15px;border-bottom:1px solid var(--linha);font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">Recebido</div>
+<sc-for list="{{ pagos }}" as="c" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--linha)"><div style="flex:1;min-width:0"><div style="font:600 14.5px/1.25 'Satoshi',sans-serif">{{ c.name }}</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ c.detalhe }}</div></div><div style="font:700 14px/1 'Satoshi',sans-serif;color:var(--verde);font-variant-numeric:tabular-nums;flex:none">{{ c.valor }}</div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;padding:14px 16px">
+<div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">Aulas dadas em agosto</div>
+<div style="margin-top:11px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px"><div style="font:800 30px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.04em">{{ aulasDadas }}</div><div style="font:400 12px/1.4 'Satoshi',sans-serif;color:var(--suave);text-align:right;font-variant-numeric:tabular-nums">{{ reposicoesTexto }}<br>{{ faltasTexto }}</div></div>
+<div style="display:flex;gap:3px;margin-top:13px">
+<sc-for list="{{ barras }}" as="b" hint-placeholder-count="6"><div style="flex:{{ b.peso }};height:6px;border-radius:3px;background:{{ b.cor }}"></div></sc-for>
+</div>
+</div>
+</div>
+<sc-if value="{{ temAtrasos }}" hint-placeholder-val="{{ true }}">
+<div style="padding:12px 20px 14px;flex:none;background:linear-gradient(to top,var(--tela) 72%,transparent)">
+<div onClick="{{ cobrarTodos }}" style="height:52px;background:var(--botao);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Satoshi',sans-serif;color:var(--botao-texto);cursor:pointer" style-hover="background:var(--botao-hover)">{{ cobrarTexto }}</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isInadimplencia }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 64px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>10:22</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div onClick="{{ voltar }}" style="margin-top:18px;display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Satoshi',sans-serif;color:var(--suave);cursor:pointer" style-hover="color:#FFFFFF"><span style="font-size:15px;line-height:1">←</span> Voltar</div>
+<div style="margin-top:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+<div style="min-width:0"><div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.18em;color:var(--topo-fraco);text-transform:uppercase">{{ atual.linha2 }}</div><div style="margin-top:8px;font:600 22px/1.15 'Satoshi',sans-serif;letter-spacing:-.02em">{{ atual.name }}</div></div>
+<div style="text-align:right;flex:none"><div style="font:800 28px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.04em">{{ atual.numero }}</div><div style="margin-top:4px;font:600 9px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--topo-fraco);text-transform:uppercase">aulas</div></div>
+</div>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="flex:none;background:var(--elevado);border-radius:8px;padding:14px 16px;display:flex;gap:12px">
+<div style="width:4px;align-self:stretch;background:var(--vermelho);border-radius:2px;flex:none"></div>
+<div style="flex:1"><div style="font:600 14px/1.25 'Satoshi',sans-serif;color:#FFFFFF">{{ inadTitulo }}</div><div style="margin-top:4px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--elevado-suave);font-variant-numeric:tabular-nums">{{ inadSub }}</div></div>
+</div>
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;padding:15px 16px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px"><div><div style="font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">Em aberto</div><div style="margin-top:8px;font:800 28px/1 'Satoshi',sans-serif;color:var(--vermelho);font-variant-numeric:tabular-nums;letter-spacing:-.04em">{{ inadValor }}</div></div><div style="font:400 12px/1.5 'Satoshi',sans-serif;color:var(--suave);text-align:right;font-variant-numeric:tabular-nums">{{ inadPacote }}<br>{{ inadVenceu }}</div></div>
+<div style="margin-top:13px;padding-top:12px;border-top:1px solid var(--linha);display:flex;flex-direction:column;gap:7px">
+<sc-for list="{{ inadLinhas }}" as="l" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;gap:12px;font:400 12.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums"><span>{{ l.rotulo }}</span><span style="font-weight:600;color:var(--texto)">{{ l.valor }}</span></div>
+</sc-for>
+</div>
+</div>
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;overflow:hidden">
+<div style="padding:11px 15px;border-bottom:1px solid var(--linha);font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">O que fazer</div>
+<sc-for list="{{ inadAcoes }}" as="a" hint-placeholder-count="4">
+<div onClick="{{ a.acao }}" style="display:flex;align-items:center;min-height:56px;padding:11px 15px;border-bottom:1px solid var(--linha);cursor:pointer" style-hover="background:var(--hover)"><div style="flex:1;min-width:0"><div style="font:600 14px/1.3 'Satoshi',sans-serif">{{ a.titulo }}</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ a.sub }}</div></div><div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--suave);flex:none">›</div></div>
+</sc-for>
+</div>
+</div>
+<div style="padding:12px 20px 20px;flex:none">
+<div onClick="{{ receberAtual }}" style="height:52px;background:var(--botao);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Satoshi',sans-serif;color:var(--botao-texto);cursor:pointer" style-hover="background:var(--botao-hover)">Registrar pagamento recebido</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAjustes }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 64px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>21:05</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div style="margin-top:22px;font:600 22px/1.2 'Satoshi',sans-serif;letter-spacing:-.02em">Ajustes</div>
+<div style="margin-top:14px;display:flex;align-items:center;gap:12px;background:var(--topo-cartao);border-radius:8px;padding:12px 14px">
+<div style="width:38px;height:38px;border-radius:8px;background:#FFD032;display:flex;align-items:center;justify-content:center;font:800 15px/1 'Satoshi',sans-serif;color:#0E1626;flex:none">CT</div>
+<div style="flex:1;min-width:0"><div style="font:600 14.5px/1.2 'Satoshi',sans-serif">Caio Torres</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--elevado-suave);font-variant-numeric:tabular-nums">{{ perfilSub }}</div></div>
+<div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--topo-fraco)">›</div>
+</div>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;overflow:hidden">
+<div style="padding:11px 15px;border-bottom:1px solid var(--linha);font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">Regras do seu trabalho</div>
+<div onClick="{{ irPolitica }}" style="display:flex;align-items:center;min-height:62px;padding:12px 15px;border-bottom:1px solid var(--linha);cursor:pointer" style-hover="background:var(--hover)"><div style="flex:1;min-width:0"><div style="font:600 14.5px/1.3 'Satoshi',sans-serif">Política de faltas</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ politicaLinha }}</div></div><div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--suave)">›</div></div>
+<div style="display:flex;align-items:center;min-height:62px;padding:12px 15px;border-bottom:1px solid var(--linha)"><div style="flex:1;min-width:0"><div style="font:600 14.5px/1.3 'Satoshi',sans-serif">Minha disponibilidade</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">13 blocos · 26h por semana</div></div><div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--fraco)">›</div></div>
+<div style="display:flex;align-items:center;min-height:62px;padding:12px 15px"><div style="flex:1;min-width:0"><div style="font:600 14.5px/1.3 'Satoshi',sans-serif">Pacotes e valores padrão</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ pacotePadrao }}</div></div><div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--fraco)">›</div></div>
+</div>
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;overflow:hidden">
+<div style="padding:11px 15px;border-bottom:1px solid var(--linha);font:600 10px/1 'Satoshi',sans-serif;letter-spacing:.16em;color:var(--suave);text-transform:uppercase">App</div><div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:11px 15px;border-bottom:1px solid var(--linha)"><div style="flex:1;font:600 14px/1.3 'Satoshi',sans-serif">Aparência</div><div style="display:flex;gap:5px;flex:none"><sc-for list="{{ opcoesTema }}" as="t" hint-placeholder-count="2"><div onClick="{{ t.pick }}" style="height:34px;display:flex;align-items:center;padding:0 13px;border-radius:6px;font:600 12.5px/1 'Satoshi',sans-serif;cursor:pointer;background:{{ t.bg }};color:{{ t.fg }};border:1px solid {{ t.bd }}">{{ t.label }}</div></sc-for></div></div>
+<div style="display:flex;align-items:center;min-height:56px;padding:11px 15px;border-bottom:1px solid var(--linha)"><div style="flex:1;font:600 14px/1.3 'Satoshi',sans-serif">Avisos e lembretes</div><div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--fraco)">›</div></div>
+<div style="display:flex;align-items:center;min-height:56px;padding:11px 15px;border-bottom:1px solid var(--linha)"><div style="flex:1;font:600 14px/1.3 'Satoshi',sans-serif">Chave Pix e dados de cobrança</div><div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--fraco)">›</div></div>
+<div style="display:flex;align-items:center;min-height:56px;padding:11px 15px"><div style="flex:1"><div style="font:600 14px/1.3 'Satoshi',sans-serif">Conta e assinatura</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave)">Plano gratuito</div></div><div style="font:600 16px/1 'Satoshi',sans-serif;color:var(--fraco)">›</div></div>
+</div>
+<div style="flex:none;background:var(--caixa);border-radius:8px;padding:14px 16px">
+<div style="font:600 13.5px/1.3 'Satoshi',sans-serif">Estado do protótipo</div>
+<div style="margin-top:5px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave)">Tudo o que você registra fica salvo neste navegador. Zerar volta aos quatro alunos originais.</div>
+<div onClick="{{ zerar }}" style="margin-top:11px;display:inline-flex;height:38px;align-items:center;padding:0 14px;border:1.5px solid var(--vermelho);border-radius:8px;font:600 13px/1 'Satoshi',sans-serif;color:var(--vermelho);cursor:pointer;background:var(--cartao)" style-hover="background:var(--vermelho-fraco)">Zerar dados de demonstração</div>
+</div>
+<div style="flex:none;font:400 11.5px/1.5 'Satoshi',sans-serif;color:var(--suave);text-align:center;font-variant-numeric:tabular-nums">Versão 0.4 · protótipo acadêmico</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPolitica }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+<div style="background:var(--topo);color:#FFFFFF;padding:14px 20px 64px;flex:none;position:relative"><svg viewBox="0 0 390 80" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:-1px;width:100%;height:80px;display:block;pointer-events:none"><path d="M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z" style="fill:var(--tela)"></path></svg>
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums"><span>21:06</span><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></div>
+<div onClick="{{ voltar }}" style="margin-top:18px;display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Satoshi',sans-serif;color:var(--suave);cursor:pointer" style-hover="color:#FFFFFF"><span style="font-size:15px;line-height:1">←</span> Ajustes</div>
+<div style="margin-top:14px;font:600 21px/1.15 'Satoshi',sans-serif;letter-spacing:-.02em">Política de faltas</div>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 20px 12px;display:flex;flex-direction:column;gap:9px">
+
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;padding:13px 15px">
+<div style="font:600 13.5px/1.3 'Satoshi',sans-serif">Prazo mínimo de aviso</div>
+<div style="display:flex;gap:6px;margin-top:10px">
+<sc-for list="{{ opcoesAviso }}" as="a" hint-placeholder-count="4">
+<div onClick="{{ a.pick }}" style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;border-radius:6px;font:600 13.5px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;background:{{ a.bg }};color:{{ a.fg }}">{{ a.label }}</div>
+</sc-for>
+</div>
+</div>
+
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;padding:13px 15px;display:flex;align-items:center;gap:13px">
+<div onClick="{{ alternarDevolve }}" style="width:44px;height:26px;border-radius:13px;padding:3px;display:flex;flex:none;cursor:pointer;background:{{ devolveBg }};justify-content:{{ devolveAlinha }}"><div style="width:20px;height:20px;border-radius:50%;background:var(--cartao)"></div></div>
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Satoshi',sans-serif">Falta avisada devolve a aula</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave)">{{ devolveNota }}</div></div>
+</div>
+
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;padding:13px 15px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<div style="flex:1;min-width:0"><div style="font:600 13.5px/1.3 'Satoshi',sans-serif">Reposições por pacote</div><div style="margin-top:3px;font:400 11.5px/1.4 'Satoshi',sans-serif;color:var(--suave)">Depois do limite, a falta debita</div></div>
+<div style="display:flex;align-items:center;gap:11px;flex:none">
+<div onClick="{{ menosLimite }}" style="width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;font:600 17px/1 'Satoshi',sans-serif;cursor:pointer;background:{{ menosBg }};color:{{ menosFg }}">−</div>
+<div style="font:800 20px/1 'Satoshi',sans-serif;font-variant-numeric:tabular-nums;min-width:18px;text-align:center">{{ limiteValor }}</div>
+<div onClick="{{ maisLimite }}" style="width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;font:600 17px/1 'Satoshi',sans-serif;cursor:pointer;background:{{ maisBg }};color:{{ maisFg }}">+</div>
+</div>
+</div>
+</div>
+
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-radius:8px;padding:13px 15px">
+<div style="font:600 13.5px/1.3 'Satoshi',sans-serif">Validade do pacote</div>
+<div style="display:flex;gap:6px;margin-top:10px">
+<sc-for list="{{ opcoesValidade }}" as="v" hint-placeholder-count="3">
+<div onClick="{{ v.pick }}" style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;border-radius:6px;font:600 13px/1 'Satoshi',sans-serif;cursor:pointer;background:{{ v.bg }};color:{{ v.fg }}">{{ v.label }}</div>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{ temMudanca }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;background:var(--cartao);border:1px solid var(--linha);border-left:4px solid #FFD032;border-radius:8px;padding:13px 15px">
+<div style="font:600 13.5px/1.3 'Satoshi',sans-serif;font-variant-numeric:tabular-nums">{{ mudancaTitulo }}</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Satoshi',sans-serif;color:var(--suave);font-variant-numeric:tabular-nums">{{ mudancaTexto }}</div>
+</div>
+</sc-if>
+</div>
+<div style="padding:12px 20px 16px;flex:none;background:linear-gradient(to top,var(--tela) 72%,transparent)">
+<div onClick="{{ salvarPolitica }}" style="height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Satoshi',sans-serif;cursor:{{ salvarCursor }};background:{{ salvarBg }};color:{{ salvarFg }}">Salvar alterações</div>
+<div onClick="{{ descartarPolitica }}" style="margin-top:9px;height:44px;display:flex;align-items:center;justify-content:center;font:600 14px/1 'Satoshi',sans-serif;color:var(--suave);cursor:pointer" style-hover="color:var(--texto)">Descartar</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ mostraTabs }}" hint-placeholder-val="{{ true }}">
+<div style="flex:none;height:58px;overflow:hidden;pointer-events:none"><svg viewBox="0 0 390 60" preserveAspectRatio="none" style="width:100%;height:60px;display:block"><path d="M0,55 C10,46 34,36 80,34 L316,34 C356,33 378,22 390,9 L390,61 L0,61 Z" style="fill:var(--topo)"></path></svg></div>
+<div style="flex:none;background:var(--topo);padding:6px 14px 18px;display:flex;align-items:center;justify-content:center;gap:6px">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+<div onClick="{{ t.pick }}" style="position:relative;flex:{{ t.flex }};min-width:0;border-radius:99px;cursor:pointer;transition:flex-grow .22s ease" style-hover="background:rgba(255,255,255,.07)">
+<div style="position:absolute;inset:0;border-radius:99px;overflow:hidden;pointer-events:none;background:{{ t.vidroBg }};border:{{ t.vidroBorda }};box-shadow:{{ t.vidroSombra }}">
+<div style="position:absolute;left:6%;right:6%;top:-46%;height:80%;border-radius:99px;filter:blur(5px);background:{{ t.vidroBrilho }}"></div>
+</div>
+<div style="position:relative;height:42px;display:flex;align-items:center;justify-content:center;gap:9px;padding:{{ t.pad }}">
+<svg viewBox="0 0 24 24" style="width:19px;height:19px;flex:none;display:block;overflow:visible"><path d="{{ t.d }}" style="fill:none;stroke:{{ t.icone }};stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"></path></svg>
+<sc-if value="{{ t.on }}" hint-placeholder-val="{{ false }}">
+<div style="font:600 13px/1 'Satoshi',sans-serif;letter-spacing:.01em;color:#FFFFFF;white-space:nowrap">{{ t.label }}</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:920},&quot;mostrarNotasDeFluxo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Protótipo&quot;},&quot;iniciarEm&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Alunos&quot;,&quot;Financeiro&quot;,&quot;Ajustes&quot;],&quot;default&quot;:&quot;Alunos&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Protótipo&quot;},&quot;temaInicial&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Claro&quot;,&quot;Noturno&quot;],&quot;default&quot;:&quot;Claro&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Protótipo&quot;}}">
+const CHAVE = 'aulaemdia.app.v3';
+const HOJE = '28/08';
+const VALOR_AULA = 80;
+
+function semente() {
+  return {
+    politicas: { avisoHoras: 24, avisadaDevolve: true, limiteReposicoes: 3, validadeDias: 60 },
+    alunos: [
+      { id: 'val', name: 'Valentin Klein', disciplina: 'Matemática', dia: 'quarta', hora: '17h', hoje: true, total: 6, usadas: 2, validade: '30/10', reposicoes: 0, lembretes: 1, ultimoLembrete: '22/08', atrasosHistoricos: 3, pagamento: { status: 'atraso', venceu: '16/08', dias: 12 } },
+      { id: 'raf', name: 'Rafael Dornelas', disciplina: 'Violão', dia: 'segunda', hora: '19h', hoje: false, total: 8, usadas: 6, validade: '30/09', reposicoes: 1, pagamento: { status: 'aberto', vence: '12/09' }, pendencia: { origem: '12/08', dias: 3 } },
+      { id: 'mar', name: 'Mateus Alves', disciplina: 'Inglês', dia: 'terça e quinta', hora: '18h', hoje: true, total: 8, usadas: 3, validade: '30/11', reposicoes: 0, pagamento: { status: 'pago', em: '01/08', meio: 'Pix' } },
+      { id: 'bea', name: 'Bernardo Lemos', disciplina: 'Inglês', dia: 'sem horário fixo', hora: '', hoje: false, total: 0, usadas: 0, semPacote: true, encerrado: '04/07', reposicoes: 0, pagamento: { status: 'sem' } }
+    ],
+    extratos: {
+      val: [
+        { d: '26/08', t: 'Aula realizada', s: 'Quarta, 17h', delta: -1, saldo: 4 },
+        { d: '19/08', t: 'Aula realizada', s: 'Quarta, 17h', delta: -1, saldo: 5 },
+        { d: '01/08', t: 'Pacote de 6 aulas', s: 'Aguardando pagamento', delta: 6, saldo: 6 }
+      ],
+      raf: [
+        { d: '12/08', t: 'Falta avisada', s: 'Aviso com 30h · reposição gerada', delta: 0, saldo: 2 },
+        { d: '05/08', t: 'Aula realizada', s: 'Segunda, 19h', delta: -1, saldo: 2 },
+        { d: '29/07', t: 'Reposição realizada', s: 'Sábado, 10h', delta: -1, saldo: 3 },
+        { d: '01/07', t: 'Pacote de 8 aulas', s: 'Pago em 01/07 · Pix', delta: 8, saldo: 8 }
+      ],
+      mar: [
+        { d: '26/08', t: 'Aula realizada', s: 'Terça, 18h', delta: -1, saldo: 5 },
+        { d: '21/08', t: 'Aula realizada', s: 'Quinta, 18h', delta: -1, saldo: 6 },
+        { d: '19/08', t: 'Falta sem aviso', s: 'Política: debita a aula', delta: -1, saldo: 7 },
+        { d: '14/08', t: 'Falta avisada', s: 'Aviso com 26h · reposição realizada', delta: 0, saldo: 8 },
+        { d: '01/08', t: 'Pacote de 8 aulas', s: 'Pago em 01/08 · Pix', delta: 8, saldo: 8 }
+      ],
+      bea: []
+    }
+  };
+}
+
+const JANELAS = [
+  { dia: 'Sexta, 29/08', hora: '17h', motivo: 'Livre na sua agenda e o aluno já teve aula nesse horário' },
+  { dia: 'Sábado, 30/08', hora: '10h', motivo: 'Livre, mas fora do horário habitual do aluno' },
+  { dia: 'Terça, 02/09', hora: '19h', motivo: 'Emenda na aula do Rafael, sem intervalo entre as duas' }
+];
+const EXTRA = { dia: 'Quinta, 11/09', hora: '18h', motivo: 'Só cabe dentro da validade estendida' };
+
+function dinheiro(n) { return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+class Component extends DCLogic {
+  state = Object.assign({
+    tela: 'home', pilha: [], alunoId: null, filtro: 'Urgência', tema: 'claro',
+    desfecho: null, avisoH: 26, janela: null, toast: null, rascunho: null
+  }, semente());
+
+  componentDidMount() {
+    try {
+      const bruto = localStorage.getItem(CHAVE);
+      if (bruto) {
+        const d = JSON.parse(bruto);
+        if (d && d.alunos) this.setState({ alunos: d.alunos, extratos: d.extratos, politicas: d.politicas });
+      }
+    } catch (e) {}
+    let tema = null;
+    try { tema = localStorage.getItem(CHAVE + '.tema'); } catch (e) {}
+    if (tema !== 'claro' && tema !== 'escuro') tema = this.props.temaInicial === 'Noturno' ? 'escuro' : 'claro';
+    this.setState({ tema: tema });
+    const mapa = { Financeiro: 'financeiro', Ajustes: 'ajustes' };
+    const inicio = this.props.iniciarEm;
+    if (inicio && mapa[inicio]) this.setState({ tela: mapa[inicio] });
+  }
+
+  salvar(patch) {
+    this.setState(patch, () => {
+      try {
+        localStorage.setItem(CHAVE, JSON.stringify({ alunos: this.state.alunos, extratos: this.state.extratos, politicas: this.state.politicas }));
+      } catch (e) {}
+    });
+  }
+
+  trocarTema(t) {
+    this.setState({ tema: t });
+    try { localStorage.setItem(CHAVE + '.tema', t); } catch (e) {}
+  }
+
+  aviso(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 3600);
+  }
+
+  ir(tela, extra) {
+    this.setState(s => ({ pilha: s.pilha.concat([{ tela: s.tela, alunoId: s.alunoId }]), tela: tela, ...(extra || {}) }));
+  }
+  trocarTab(tela) { this.setState({ tela: tela, pilha: [], alunoId: null, desfecho: null, janela: null, rascunho: null }); }
+  voltar() {
+    this.setState(s => {
+      if (!s.pilha.length) return { tela: 'home', desfecho: null, janela: null, rascunho: null };
+      const p = s.pilha[s.pilha.length - 1];
+      return { tela: p.tela, alunoId: p.alunoId, pilha: s.pilha.slice(0, -1), desfecho: null, janela: null, rascunho: null };
+    });
+  }
+
+  saldo(a) { return Math.max(0, a.total - a.usadas); }
+  valor(a) { return a.total * VALOR_AULA; }
+  aluno(id) { return this.state.alunos.find(a => a.id === (id || this.state.alunoId)); }
+  mutar(id, fn) { this.salvar({ alunos: this.state.alunos.map(a => (a.id === id ? fn(Object.assign({}, a)) : a)) }); }
+  lancar(id, ev) {
+    const ex = Object.assign({}, this.state.extratos);
+    ex[id] = [ev].concat(ex[id] || []);
+    this.setState({ extratos: ex });
+  }
+
+  limite() { return this.state.politicas.limiteReposicoes; }
+  podeRepor(a) { return this.limite() === 0 || a.reposicoes < this.limite(); }
+
+  efeito(chave) {
+    const p = this.state.politicas;
+    if (chave === 'realizada') return { delta: -1, nota: 'Aula usada normalmente', reposicao: false, rotulo: 'Aula realizada', detalhe: 'Aula do pacote' };
+    if (chave === 'avisada') {
+      const emPrazo = this.state.avisoH >= p.avisoHoras;
+      if (!p.avisadaDevolve) return { delta: -1, nota: 'Sua política não devolve a aula em falta avisada', reposicao: false, rotulo: 'Falta avisada', detalhe: 'Aviso com ' + this.state.avisoH + 'h · política não devolve' };
+      return emPrazo
+        ? { delta: 0, nota: 'Aviso com ' + this.state.avisoH + 'h, dentro do mínimo de ' + p.avisoHoras + 'h', reposicao: true, rotulo: 'Falta avisada', detalhe: 'Aviso com ' + this.state.avisoH + 'h · reposição gerada' }
+        : { delta: -1, nota: 'Aviso com ' + this.state.avisoH + 'h, abaixo do mínimo de ' + p.avisoHoras + 'h', reposicao: false, rotulo: 'Falta avisada', detalhe: 'Aviso com ' + this.state.avisoH + 'h · fora do prazo' };
+    }
+    if (chave === 'sem_aviso') return { delta: -1, nota: 'Falta sem aviso debita a aula', reposicao: false, rotulo: 'Falta sem aviso', detalhe: 'Política: debita a aula' };
+    return { delta: 0, nota: 'Você cancelou, então a reposição é obrigatória', reposicao: true, rotulo: 'Aula cancelada por você', detalhe: 'Cancelamento seu · reposição obrigatória' };
+  }
+
+  confirmarRegistro() {
+    const a = this.aluno();
+    if (!a || !this.state.desfecho) return;
+    const ef = this.efeito(this.state.desfecho);
+    const novoSaldo = Math.max(0, this.saldo(a) + ef.delta);
+    this.mutar(a.id, x => {
+      if (ef.delta < 0) x.usadas = x.usadas + 1;
+      if (ef.reposicao && this.podeRepor(x)) x.pendencia = { origem: HOJE, dias: 0 };
+      return x;
+    });
+    this.lancar(a.id, { d: HOJE, t: ef.rotulo, s: ef.detalhe, delta: ef.delta, saldo: novoSaldo });
+    this.ir('resultado');
+  }
+
+  confirmarReposicao() {
+    const a = this.aluno();
+    if (!a || this.state.janela === null) return;
+    const j = this.janelasDisponiveis(a)[this.state.janela];
+    this.mutar(a.id, x => {
+      x.reposicoes = x.reposicoes + 1;
+      x.pendencia = null;
+      x.agendada = { dia: j.dia, hora: j.hora };
+      return x;
+    });
+    this.lancar(a.id, { d: HOJE, t: 'Reposição marcada', s: j.dia + ', ' + j.hora, delta: 0, saldo: this.saldo(a) });
+    this.aviso('Reposição de ' + a.name.split(' ')[0] + ' em ' + j.dia + ', ' + j.hora + '. Mensagem enviada.');
+    this.setState({ janela: null, tela: 'aluno', alunoId: a.id, pilha: [] });
+  }
+
+  janelasDisponiveis(a) { return a && a.validadeEstendida ? JANELAS.concat([EXTRA]) : JANELAS; }
+
+  receber(a) {
+    this.mutar(a.id, x => { x.pagamento = { status: 'pago', em: HOJE, meio: 'Pix' }; x.pausado = false; return x; });
+    this.lancar(a.id, { d: HOJE, t: 'Pagamento recebido', s: dinheiro(this.valor(a)) + ' · Pix', delta: 0, saldo: this.saldo(a), dinheiro: true });
+    this.aviso('Pagamento de ' + a.name.split(' ')[0] + ' registrado: ' + dinheiro(this.valor(a)) + '.');
+  }
+
+  renderVals() {
+    const st = this.state;
+    const alunos = st.alunos;
+    const pol = st.politicas;
+    const rasc = st.rascunho || pol;
+
+    const enfeite = a => {
+      const saldo = this.saldo(a);
+      const temPacote = !a.semPacote && a.total > 0;
+      const dots = temPacote ? Array.from({ length: a.total }, (_, i) => ({ bg: i < a.usadas ? 'var(--linha)' : (saldo <= 2 ? '#FFD032' : 'var(--texto)') })) : [];
+      return {
+        id: a.id, name: a.name, saldo: saldo, temPacote: temPacote, semPacote: !!a.semPacote, dots: dots,
+        linha2: a.disciplina + ' · ' + (a.hora ? (a.hoje ? 'hoje, ' + a.hora : a.dia + ', ' + a.hora) : a.dia),
+        numero: temPacote ? String(saldo) : '—',
+        unidade: temPacote ? 'aulas' : 'sem pacote',
+        numCor: !temPacote ? 'var(--fraco)' : (saldo <= 2 ? '#FFD032' : '#FFFFFF'),
+        caixaBg: temPacote ? 'var(--elevado)' : 'var(--caixa)',
+        caixaBorda: temPacote ? 'none' : '1px dashed var(--fraco)',
+        borda: temPacote ? '1px solid var(--linha)' : '1px dashed var(--fraco)',
+        nomeCor: temPacote ? 'var(--texto)' : 'var(--texto-medio)'
+      };
+    };
+
+    const ordenar = arr => {
+      const peso = a => {
+        if (a.pagamento && a.pagamento.status === 'atraso') return 0;
+        if (a.pendencia) return 1;
+        if (a.semPacote) return 3;
+        return 2;
+      };
+      const c = arr.slice();
+      if (st.filtro === 'A–Z') c.sort((x, y) => x.name.localeCompare(y.name));
+      else if (st.filtro === 'Hoje') return c.filter(a => a.hoje);
+      else c.sort((x, y) => peso(x) - peso(y) || this.saldo(x) - this.saldo(y));
+      return c;
+    };
+
+    const lista = ordenar(alunos).map(a => {
+      const base = enfeite(a);
+      let faixa = null, faixaBg = '#FFD032', faixaFg = '#0E1626', faixaDir = '';
+      if (a.pausado) { faixa = 'Aulas pausadas'; faixaBg = 'var(--caixa)'; faixaFg = 'var(--texto-medio)'; faixaDir = 'até regularizar'; }
+      else if (a.pagamento && a.pagamento.status === 'atraso') { faixa = 'Pagamento em atraso'; faixaBg = 'var(--vermelho)'; faixaFg = '#FFFFFF'; faixaDir = a.pagamento.dias + ' dias'; }
+      else if (a.pendencia) { faixa = 'Reposição pendente'; faixaDir = a.pendencia.dias > 0 ? 'há ' + a.pendencia.dias + ' dias' : 'hoje'; }
+      else if (a.agendada) { faixa = 'Reposição marcada'; faixaBg = 'var(--caixa)'; faixaFg = 'var(--texto-medio)'; faixaDir = a.agendada.dia.replace(/^\S+,\s*/, '') + ' · ' + a.agendada.hora; }
+      return Object.assign(base, {
+        faixa: faixa, faixaBg: faixaBg, faixaFg: faixaFg, faixaDir: faixaDir,
+        linha3: a.semPacote ? 'Pacote encerrado em ' + a.encerrado : a.usadas + ' usadas · validade ' + a.validade,
+        open: () => this.ir('aluno', { alunoId: a.id })
+      });
+    });
+
+    const filtros = ['Urgência', 'A–Z', 'Hoje'].map(f => ({
+      label: f, pick: () => this.setState({ filtro: f }),
+      bg: st.filtro === f ? 'var(--texto)' : 'var(--cartao)',
+      fg: st.filtro === f ? 'var(--botao-texto)' : 'var(--suave)',
+      bd: st.filtro === f ? 'var(--texto)' : 'var(--linha)'
+    }));
+
+    const a = this.aluno();
+    let atual = { extrato: [], dots: [], extratoVazio: true, temPacote: false, podeRegistrar: false };
+    if (a) {
+      const base = enfeite(a);
+      const ex = (st.extratos[a.id] || []).map(e => ({
+        d: e.d, t: e.t, s: e.s,
+        saldoTexto: e.dinheiro ? 'recebido' : 'saldo ' + e.saldo,
+        deltaTexto: e.dinheiro ? '✓' : (e.delta > 0 ? '+' + e.delta : String(e.delta)),
+        cor: e.dinheiro ? 'var(--verde)' : (e.delta < 0 ? 'var(--vermelho)' : (e.delta > 0 ? 'var(--texto)' : 'var(--verde)'))
+      }));
+      atual = Object.assign(base, {
+        validadeTexto: 'validade ' + (a.validade || '—') + (a.validadeEstendida ? ' · estendida' : ''),
+        usadasTexto: a.usadas + ' de ' + a.total + ' usadas',
+        reposicoesTexto: this.limite() === 0 ? a.reposicoes + ' reposições' : a.reposicoes + ' de ' + this.limite() + ' reposições',
+        pendenteReposicao: !!a.pendencia,
+        pendenteTexto: a.pendencia ? 'Falta avisada em ' + a.pendencia.origem + (a.pendencia.dias > 0 ? '. Sem horário escolhido há ' + a.pendencia.dias + ' dias.' : '. Escolha o horário.') : '',
+        temAgendada: !!a.agendada,
+        agendadaTexto: a.agendada ? a.agendada.dia + ', ' + a.agendada.hora + '. Mensagem enviada ao aluno.' : '',
+        emAtraso: !!(a.pagamento && a.pagamento.status === 'atraso'),
+        atrasoTexto: a.pagamento && a.pagamento.status === 'atraso' ? dinheiro(this.valor(a)) + ' venceu em ' + a.pagamento.venceu + ', há ' + a.pagamento.dias + ' dias.' : '',
+        pausado: !!a.pausado,
+        extrato: ex, extratoVazio: ex.length === 0,
+        podeRegistrar: base.temPacote && !a.pausado,
+        podeRenovar: base.temPacote && base.saldo <= 2,
+        numCor: !base.temPacote ? 'var(--fraco)' : (base.saldo <= 2 ? '#FFD032' : '#FFFFFF')
+      });
+    }
+
+    const desfechos = [
+      { k: 'realizada', title: 'Aula realizada', sub: 'Aconteceu como o combinado' },
+      { k: 'avisada', title: 'Falta avisada', sub: 'O aluno avisou antes' },
+      { k: 'sem_aviso', title: 'Falta sem aviso', sub: 'Não apareceu e não avisou' },
+      { k: 'cancelei', title: 'Cancelei a aula', sub: 'A ausência foi sua' }
+    ].map(o => {
+      const sel = st.desfecho === o.k;
+      const ef = this.efeito(o.k);
+      const antes = a ? this.saldo(a) : 0;
+      const mostraEfeito = a && (o.k !== 'avisada' || sel);
+      return {
+        title: o.title, sub: sel ? ef.nota : o.sub,
+        efeito: mostraEfeito ? antes + ' → ' + Math.max(0, antes + ef.delta) : '',
+        cor: ef.delta < 0 ? 'var(--vermelho)' : 'var(--verde)',
+        borda: sel ? '1.5px solid var(--texto)' : '1px solid var(--linha)',
+        radio: sel ? '6px solid var(--texto)' : '1.5px solid var(--fraco)',
+        pedeAviso: sel && o.k === 'avisada',
+        pick: () => this.setState({ desfecho: o.k })
+      };
+    });
+
+    const avisoOpcoes = [48, 26, 10].map(h => ({
+      label: h + 'h', pick: () => this.setState({ avisoH: h }),
+      bg: st.avisoH === h ? 'var(--texto)' : 'var(--cartao)',
+      fg: st.avisoH === h ? 'var(--botao-texto)' : 'var(--suave)',
+      bd: st.avisoH === h ? 'var(--texto)' : 'var(--linha)'
+    }));
+
+    const prontoRegistro = !!(a && st.desfecho);
+    const efAtual = st.desfecho ? this.efeito(st.desfecho) : null;
+    const saldoDepois = a && efAtual ? Math.max(0, this.saldo(a) + efAtual.delta) : 0;
+
+    const janelas = this.janelasDisponiveis(a).map((j, i) => ({
+      dia: j.dia, hora: j.hora, motivo: j.motivo, melhor: i === 0,
+      borda: st.janela === i ? '1.5px solid var(--texto)' : '1px solid var(--linha)',
+      radio: st.janela === i ? '6px solid var(--texto)' : '1.5px solid var(--fraco)',
+      pick: () => this.setState({ janela: i })
+    }));
+
+    const cobranca = x => ({
+      id: x.id, name: x.name, valor: x.pagamento.status === 'sem' ? '—' : dinheiro(this.valor(x)),
+      detalhe: x.pagamento.status === 'atraso' ? 'Venceu ' + x.pagamento.venceu + ' · ' + x.pagamento.dias + ' dias'
+        : x.pagamento.status === 'aberto' ? 'Vence ' + x.pagamento.vence
+        : 'Pago em ' + x.pagamento.em + ' · ' + x.pagamento.meio,
+      abrir: () => this.ir('inadimplencia', { alunoId: x.id })
+    });
+    const atrasos = alunos.filter(x => x.pagamento.status === 'atraso').map(cobranca);
+    const aVencer = alunos.filter(x => x.pagamento.status === 'aberto').map(cobranca);
+    const pagos = alunos.filter(x => x.pagamento.status === 'pago').map(cobranca);
+    const soma = arr => arr.reduce((t, x) => t + this.valor(x), 0);
+    const somaAtraso = soma(alunos.filter(x => x.pagamento.status === 'atraso'));
+    const somaAberto = soma(alunos.filter(x => x.pagamento.status === 'aberto'));
+    const somaPago = soma(alunos.filter(x => x.pagamento.status === 'pago'));
+    const mil = n => n.toLocaleString('pt-BR');
+
+    let aulasDadas = 0, faltasDebitadas = 0;
+    Object.keys(st.extratos).forEach(k => (st.extratos[k] || []).forEach(e => {
+      if (e.t === 'Aula realizada' || e.t === 'Reposição realizada') aulasDadas++;
+      if (e.t.indexOf('Falta') === 0 && e.delta < 0) faltasDebitadas++;
+    }));
+    const totalReposicoes = alunos.reduce((t, x) => t + x.reposicoes, 0);
+    const barras = [
+      { peso: Math.max(1, aulasDadas), cor: 'var(--texto)' },
+      { peso: Math.max(1, totalReposicoes), cor: '#FFD032' },
+      { peso: Math.max(1, faltasDebitadas), cor: 'var(--vermelho)' }
+    ];
+
+    const inadLinhas = a ? [
+      { rotulo: 'Aulas dadas sem pagamento', valor: String(a.usadas) },
+      { rotulo: 'Último lembrete', valor: a.ultimoLembrete || 'nenhum' },
+      { rotulo: 'Histórico de atrasos', valor: (a.atrasosHistoricos || 0) + ' em 6 meses' }
+    ] : [];
+
+    const inadAcoes = a ? [
+      { titulo: 'Enviar lembrete de cobrança', sub: 'Mensagem pronta com a chave Pix', acao: () => { this.mutar(a.id, x => { x.lembretes = (x.lembretes || 0) + 1; x.ultimoLembrete = HOJE; return x; }); this.aviso('Lembrete enviado para ' + a.name.split(' ')[0] + ' com a chave Pix.'); } },
+      { titulo: 'Registrar pagamento recebido', sub: 'Se ele já pagou por fora', acao: () => { this.receber(a); this.voltar(); } },
+      { titulo: a.pausado ? 'Retomar as próximas aulas' : 'Pausar as próximas aulas', sub: a.pausado ? 'Volta para a lista de registro' : 'Sai da lista de registro até regularizar', acao: () => { this.mutar(a.id, x => { x.pausado = !x.pausado; return x; }); this.aviso(a.pausado ? 'Aulas de ' + a.name.split(' ')[0] + ' retomadas.' : 'Aulas de ' + a.name.split(' ')[0] + ' pausadas.'); } },
+      { titulo: 'Combinar parcelamento', sub: '2 × ' + dinheiro(this.valor(a) / 2) + ', registrado à mão', acao: () => this.aviso('Parcelamento anotado. O registro do recebimento continua manual.') }
+    ] : [];
+
+    const opcoesAviso = [4, 12, 24, 48].map(h => ({
+      label: h + 'h', pick: () => this.setState({ rascunho: Object.assign({}, rasc, { avisoHoras: h }) }),
+      bg: rasc.avisoHoras === h ? 'var(--texto)' : 'var(--caixa)',
+      fg: rasc.avisoHoras === h ? 'var(--botao-texto)' : 'var(--suave)'
+    }));
+    const opcoesValidade = [{ n: 30, l: '30 dias' }, { n: 60, l: '60 dias' }, { n: 0, l: 'sem prazo' }].map(v => ({
+      label: v.l, pick: () => this.setState({ rascunho: Object.assign({}, rasc, { validadeDias: v.n }) }),
+      bg: rasc.validadeDias === v.n ? 'var(--texto)' : 'var(--caixa)',
+      fg: rasc.validadeDias === v.n ? 'var(--botao-texto)' : 'var(--suave)'
+    }));
+
+    const mudou = JSON.stringify(rasc) !== JSON.stringify(pol);
+    let mudancaTitulo = '', mudancaTexto = '';
+    if (rasc.limiteReposicoes !== pol.limiteReposicoes) {
+      mudancaTitulo = 'Você mudou o limite de ' + pol.limiteReposicoes + ' para ' + rasc.limiteReposicoes;
+      mudancaTexto = 'Vale só para pacotes novos. Os ' + alunos.filter(x => !x.semPacote).length + ' pacotes em andamento seguem com a regra antiga até vencer.';
+    } else if (rasc.avisoHoras !== pol.avisoHoras) {
+      mudancaTitulo = 'Prazo de aviso muda de ' + pol.avisoHoras + 'h para ' + rasc.avisoHoras + 'h';
+      mudancaTexto = 'Vale a partir do próximo registro de aula. Os lançamentos já feitos não mudam.';
+    } else if (rasc.avisadaDevolve !== pol.avisadaDevolve) {
+      mudancaTitulo = rasc.avisadaDevolve ? 'Falta avisada volta a devolver a aula' : 'Falta avisada passa a debitar sempre';
+      mudancaTexto = 'Vale a partir do próximo registro de aula.';
+    } else if (rasc.validadeDias !== pol.validadeDias) {
+      mudancaTitulo = 'Validade padrão muda para ' + (rasc.validadeDias === 0 ? 'sem prazo' : rasc.validadeDias + ' dias');
+      mudancaTexto = 'Aplica-se aos pacotes criados a partir de agora.';
+    }
+
+    const tabs = [
+      { k: 'home', label: 'Alunos', d: 'M12 10.9a3.35 3.35 0 100-6.7 3.35 3.35 0 000 6.7M5.6 19.8c0-3.55 2.86-5.5 6.4-5.5s6.4 1.95 6.4 5.5', dentro: ['home', 'aluno', 'registrar', 'reposicao', 'resultado'] },
+      { k: 'financeiro', label: 'Financeiro', d: 'M4.2 9.2h13.3a2.5 2.5 0 012.5 2.5v4.9a2.5 2.5 0 01-2.5 2.5H6.7a2.5 2.5 0 01-2.5-2.5zM4.2 9.2V7.3a2 2 0 012-2h8.6M16 14.1h1.4', dentro: ['financeiro', 'inadimplencia'] },
+      { k: 'ajustes', label: 'Ajustes', d: 'M4.6 8.2h8.2M16.6 8.2H19.4M4.6 15.8h2.8M11.4 15.8h8M14.7 6.1v4.2M8.5 13.7v4.2', dentro: ['ajustes', 'politica'] }
+    ].map(t => {
+      const on = t.dentro.indexOf(st.tela) >= 0;
+      return {
+        label: t.label, pick: () => this.trocarTab(t.k), on: on, d: t.d,
+        flex: on ? '1 1 auto' : '0 0 52px', pad: on ? '0 17px 0 14px' : '0',
+        icone: on ? '#FFD032' : 'var(--elevado-suave)',
+        vidroBg: on ? 'linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.015) 26%,rgba(255,255,255,.015) 72%,rgba(255,255,255,.10))' : 'transparent',
+        vidroBorda: on ? '1px solid rgba(255,255,255,.5)' : '1px solid transparent',
+        vidroSombra: on ? 'inset 0 1.5px 1.5px rgba(255,255,255,.7), inset 0 -1.5px 1.5px rgba(255,255,255,.34), inset 1.5px 0 1.5px rgba(255,255,255,.2), inset -1.5px 0 1.5px rgba(255,255,255,.2), 0 3px 10px rgba(0,0,0,.32)' : 'none',
+        vidroBrilho: on ? 'linear-gradient(180deg,rgba(255,255,255,0) 60%,rgba(255,255,255,.5))' : 'transparent'
+      };
+    });
+
+    const painel = alunos.map(x => {
+      const s = this.saldo(x);
+      const temPacote = !x.semPacote && x.total > 0;
+      let nota = temPacote ? x.usadas + '/' + x.total + ' usadas' : 'sem pacote ativo';
+      if (x.pagamento.status === 'atraso') nota += ' · em atraso';
+      if (x.pagamento.status === 'pago') nota += ' · pago';
+      if (x.pausado) nota += ' · pausado';
+      if (x.pendencia) nota += ' · reposição pendente';
+      if (x.agendada) nota += ' · reposição ' + x.agendada.hora;
+      return {
+        name: x.name, nota: nota, numero: temPacote ? String(s) : '—',
+        unidade: temPacote ? 'aulas' : '',
+        bg: !temPacote ? '#F1F2F4' : (s === 0 ? '#E3001A' : (s <= 2 ? '#FFD032' : '#F1F2F4')),
+        fg: !temPacote ? '#C9CBD2' : (s === 0 ? '#FFFFFF' : '#141E30')
+      };
+    });
+
+    const notas = {
+      home: 'B1 · lista de alunos', aluno: 'B4 · ficha do aluno', registrar: st.alunoId ? 'B3 · desfecho' : 'B2 · escolher aluno',
+      resultado: 'B5 · resultado', reposicao: 'C3 · janelas', financeiro: 'D3 · financeiro',
+      inadimplencia: 'D4 · inadimplência', ajustes: 'E1 · ajustes', politica: 'E2 · política de faltas'
+    };
+
+    return {
+      tema: st.tema,
+      opcoesTema: [{ k: 'claro', label: 'Claro' }, { k: 'escuro', label: 'Noturno' }].map(t => ({
+        label: t.label, pick: () => this.trocarTema(t.k),
+        bg: st.tema === t.k ? 'var(--texto)' : 'var(--cartao)',
+        fg: st.tema === t.k ? 'var(--botao-texto)' : 'var(--suave)',
+        bd: st.tema === t.k ? 'var(--texto)' : 'var(--linha)'
+      })),
+      notaVisivel: this.props.mostrarNotasDeFluxo === true,
+      notaFluxo: notas[st.tela] || st.tela, toast: st.toast,
+      isHome: st.tela === 'home', isAluno: st.tela === 'aluno', isRegistrar: st.tela === 'registrar',
+      isResultado: st.tela === 'resultado', isReposicao: st.tela === 'reposicao',
+      isFinanceiro: st.tela === 'financeiro', isInadimplencia: st.tela === 'inadimplencia',
+      isAjustes: st.tela === 'ajustes', isPolitica: st.tela === 'politica',
+      mostraTabs: ['registrar', 'resultado', 'reposicao'].indexOf(st.tela) < 0,
+
+      aulasHoje: alunos.filter(x => x.hoje && !x.semPacote && !x.pausado).length,
+      lista: lista, filtros: filtros, tabs: tabs, painel: painel,
+      irRegistrar: () => this.ir('registrar', { alunoId: null, desfecho: null }),
+      irHome: () => this.trocarTab('home'),
+      irPolitica: () => this.ir('politica', { rascunho: Object.assign({}, pol) }),
+      irInadimplencia: () => this.ir('inadimplencia'),
+      voltar: () => this.voltar(),
+
+      atual: atual,
+      registrarDesteAluno: () => this.ir('registrar', { desfecho: null }),
+      irReposicao: () => this.ir('reposicao', { janela: null, alunoId: a ? a.id : st.alunoId }),
+      retomar: () => { if (!a) return; this.mutar(a.id, x => { x.pausado = false; return x; }); this.aviso('Aulas de ' + a.name.split(' ')[0] + ' retomadas.'); },
+      criarPacote: () => {
+        if (!a) return;
+        const val = pol.validadeDias === 0 ? 'sem prazo' : (pol.validadeDias === 30 ? '27/09' : '27/10');
+        this.mutar(a.id, x => { x.semPacote = false; x.total = 8; x.usadas = 0; x.validade = val; x.hora = '18h'; x.dia = 'terça'; x.pagamento = { status: 'aberto', vence: '04/09' }; return x; });
+        this.lancar(a.id, { d: HOJE, t: 'Pacote de 8 aulas', s: 'Validade ' + val + ' · aguardando pagamento', delta: 8, saldo: 8 });
+        this.aviso('Pacote de 8 aulas criado, validade ' + val + '.');
+      },
+      renovarPacote: () => {
+        if (!a) return;
+        const novo = this.saldo(a) + 8;
+        const val = pol.validadeDias === 0 ? 'sem prazo' : (pol.validadeDias === 30 ? '27/09' : '27/10');
+        this.mutar(a.id, x => { x.total = x.total + 8; x.validade = val; x.validadeEstendida = false; x.pagamento = { status: 'aberto', vence: '04/09' }; return x; });
+        this.lancar(a.id, { d: HOJE, t: 'Pacote de 8 aulas', s: 'Renovação · validade ' + val, delta: 8, saldo: novo });
+        this.aviso('Pacote renovado. Saldo agora é ' + novo + ', validade ' + val + '.');
+      },
+
+      registrarSub: a ? a.name + ' · ' + a.disciplina : 'Escolha o aluno da aula',
+      precisaEscolherAluno: !a,
+      mostraDesfechos: !!a,
+      selecionaveis: alunos.filter(x => !x.semPacote && !x.pausado).map(x => ({
+        name: x.name, linha2: x.disciplina + ' · ' + (x.hoje ? 'hoje, ' + x.hora : x.dia + ', ' + x.hora),
+        numero: String(this.saldo(x)), pick: () => this.setState({ alunoId: x.id })
+      })),
+      desfechos: desfechos, avisoOpcoes: avisoOpcoes,
+      avisoNota: !pol.avisadaDevolve ? 'Sua política não devolve a aula em falta avisada, então o prazo não muda o resultado.'
+        : st.avisoH >= pol.avisoHoras ? 'Dentro do seu mínimo de ' + pol.avisoHoras + 'h. A aula volta para o saldo e uma reposição é gerada.'
+        : 'Abaixo do seu mínimo de ' + pol.avisoHoras + 'h. A aula é debitada e não gera reposição.',
+      confirmarRegistro: () => this.confirmarRegistro(),
+      confirmarBg: prontoRegistro ? 'var(--texto)' : 'var(--linha)',
+      confirmarFg: prontoRegistro ? 'var(--botao-texto)' : 'var(--desab-fg)',
+      confirmarCursor: prontoRegistro ? 'pointer' : 'default',
+
+      resultadoTitulo: efAtual ? efAtual.rotulo : '',
+      resultadoSaldo: String(saldoDepois),
+      resultadoCor: saldoDepois <= 2 ? '#FFD032' : '#FFFFFF',
+      resultadoDelta: efAtual ? (efAtual.delta === 0 ? 'sem debitar' : efAtual.delta + ' aula') : '',
+      resultadoTexto: efAtual && a ? efAtual.nota + '. O lançamento já está no extrato de ' + a.name.split(' ')[0] + '.' : '',
+      resultadoPedeReposicao: !!(efAtual && efAtual.reposicao && a && this.podeRepor(a)),
+      resultadoLimite: !!(efAtual && efAtual.reposicao && a && !this.podeRepor(a)),
+      resultadoLimiteTexto: a ? a.reposicoes + ' de ' + this.limite() + ' reposições já usadas neste pacote. Sua política não permite outra.' : '',
+
+      reposicaoSub: a ? a.name + ' · validade ' + a.validade + ' · ' + (this.limite() === 0 ? a.reposicoes + ' reposições usadas' : a.reposicoes + ' de ' + this.limite() + ' reposições usadas') : '',
+      reposicaoBloqueada: !!(a && !this.podeRepor(a)),
+      reposicaoLiberada: !!(a && this.podeRepor(a)),
+      reposicaoBloqueioTexto: a ? a.reposicoes + ' de ' + this.limite() + ' usadas neste pacote. Sua política não permite mais.' : '',
+      janelasTitulo: janelas.length + ' horários possíveis',
+      janelas: janelas,
+      podeEstender: !!(a && !a.validadeEstendida),
+      estenderValidade: () => {
+        if (!a) return;
+        const nova = a.validade === '30/09' ? '15/10' : (a.validade === '30/10' ? '14/11' : '15/12');
+        this.mutar(a.id, x => { x.validade = nova; x.validadeEstendida = true; return x; });
+        this.lancar(a.id, { d: HOJE, t: 'Validade estendida', s: 'De ' + a.validade + ' para ' + nova + ' · 15 dias', delta: 0, saldo: this.saldo(a) });
+        this.aviso('Validade agora vai até ' + nova + '. Um horário novo entrou na lista.');
+      },
+      confirmarReposicao: () => this.confirmarReposicao(),
+      reposicaoBg: st.janela !== null ? 'var(--texto)' : 'var(--linha)',
+      reposicaoFg: st.janela !== null ? 'var(--botao-texto)' : 'var(--desab-fg)',
+      reposicaoCursor: st.janela !== null ? 'pointer' : 'default',
+
+      resumoFinanceiro: [
+        { rotulo: 'A receber', valor: mil(somaAberto), cor: somaAberto ? '#FFD032' : 'var(--topo-fraco)' },
+        { rotulo: 'Recebido', valor: mil(somaPago), cor: somaPago ? '#FFFFFF' : 'var(--topo-fraco)' },
+        { rotulo: 'Em atraso', valor: mil(somaAtraso), cor: somaAtraso ? 'var(--vermelho)' : 'var(--topo-fraco)' }
+      ],
+      atrasos: atrasos, aVencer: aVencer, pagos: pagos,
+      temAtrasos: atrasos.length > 0, temAVencer: aVencer.length > 0, temPagos: pagos.length > 0,
+      atrasoContagem: atrasos.length + (atrasos.length > 1 ? ' alunos' : ' aluno'),
+      aulasDadas: String(aulasDadas),
+      reposicoesTexto: totalReposicoes + (totalReposicoes === 1 ? ' reposição' : ' reposições'),
+      faltasTexto: faltasDebitadas + (faltasDebitadas === 1 ? ' falta debitada' : ' faltas debitadas'),
+      barras: barras,
+      cobrarTexto: atrasos.length > 1 ? 'Cobrar os ' + atrasos.length + ' em atraso' : 'Cobrar quem está em atraso',
+      cobrarTodos: () => {
+        const ids = alunos.filter(x => x.pagamento.status === 'atraso').map(x => x.id);
+        this.salvar({ alunos: alunos.map(x => (ids.indexOf(x.id) >= 0 ? Object.assign({}, x, { lembretes: (x.lembretes || 0) + 1, ultimoLembrete: HOJE }) : x)) });
+        this.aviso('Lembrete enviado para ' + ids.length + (ids.length > 1 ? ' alunos' : ' aluno') + ' com a chave Pix.');
+      },
+
+      inadTitulo: a && a.hoje ? 'Aula marcada para hoje, ' + a.hora : 'Sem aula marcada nesta semana',
+      inadSub: a && a.pagamento.status === 'atraso' ? 'O pagamento venceu há ' + a.pagamento.dias + ' dias. Você decide se dá a aula.' : 'Pagamento regularizado.',
+      inadValor: a ? dinheiro(this.valor(a)) : '',
+      inadPacote: a ? 'Pacote de ' + a.total : '',
+      inadVenceu: a && a.pagamento.venceu ? 'venceu ' + a.pagamento.venceu : '',
+      inadLinhas: inadLinhas, inadAcoes: inadAcoes,
+      receberAtual: () => { if (!a) return; this.receber(a); this.voltar(); },
+
+      perfilSub: alunos.filter(x => !x.semPacote).length + ' alunos com pacote · ' + alunos.length + ' cadastrados',
+      politicaLinha: 'Aviso de ' + pol.avisoHoras + 'h · ' + (pol.avisadaDevolve ? 'devolve a aula' : 'debita sempre') + ' · ' + (pol.limiteReposicoes === 0 ? 'sem limite' : pol.limiteReposicoes + ' reposições'),
+      pacotePadrao: '8 aulas · ' + dinheiro(VALOR_AULA) + ' por aula · ' + (pol.validadeDias === 0 ? 'sem prazo' : pol.validadeDias + ' dias'),
+
+      opcoesAviso: opcoesAviso, opcoesValidade: opcoesValidade,
+      devolveBg: rasc.avisadaDevolve ? 'var(--texto)' : 'var(--linha)',
+      devolveAlinha: rasc.avisadaDevolve ? 'flex-end' : 'flex-start',
+      devolveNota: rasc.avisadaDevolve ? 'Dentro do prazo, o saldo não é debitado' : 'A aula é debitada mesmo com aviso',
+      alternarDevolve: () => this.setState({ rascunho: Object.assign({}, rasc, { avisadaDevolve: !rasc.avisadaDevolve }) }),
+      limiteValor: rasc.limiteReposicoes === 0 ? '—' : String(rasc.limiteReposicoes),
+      menosLimite: () => this.setState({ rascunho: Object.assign({}, rasc, { limiteReposicoes: Math.max(0, rasc.limiteReposicoes - 1) }) }),
+      maisLimite: () => this.setState({ rascunho: Object.assign({}, rasc, { limiteReposicoes: Math.min(5, rasc.limiteReposicoes + 1) }) }),
+      menosBg: rasc.limiteReposicoes > 0 ? 'var(--caixa)' : 'var(--hover)',
+      menosFg: rasc.limiteReposicoes > 0 ? 'var(--suave)' : 'var(--inativo)',
+      maisBg: rasc.limiteReposicoes < 5 ? 'var(--texto)' : 'var(--caixa)',
+      maisFg: rasc.limiteReposicoes < 5 ? 'var(--botao-texto)' : 'var(--fraco)',
+      temMudanca: mudou, mudancaTitulo: mudancaTitulo, mudancaTexto: mudancaTexto,
+      salvarBg: mudou ? 'var(--texto)' : 'var(--linha)',
+      salvarFg: mudou ? 'var(--botao-texto)' : 'var(--desab-fg)',
+      salvarCursor: mudou ? 'pointer' : 'default',
+      salvarPolitica: () => { if (!mudou) return; this.salvar({ politicas: Object.assign({}, rasc) }); this.setState({ rascunho: null, tela: 'ajustes', pilha: [] }); this.aviso('Política salva. O registro de aula já usa a regra nova.'); },
+      descartarPolitica: () => this.setState({ rascunho: null, tela: 'ajustes', pilha: [] }),
+
+      zerar: () => { try { localStorage.removeItem(CHAVE); } catch (e) {} this.setState(Object.assign({ tela: 'home', pilha: [], alunoId: null, desfecho: null, janela: null, rascunho: null }, semente())); this.aviso('Dados de demonstração restaurados.'); },
+
+      politicaResumo: 'Política ativa: aviso mínimo de ' + pol.avisoHoras + 'h, falta avisada ' + (pol.avisadaDevolve ? 'devolve a aula' : 'debita sempre') + ', ' + (pol.limiteReposicoes === 0 ? 'sem limite de reposições' : 'até ' + pol.limiteReposicoes + ' reposições por pacote') + ', validade de ' + (pol.validadeDias === 0 ? 'prazo livre' : pol.validadeDias + ' dias') + '. Em atraso: ' + (somaAtraso ? dinheiro(somaAtraso) : 'nada') + '.',
+
+      roteiro: [
+        { n: '1', texto: 'Em Alunos, toque em Mateus e depois em Registrar aula. Marque Falta avisada e troque a antecedência entre 48h, 26h e 10h: o efeito no saldo muda conforme a política.' },
+        { n: '2', texto: 'Confirme com 26h. A aula volta ao saldo, a reposição fica pendente e aparece na lista com faixa amarela.' },
+        { n: '3', texto: 'Escolha um horário. O painel ao lado registra a reposição e o extrato do aluno recebe a linha.' },
+        { n: '4', texto: 'Em Ajustes, abra Política de faltas, mude o prazo para 48h e salve. Repita o registro: o mesmo aviso de 26h agora debita a aula.' },
+        { n: '5', texto: 'Em Financeiro, toque em Valentin e registre o pagamento. A faixa vermelha sai da lista de alunos e os três totais do topo se recalculam.' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=Public+Sans:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>body{margin:0;background:#e9e7e2;font-family:system-ui,sans-serif}a{color:#14213D}a:hover{color:#E07A5F}.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}.dv-card{max-width:100%;border:1px solid rgba(0,0,0,.1);box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}</style></helmet>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Direção da referência — tinta quase preta, vermelho e amarelo, geométrica (Outfit no lugar da Gilroy)</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Fiel à referência — painel escuro, folha branca, amarelo como marcador</div>
+<div class="dv-card" style="width:480px;background:#F1F2F4;border-radius:14px;border-color:rgba(0,1,25,.12)">
+<div style="padding:26px 28px 30px;background:#000119;color:#FFFFFF;border-radius:14px 14px 26px 26px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+<div style="display:flex;align-items:center;gap:11px">
+<div style="display:flex;align-items:flex-end;gap:3px;height:17px"><div style="width:3px;height:17px;background:#FFFFFF;border-radius:2px"></div><div style="width:3px;height:17px;background:#FFFFFF;border-radius:2px"></div><div style="width:3px;height:17px;background:#FFFFFF;border-radius:2px"></div><div style="width:3px;height:17px;background:#FFD032;border-radius:2px"></div></div>
+<div style="font:700 17px/1 'Outfit',sans-serif;letter-spacing:-.01em">Aula em Dia</div>
+</div>
+<div style="padding:5px 11px;background:#FFD032;color:#000119;border-radius:20px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.08em;text-transform:uppercase">Pro</div>
+</div>
+<div style="margin-top:16px;font:300 13.5px/1.55 'Outfit',sans-serif;color:#9A9DAD;max-width:36ch">Direção 4 · Referência aplicada. Cabeçalho em tinta quase preta, conteúdo numa folha branca de canto largo, amarelo marcando o que exige leitura.</div>
+</div>
+
+<div style="margin-top:-16px;background:#FFFFFF;border-radius:26px 26px 14px 14px;padding:24px 28px 28px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Paleta</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px">
+<div><div style="height:58px;background:#000119;border-radius:14px"></div><div style="margin-top:7px;font:500 9.5px/1.4 'Outfit',sans-serif;color:#000119">#000119<br><span style="color:#8A8E9C">base</span></div></div>
+<div><div style="height:58px;background:#E3001A;border-radius:14px"></div><div style="margin-top:7px;font:500 9.5px/1.4 'Outfit',sans-serif;color:#000119">#E3001A<br><span style="color:#8A8E9C">crítico</span></div></div>
+<div><div style="height:58px;background:#FFD032;border-radius:14px"></div><div style="margin-top:7px;font:500 9.5px/1.4 'Outfit',sans-serif;color:#000119">#FFD032<br><span style="color:#8A8E9C">atenção</span></div></div>
+<div><div style="height:58px;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:14px"></div><div style="margin-top:7px;font:500 9.5px/1.4 'Outfit',sans-serif;color:#000119">#FFFFFF<br><span style="color:#8A8E9C">folha</span></div></div>
+</div>
+<div style="display:flex;gap:10px;margin-top:14px">
+<div style="flex:1"><div style="height:34px;background:#1E7A55;border-radius:10px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">#1E7A55 confirmado</div></div>
+<div style="flex:1"><div style="height:34px;background:#8A8E9C;border-radius:10px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">#8A8E9C secundário</div></div>
+<div style="flex:1"><div style="height:34px;background:#F1F2F4;border-radius:10px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">#F1F2F4 fundo</div></div>
+</div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Tipografia · Outfit</div>
+<div style="margin-top:14px;display:flex;flex-direction:column;gap:0">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #EDEEF2;padding-bottom:12px"><div style="font:700 46px/1 'Outfit',sans-serif;color:#000119;font-variant-numeric:tabular-nums;letter-spacing:-.035em">02</div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C;text-align:right">Saldo / 46 / 700<br>tabular</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #EDEEF2;padding:12px 0"><div style="font:600 22px/1.2 'Outfit',sans-serif;color:#000119;letter-spacing:-.02em">Registrar aula</div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Título / 22 / 600</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #EDEEF2;padding:12px 0"><div style="font:400 15px/1.5 'Outfit',sans-serif;color:#3C4050">Restam 2 aulas. Validade até 30/09.</div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Corpo / 15</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding-top:12px"><div style="font:600 11px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase">Terça e quinta · 18h</div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Rótulo / 11 / 600</div></div>
+</div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Cartão de aluno</div>
+<div style="margin-top:12px;background:#FFFFFF;border-radius:20px;box-shadow:0 8px 24px rgba(0,1,25,.10);padding:18px 18px 16px">
+<div style="display:flex;align-items:center;gap:14px">
+<div style="width:46px;height:46px;border-radius:16px;background:#FFD032;display:flex;align-items:center;justify-content:center;font:700 17px/1 'Outfit',sans-serif;color:#000119;flex:none">MA</div>
+<div style="flex:1"><div style="font:600 17px/1.2 'Outfit',sans-serif;color:#000119">Marina Alves</div><div style="margin-top:4px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Inglês · terça e quinta, 18h</div></div>
+<div style="text-align:right"><div style="font:700 34px/.9 'Outfit',sans-serif;color:#000119;font-variant-numeric:tabular-nums;letter-spacing:-.04em">2</div><div style="margin-top:4px;font:600 9.5px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase">aulas</div></div>
+</div>
+<div style="margin-top:16px;height:8px;border-radius:6px;background:#F1F2F4;overflow:hidden;display:flex"><div style="width:75%;background:#000119"></div><div style="width:25%;background:#FFD032"></div></div>
+<div style="display:flex;justify-content:space-between;margin-top:10px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C"><span>6 de 8 usadas</span><span>Validade até 30/09</span></div>
+</div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Botão primário · 54px</div>
+<div style="margin-top:12px;height:54px;background:#000119;border-radius:16px;display:flex;align-items:center;justify-content:center;font:600 16px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#1A1C33">Registrar aula</div>
+<div style="margin-top:10px;height:54px;background:#FFD032;border-radius:16px;display:flex;align-items:center;justify-content:center;font:600 16px/1 'Outfit',sans-serif;color:#000119;cursor:pointer" style-hover="background:#F5C41E">Agendar reposição</div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Alerta</div>
+<div style="margin-top:12px;background:#FFD032;border-radius:18px;padding:16px 18px;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><div style="font:600 14.5px/1.25 'Outfit',sans-serif;color:#000119">Reposição pendente</div><div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#5B4B0F">Falta avisada em 12/08. Sem horário há 3 dias.</div></div>
+<div style="padding:10px 14px;background:#000119;color:#FFD032;border-radius:12px;font:600 12px/1 'Outfit',sans-serif;flex:none;cursor:pointer">Sugerir</div>
+</div>
+<div style="margin-top:10px;background:#E3001A;border-radius:18px;padding:16px 18px;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><div style="font:600 14.5px/1.25 'Outfit',sans-serif;color:#FFFFFF">Pacote vencido</div><div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#FFC9CF">Validade encerrada em 12/08. 2 aulas não usadas.</div></div>
+<div style="padding:10px 14px;background:#FFFFFF;color:#E3001A;border-radius:12px;font:600 12px/1 'Outfit',sans-serif;flex:none;cursor:pointer">Renovar</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Referência temperada pelo briefing — mesma paleta, densa e de canto curto</div>
+<div class="dv-card" style="width:480px;background:#F1F2F4;border-radius:6px;border-color:rgba(0,1,25,.14)">
+<div style="padding:24px 28px 20px;background:#000119;color:#FFFFFF">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+<div style="display:flex;align-items:center;gap:11px">
+<div style="display:flex;align-items:flex-end;gap:3px;height:16px"><div style="width:3px;height:16px;background:#FFFFFF"></div><div style="width:3px;height:16px;background:#FFFFFF"></div><div style="width:3px;height:16px;background:#FFFFFF"></div><div style="width:3px;height:16px;background:#FFD032"></div></div>
+<div style="font:600 15px/1 'Outfit',sans-serif;letter-spacing:.01em">Aula em Dia</div>
+</div>
+<div style="font:600 9.5px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">Quinta · 14:20</div>
+</div>
+<div style="margin-top:14px;font:300 13px/1.55 'Outfit',sans-serif;color:#9A9DAD;max-width:38ch">Direção 5 · A paleta da referência com a densidade do caderno: raio de 8px, amarelo só no saldo e no que precisa de ação, vermelho reservado ao vencido.</div>
+</div>
+
+<div style="padding:24px 28px 28px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Paleta</div>
+<div style="display:flex;margin-top:12px;border-radius:8px;overflow:hidden">
+<div style="flex:2.2;height:56px;background:#000119"></div><div style="flex:1;height:56px;background:#252840"></div><div style="flex:1;height:56px;background:#8A8E9C"></div><div style="flex:1;height:56px;background:#E7E9EE"></div><div style="flex:1;height:56px;background:#FFFFFF"></div><div style="flex:1;height:56px;background:#FFD032"></div><div style="flex:1;height:56px;background:#E3001A"></div>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:8px;font:400 9.5px/1.4 'Outfit',sans-serif;color:#8A8E9C"><span>#000119 domina 80% da tela</span><span>amarelo 15%</span><span>vermelho 5%</span></div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Tipografia · Outfit + tabular</div>
+<div style="margin-top:14px;border-top:1px solid #E7E9EE">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:12px 0"><div style="font:800 42px/1 'Outfit',sans-serif;color:#000119;font-variant-numeric:tabular-nums;letter-spacing:-.04em">02<span style="font:400 16px/1 'Outfit',sans-serif;color:#8A8E9C;letter-spacing:0"> / 08</span></div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C;text-align:right">Saldo / 42 / 800</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:12px 0"><div style="font:600 20px/1.2 'Outfit',sans-serif;color:#000119;letter-spacing:-.015em">Registrar aula</div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Título / 20</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:12px 0"><div style="font:400 14.5px/1.5 'Outfit',sans-serif;color:#3C4050">Restam 2 aulas. Validade até 30/09.</div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Corpo / 14.5</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:12px 0"><div style="font:600 10.5px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Ter e qui · 18h</div><div style="font:400 9.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Rótulo / 10.5</div></div>
+</div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Cartão de aluno</div>
+<div style="margin-top:12px;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:stretch">
+<div style="flex:1;padding:16px 18px">
+<div style="font:600 16.5px/1.2 'Outfit',sans-serif;color:#000119">Marina Alves</div>
+<div style="margin-top:5px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Inglês · terça e quinta, 18h</div>
+<div style="display:flex;gap:3px;margin-top:14px">
+<div style="width:12px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:12px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:12px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:12px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:12px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:12px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:12px;height:5px;border-radius:3px;background:#FFD032"></div><div style="width:12px;height:5px;border-radius:3px;background:#FFD032"></div>
+</div>
+<div style="margin-top:9px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">6 usadas · validade 30/09</div>
+</div>
+<div style="width:96px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center">
+<div style="font:800 38px/.9 'Outfit',sans-serif;color:#FFD032;font-variant-numeric:tabular-nums;letter-spacing:-.04em">2</div>
+<div style="margin-top:6px;font:600 9px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">aulas</div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Botão primário · 52px</div>
+<div style="margin-top:12px;height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Registrar aula</div>
+<div style="margin-top:10px;height:52px;background:#FFFFFF;border:1.5px solid #000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#000119;cursor:pointer" style-hover="background:#FFF6D9">Ver extrato</div>
+
+<div style="margin-top:26px;font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">Alerta</div>
+<div style="margin-top:12px;background:#FFFFFF;border:1px solid #E7E9EE;border-left:4px solid #FFD032;border-radius:8px;padding:14px 16px">
+<div style="font:600 14px/1.25 'Outfit',sans-serif;color:#000119">Reposição pendente</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#8A8E9C">Falta avisada em 12/08. Sem horário escolhido há 3 dias.</div>
+</div>
+<div style="margin-top:10px;background:#000119;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+<div style="width:4px;align-self:stretch;background:#E3001A;border-radius:2px"></div>
+<div style="flex:1"><div style="font:600 14px/1.25 'Outfit',sans-serif;color:#FFFFFF">Pacote vencido</div><div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#9A9DAD">Validade encerrada em 12/08. 2 aulas não usadas.</div></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Próximos passos: "leve <a class="dv-oid" href="#2b">2b</a> para a tela C3 (sugestões de reposição)" · "no <a class="dv-oid" href="#2a">2a</a>, troque o amarelo do saldo por tinta" · "combine o cartão de <a class="dv-oid" href="#2b">2b</a> com os alertas de <a class="dv-oid" href="#2a">2a</a>"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Style tile — Aula em Dia · três direções para "a testemunha neutra"</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Papel de trabalho — paleta do briefing, grotesca neutra</div>
+<div class="dv-card" style="width:480px;background:#FAFAF7;border-radius:2px">
+<div style="padding:26px 28px 18px;background:#14213D;color:#FAFAF7">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="display:flex;align-items:flex-end;gap:3px;height:18px"><div style="width:2.5px;height:18px;background:#FAFAF7"></div><div style="width:2.5px;height:18px;background:#FAFAF7"></div><div style="width:2.5px;height:18px;background:#FAFAF7"></div><div style="width:2.5px;height:18px;background:#F4A261"></div></div>
+<div style="font:600 15px/1 'IBM Plex Sans',sans-serif;letter-spacing:-.01em">Aula em Dia</div>
+</div>
+<div style="margin-top:14px;font:400 13px/1.5 'IBM Plex Sans',sans-serif;color:#9FB0C9;max-width:34ch">Direção 1 · Papel de trabalho. Azul-noite sobre papel quente, hierarquia por peso e não por cor.</div>
+</div>
+
+<div style="padding:24px 28px 8px">
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#7A8593;text-transform:uppercase">Paleta</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px">
+<div><div style="height:52px;background:#14213D;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#14213D<br><span style="color:#7A8593">base</span></div></div>
+<div><div style="height:52px;background:#FFFFFF;border:1px solid #E4E8EC;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#FFFFFF<br><span style="color:#7A8593">cartão</span></div></div>
+<div><div style="height:52px;background:#F4A261;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#F4A261<br><span style="color:#7A8593">atenção</span></div></div>
+<div><div style="height:52px;background:#6A9A7B;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#6A9A7B<br><span style="color:#7A8593">positivo</span></div></div>
+<div><div style="height:52px;background:#E07A5F;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#E07A5F<br><span style="color:#7A8593">negativo</span></div></div>
+<div><div style="height:52px;background:#7A8593;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#7A8593<br><span style="color:#7A8593">secundário</span></div></div>
+<div><div style="height:52px;background:#E4E8EC;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#E4E8EC<br><span style="color:#7A8593">divisor</span></div></div>
+<div><div style="height:52px;background:#FAFAF7;border:1px solid #E4E8EC;border-radius:2px"></div><div style="margin-top:6px;font:500 9.5px/1.4 'IBM Plex Mono',monospace;color:#14213D">#FAFAF7<br><span style="color:#7A8593">fundo</span></div></div>
+</div>
+</div>
+
+<div style="padding:22px 28px 4px">
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#7A8593;text-transform:uppercase">Tipografia · IBM Plex Sans + Plex Mono</div>
+<div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
+<div style="display:flex;align-items:baseline;gap:14px;border-bottom:1px solid #E4E8EC;padding-bottom:12px"><div style="font:600 44px/1 'IBM Plex Mono',monospace;color:#14213D;font-variant-numeric:tabular-nums;letter-spacing:-.02em">02</div><div style="font:400 9.5px/1.4 'IBM Plex Mono',monospace;color:#7A8593">Saldo / 44 / mono tabular<br>nunca dança de 10 para 9</div></div>
+<div style="display:flex;align-items:baseline;gap:14px;border-bottom:1px solid #E4E8EC;padding-bottom:12px"><div style="font:600 22px/1.2 'IBM Plex Sans',sans-serif;color:#14213D;letter-spacing:-.02em">Registrar aula</div><div style="font:400 9.5px/1.4 'IBM Plex Mono',monospace;color:#7A8593">Título / 22 / 600</div></div>
+<div style="display:flex;align-items:baseline;gap:14px;border-bottom:1px solid #E4E8EC;padding-bottom:12px"><div style="font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#14213D">Restam 2 aulas. Validade até 30/09.</div><div style="font:400 9.5px/1.4 'IBM Plex Mono',monospace;color:#7A8593">Corpo / 15</div></div>
+<div style="display:flex;align-items:baseline;gap:14px"><div style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;color:#7A8593;text-transform:uppercase">Terça e quinta · 18h</div><div style="font:400 9.5px/1.4 'IBM Plex Mono',monospace;color:#7A8593">Rótulo / 11 / mono</div></div>
+</div>
+</div>
+
+<div style="padding:22px 28px 0">
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#7A8593;text-transform:uppercase">Cartão de aluno</div>
+<div style="margin-top:12px;background:#FFFFFF;border:1px solid #E4E8EC;border-radius:4px;padding:18px 18px 16px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+<div><div style="font:600 17px/1.2 'IBM Plex Sans',sans-serif;color:#14213D">Marina Alves</div><div style="margin-top:5px;font:400 13px/1.4 'IBM Plex Sans',sans-serif;color:#7A8593">Inglês · terça e quinta, 18h</div></div>
+<div style="text-align:right"><div style="font:600 40px/.9 'IBM Plex Mono',monospace;color:#14213D;font-variant-numeric:tabular-nums;letter-spacing:-.03em">2</div><div style="margin-top:4px;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.1em;color:#7A8593;text-transform:uppercase">aulas</div></div>
+</div>
+<div style="display:flex;gap:3px;margin-top:16px">
+<div style="height:6px;flex:1;background:#E4E8EC;border-radius:1px"></div><div style="height:6px;flex:1;background:#E4E8EC;border-radius:1px"></div><div style="height:6px;flex:1;background:#E4E8EC;border-radius:1px"></div><div style="height:6px;flex:1;background:#E4E8EC;border-radius:1px"></div><div style="height:6px;flex:1;background:#E4E8EC;border-radius:1px"></div><div style="height:6px;flex:1;background:#E4E8EC;border-radius:1px"></div><div style="height:6px;flex:1;background:#14213D;border-radius:1px"></div><div style="height:6px;flex:1;background:#14213D;border-radius:1px"></div>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:12px;border-top:1px solid #E4E8EC">
+<div style="font:400 12px/1.4 'IBM Plex Sans',sans-serif;color:#7A8593">6 de 8 usadas</div>
+<div style="font:400 12px/1.4 'IBM Plex Sans',sans-serif;color:#7A8593">Validade até 30/09</div>
+</div>
+</div>
+</div>
+
+<div style="padding:22px 28px 0">
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#7A8593;text-transform:uppercase">Botão primário · 52px</div>
+<div style="margin-top:12px;height:52px;background:#14213D;border-radius:4px;display:flex;align-items:center;justify-content:center;font:600 16px/1 'IBM Plex Sans',sans-serif;color:#FAFAF7;cursor:pointer" style-hover="background:#1D2E52">Registrar aula</div>
+<div style="margin-top:10px;height:52px;background:transparent;border:1px solid #14213D;border-radius:4px;display:flex;align-items:center;justify-content:center;font:500 16px/1 'IBM Plex Sans',sans-serif;color:#14213D;cursor:pointer" style-hover="background:#EEF1F5">Ver extrato</div>
+</div>
+
+<div style="padding:22px 28px 28px">
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#7A8593;text-transform:uppercase">Alerta</div>
+<div style="margin-top:12px;display:flex;gap:12px;background:#FFFFFF;border:1px solid #E4E8EC;border-left:3px solid #F4A261;border-radius:4px;padding:14px 16px">
+<div style="flex:1"><div style="font:600 14px/1.3 'IBM Plex Sans',sans-serif;color:#14213D">Reposição pendente</div><div style="margin-top:4px;font:400 13px/1.45 'IBM Plex Sans',sans-serif;color:#7A8593">Falta avisada em 12/08. Sem horário escolhido há 3 dias.</div></div>
+</div>
+<div style="margin-top:10px;display:flex;gap:12px;background:#FFFFFF;border:1px solid #E4E8EC;border-left:3px solid #E07A5F;border-radius:4px;padding:14px 16px">
+<div style="flex:1"><div style="font:600 14px/1.3 'IBM Plex Sans',sans-serif;color:#14213D">Pacote vencido</div><div style="margin-top:4px;font:400 13px/1.45 'IBM Plex Sans',sans-serif;color:#7A8593">Validade encerrada em 12/08. 2 aulas não usadas.</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Cartório — monocromático, cor só como sinal</div>
+<div class="dv-card" style="width:480px;background:#F5F5F3;border-radius:0;border-color:rgba(0,0,0,.18)">
+<div style="padding:26px 28px 20px;background:#F5F5F3;border-bottom:1px solid #111318">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="display:flex;align-items:flex-end;gap:3px;height:16px"><div style="width:2px;height:16px;background:#111318"></div><div style="width:2px;height:16px;background:#111318"></div><div style="width:2px;height:16px;background:#111318"></div><div style="width:2px;height:16px;background:#111318"></div><div style="width:2px;height:16px;background:#C4C7C2"></div></div>
+<div style="font:700 14px/1 'Archivo',sans-serif;letter-spacing:.02em;color:#111318;text-transform:uppercase">Aula em Dia</div>
+</div>
+<div style="margin-top:14px;font:400 13px/1.5 'Archivo',sans-serif;color:#63676A;max-width:36ch">Direção 2 · Cartório. Tudo em tinta e papel; a cor aparece uma vez por tela, só onde há consequência.</div>
+</div>
+
+<div style="padding:24px 28px 8px">
+<div style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#8A8E90;text-transform:uppercase">Paleta</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:12px;border:1px solid #111318">
+<div style="height:56px;background:#111318"></div><div style="height:56px;background:#3A3E42"></div><div style="height:56px;background:#63676A"></div><div style="height:56px;background:#8A8E90"></div>
+<div style="height:56px;background:#C4C7C2;border-top:1px solid #111318"></div><div style="height:56px;background:#E3E3DF;border-top:1px solid #111318"></div><div style="height:56px;background:#F5F5F3;border-top:1px solid #111318"></div><div style="height:56px;background:#FFFFFF;border-top:1px solid #111318"></div>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:8px;font:400 9.5px/1.4 'JetBrains Mono',monospace;color:#8A8E90"><span>#111318 tinta</span><span>escala de 8</span><span>#FFFFFF folha</span></div>
+<div style="display:flex;gap:0;margin-top:16px;border:1px solid #111318">
+<div style="flex:1;height:34px;background:#B4531F"></div><div style="flex:1;height:34px;background:#4F6B54"></div><div style="flex:1;height:34px;background:#8C3B2C"></div>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:8px;font:400 9.5px/1.4 'JetBrains Mono',monospace;color:#8A8E90"><span>atenção</span><span>positivo</span><span>negativo</span></div>
+<div style="margin-top:8px;font:400 11.5px/1.5 'Archivo',sans-serif;color:#63676A">Sinais dessaturados, usados em traço fino ou texto — nunca como fundo de bloco.</div>
+</div>
+
+<div style="padding:22px 28px 4px">
+<div style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#8A8E90;text-transform:uppercase">Tipografia · Archivo + JetBrains Mono</div>
+<div style="display:flex;flex-direction:column;gap:0;margin-top:14px;border-top:1px solid #D6D6D2">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #D6D6D2;padding:12px 0"><div style="font:400 46px/1 'JetBrains Mono',monospace;color:#111318;font-variant-numeric:tabular-nums;letter-spacing:-.04em">02</div><div style="font:400 9.5px/1.4 'JetBrains Mono',monospace;color:#8A8E90;text-align:right">Saldo / 46 / tabular</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #D6D6D2;padding:12px 0"><div style="font:700 21px/1.2 'Archivo',sans-serif;color:#111318;letter-spacing:-.015em">Registrar aula</div><div style="font:400 9.5px/1.4 'JetBrains Mono',monospace;color:#8A8E90;text-align:right">Título / 21 / 700</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #D6D6D2;padding:12px 0"><div style="font:400 15px/1.5 'Archivo',sans-serif;color:#3A3E42">Restam 2 aulas. Validade até 30/09.</div><div style="font:400 9.5px/1.4 'JetBrains Mono',monospace;color:#8A8E90;text-align:right">Corpo / 15</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:12px 0"><div style="font:400 10.5px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#63676A;text-transform:uppercase">Ter · qui · 18h00</div><div style="font:400 9.5px/1.4 'JetBrains Mono',monospace;color:#8A8E90;text-align:right">Rótulo / 10.5</div></div>
+</div>
+</div>
+
+<div style="padding:22px 28px 0">
+<div style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#8A8E90;text-transform:uppercase">Cartão de aluno</div>
+<div style="margin-top:12px;background:#FFFFFF;border:1px solid #111318;padding:0">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:16px 18px 14px">
+<div><div style="font:700 16px/1.2 'Archivo',sans-serif;color:#111318">Marina Alves</div><div style="margin-top:6px;font:400 10.5px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:#63676A;text-transform:uppercase">Inglês · ter e qui, 18h</div></div>
+<div style="text-align:right;border-left:1px solid #E3E3DF;padding-left:16px"><div style="font:400 38px/.9 'JetBrains Mono',monospace;color:#111318;font-variant-numeric:tabular-nums;letter-spacing:-.05em">2</div><div style="margin-top:5px;font:400 9.5px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#63676A;text-transform:uppercase">restam</div></div>
+</div>
+<div style="display:flex;border-top:1px solid #111318">
+<div style="flex:1;padding:10px 18px;border-right:1px solid #E3E3DF"><div style="font:400 9.5px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:#8A8E90;text-transform:uppercase">Usadas</div><div style="margin-top:5px;font:400 13px/1 'JetBrains Mono',monospace;color:#111318;font-variant-numeric:tabular-nums">06 / 08</div></div>
+<div style="flex:1;padding:10px 18px"><div style="font:400 9.5px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:#8A8E90;text-transform:uppercase">Validade</div><div style="margin-top:5px;font:400 13px/1 'JetBrains Mono',monospace;color:#111318;font-variant-numeric:tabular-nums">30 / 09</div></div>
+</div>
+</div>
+</div>
+
+<div style="padding:22px 28px 0">
+<div style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#8A8E90;text-transform:uppercase">Botão primário · 52px</div>
+<div style="margin-top:12px;height:52px;background:#111318;display:flex;align-items:center;justify-content:center;font:600 13px/1 'Archivo',sans-serif;letter-spacing:.1em;color:#F5F5F3;text-transform:uppercase;cursor:pointer" style-hover="background:#3A3E42">Registrar aula</div>
+<div style="margin-top:10px;height:52px;border:1px solid #111318;display:flex;align-items:center;justify-content:center;font:500 13px/1 'Archivo',sans-serif;letter-spacing:.1em;color:#111318;text-transform:uppercase;cursor:pointer" style-hover="background:#E3E3DF">Ver extrato</div>
+</div>
+
+<div style="padding:22px 28px 28px">
+<div style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#8A8E90;text-transform:uppercase">Alerta</div>
+<div style="margin-top:12px;background:#FFFFFF;border:1px solid #111318;padding:14px 16px">
+<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;background:#B4531F"></div><div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#B4531F;text-transform:uppercase">Reposição pendente</div></div>
+<div style="margin-top:8px;font:400 13.5px/1.5 'Archivo',sans-serif;color:#111318">Falta avisada em 12/08. Sem horário escolhido há 3 dias.</div>
+</div>
+<div style="margin-top:10px;background:#111318;padding:14px 16px">
+<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;background:#F5F5F3"></div><div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#F5F5F3;text-transform:uppercase">Pacote vencido</div></div>
+<div style="margin-top:8px;font:400 13.5px/1.5 'Archivo',sans-serif;color:#C4C7C2">Validade encerrada em 12/08. 2 aulas não usadas.</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Livro-caixa — alto contraste, serifada de personalidade</div>
+<div class="dv-card" style="width:480px;background:#EFEBE1;border-radius:0;border-color:#0C0D0B">
+<div style="padding:26px 28px 22px;background:#0C0D0B;color:#EFEBE1">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="position:relative;width:22px;height:18px"><div style="position:absolute;left:0;top:0;width:2.5px;height:18px;background:#EFEBE1"></div><div style="position:absolute;left:5px;top:0;width:2.5px;height:18px;background:#EFEBE1"></div><div style="position:absolute;left:10px;top:0;width:2.5px;height:18px;background:#EFEBE1"></div><div style="position:absolute;left:15px;top:0;width:2.5px;height:18px;background:#EFEBE1"></div><div style="position:absolute;left:-1px;top:8px;width:24px;height:2.5px;background:#D9541E;transform:rotate(-18deg)"></div></div>
+<div style="font:400 20px/1 'Instrument Serif',serif;letter-spacing:.01em">Aula em Dia</div>
+</div>
+<div style="font:600 9.5px/1 'Public Sans',sans-serif;letter-spacing:.2em;color:#8B8779;text-transform:uppercase">Livro-caixa</div>
+</div>
+<div style="margin-top:16px;font:400 13px/1.5 'Public Sans',sans-serif;color:#A8A497;max-width:36ch">Direção 3 · Serifada grande no número e na manchete, grotesca pequena no resto. Preto forte, papel encardido, laranja de carimbo.</div>
+</div>
+
+<div style="padding:24px 28px 8px">
+<div style="font:600 9.5px/1 'Public Sans',sans-serif;letter-spacing:.2em;color:#6E6A5E;text-transform:uppercase">Paleta</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px">
+<div><div style="height:60px;background:#0C0D0B"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Public Sans',sans-serif;color:#0C0D0B;letter-spacing:.04em">#0C0D0B<br><span style="color:#6E6A5E">tinta</span></div></div>
+<div><div style="height:60px;background:#EFEBE1;border:1px solid #0C0D0B"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Public Sans',sans-serif;color:#0C0D0B;letter-spacing:.04em">#EFEBE1<br><span style="color:#6E6A5E">papel</span></div></div>
+<div><div style="height:60px;background:#FFFFFF;border:1px solid #0C0D0B"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Public Sans',sans-serif;color:#0C0D0B;letter-spacing:.04em">#FFFFFF<br><span style="color:#6E6A5E">cartão</span></div></div>
+<div><div style="height:60px;background:#D9541E"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Public Sans',sans-serif;color:#0C0D0B;letter-spacing:.04em">#D9541E<br><span style="color:#6E6A5E">atenção</span></div></div>
+<div><div style="height:60px;background:#2F5D4B"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Public Sans',sans-serif;color:#0C0D0B;letter-spacing:.04em">#2F5D4B<br><span style="color:#6E6A5E">positivo</span></div></div>
+<div><div style="height:60px;background:#9E2B1E"></div><div style="margin-top:6px;font:500 9.5px/1.4 'Public Sans',sans-serif;color:#0C0D0B;letter-spacing:.04em">#9E2B1E<br><span style="color:#6E6A5E">negativo</span></div></div>
+</div>
+</div>
+
+<div style="padding:22px 28px 4px">
+<div style="font:600 9.5px/1 'Public Sans',sans-serif;letter-spacing:.2em;color:#6E6A5E;text-transform:uppercase">Tipografia · Instrument Serif + Public Sans</div>
+<div style="margin-top:14px;border-top:2px solid #0C0D0B">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;border-bottom:1px solid #CFC9BB;padding:14px 0"><div style="font:400 64px/.85 'Instrument Serif',serif;color:#0C0D0B;font-variant-numeric:tabular-nums;letter-spacing:-.01em">02</div><div style="font:500 9.5px/1.5 'Public Sans',sans-serif;color:#6E6A5E;text-align:right">Saldo / 64<br>serifada tabular</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #CFC9BB;padding:12px 0"><div style="font:400 26px/1.1 'Instrument Serif',serif;color:#0C0D0B">Registrar aula</div><div style="font:500 9.5px/1.5 'Public Sans',sans-serif;color:#6E6A5E;text-align:right">Título / 26</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #CFC9BB;padding:12px 0"><div style="font:400 15px/1.5 'Public Sans',sans-serif;color:#26251F">Restam 2 aulas. Validade até 30/09.</div><div style="font:500 9.5px/1.5 'Public Sans',sans-serif;color:#6E6A5E;text-align:right">Corpo / 15</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:12px 0"><div style="font:800 10.5px/1 'Public Sans',sans-serif;letter-spacing:.18em;color:#0C0D0B;text-transform:uppercase">Terça e quinta · 18h</div><div style="font:500 9.5px/1.5 'Public Sans',sans-serif;color:#6E6A5E;text-align:right">Rótulo / 10.5 / 800</div></div>
+</div>
+</div>
+
+<div style="padding:22px 28px 0">
+<div style="font:600 9.5px/1 'Public Sans',sans-serif;letter-spacing:.2em;color:#6E6A5E;text-transform:uppercase">Cartão de aluno</div>
+<div style="margin-top:12px;background:#FFFFFF;border:2px solid #0C0D0B">
+<div style="display:flex;align-items:stretch">
+<div style="flex:1;padding:16px 18px">
+<div style="font:800 10px/1 'Public Sans',sans-serif;letter-spacing:.18em;color:#6E6A5E;text-transform:uppercase">Inglês · ter e qui</div>
+<div style="margin-top:8px;font:400 26px/1 'Instrument Serif',serif;color:#0C0D0B">Marina Alves</div>
+<div style="display:flex;align-items:flex-end;gap:3px;margin-top:14px;height:16px">
+<div style="width:2.5px;height:16px;background:#0C0D0B"></div><div style="width:2.5px;height:16px;background:#0C0D0B"></div><div style="width:2.5px;height:16px;background:#0C0D0B"></div><div style="width:2.5px;height:16px;background:#0C0D0B"></div><div style="width:2.5px;height:16px;background:#0C0D0B"></div><div style="width:2.5px;height:16px;background:#0C0D0B"></div>
+<div style="width:2.5px;height:16px;background:#CFC9BB;margin-left:8px"></div><div style="width:2.5px;height:16px;background:#CFC9BB"></div>
+<div style="margin-left:10px;font:500 10.5px/1 'Public Sans',sans-serif;color:#6E6A5E">6 usadas · 2 restantes</div>
+</div>
+</div>
+<div style="width:112px;background:#0C0D0B;color:#EFEBE1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 0">
+<div style="font:400 56px/.85 'Instrument Serif',serif;font-variant-numeric:tabular-nums">2</div>
+<div style="margin-top:8px;font:800 9px/1 'Public Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#A8A497">aulas</div>
+</div>
+</div>
+<div style="border-top:2px solid #0C0D0B;padding:10px 18px;display:flex;justify-content:space-between;font:500 11.5px/1 'Public Sans',sans-serif;color:#26251F"><span>Pacote de 8</span><span style="font-variant-numeric:tabular-nums">Validade 30/09</span></div>
+</div>
+</div>
+
+<div style="padding:22px 28px 0">
+<div style="font:600 9.5px/1 'Public Sans',sans-serif;letter-spacing:.2em;color:#6E6A5E;text-transform:uppercase">Botão primário · 54px</div>
+<div style="margin-top:12px;height:54px;background:#0C0D0B;display:flex;align-items:center;justify-content:center;font:700 15px/1 'Public Sans',sans-serif;letter-spacing:.02em;color:#EFEBE1;cursor:pointer;box-shadow:4px 4px 0 #D9541E" style-hover="box-shadow:2px 2px 0 #D9541E">Registrar aula</div>
+<div style="margin-top:14px;height:54px;background:transparent;border:2px solid #0C0D0B;display:flex;align-items:center;justify-content:center;font:700 15px/1 'Public Sans',sans-serif;color:#0C0D0B;cursor:pointer" style-hover="background:#E4DFD2">Ver extrato</div>
+</div>
+
+<div style="padding:22px 28px 28px">
+<div style="font:600 9.5px/1 'Public Sans',sans-serif;letter-spacing:.2em;color:#6E6A5E;text-transform:uppercase">Alerta</div>
+<div style="margin-top:12px;background:#D9541E;color:#FFF7F0;padding:16px 18px">
+<div style="font:800 10px/1 'Public Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase">Reposição pendente</div>
+<div style="margin-top:10px;font:400 20px/1.25 'Instrument Serif',serif">Falta avisada em 12/08. Sem horário escolhido há 3 dias.</div>
+</div>
+<div style="margin-top:12px;background:#EFEBE1;border:2px solid #9E2B1E;padding:16px 18px">
+<div style="font:800 10px/1 'Public Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#9E2B1E">Pacote vencido</div>
+<div style="margin-top:10px;font:400 20px/1.25 'Instrument Serif',serif;color:#0C0D0B">Validade encerrada em 12/08. 2 aulas não usadas.</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Próximos passos: "aplique <a class="dv-oid" href="#1b">1b</a> na tela B5 (registrar aula)" · "misture o cartão de <a class="dv-oid" href="#1c">1c</a> com a paleta de <a class="dv-oid" href="#1a">1a</a>" · "explore o logo de marcas de contagem em três versões"</p>
+</section>
+
+</x-dc>
+</body>
+</html>

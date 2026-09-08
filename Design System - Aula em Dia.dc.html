@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>body{margin:0;background:#DCDDE1;font-family:'Outfit',system-ui,sans-serif;color:#000119}a{color:#000119}a:hover{color:#E3001A}</style></helmet>
+
+<div style="padding:48px 52px 64px;display:flex;flex-direction:column;gap:40px">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap">
+<div>
+<div style="display:flex;align-items:center;gap:11px">
+<div style="display:flex;align-items:flex-end;gap:3px;height:18px"><div style="width:3px;height:18px;background:#000119"></div><div style="width:3px;height:18px;background:#000119"></div><div style="width:3px;height:18px;background:#000119"></div><div style="width:3px;height:18px;background:#FFD032"></div></div>
+<div style="font:600 18px/1 'Outfit',sans-serif">Aula em Dia · Design System</div>
+</div>
+<div style="margin-top:12px;font:300 15px/1.55 'Outfit',sans-serif;color:#4A4E60;max-width:64ch">Direção 2b aplicada. Tinta quase preta em 80% da tela, amarelo para o que exige ação, vermelho reservado a vencido e inadimplente. Raio de 8px, sem sombra difusa, saldo sempre em algarismos tabulares e sempre no mesmo canto do cartão.</div>
+</div>
+<div style="font:600 10px/1.8 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase;text-align:right">Grupo 08 · GPE17M80081<br>Mobile 390 × 844</div>
+</div>
+
+<div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
+
+<div style="display:flex;flex-direction:column;gap:28px;width:396px">
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">01 · Tokens de cor</div>
+<div style="margin-top:16px;display:flex;flex-direction:column;gap:2px">
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#000119;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">ink</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Cabeçalho, botão primário, número do saldo</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#000119</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#252840;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">ink-2</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Estado pressionado, superfície escura secundária</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#252840</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#8A8E9C;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">texto-2</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Texto secundário, rótulos</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#8A8E9C</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#E7E9EE;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">divisor</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Borda de cartão, linha de extrato</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#E7E9EE</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#F1F2F4;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">fundo</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Fundo de tela</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#F1F2F4</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#FFFFFF;border:1px solid #E7E9EE;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">superfície</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Cartão, campo, lista</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#FFFFFF</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#FFD032;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">atenção</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Pacote acabando, reposição pendente</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#FFD032</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EDEEF2"><div style="width:38px;height:38px;border-radius:8px;background:#E3001A;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">crítico</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Debitou, vencido, inadimplente</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#E3001A</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0"><div style="width:38px;height:38px;border-radius:8px;background:#1E7A55;flex:none"></div><div style="flex:1"><div style="font:600 13px/1.2 'Outfit',sans-serif">positivo</div><div style="font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Não debitou, pago, confirmado</div></div><div style="font:500 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">#1E7A55</div></div>
+</div>
+<div style="margin-top:14px;padding:12px 14px;background:#F1F2F4;border-radius:8px;font:400 11.5px/1.5 'Outfit',sans-serif;color:#4A4E60">Proporção alvo por tela: 80% tinta e neutros, 15% amarelo, 5% vermelho. Amarelo e vermelho nunca aparecem juntos no mesmo bloco.</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">02 · Tipografia · Outfit</div>
+<div style="margin-top:6px;font:400 11.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Quatro tamanhos por tela, no máximo. Todo número de saldo, data e valor usa <span style="font-variant-numeric:tabular-nums;font-weight:600;color:#000119">tabular-nums</span>.</div>
+<div style="margin-top:16px;border-top:1px solid #E7E9EE">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:14px 0"><div style="font:800 42px/1 'Outfit',sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums">02</div><div style="font:400 10px/1.5 'Outfit',sans-serif;color:#8A8E9C;text-align:right">saldo-xl · 42 / 800<br>tabular · -4% tracking</div></div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:14px 0"><div style="font:800 28px/1 'Outfit',sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums">02</div><div style="font:400 10px/1.5 'Outfit',sans-serif;color:#8A8E9C;text-align:right">saldo-m · 28 / 800<br>cartão de lista</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:12px 0"><div style="font:600 20px/1.2 'Outfit',sans-serif;letter-spacing:-.015em">Registrar aula</div><div style="font:400 10px/1.5 'Outfit',sans-serif;color:#8A8E9C">título · 20 / 600</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:12px 0"><div style="font:600 16.5px/1.25 'Outfit',sans-serif">Marina Alves</div><div style="font:400 10px/1.5 'Outfit',sans-serif;color:#8A8E9C">nome · 16.5 / 600</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:12px 0"><div style="font:400 14.5px/1.5 'Outfit',sans-serif;color:#3C4050">Restam 2 aulas. Validade até 30/09.</div><div style="font:400 10px/1.5 'Outfit',sans-serif;color:#8A8E9C;text-align:right">corpo · 14.5</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid #E7E9EE;padding:12px 0"><div style="font:400 12.5px/1.45 'Outfit',sans-serif;color:#8A8E9C">Inglês · terça e quinta, 18h</div><div style="font:400 10px/1.5 'Outfit',sans-serif;color:#8A8E9C">apoio · 12.5</div></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:12px 0"><div style="font:600 10.5px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">Pacote acabando</div><div style="font:400 10px/1.5 'Outfit',sans-serif;color:#8A8E9C">rótulo · 10.5 / 600 / 16%</div></div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">03 · Badge de saldo</div>
+<div style="margin-top:6px;font:400 11.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Versão compacta do saldo para listas, cabeçalhos e mensagens. Sempre número + unidade.</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px">
+<div style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#F1F2F4;border-radius:6px"><span style="font:800 15px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em">5</span><span style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase">aulas</span></div>
+<div style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#FFD032;border-radius:6px"><span style="font:800 15px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em">2</span><span style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#5B4B0F;text-transform:uppercase">aulas</span></div>
+<div style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#E3001A;border-radius:6px"><span style="font:800 15px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:#FFFFFF">0</span><span style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#FFC9CF;text-transform:uppercase">aulas</span></div>
+<div style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#FFFFFF;border:1px dashed #C9CBD2;border-radius:6px"><span style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase">sem pacote</span></div>
+<div style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#000119;border-radius:6px"><span style="font:800 15px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:#FFD032">2</span><span style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase">restam</span></div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">04 · Botões</div>
+<div style="margin-top:6px;font:400 11.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Altura 52px, largura total, sempre na metade inferior da tela.</div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Registrar aula</div>
+<div style="height:52px;background:#252840;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF">Registrar aula <span style="margin-left:8px;font:400 11px/1 'Outfit',sans-serif;color:#8A8E9C">pressionado</span></div>
+<div style="height:52px;background:#E7E9EE;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#A8ACB8">Registrar aula <span style="margin-left:8px;font:400 11px/1 'Outfit',sans-serif">desabilitado</span></div>
+<div style="height:52px;background:#FFFFFF;border:1.5px solid #000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#000119;cursor:pointer" style-hover="background:#FFF6D9">Ver extrato</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:44px;background:#FFD032;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 14px/1 'Outfit',sans-serif;color:#000119;cursor:pointer" style-hover="background:#F5C41E">Agendar reposição</div>
+<div style="flex:none;height:44px;padding:0 18px;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 14px/1 'Outfit',sans-serif;color:#8A8E9C;cursor:pointer" style-hover="border-color:#8A8E9C;color:#000119">Depois</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px;width:396px">
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">05 · Cartão de aluno · quatro estados</div>
+<div style="margin-top:6px;font:400 11.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Estrutura fixa: nome, disciplina e horário à esquerda, bloco de saldo à direita, faixa de status no topo quando há algo a resolver.</div>
+
+<div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">
+
+<div>
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase;margin-bottom:7px">Normal</div>
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden;display:flex">
+<div style="flex:1;padding:15px 16px">
+<div style="font:600 16.5px/1.2 'Outfit',sans-serif">Marina Alves</div>
+<div style="margin-top:5px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Inglês · terça e quinta, 18h</div>
+<div style="display:flex;gap:3px;margin-top:13px"><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#000119"></div><div style="width:11px;height:5px;border-radius:3px;background:#000119"></div><div style="width:11px;height:5px;border-radius:3px;background:#000119"></div><div style="width:11px;height:5px;border-radius:3px;background:#000119"></div><div style="width:11px;height:5px;border-radius:3px;background:#000119"></div></div>
+<div style="margin-top:8px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">3 usadas · validade 30/11</div>
+</div>
+<div style="width:88px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 28px/.9 'Outfit',sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-.04em">5</div><div style="margin-top:6px;font:600 9px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">aulas</div></div>
+</div>
+</div>
+
+<div>
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase;margin-bottom:7px">Pacote acabando</div>
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden">
+<div style="background:#FFD032;padding:6px 16px;font:600 10px/1.2 'Outfit',sans-serif;letter-spacing:.14em;color:#000119;text-transform:uppercase">Pacote acabando</div>
+<div style="display:flex">
+<div style="flex:1;padding:15px 16px">
+<div style="font:600 16.5px/1.2 'Outfit',sans-serif">Rafael Dornelas</div>
+<div style="margin-top:5px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Violão · segunda, 19h</div>
+<div style="display:flex;gap:3px;margin-top:13px"><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:11px;height:5px;border-radius:3px;background:#FFD032"></div><div style="width:11px;height:5px;border-radius:3px;background:#FFD032"></div></div>
+<div style="margin-top:8px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">6 usadas · validade 30/09</div>
+</div>
+<div style="width:88px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 28px/.9 'Outfit',sans-serif;color:#FFD032;font-variant-numeric:tabular-nums;letter-spacing:-.04em">2</div><div style="margin-top:6px;font:600 9px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">aulas</div></div>
+</div>
+</div>
+</div>
+
+<div>
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase;margin-bottom:7px">Inadimplente</div>
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden">
+<div style="background:#E3001A;padding:6px 16px;font:600 10px/1.2 'Outfit',sans-serif;letter-spacing:.14em;color:#FFFFFF;text-transform:uppercase;display:flex;justify-content:space-between"><span>Pagamento em atraso</span><span style="font-variant-numeric:tabular-nums">12 dias</span></div>
+<div style="display:flex">
+<div style="flex:1;padding:15px 16px">
+<div style="font:600 16.5px/1.2 'Outfit',sans-serif">Valentin Klein</div>
+<div style="margin-top:5px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Matemática · quarta, 17h</div>
+<div style="margin-top:12px;display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;background:#F1F2F4;border-radius:6px"><span style="font:600 13px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">R$ 480,00</span><span style="font:400 11px/1 'Outfit',sans-serif;color:#8A8E9C">venceu 16/08</span></div>
+<div style="margin-top:9px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Aula marcada para hoje, 17h</div>
+</div>
+<div style="width:88px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 28px/.9 'Outfit',sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-.04em">4</div><div style="margin-top:6px;font:600 9px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">aulas</div></div>
+</div>
+</div>
+</div>
+
+<div>
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.14em;color:#8A8E9C;text-transform:uppercase;margin-bottom:7px">Sem pacote ativo</div>
+<div style="background:#FFFFFF;border:1px dashed #C9CBD2;border-radius:8px;overflow:hidden;display:flex">
+<div style="flex:1;padding:15px 16px">
+<div style="font:600 16.5px/1.2 'Outfit',sans-serif;color:#4A4E60">Beatriz Lemos</div>
+<div style="margin-top:5px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Inglês · sem horário fixo</div>
+<div style="margin-top:12px;font:400 12.5px/1.4 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">Último pacote encerrado em 04/07</div>
+<div style="margin-top:12px;display:inline-flex;height:36px;align-items:center;padding:0 14px;border:1.5px solid #000119;border-radius:8px;font:600 13px/1 'Outfit',sans-serif;cursor:pointer" style-hover="background:#FFF6D9">Criar pacote</div>
+</div>
+<div style="width:88px;background:#F1F2F4;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px dashed #C9CBD2"><div style="font:800 28px/.9 'Outfit',sans-serif;color:#C9CBD2;font-variant-numeric:tabular-nums;letter-spacing:-.04em">—</div><div style="margin-top:6px;font:600 9px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">sem<br>pacote</div></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">06 · Linha de extrato</div>
+<div style="margin-top:6px;font:400 11.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Data, desfecho, motivo e efeito no saldo. O saldo resultante fica sempre à direita.</div>
+<div style="margin-top:16px;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid #E7E9EE">
+<div style="width:36px;font:500 11px/1.3 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">21/08</div>
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Outfit',sans-serif">Aula realizada</div><div style="margin-top:3px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Terça, 18h</div></div>
+<div style="text-align:right"><div style="font:700 13.5px/1 'Outfit',sans-serif;color:#E3001A;font-variant-numeric:tabular-nums">−1</div><div style="margin-top:4px;font:400 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">saldo 3</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid #E7E9EE">
+<div style="width:36px;font:500 11px/1.3 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">19/08</div>
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Outfit',sans-serif">Falta sem aviso</div><div style="margin-top:3px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Política: debita a aula</div></div>
+<div style="text-align:right"><div style="font:700 13.5px/1 'Outfit',sans-serif;color:#E3001A;font-variant-numeric:tabular-nums">−1</div><div style="margin-top:4px;font:400 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">saldo 4</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid #E7E9EE;background:#FBFCFD">
+<div style="width:36px;font:500 11px/1.3 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">14/08</div>
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Outfit',sans-serif">Falta avisada</div><div style="margin-top:3px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Aviso com 26h · reposição gerada</div></div>
+<div style="text-align:right"><div style="font:700 13.5px/1 'Outfit',sans-serif;color:#1E7A55;font-variant-numeric:tabular-nums">0</div><div style="margin-top:4px;font:400 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">saldo 5</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 14px">
+<div style="width:36px;font:500 11px/1.3 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">01/08</div>
+<div style="flex:1"><div style="font:600 13.5px/1.3 'Outfit',sans-serif">Pacote de 8 aulas</div><div style="margin-top:3px;font:400 11.5px/1.4 'Outfit',sans-serif;color:#8A8E9C">Pago em 01/08 · Pix</div></div>
+<div style="text-align:right"><div style="font:700 13.5px/1 'Outfit',sans-serif;color:#000119;font-variant-numeric:tabular-nums">+8</div><div style="margin-top:4px;font:400 11px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">saldo 8</div></div>
+</div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">07 · Campo de seleção de opção</div>
+<div style="margin-top:6px;font:400 11.5px/1.5 'Outfit',sans-serif;color:#8A8E9C">Alvo de 64px. Cada opção mostra o efeito no saldo antes de confirmar.</div>
+<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:12px 15px;background:#FFFFFF;border:1.5px solid #000119;border-radius:8px;cursor:pointer">
+<div style="width:20px;height:20px;border-radius:50%;border:6px solid #000119;background:#FFFFFF;flex:none"></div>
+<div style="flex:1"><div style="font:600 15px/1.25 'Outfit',sans-serif">Aula realizada</div><div style="margin-top:3px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Selecionado</div></div>
+<div style="font:700 14px/1 'Outfit',sans-serif;color:#E3001A;font-variant-numeric:tabular-nums">5 → 4</div>
+</div>
+<div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:12px 15px;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;cursor:pointer" style-hover="border-color:#8A8E9C">
+<div style="width:20px;height:20px;border-radius:50%;border:1.5px solid #C9CBD2;flex:none"></div>
+<div style="flex:1"><div style="font:600 15px/1.25 'Outfit',sans-serif">Falta avisada</div><div style="margin-top:3px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Aviso com 26h · devolve a aula</div></div>
+<div style="font:700 14px/1 'Outfit',sans-serif;color:#1E7A55;font-variant-numeric:tabular-nums">5 → 5</div>
+</div>
+<div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:12px 15px;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;cursor:pointer" style-hover="border-color:#8A8E9C">
+<div style="width:20px;height:20px;border-radius:50%;border:1.5px solid #C9CBD2;flex:none"></div>
+<div style="flex:1"><div style="font:600 15px/1.25 'Outfit',sans-serif">Falta sem aviso</div><div style="margin-top:3px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Debita conforme sua política</div></div>
+<div style="font:700 14px/1 'Outfit',sans-serif;color:#E3001A;font-variant-numeric:tabular-nums">5 → 4</div>
+</div>
+<div style="display:flex;align-items:center;gap:13px;min-height:64px;padding:12px 15px;background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;cursor:pointer" style-hover="border-color:#8A8E9C">
+<div style="width:20px;height:20px;border-radius:50%;border:1.5px solid #C9CBD2;flex:none"></div>
+<div style="flex:1"><div style="font:600 15px/1.25 'Outfit',sans-serif">Cancelei a aula</div><div style="margin-top:3px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Não debita · reposição obrigatória</div></div>
+<div style="font:700 14px/1 'Outfit',sans-serif;color:#1E7A55;font-variant-numeric:tabular-nums">5 → 5</div>
+</div>
+<div style="display:flex;align-items:center;gap:13px;min-height:56px;padding:12px 15px;background:#F1F2F4;border:1px solid #E7E9EE;border-radius:8px">
+<div style="width:20px;height:20px;border-radius:50%;border:1.5px solid #DDDFE5;background:#FFFFFF;flex:none"></div>
+<div style="flex:1"><div style="font:600 15px/1.25 'Outfit',sans-serif;color:#A8ACB8">Falta avisada</div><div style="margin-top:3px;font:400 12px/1.4 'Outfit',sans-serif;color:#A8ACB8">Indisponível: aviso fora do prazo</div></div>
+</div>
+</div>
+</div>
+
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px;width:396px">
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">08 · Banner de alerta</div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-left:4px solid #FFD032;border-radius:8px;padding:14px 16px">
+<div style="font:600 14px/1.25 'Outfit',sans-serif">Reposição pendente</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">Falta avisada em 12/08. Sem horário escolhido há 3 dias.</div>
+<div style="margin-top:11px;display:inline-flex;height:38px;align-items:center;padding:0 14px;background:#FFD032;border-radius:8px;font:600 13px/1 'Outfit',sans-serif;cursor:pointer">Ver sugestões</div>
+</div>
+<div style="background:#000119;border-radius:8px;padding:14px 16px;display:flex;gap:12px">
+<div style="width:4px;align-self:stretch;background:#E3001A;border-radius:2px;flex:none"></div>
+<div style="flex:1"><div style="font:600 14px/1.25 'Outfit',sans-serif;color:#FFFFFF">Pacote vencido</div><div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#9A9DAD;font-variant-numeric:tabular-nums">Validade encerrada em 12/08. 2 aulas não usadas.</div></div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-left:4px solid #1E7A55;border-radius:8px;padding:14px 16px">
+<div style="font:600 14px/1.25 'Outfit',sans-serif">Reposição confirmada</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">Sexta, 29/08, 17h. Mensagem enviada ao aluno.</div>
+</div>
+<div style="background:#F1F2F4;border-radius:8px;padding:14px 16px">
+<div style="font:600 14px/1.25 'Outfit',sans-serif;color:#4A4E60">Limite de reposições atingido</div>
+<div style="margin-top:4px;font:400 12.5px/1.45 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">3 de 3 usadas neste pacote. Sua política não permite mais.</div>
+</div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">09 · Estado vazio</div>
+<div style="margin-top:16px;background:#F1F2F4;border-radius:8px;padding:38px 24px;text-align:center">
+<div style="display:flex;align-items:flex-end;justify-content:center;gap:5px;height:26px"><div style="width:4px;height:26px;background:#C9CBD2;border-radius:2px"></div><div style="width:4px;height:26px;background:#C9CBD2;border-radius:2px"></div><div style="width:4px;height:26px;background:#C9CBD2;border-radius:2px"></div><div style="width:4px;height:26px;background:#C9CBD2;border-radius:2px"></div></div>
+<div style="margin-top:18px;font:600 17px/1.3 'Outfit',sans-serif">Nenhum aluno cadastrado</div>
+<div style="margin-top:7px;font:400 13.5px/1.5 'Outfit',sans-serif;color:#8A8E9C;max-width:30ch;margin-left:auto;margin-right:auto">Cadastre o primeiro aluno e o pacote dele para começar a contar as aulas.</div>
+<div style="margin-top:18px;display:inline-flex;height:48px;align-items:center;padding:0 22px;background:#000119;border-radius:8px;font:600 15px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Adicionar aluno</div>
+</div>
+<div style="margin-top:12px;background:#F1F2F4;border-radius:8px;padding:26px 24px;text-align:center">
+<div style="font:600 15.5px/1.3 'Outfit',sans-serif">Nenhum horário disponível</div>
+<div style="margin-top:6px;font:400 13px/1.5 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">A agenda está cheia até 30/09, data em que o pacote vence.</div>
+<div style="margin-top:14px;display:flex;gap:8px;justify-content:center"><div style="height:42px;display:flex;align-items:center;padding:0 16px;border:1.5px solid #000119;border-radius:8px;font:600 13.5px/1 'Outfit',sans-serif;cursor:pointer">Escolher outro horário</div><div style="height:42px;display:flex;align-items:center;padding:0 16px;border:1px solid #E7E9EE;border-radius:8px;font:600 13.5px/1 'Outfit',sans-serif;color:#8A8E9C;cursor:pointer">Estender validade</div></div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #C9CBD2;border-radius:10px;padding:22px 24px 24px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#8A8E9C;text-transform:uppercase">10 · Estado de erro e carregando</div>
+<div style="margin-top:16px;background:#FFFFFF;border:1px solid #E3001A;border-radius:8px;padding:20px;text-align:center">
+<div style="width:34px;height:34px;margin:0 auto;border-radius:8px;background:#E3001A;display:flex;align-items:center;justify-content:center;font:800 20px/1 'Outfit',sans-serif;color:#FFFFFF">!</div>
+<div style="margin-top:14px;font:600 15.5px/1.3 'Outfit',sans-serif">Não foi possível carregar a lista</div>
+<div style="margin-top:6px;font:400 13px/1.5 'Outfit',sans-serif;color:#8A8E9C">Sem conexão. Os registros feitos agora ficam salvos e sobem depois.</div>
+<div style="margin-top:16px;display:flex;gap:8px;justify-content:center"><div style="height:44px;display:flex;align-items:center;padding:0 20px;background:#000119;border-radius:8px;font:600 14px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer">Tentar de novo</div><div style="height:44px;display:flex;align-items:center;padding:0 18px;border:1px solid #E7E9EE;border-radius:8px;font:600 14px/1 'Outfit',sans-serif;color:#8A8E9C;cursor:pointer">Ver offline</div></div>
+</div>
+<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+<div style="border:1px solid #E7E9EE;border-radius:8px;padding:15px 16px;display:flex;gap:12px;align-items:center">
+<div style="flex:1"><div style="width:60%;height:13px;border-radius:4px;background:#E7E9EE"></div><div style="margin-top:9px;width:42%;height:10px;border-radius:4px;background:#F1F2F4"></div><div style="margin-top:13px;width:78%;height:5px;border-radius:3px;background:#F1F2F4"></div></div>
+<div style="width:56px;height:44px;border-radius:6px;background:#E7E9EE;flex:none"></div>
+</div>
+<div style="border:1px solid #E7E9EE;border-radius:8px;padding:15px 16px;display:flex;gap:12px;align-items:center;opacity:.6">
+<div style="flex:1"><div style="width:48%;height:13px;border-radius:4px;background:#E7E9EE"></div><div style="margin-top:9px;width:36%;height:10px;border-radius:4px;background:#F1F2F4"></div><div style="margin-top:13px;width:78%;height:5px;border-radius:3px;background:#F1F2F4"></div></div>
+<div style="width:56px;height:44px;border-radius:6px;background:#E7E9EE;flex:none"></div>
+</div>
+<div style="font:400 11px/1.4 'Outfit',sans-serif;color:#8A8E9C;text-align:center">Carregando · esqueleto, sem spinner</div>
+</div>
+</div>
+
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;width:390px">
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">11 · Composição · Home 390 × 844</div>
+<div style="width:390px;height:844px;background:#F1F2F4;border-radius:14px;overflow:hidden;border:1px solid #C9CBD2;display:flex;flex-direction:column">
+<div style="background:#000119;color:#FFFFFF;padding:14px 20px 20px">
+<div style="display:flex;justify-content:space-between;align-items:center;font:600 12px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums"><span>14:20</span><span style="display:flex;gap:5px"><span style="width:16px;height:9px;border:1px solid #FFFFFF;border-radius:2px;display:inline-block"></span></span></div>
+<div style="margin-top:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+<div>
+<div style="font:600 10px/1 'Outfit',sans-serif;letter-spacing:.18em;color:#6E7284;text-transform:uppercase">Quinta, 28 de agosto</div>
+<div style="margin-top:9px;font:600 24px/1.15 'Outfit',sans-serif;letter-spacing:-.02em">Meus alunos</div>
+</div>
+<div style="text-align:right"><div style="font:800 30px/1 'Outfit',sans-serif;color:#FFD032;font-variant-numeric:tabular-nums;letter-spacing:-.04em">3</div><div style="margin-top:4px;font:600 9px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase">aulas hoje</div></div>
+</div>
+</div>
+
+<div style="flex:1;overflow:hidden;padding:16px 20px 0;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:7px">
+<div style="height:32px;display:flex;align-items:center;padding:0 13px;background:#000119;color:#FFFFFF;border-radius:6px;font:600 12px/1 'Outfit',sans-serif">Urgência</div>
+<div style="height:32px;display:flex;align-items:center;padding:0 13px;background:#FFFFFF;border:1px solid #E7E9EE;color:#8A8E9C;border-radius:6px;font:600 12px/1 'Outfit',sans-serif">A–Z</div>
+<div style="height:32px;display:flex;align-items:center;padding:0 13px;background:#FFFFFF;border:1px solid #E7E9EE;color:#8A8E9C;border-radius:6px;font:600 12px/1 'Outfit',sans-serif">Hoje</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden">
+<div style="background:#E3001A;padding:6px 14px;font:600 10px/1.2 'Outfit',sans-serif;letter-spacing:.14em;color:#FFFFFF;text-transform:uppercase;display:flex;justify-content:space-between"><span>Pagamento em atraso</span><span style="font-variant-numeric:tabular-nums">12 dias</span></div>
+<div style="display:flex">
+<div style="flex:1;padding:13px 14px"><div style="font:600 15.5px/1.2 'Outfit',sans-serif">Valentin Klein</div><div style="margin-top:4px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Matemática · hoje, 17h</div><div style="margin-top:9px;font:600 12.5px/1 'Outfit',sans-serif;font-variant-numeric:tabular-nums">R$ 480,00 · venceu 16/08</div></div>
+<div style="width:76px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 24px/.9 'Outfit',sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-.04em">4</div><div style="margin-top:5px;font:600 8.5px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase">aulas</div></div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden">
+<div style="background:#FFD032;padding:6px 14px;font:600 10px/1.2 'Outfit',sans-serif;letter-spacing:.14em;color:#000119;text-transform:uppercase">Reposição pendente há 3 dias</div>
+<div style="display:flex">
+<div style="flex:1;padding:13px 14px"><div style="font:600 15.5px/1.2 'Outfit',sans-serif">Rafael Dornelas</div><div style="margin-top:4px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Violão · segunda, 19h</div><div style="display:flex;gap:3px;margin-top:10px"><div style="width:10px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:10px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:10px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:10px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:10px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:10px;height:5px;border-radius:3px;background:#E7E9EE"></div><div style="width:10px;height:5px;border-radius:3px;background:#FFD032"></div><div style="width:10px;height:5px;border-radius:3px;background:#FFD032"></div></div></div>
+<div style="width:76px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 24px/.9 'Outfit',sans-serif;color:#FFD032;font-variant-numeric:tabular-nums;letter-spacing:-.04em">2</div><div style="margin-top:5px;font:600 8.5px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase">aulas</div></div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border:1px solid #E7E9EE;border-radius:8px;overflow:hidden;display:flex">
+<div style="flex:1;padding:13px 14px"><div style="font:600 15.5px/1.2 'Outfit',sans-serif">Marina Alves</div><div style="margin-top:4px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Inglês · hoje, 18h</div><div style="margin-top:9px;font:400 11.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">3 usadas · validade 30/11</div></div>
+<div style="width:76px;background:#000119;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 24px/.9 'Outfit',sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-.04em">5</div><div style="margin-top:5px;font:600 8.5px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#6E7284;text-transform:uppercase">aulas</div></div>
+</div>
+
+<div style="background:#FFFFFF;border:1px dashed #C9CBD2;border-radius:8px;overflow:hidden;display:flex">
+<div style="flex:1;padding:13px 14px"><div style="font:600 15.5px/1.2 'Outfit',sans-serif;color:#4A4E60">Beatriz Lemos</div><div style="margin-top:4px;font:400 12px/1.4 'Outfit',sans-serif;color:#8A8E9C">Inglês · sem horário fixo</div><div style="margin-top:9px;font:400 11.5px/1 'Outfit',sans-serif;color:#8A8E9C;font-variant-numeric:tabular-nums">Pacote encerrado em 04/07</div></div>
+<div style="width:76px;background:#F1F2F4;border-left:1px dashed #C9CBD2;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:800 24px/.9 'Outfit',sans-serif;color:#C9CBD2;font-variant-numeric:tabular-nums">—</div><div style="margin-top:5px;font:600 8.5px/1 'Outfit',sans-serif;letter-spacing:.16em;color:#8A8E9C;text-transform:uppercase">sem<br>pacote</div></div>
+</div>
+</div>
+
+<div style="padding:14px 20px 20px;background:linear-gradient(to top,#F1F2F4 72%,rgba(241,242,244,0))">
+<div style="height:52px;background:#000119;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 15.5px/1 'Outfit',sans-serif;color:#FFFFFF;cursor:pointer" style-hover="background:#252840">Registrar aula</div>
+<div style="margin-top:14px;height:4px;width:120px;background:#C9CBD2;border-radius:2px;margin-left:auto;margin-right:auto"></div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,206 @@
+{
+  "chaveStorage": "aulaemdia.app.v3",
+  "chaveTema": "aulaemdia.app.v3.tema",
+  "hoje": "28/08",
+  "valorAula": 80,
+  "politicas": {
+    "avisoHoras": 24,
+    "avisadaDevolve": true,
+    "limiteReposicoes": 3,
+    "validadeDias": 60
+  },
+  "professor": {
+    "nome": "Caio Torres",
+    "iniciais": "CT"
+  },
+  "janelasReposicao": [
+    {
+      "dia": "Sexta, 29/08",
+      "hora": "17h",
+      "motivo": "Livre na sua agenda e o aluno já teve aula nesse horário"
+    },
+    {
+      "dia": "Sábado, 30/08",
+      "hora": "10h",
+      "motivo": "Livre, mas fora do horário habitual do aluno"
+    },
+    {
+      "dia": "Terça, 02/09",
+      "hora": "19h",
+      "motivo": "Emenda na aula do Rafael, sem intervalo entre as duas"
+    }
+  ],
+  "janelaValidadeEstendida": {
+    "dia": "Quinta, 11/09",
+    "hora": "18h",
+    "motivo": "Só cabe dentro da validade estendida"
+  },
+  "alunos": [
+    {
+      "id": "val",
+      "name": "Valentin Klein",
+      "disciplina": "Matemática",
+      "dia": "quarta",
+      "hora": "17h",
+      "hoje": true,
+      "total": 6,
+      "usadas": 2,
+      "validade": "30/10",
+      "reposicoes": 0,
+      "lembretes": 1,
+      "ultimoLembrete": "22/08",
+      "atrasosHistoricos": 3,
+      "pagamento": {
+        "status": "atraso",
+        "venceu": "16/08",
+        "dias": 12
+      }
+    },
+    {
+      "id": "raf",
+      "name": "Rafael Dornelas",
+      "disciplina": "Violão",
+      "dia": "segunda",
+      "hora": "19h",
+      "hoje": false,
+      "total": 8,
+      "usadas": 6,
+      "validade": "30/09",
+      "reposicoes": 1,
+      "pagamento": {
+        "status": "aberto",
+        "vence": "12/09"
+      },
+      "pendencia": {
+        "origem": "12/08",
+        "dias": 3
+      }
+    },
+    {
+      "id": "mar",
+      "name": "Mateus Alves",
+      "disciplina": "Inglês",
+      "dia": "terça e quinta",
+      "hora": "18h",
+      "hoje": true,
+      "total": 8,
+      "usadas": 3,
+      "validade": "30/11",
+      "reposicoes": 0,
+      "pagamento": {
+        "status": "pago",
+        "em": "01/08",
+        "meio": "Pix"
+      }
+    },
+    {
+      "id": "bea",
+      "name": "Bernardo Lemos",
+      "disciplina": "Inglês",
+      "dia": "sem horário fixo",
+      "hora": "",
+      "hoje": false,
+      "total": 0,
+      "usadas": 0,
+      "semPacote": true,
+      "encerrado": "04/07",
+      "reposicoes": 0,
+      "pagamento": {
+        "status": "sem"
+      }
+    }
+  ],
+  "extratos": {
+    "val": [
+      {
+        "d": "26/08",
+        "t": "Aula realizada",
+        "s": "Quarta, 17h",
+        "delta": -1,
+        "saldo": 4
+      },
+      {
+        "d": "19/08",
+        "t": "Aula realizada",
+        "s": "Quarta, 17h",
+        "delta": -1,
+        "saldo": 5
+      },
+      {
+        "d": "01/08",
+        "t": "Pacote de 6 aulas",
+        "s": "Aguardando pagamento",
+        "delta": 6,
+        "saldo": 6
+      }
+    ],
+    "raf": [
+      {
+        "d": "12/08",
+        "t": "Falta avisada",
+        "s": "Aviso com 30h · reposição gerada",
+        "delta": 0,
+        "saldo": 2
+      },
+      {
+        "d": "05/08",
+        "t": "Aula realizada",
+        "s": "Segunda, 19h",
+        "delta": -1,
+        "saldo": 2
+      },
+      {
+        "d": "29/07",
+        "t": "Reposição realizada",
+        "s": "Sábado, 10h",
+        "delta": -1,
+        "saldo": 3
+      },
+      {
+        "d": "01/07",
+        "t": "Pacote de 8 aulas",
+        "s": "Pago em 01/07 · Pix",
+        "delta": 8,
+        "saldo": 8
+      }
+    ],
+    "mar": [
+      {
+        "d": "26/08",
+        "t": "Aula realizada",
+        "s": "Terça, 18h",
+        "delta": -1,
+        "saldo": 5
+      },
+      {
+        "d": "21/08",
+        "t": "Aula realizada",
+        "s": "Quinta, 18h",
+        "delta": -1,
+        "saldo": 6
+      },
+      {
+        "d": "19/08",
+        "t": "Falta sem aviso",
+        "s": "Política: debita a aula",
+        "delta": -1,
+        "saldo": 7
+      },
+      {
+        "d": "14/08",
+        "t": "Falta avisada",
+        "s": "Aviso com 26h · reposição realizada",
+        "delta": 0,
+        "saldo": 8
+      },
+      {
+        "d": "01/08",
+        "t": "Pacote de 8 aulas",
+        "s": "Pago em 01/08 · Pix",
+        "delta": 8,
+        "saldo": 8
+      }
+    ],
+    "bea": []
+  }
+}
