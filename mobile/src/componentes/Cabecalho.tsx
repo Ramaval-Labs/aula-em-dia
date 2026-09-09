@@ -8,7 +8,7 @@ import { Pressable, Text, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCores } from '../tema/TemaProvider';
-import { TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { TAMANHO } from '../tema/tokens';
 import { CurvaCabecalho } from './Curva';
 
@@ -56,8 +56,10 @@ export function BotaoVoltar({ rotulo, aoTocar }: { rotulo: string; aoTocar: () =
       hitSlop={12}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start' }}
     >
-      <Text style={[TIPO.legenda, { fontSize: 15, lineHeight: 15, color: cores.suave }]}>←</Text>
-      <Text style={[TIPO.aba, { fontSize: 12, color: cores.suave }]}>{rotulo}</Text>
+      <Text style={[texto(15, 400, { altura: 1 }), { color: cores.suave }]}>←</Text>
+      <Text style={[texto(12, 600, { altura: 1, tracking: 0.01 }), { color: cores.suave }]}>
+        {rotulo}
+      </Text>
     </Pressable>
   );
 }
@@ -85,13 +87,11 @@ export function TituloTela({
     <Text
       accessibilityRole="header"
       style={[
-        TIPO.tituloTela,
-        {
-          fontSize: tamanho,
-          lineHeight: tamanho * 1.2,
-          letterSpacing: tamanho * -0.02,
-          color: cor ?? cores.topoTexto,
-        },
+        // Montado pelo tamanho recebido: sobrescrever `fontSize` em cima de
+        // TIPO.tituloTela deixaria a entrelinha e a folga da métrica presas
+        // ao tamanho do token.
+        texto(tamanho, 600, { altura: 1.2, tracking: -0.02 }),
+        { color: cor ?? cores.topoTexto },
       ]}
     >
       {children}
@@ -124,14 +124,13 @@ export function Heroi({
       style={{ alignItems: alinhar === 'direita' ? 'flex-end' : 'flex-start' }}
     >
       <Text
-        style={[
-          TIPO.heroi,
-          { fontSize: tamanho, lineHeight: tamanho, letterSpacing: tamanho * -0.04, color: cor },
-        ]}
+        style={[texto(tamanho, 800, { altura: 1, tracking: -0.04 }), { color: cor }]}
       >
         {numero}
       </Text>
-      <Text style={[TIPO.micro, { marginTop: 4, color: cores.topoFraco }]}>{rotulo}</Text>
+      <Text style={[comEspaco(TIPO.micro, { topo: 4 }), { color: cores.topoFraco }]}>
+        {rotulo}
+      </Text>
     </View>
   );
 }

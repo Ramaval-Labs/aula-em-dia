@@ -53,6 +53,13 @@ comuns estão em `mobile/README.md`.
 
 - **Cor de texto é sempre explícita.** O React Native não herda `color` de um `View` pai;
   sem cor o texto sai preto e some no cabeçalho escuro.
+- **Métrica de texto sai inteira de `texto()`.** A entrelinha do handoff (`altura`) é CSS,
+  onde o glifo transborda da linha; no React Native ele é encaixado, então `texto()` nunca
+  desce abaixo da tinta do Satoshi (1.25em, medida nos TTFs) e devolve o excedente como
+  margem negativa simétrica. Por isso **não escreva `marginTop`/`marginBottom` soltos no
+  `style` de um texto** — isso apaga a compensação e desalinha o glifo; use
+  `comEspaco(estilo, { topo, base })`. Do mesmo jeito, não sobrescreva `fontSize` nem
+  `lineHeight` em cima de um `TIPO.*`: chame `texto()` com o tamanho que você quer.
 - **Data "hoje"** só sai de `mobile/src/dominio/datas.ts`. Nunca escreva `'28/08'` numa tela.
 - **Navegação** é a máquina de `mobile/src/estado/navegacao.ts`, com o contrato de
   `spec/navegacao.md`: `ir` empilha, `voltar` desempilha, `trocarTab` zera a pilha,

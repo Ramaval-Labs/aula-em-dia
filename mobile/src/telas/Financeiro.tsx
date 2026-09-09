@@ -15,7 +15,7 @@ import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA, RAIO } from '../tema/tokens';
 
 /** Situação de pagamento em uma linha. */
@@ -87,8 +87,8 @@ export function Financeiro() {
                 <Text style={[TIPO.micro, { color: cores.topoFraco }]}>{t.rotulo}</Text>
                 <Text
                   style={[
-                    texto(19, 800, { altura: 1, tracking: -0.03 }),
-                    { marginTop: 8, color: t.valor ? t.cor : cores.topoFraco },
+                    comEspaco(texto(19, 800, { altura: 1, tracking: -0.03 }), { topo: 8 }),
+                    { color: t.valor ? t.cor : cores.topoFraco },
                   ]}
                 >
                   {milhar(t.valor)}

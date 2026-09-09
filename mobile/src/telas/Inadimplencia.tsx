@@ -14,7 +14,7 @@ import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
 export function Inadimplencia() {
@@ -100,8 +100,8 @@ export function Inadimplencia() {
               <Eyebrow>{linhaDeHorario(aluno)}</Eyebrow>
               <Text
                 style={[
-                  texto(22, 600, { altura: 1.15, tracking: -0.02 }),
-                  { marginTop: 8, color: '#FFFFFF' },
+                  comEspaco(texto(22, 600, { altura: 1.15, tracking: -0.02 }), { topo: 8 }),
+                  { color: '#FFFFFF' },
                 ]}
               >
                 {aluno.name}
@@ -176,8 +176,8 @@ export function Inadimplencia() {
             </Text>
             <Text
               style={[
-                texto(28, 800, { altura: 1, tracking: -0.04 }),
-                { marginTop: 8, color: emAtraso ? cores.vermelho : cores.verde },
+                comEspaco(texto(28, 800, { altura: 1, tracking: -0.04 }), { topo: 8 }),
+                { color: emAtraso ? cores.vermelho : cores.verde },
               ]}
             >
               {dinheiro(valorPacote(aluno))}

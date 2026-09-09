@@ -33,17 +33,72 @@ type Opcoes = {
   tabular?: boolean;
 };
 
-/** Constrói um TextStyle a partir da escala do handoff. */
+/**
+ * Tinta do glifo em `em`, lida dos TTFs em `assets/fonts` — os cinco pesos do
+ * Satoshi têm a mesma métrica: ascendente 1.010 + descendente 0.240 = 1.25em
+ * (a entrelinha de 0.100em é espaço, não tinta, e por isso fica de fora).
+ *
+ * O handoff é CSS, onde um `line-height` menor que a tinta apenas deixa o
+ * glifo transbordar da linha. O React Native não faz isso: ele encaixa o
+ * glifo na entrelinha, então `altura: 1` fica 0.25em curto e `altura: 0.9`
+ * fica 0.35em — é daí que vinham números e letras cortados ou fora do centro
+ * das caixas de altura fixa (contador do cartão, botões, chips, pílulas).
+ */
+const TINTA_EM = 1.25;
+
+const arredonda = (v: number) => Math.round(v * 100) / 100;
+
+/**
+ * Constrói um TextStyle a partir da escala do handoff.
+ *
+ * A entrelinha nunca desce abaixo da tinta do glifo; o que sobra volta como
+ * margem negativa simétrica, então a caixa continua ocupando no layout
+ * exatamente a altura do protótipo (`tamanho × altura`) sem recortar o
+ * desenho da letra. É o mesmo resultado do CSS, escrito do jeito que o React
+ * Native entende.
+ */
 export function texto(tamanho: number, peso: Peso, o: Opcoes = {}): TextStyle {
+  const caixa = arredonda(tamanho * (o.altura ?? 1));
+  const linha = Math.max(caixa, arredonda(tamanho * TINTA_EM));
+  const folga = arredonda((linha - caixa) / 2);
+
   const estilo: TextStyle = {
     fontFamily: FONTES[peso],
     fontSize: tamanho,
-    lineHeight: Math.round(tamanho * (o.altura ?? 1) * 100) / 100,
+    lineHeight: linha,
+    // O Android soma a font padding do arquivo por padrão, o que empurra o
+    // texto para baixo dentro de caixas centralizadas. Desligar iguala o
+    // Android ao iOS e à web.
+    includeFontPadding: false,
   };
-  if (o.tracking) estilo.letterSpacing = Math.round(tamanho * o.tracking * 100) / 100;
+  if (folga > 0) {
+    estilo.marginTop = -folga;
+    estilo.marginBottom = -folga;
+  }
+  if (o.tracking) estilo.letterSpacing = arredonda(tamanho * o.tracking);
   if (o.maiuscula) estilo.textTransform = 'uppercase';
   if (o.tabular !== false) estilo.fontVariant = ['tabular-nums'];
   return estilo;
+}
+
+/**
+ * Soma espaçamento vertical a um estilo de `texto()` preservando a folga da
+ * métrica.
+ *
+ * Use isto no lugar de `{ marginTop: n }` solto no `style`: a margem escrita
+ * direto sobrescreve a compensação de `texto()` e desalinha o glifo de novo.
+ */
+export function comEspaco(
+  estilo: TextStyle,
+  { topo = 0, base = 0 }: { topo?: number; base?: number },
+): TextStyle {
+  const atualTopo = typeof estilo.marginTop === 'number' ? estilo.marginTop : 0;
+  const atualBase = typeof estilo.marginBottom === 'number' ? estilo.marginBottom : 0;
+  return {
+    ...estilo,
+    marginTop: arredonda(atualTopo + topo),
+    marginBottom: arredonda(atualBase + base),
+  };
 }
 
 /** Escala nomeada do README, para não repetir números soltos nas telas. */

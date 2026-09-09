@@ -6,7 +6,7 @@ import { Pressable, Text, View } from 'react-native';
 import { faixaStatus, saldo, saldoBaixo, temPacote } from '../dominio/politica';
 import type { Aluno, Lancamento, TipoDeFaixa } from '../dominio/tipos';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA, RAIO } from '../tema/tokens';
 
 /** Linha 2 do cartão: "{disciplina} · hoje, {hora}" ou "{disciplina} · {dia}, {hora}". */
@@ -151,8 +151,8 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               ) : null}
               <Text
                 style={[
-                  texto(11.5, 400, { altura: 1 }),
-                  { marginTop: 9, color: cores.suave },
+                  comEspaco(texto(11.5, 400, { altura: 1 }), { topo: 9 }),
+                  { color: cores.suave },
                 ]}
               >
                 {linhaDePacote(aluno)}
@@ -182,8 +182,10 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               </Text>
               <Text
                 style={[
-                  texto(8.5, 600, { altura: 1.15, tracking: 0.16, maiuscula: true }),
-                  { marginTop: 5, color: cores.suave, textAlign: 'center' },
+                  comEspaco(texto(8.5, 600, { altura: 1.15, tracking: 0.16, maiuscula: true }), {
+                    topo: 5,
+                  }),
+                  { color: cores.suave, textAlign: 'center' },
                 ]}
               >
                 {com ? 'aulas' : 'sem pacote'}
@@ -278,7 +280,9 @@ export function LinhaExtrato({ lancamento, ultima }: { lancamento: Lancamento; u
       </View>
       <View style={{ alignItems: 'flex-end' }}>
         <Text style={[texto(13.5, 700, { altura: 1 }), { color: cor }]}>{deltaTexto}</Text>
-        <Text style={[texto(11, 400, { altura: 1 }), { marginTop: 4, color: cores.suave }]}>
+        <Text
+          style={[comEspaco(texto(11, 400, { altura: 1 }), { topo: 4 }), { color: cores.suave }]}
+        >
           {saldoTexto}
         </Text>
       </View>

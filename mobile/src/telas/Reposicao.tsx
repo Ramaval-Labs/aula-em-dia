@@ -18,7 +18,7 @@ import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA, RAIO, TAMANHO } from '../tema/tokens';
 
 export function Reposicao() {
@@ -95,8 +95,8 @@ export function Reposicao() {
         <>
           <Text
             style={[
-              TIPO.eyebrow,
-              { letterSpacing: 1.6, color: cores.suave, marginBottom: 2 },
+              comEspaco(TIPO.eyebrow, { base: 2 }),
+              { letterSpacing: 1.6, color: cores.suave },
             ]}
           >
             {`${janelas.length} horários possíveis`}
