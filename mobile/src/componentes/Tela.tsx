@@ -23,6 +23,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTema } from '../tema/TemaProvider';
 
+/**
+ * A MESMA cor, com alfa zero.
+ *
+ * Não use `'transparent'` num gradiente: ele é `rgba(0,0,0,0)`, e clarear a
+ * partir dele passa por preto translúcido — no iOS isso vira uma faixa cinza
+ * visível por cima da lista. Sumindo a partir da própria cor de fundo, o
+ * degradê fica limpo nos dois temas.
+ */
+function semAlfa(cor: string): string {
+  const hex = cor.replace('#', '');
+  if (hex.length !== 6) return cor;
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, 0)`;
+}
+
 export function Tela({
   cabecalho,
   children,
@@ -134,7 +151,7 @@ export function RodapeAcao({
 
   // linear-gradient(to top, fundo 72%, transparent)
   return (
-    <LinearGradient colors={['transparent', fundo, fundo]} locations={[0, 0.28, 1]}>
+    <LinearGradient colors={[semAlfa(fundo), fundo, fundo]} locations={[0, 0.28, 1]}>
       {conteudo}
     </LinearGradient>
   );

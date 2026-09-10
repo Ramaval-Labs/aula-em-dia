@@ -41,8 +41,14 @@ export function CurvaCabecalho({ cor }: { cor: string }) {
 }
 
 /**
- * Curva do conteúdo para a navbar. Faixa de 58px que OCUPA espaço no fluxo
- * (não é overlay), justamente para nunca pintar por cima de um botão.
+ * Curva do conteúdo para a navbar. Faixa que OCUPA espaço no fluxo (não é
+ * overlay), justamente para nunca pintar por cima de um botão.
+ *
+ * O SVG é desenhado NA ALTURA DA FAIXA, e não na altura do viewBox: com
+ * `preserveAspectRatio="none"` ele se ajusta e o desenho inteiro continua
+ * visível. Fixar a altura em 60 dentro de um contêiner menor recortaria a
+ * curva pela base — e como a linha começa em y=55 na esquerda, é justamente
+ * o lado esquerdo que sumiria, achatando a curva contra a navbar.
  */
 export function FaixaCurvaNavbar({ cor, altura }: { cor: string; altura: number }) {
   return (
@@ -50,11 +56,11 @@ export function FaixaCurvaNavbar({ cor, altura }: { cor: string; altura: number 
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
-      style={{ height: altura, overflow: 'hidden' }}
+      style={{ height: altura }}
     >
       <Svg
         width="100%"
-        height={CURVAS.navbar.altura}
+        height={altura}
         viewBox={CURVAS.navbar.viewBox}
         preserveAspectRatio="none"
       >

@@ -84,9 +84,14 @@ assets/fonts/                Satoshi 400/500/600/700/800
   semente foi escrita); `USAR_DATA_REAL = true` passa tudo a usar a data do aparelho.
 - **O rodapé de ação flutua sobre a lista**, com a máscara em gradiente — ele não ocupa
   espaço no fluxo. Antes roubava ~78px de altura da lista mesmo vazio.
-- **A faixa da curva acima da navbar é 44px**, não os 58px do handoff: acima da linha da
-  curva ela é transparente, e a maior parte daqueles 58px era fundo vazio. O valor é o
-  botão de ajuste em `src/tema/tokens.ts` → `TAMANHO.faixaCurva`.
+- **A faixa da curva é redimensionada, nunca recortada.** O SVG é desenhado na altura da
+  faixa, com `preserveAspectRatio="none"`. Fixar a altura no valor do viewBox dentro de um
+  contêiner menor corta a curva pela base — e como a linha começa em y=55 na esquerda, é o
+  lado esquerdo que some, deixando a navbar reta. A altura vive em
+  `src/tema/tokens.ts` → `TAMANHO.faixaCurva` (58px, o valor do handoff).
+- **Gradiente nunca sai de `'transparent'`.** No iOS isso é `rgba(0,0,0,0)`, e clarear a
+  partir dele passa por preto translúcido, deixando uma faixa cinza sobre a lista. A máscara
+  do rodapé some a partir da própria cor de fundo (`semAlfa()` em `componentes/Tela.tsx`).
 
 ## Onde a implementação diverge do protótipo
 

@@ -37,6 +37,8 @@ comuns estão em `mobile/README.md`.
 3. **As duas curvas são obrigatórias** e sempre na mesma direção (baixa à esquerda, reta no
    meio, subindo à direita). Já implementadas em `mobile/src/componentes/Curva.tsx`.
    Não substituir por `borderRadius`. A faixa da navbar ocupa espaço no fluxo, não é overlay.
+   O SVG é desenhado **na altura da faixa** — recortar em vez de redimensionar corta o lado
+   esquerdo da curva (a linha começa em y=55) e a navbar fica reta.
 4. **A pílula de vidro da aba ativa não usa `backdrop-filter` nem `BlurView`** — é gradiente,
    borda e sombras internas. Intencional: o desfoque quebrava o recorte do container.
 5. **Amarelo `#FFD032` é só ênfase.** Nunca como fundo de área grande nem em texto pequeno
