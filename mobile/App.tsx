@@ -20,30 +20,12 @@ import { Navbar } from './src/componentes/Navbar';
 import { Toast } from './src/componentes/Toast';
 import { useDados } from './src/estado/dados';
 import { ABA_DA_TELA, TELAS_COM_NAVBAR, useNavegacao } from './src/estado/navegacao';
-import { Ajustes } from './src/telas/Ajustes';
-import { AlunoDetalhe } from './src/telas/AlunoDetalhe';
-import { Financeiro } from './src/telas/Financeiro';
-import { Home } from './src/telas/Home';
-import { Inadimplencia } from './src/telas/Inadimplencia';
-import { Politica } from './src/telas/Politica';
-import { Registrar } from './src/telas/Registrar';
-import { Reposicao } from './src/telas/Reposicao';
-import { Resultado } from './src/telas/Resultado';
+import { useSessao } from './src/estado/sessao';
+import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
+import { telaDe } from './src/telas/registro';
 import { TemaProvider, useTema } from './src/tema/TemaProvider';
 import { ARQUIVOS_DE_FONTE } from './src/tema/tipografia';
 import { TAMANHO } from './src/tema/tokens';
-
-const TELAS = {
-  home: Home,
-  aluno: AlunoDetalhe,
-  registrar: Registrar,
-  resultado: Resultado,
-  reposicao: Reposicao,
-  financeiro: Financeiro,
-  inadimplencia: Inadimplencia,
-  ajustes: Ajustes,
-  politica: Politica,
-} as const;
 
 function App() {
   const { cores, carregado: temaCarregado } = useTema();
@@ -66,7 +48,7 @@ function App() {
     return () => sub.remove();
   }, [voltar]);
 
-  const TelaAtual = TELAS[tela];
+  const TelaAtual = telaDe(tela);
   const comNavbar = TELAS_COM_NAVBAR.includes(tela);
 
   // Espera o estado salvo antes de pintar, para a lista não piscar da semente
@@ -93,8 +75,6 @@ function App() {
           />
         </>
       ) : null}
-
-      <Toast />
     </View>
   );
 }
@@ -104,13 +84,35 @@ export default function Raiz() {
 
   return (
     <SafeAreaProvider>
-      <TemaProvider>{fontesProntas ? <App /> : <Aguardando />}</TemaProvider>
+      <TemaProvider>{fontesProntas ? <Portao /> : <Splash />}</TemaProvider>
     </SafeAreaProvider>
   );
 }
 
-/** Tela de espera na cor do cabeçalho, para não haver flash branco. */
-function Aguardando() {
-  const { cores } = useTema();
-  return <View style={{ flex: 1, backgroundColor: cores.topo }} />;
+/**
+ * Decide qual das três máquinas está no ar. O Toast vive aqui, e não dentro
+ * do `App`, porque as telas de entrada também avisam coisas.
+ */
+function Portao() {
+  const { carregado: temaCarregado } = useTema();
+  const fase = useSessao((s) => s.fase);
+  const carregarSessao = useSessao((s) => s.carregar);
+
+  useEffect(() => {
+    carregarSessao();
+  }, [carregarSessao]);
+
+  const conteudo = () => {
+    if (!temaCarregado || fase === 'carregando') return <Splash />;
+    if (fase === 'entrada') return <Entrada />;
+    if (fase === 'onboarding') return <Onboarding />;
+    return <App />;
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      {conteudo()}
+      <Toast />
+    </View>
+  );
 }

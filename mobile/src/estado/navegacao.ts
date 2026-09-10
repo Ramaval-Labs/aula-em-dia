@@ -9,18 +9,41 @@
 
 import { create } from 'zustand';
 
-import type { Desfecho, Filtro, Politicas } from '../dominio/tipos';
+import type { Filtro } from '../dominio/tipos';
+import { useFormularios } from './formularios';
 
 export type Tela =
+  // aba Alunos
   | 'home'
   | 'aluno'
+  | 'alunoForm'
   | 'registrar'
   | 'resultado'
   | 'reposicao'
+  | 'dispAluno'
+  | 'outroHorario'
+  | 'semHorario'
+  | 'confirmarReposicao'
+  | 'aguardandoAceite'
+  | 'pacote'
+  | 'verComoAluno'
+  | 'alunoSaldo'
+  | 'alunoProposta'
+  | 'alunoDisponibilidade'
+  // aba Financeiro
   | 'financeiro'
   | 'inadimplencia'
+  | 'pagamento'
+  | 'lembrete'
+  // aba Ajustes
   | 'ajustes'
-  | 'politica';
+  | 'politica'
+  | 'perfil'
+  | 'minhaDisponibilidade'
+  | 'pacotesPadrao'
+  | 'avisos'
+  | 'chavePix'
+  | 'conta';
 
 export type Aba = 'home' | 'financeiro' | 'ajustes';
 
@@ -28,20 +51,38 @@ export type Aba = 'home' | 'financeiro' | 'ajustes';
 export const ABA_DA_TELA: Record<Tela, Aba> = {
   home: 'home',
   aluno: 'home',
+  alunoForm: 'home',
   registrar: 'home',
   resultado: 'home',
   reposicao: 'home',
+  dispAluno: 'home',
+  outroHorario: 'home',
+  semHorario: 'home',
+  confirmarReposicao: 'home',
+  aguardandoAceite: 'home',
+  pacote: 'home',
+  verComoAluno: 'home',
+  alunoSaldo: 'home',
+  alunoProposta: 'home',
+  alunoDisponibilidade: 'home',
+
   financeiro: 'financeiro',
   inadimplencia: 'financeiro',
+  pagamento: 'financeiro',
+  lembrete: 'financeiro',
+
   ajustes: 'ajustes',
   politica: 'ajustes',
+  perfil: 'ajustes',
+  minhaDisponibilidade: 'ajustes',
+  pacotesPadrao: 'ajustes',
+  avisos: 'ajustes',
+  chavePix: 'ajustes',
+  conta: 'ajustes',
 };
 
 /** A navbar só aparece nas raízes; nas telas de tarefa o rodapé é da ação. */
 export const TELAS_COM_NAVBAR: Tela[] = ['home', 'financeiro', 'ajustes'];
-
-/** Antecedência do aviso pré-selecionada na tela de registro. */
-export const AVISO_PADRAO = 26;
 
 type Quadro = { tela: Tela; alunoId: string | null };
 
@@ -51,13 +92,7 @@ type Navegacao = {
   alunoId: string | null;
   filtro: Filtro;
 
-  // efêmero: some ao voltar ou trocar de aba
-  desfecho: Desfecho | null;
-  avisoH: number;
-  janela: number | null;
-  rascunho: Politicas | null;
-
-  ir: (tela: Tela, extra?: Partial<Quadro & Efemero>) => void;
+  ir: (tela: Tela, extra?: Partial<Quadro>) => void;
   voltar: () => boolean;
   trocarTab: (aba: Aba) => void;
   /** Conclui um fluxo: navega zerando a pilha, para não voltar para dentro dele. */
@@ -66,35 +101,13 @@ type Navegacao = {
   /** Troca o aluno da tela atual sem empilhar (escolha dentro de Registrar). */
   definirAluno: (id: string | null) => void;
   definirFiltro: (f: Filtro) => void;
-  definirDesfecho: (d: Desfecho | null) => void;
-  definirAvisoH: (h: number) => void;
-  definirJanela: (i: number | null) => void;
-  definirRascunho: (p: Politicas | null) => void;
 };
-
-type Efemero = {
-  desfecho: Desfecho | null;
-  avisoH: number;
-  janela: number | null;
-  rascunho: Politicas | null;
-};
-
-const EFEMERO_LIMPO = {
-  desfecho: null,
-  janela: null,
-  rascunho: null,
-} as const;
 
 export const useNavegacao = create<Navegacao>((set, get) => ({
   tela: 'home',
   pilha: [],
   alunoId: null,
   filtro: 'Urgência',
-
-  desfecho: null,
-  avisoH: AVISO_PADRAO,
-  janela: null,
-  rascunho: null,
 
   ir(tela, extra) {
     set((s) => ({
@@ -105,10 +118,12 @@ export const useNavegacao = create<Navegacao>((set, get) => ({
   },
 
   voltar() {
-    const { pilha } = get();
+    const { pilha, tela } = get();
     if (!pilha.length) {
-      // Raiz da aba Alunos: nada a desempilhar, o sistema trata o gesto.
-      set({ tela: 'home', ...EFEMERO_LIMPO });
+      // Raiz de uma aba: nada a desempilhar, o sistema trata o gesto.
+      // Cai na raiz da aba atual, não em 'home' — voltar de uma tela da aba
+      // Ajustes para a lista de alunos seria salto, não retorno.
+      set({ tela: ABA_DA_TELA[tela] });
       return false;
     }
     const anterior = pilha[pilha.length - 1];
@@ -116,28 +131,26 @@ export const useNavegacao = create<Navegacao>((set, get) => ({
       tela: anterior.tela,
       alunoId: anterior.alunoId,
       pilha: pilha.slice(0, -1),
-      ...EFEMERO_LIMPO,
     });
     return true;
   },
 
   trocarTab(aba) {
-    set({ tela: aba, pilha: [], alunoId: null, ...EFEMERO_LIMPO });
+    // Trocar de aba abandona qualquer formulário em andamento.
+    useFormularios.getState().limparTudo();
+    set({ tela: aba, pilha: [], alunoId: null });
   },
 
   concluir(tela, alunoId) {
+    // Fluxo concluído: o rascunho que o alimentava não serve mais.
+    useFormularios.getState().limparTudo();
     set((s) => ({
       tela,
       alunoId: alunoId === undefined ? s.alunoId : alunoId,
       pilha: [],
-      ...EFEMERO_LIMPO,
     }));
   },
 
   definirAluno: (alunoId) => set({ alunoId }),
   definirFiltro: (filtro) => set({ filtro }),
-  definirDesfecho: (desfecho) => set({ desfecho }),
-  definirAvisoH: (avisoH) => set({ avisoH }),
-  definirJanela: (janela) => set({ janela }),
-  definirRascunho: (rascunho) => set({ rascunho }),
 }));

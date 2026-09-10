@@ -1,45 +1,34 @@
 # Próximos passos
 
-Backlog priorizado do que vem depois do app navegável. As seis fases de
-[IMPLEMENTACAO.md](IMPLEMENTACAO.md) estão concluídas; o que está aqui é trabalho novo.
+Backlog priorizado do que vem depois do app navegável.
 
-A ordem não é arbitrária: o item 1 é o que o Envio 01 aponta como **o diferencial do produto** e
-hoje é a maior lacuna entre o que o projeto promete e o que ele entrega.
+> **Atualizado.** As 35 telas do handoff estão implementadas, e o motor de reposição
+> (item 1 da versão anterior deste arquivo) **existe** em `mobile/src/dominio/agenda.ts`.
+> O que sobrou aqui é o que ainda não foi feito.
 
 ---
 
-## 1. Motor de agendamento de reposição — o diferencial
+## ~~1. Motor de agendamento de reposição~~ — feito
 
-**Hoje:** as janelas são três strings fixas em `data/seed.json`, escritas à mão.
-**Deveria:** sair de um algoritmo, como descreve o Envio 01.
+**Feito** em `mobile/src/dominio/agenda.ts`: percorre o horizonte até a validade do pacote,
+descarta folga do professor, colisão com aula fixa de outro aluno e bloco fora da
+disponibilidade declarada dos dois lados, e pontua por proximidade, coincidência com o
+horário habitual e encaixe. As razões que aparecem na tela saem do cálculo.
 
-O escopo do MVP define o algoritmo assim: percorrer o horizonte até o vencimento do pacote,
-descartar toda janela que colida com aula fixa de outro aluno, com reposição já marcada ou que
-caia fora da disponibilidade declarada pelas duas partes, pontuar o que sobra por proximidade da
-data, coincidência com o horário regular do aluno e encaixe ao lado de aula existente, e devolver
-as três melhores com os motivos em texto.
+**O que falta aprimorar:** o horário fixo do aluno ainda é texto livre (`"terça e quinta"`,
+`"18h"`), lido por palavra-chave. Um modelo estruturado de horário tornaria a detecção de
+colisão exata em vez de aproximada. E não há teste automatizado do motor — só o teste de
+montagem das telas que o consomem.
 
-Como fazer sem quebrar o que já funciona:
+## ~~2. Disponibilidade do professor e do aluno~~ — feito
 
-- Escrever em `mobile/src/dominio/reposicao.ts`, **puro**, no mesmo padrão de `politica.ts`:
-  entra estado, sai resultado, sem tela, sem storage, sem rede.
-- Assinatura sugerida:
-  `sugerirJanelas(aluno, todosOsAlunos, disponibilidade, politicas, hoje): Janela[]`
-- Testar antes de ligar na UI. Os motivos são texto que aparece na tela — teste string a string,
-  como já é feito em `politica.test.ts`.
-- A tela `Reposicao.tsx` já consome uma lista de `Janela`. Trocar a fonte é uma linha.
+**Feito**: modelo de blocos semanais em `dominio/disponibilidade.ts`, grade reutilizada em
+quatro telas (onboarding, disponibilidade do aluno, Ajustes e visão do aluno), folgas e
+feriados, e persistência junto do resto do estado.
 
-**Bloqueio real:** o algoritmo precisa de dois dados que o modelo ainda não tem —
-disponibilidade do professor e disponibilidade do aluno. Ver item 2.
-
-## 2. Disponibilidade do professor e do aluno
-
-Sem isso o item 1 não sai do papel. A tela de Ajustes já tem a entrada
-*"Minha disponibilidade — 13 blocos · 26h por semana"*, mas ela é decorativa.
-
-- Modelar blocos semanais (dia da semana + intervalo de horas).
-- Tela de edição em Ajustes.
-- Guardar junto do resto do estado, na mesma chave versionada.
+**Divergência registrada:** o handoff mostra *"13 blocos · 26h por semana"*, o que equivale a
+contar 2h por bloco. As faixas desenhadas são de 4h, 3h, 3h e 2h — os mesmos 13 blocos somam
+**40h**. O app calcula pela duração real, porque é esse número que o motor de agenda usa.
 
 ## 3. Datas reais no lugar de `28/08`
 
@@ -69,13 +58,14 @@ Hoje o app registra a ação e mostra um toast — não envia nada. O MVP prevê
 por link direto do WhatsApp**, que é o caminho mais barato: montar a mensagem e abrir
 `https://wa.me/<telefone>?text=<mensagem>` com o `Linking` do React Native.
 
-Falta modelar o telefone do aluno e a chave Pix do professor (a tela de Ajustes já tem a entrada
-*"Chave Pix e dados de cobrança"*, também decorativa).
+O telefone do aluno e a chave Pix do professor **já estão modelados e editáveis**, e as telas de
+mensagem (reposição e cobrança) já montam o texto pronto — só copiam para a área de
+transferência em vez de abrir o WhatsApp. Trocar `Clipboard` por `Linking.openURL` é a mudança.
 
-## 6. Cadastro de alunos
+## ~~6. Cadastro de alunos~~ — feito
 
-O app carrega quatro alunos de semente e não tem tela de cadastro. Para uso real: criar, editar e
-arquivar aluno, com disciplina, horário fixo e telefone.
+**Feito**: criar pelo "+ Novo aluno" no cabeçalho da home, editar e arquivar na ficha, com
+disciplina, horário fixo e telefone. O onboarding também cria o primeiro aluno.
 
 ## 7. Publicação
 
@@ -89,9 +79,15 @@ arquivar aluno, com disciplina, horário fixo e telefone.
 
 ## Dívidas técnicas conhecidas
 
-- **Sem teste de interface.** Só o domínio é testado. As telas foram verificadas à mão, no
-  navegador. Vale adicionar `@testing-library/react-native` nos fluxos críticos — registrar aula e
-  confirmar reposição.
+- **Teste de interface só de fumaça.** Existe um teste que monta as 28 telas do app em quatro
+  estados e afirma que nenhuma lança — foi ele que pegou um loop infinito de render causado por
+  seletor de store instável. Falta teste de fluxo de verdade: registrar aula e confirmar
+  reposição, com asserção de conteúdo.
+- **Os módulos de domínio novos não têm teste próprio.** `agenda.ts`, `mensagens.ts` e
+  `pacote.ts` são puros e testáveis, mas hoje só são exercitados de lado, pelo teste de
+  montagem.
+- **O visual das telas novas não foi conferido tela a tela.** A verificação foi por tipos,
+  testes e build. Vale uma passada com o protótipo aberto ao lado.
 - **`mobile/src/dados/seed.json` é cópia** de `data/seed.json`, porque o Metro não resolve arquivos
   fora da raiz do projeto. Mudou um, copie no outro.
 - **Sem linter configurado.** Só `tsc --noEmit`. Um `eslint-config-expo` fecharia a lacuna.

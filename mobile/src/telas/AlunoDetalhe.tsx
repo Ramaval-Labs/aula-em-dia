@@ -1,54 +1,46 @@
 /** Tela 2 — Detalhe do aluno: contextos condicionais, extrato e ação primária. */
 
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { linhaDeHorario, LinhaExtrato, PontosPacote } from '../componentes/Aluno';
-import { Caixa, Cartao, EstadoVazio, RotuloSecao } from '../componentes/Base';
+import {
+  Caixa,
+  Cartao,
+  CartaoContexto,
+  EstadoVazio,
+  LinhaLista,
+  Lista,
+  RotuloSecao,
+} from '../componentes/Base';
 import { BotaoContorno, BotaoPequeno, BotaoPrimario } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, Heroi } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
 import { dinheiro, primeiroNome } from '../dominio/formato';
 import { podeRegistrar, saldo, saldoBaixo, temPacote, valorPacote } from '../dominio/politica';
-import type { Aluno } from '../dominio/tipos';
+import type { Aluno, Lancamento } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
+import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
-import { MARCA, RAIO } from '../tema/tokens';
+import { MARCA } from '../tema/tokens';
 
-/** Cartão de contexto acima do extrato, com a barra colorida à esquerda. */
-function CartaoContexto({
-  titulo,
-  detalhe,
-  cor,
-  acao,
-}: {
-  titulo: string;
-  detalhe: string;
-  cor: string;
-  acao?: React.ReactNode;
-}) {
-  const cores = useCores();
-  return (
-    <Cartao estilo={{ borderLeftWidth: 4, borderLeftColor: cor, paddingVertical: 14, paddingHorizontal: 16 }}>
-      <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.texto }]}>{titulo}</Text>
-      <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>{detalhe}</Text>
-      {acao ? <View style={{ marginTop: 11 }}>{acao}</View> : null}
-    </Cartao>
-  );
-}
+/** Referencia estavel para aluno sem lancamentos. */
+const SEM_LANCAMENTOS: Lancamento[] = [];
 
 export function AlunoDetalhe() {
   const cores = useCores();
   const { alunoId, ir, voltar } = useNavegacao();
+  const reiniciarRascunho = useFormularios((s) => s.substituir);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
-  const extrato = useDados((s) => (alunoId ? (s.extratos[alunoId] ?? []) : []));
+  // O `?? []` NAO pode ficar dentro do seletor: devolveria um array novo a cada
+  // chamada e o zustand entraria em loop de render. A constante e estavel.
+  const extrato =
+    useDados((s) => (alunoId ? s.extratos[alunoId] : undefined)) ?? SEM_LANCAMENTOS;
   const politicas = useDados((s) => s.politicas);
   const alternarPausa = useDados((s) => s.alternarPausa);
-  const criarPacote = useDados((s) => s.criarPacote);
-  const renovarPacote = useDados((s) => s.renovarPacote);
   const avisar = useToast((s) => s.avisar);
 
   if (!aluno) {
@@ -69,6 +61,7 @@ export function AlunoDetalhe() {
   const restam = saldo(aluno);
   const baixo = saldoBaixo(aluno);
   const emAtraso = aluno.pagamento.status === 'atraso';
+
 
   const validadeTexto = `validade ${aluno.validade || '—'}${
     aluno.validadeEstendida ? ' · estendida' : ''
@@ -114,12 +107,12 @@ export function AlunoDetalhe() {
       rodape={
         <AcoesDoAluno
           aluno={aluno}
-          aoRegistrar={() => ir('registrar', { desfecho: null })}
-          aoCriarPacote={() => avisar(`Pacote de 8 aulas criado, validade ${criarPacote(aluno.id)}.`)}
-          aoRenovar={() => {
-            const { saldo: novo, validade } = renovarPacote(aluno.id);
-            avisar(`Pacote renovado. Saldo agora é ${novo}, validade ${validade}.`);
+          aoRegistrar={() => {
+            reiniciarRascunho('registro', REGISTRO_INICIAL);
+            ir('registrar');
           }}
+          aoCriarPacote={() => ir('pacote')}
+          aoRenovar={() => ir('pacote')}
         />
       }
     >
@@ -156,7 +149,21 @@ export function AlunoDetalhe() {
             <BotaoPequeno
               variante="amarelo"
               rotulo="Ver sugestões"
-              aoTocar={() => ir('reposicao', { janela: null })}
+              aoTocar={() => ir('dispAluno')}
+            />
+          }
+        />
+      ) : null}
+
+      {aluno.proposta ? (
+        <CartaoContexto
+          cor={MARCA.amarelo}
+          titulo="Proposta aguardando aceite"
+          detalhe={`${aluno.proposta.janela.dia}, ${aluno.proposta.janela.hora}. Enviada em ${aluno.proposta.enviadaEm}.`}
+          acao={
+            <BotaoPequeno
+              rotulo="Acompanhar"
+              aoTocar={() => ir('aguardandoAceite')}
             />
           }
         />
@@ -171,48 +178,18 @@ export function AlunoDetalhe() {
       ) : null}
 
       {emAtraso ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Pagamento em atraso. ${dinheiro(valorPacote(aluno))} venceu em ${
-            aluno.pagamento.venceu
-          }, há ${aluno.pagamento.dias} dias. Abrir cobrança.`}
-          onPress={() => ir('inadimplencia', { alunoId: aluno.id })}
-        >
-          <View
-            style={{
-              backgroundColor: cores.elevado,
-              borderRadius: RAIO.cartao,
-              paddingVertical: 14,
-              paddingHorizontal: 16,
-              flexDirection: 'row',
-              gap: 12,
-            }}
-          >
-            <View
-              style={{
-                width: 4,
-                alignSelf: 'stretch',
-                backgroundColor: cores.vermelho,
-                borderRadius: 2,
-              }}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={[texto(14, 600, { altura: 1.25 }), { color: '#FFFFFF' }]}>
-                Pagamento em atraso
-              </Text>
-              <Text style={[TIPO.corpo, { marginTop: 4, color: cores.elevadoSuave }]}>
-                {`${dinheiro(valorPacote(aluno))} venceu em ${aluno.pagamento.venceu}, há ${
-                  aluno.pagamento.dias
-                } dias.`}
-              </Text>
-            </View>
-            <Text
-              style={[texto(16, 600, { altura: 1 }), { color: cores.topoFraco, alignSelf: 'center' }]}
-            >
-              ›
-            </Text>
-          </View>
-        </Pressable>
+        <CartaoContexto
+          escuro
+          cor={cores.vermelho}
+          titulo="Pagamento em atraso"
+          detalhe={`${dinheiro(valorPacote(aluno))} venceu em ${aluno.pagamento.venceu}, há ${
+            aluno.pagamento.dias
+          } dias.`}
+          aoTocar={() => ir('inadimplencia', { alunoId: aluno.id })}
+          rotuloAcessivel={`Pagamento em atraso. ${dinheiro(
+            valorPacote(aluno),
+          )} venceu em ${aluno.pagamento.venceu}, há ${aluno.pagamento.dias} dias. Abrir cobrança.`}
+        />
       ) : null}
 
       {com ? (
@@ -245,6 +222,28 @@ export function AlunoDetalhe() {
           </View>
         </Cartao>
       ) : null}
+
+      <Lista rotulo="Mais">
+        <LinhaLista
+          titulo="Ver como o aluno vê"
+          sub="A página que ele abre pelo link"
+          chevron
+          aoTocar={() => ir('verComoAluno')}
+        />
+        <LinhaLista
+          titulo="Editar dados do aluno"
+          sub="Nome, disciplina, horário e telefone"
+          chevron
+          aoTocar={() => ir('alunoForm')}
+        />
+        <LinhaLista
+          titulo={com ? 'Renovar pacote' : 'Criar pacote'}
+          sub={com ? 'Escolher quantidade, valor e validade' : 'Primeiro pacote deste aluno'}
+          chevron
+          ultima
+          aoTocar={() => ir('pacote')}
+        />
+      </Lista>
 
       <View>
         <RotuloSecao estilo={{ marginBottom: 9 }}>Extrato</RotuloSecao>

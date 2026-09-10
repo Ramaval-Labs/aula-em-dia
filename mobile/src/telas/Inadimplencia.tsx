@@ -19,10 +19,8 @@ import { RAIO } from '../tema/tokens';
 
 export function Inadimplencia() {
   const cores = useCores();
-  const { alunoId, voltar } = useNavegacao();
+  const { alunoId, ir, voltar } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
-  const receberPagamento = useDados((s) => s.receberPagamento);
-  const enviarLembrete = useDados((s) => s.enviarLembrete);
   const alternarPausa = useDados((s) => s.alternarPausa);
   const avisar = useToast((s) => s.avisar);
 
@@ -47,19 +45,12 @@ export function Inadimplencia() {
     {
       titulo: 'Enviar lembrete de cobrança',
       sub: 'Mensagem pronta com a chave Pix',
-      aoTocar: () => {
-        enviarLembrete(aluno.id);
-        avisar(avisos.lembrete(aluno));
-      },
+      aoTocar: () => ir('lembrete'),
     },
     {
       titulo: 'Registrar pagamento recebido',
-      sub: 'Se ele já pagou por fora',
-      aoTocar: () => {
-        receberPagamento(aluno.id);
-        avisar(avisos.pagamento(aluno));
-        voltar();
-      },
+      sub: 'Escolher o meio e o valor',
+      aoTocar: () => ir('pagamento'),
     },
     {
       titulo: aluno.pausado ? 'Retomar as próximas aulas' : 'Pausar as próximas aulas',
@@ -121,11 +112,7 @@ export function Inadimplencia() {
         emAtraso ? (
           <BotaoPrimario
             rotulo="Registrar pagamento recebido"
-            aoTocar={() => {
-              receberPagamento(aluno.id);
-              avisar(avisos.pagamento(aluno));
-              voltar();
-            }}
+            aoTocar={() => ir('pagamento')}
           />
         ) : undefined
       }

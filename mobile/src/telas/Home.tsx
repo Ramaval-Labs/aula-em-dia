@@ -1,7 +1,7 @@
 /** Tela 1 — Alunos (raiz da aba 1). Quem precisa de atenção hoje vem primeiro. */
 
 import React, { useMemo } from 'react';
-import { View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { CartaoAluno } from '../componentes/Aluno';
 import { EstadoVazio } from '../componentes/Base';
@@ -12,8 +12,10 @@ import { dataPorExtenso } from '../dominio/datas';
 import { ordenar, temPacote } from '../dominio/politica';
 import type { Filtro } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
+import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
+import { TIPO } from '../tema/tipografia';
 import { MARCA } from '../tema/tokens';
 
 const FILTROS: Filtro[] = ['Urgência', 'A–Z', 'Hoje'];
@@ -22,8 +24,12 @@ export function Home() {
   const cores = useCores();
   const alunos = useDados((s) => s.alunos);
   const { filtro, definirFiltro, ir } = useNavegacao();
+  const reiniciarRascunho = useFormularios((s) => s.substituir);
 
-  const lista = useMemo(() => ordenar(alunos, filtro), [alunos, filtro]);
+  const lista = useMemo(
+    () => ordenar(alunos.filter((a) => !a.arquivado), filtro),
+    [alunos, filtro],
+  );
 
   const aulasHoje = alunos.filter((a) => a.hoje && temPacote(a) && !a.pausado).length;
 
@@ -46,12 +52,31 @@ export function Home() {
                 <TituloTela>Meus alunos</TituloTela>
               </View>
             </View>
-            <Heroi
-              numero={String(aulasHoje)}
-              rotulo="aulas hoje"
-              cor={MARCA.amarelo}
-              rotuloAcessivel={`${aulasHoje} aulas hoje`}
-            />
+            <View style={{ alignItems: 'flex-end', gap: 12 }}>
+              <Heroi
+                numero={String(aulasHoje)}
+                rotulo="aulas hoje"
+                cor={MARCA.amarelo}
+                rotuloAcessivel={`${aulasHoje} aulas hoje`}
+              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cadastrar novo aluno"
+                onPress={() => {
+                  reiniciarRascunho('aluno', {
+                    nome: '',
+                    disciplina: '',
+                    dia: '',
+                    hora: '',
+                    telefone: '',
+                  });
+                  ir('alunoForm', { alunoId: null });
+                }}
+                hitSlop={8}
+              >
+                <Text style={[TIPO.aba, { color: MARCA.amarelo }]}>+ Novo aluno</Text>
+              </Pressable>
+            </View>
           </View>
         </CabecalhoEscuro>
       }
@@ -59,7 +84,11 @@ export function Home() {
       rodape={
         <BotaoPrimario
           rotulo="Registrar aula"
-          aoTocar={() => ir('registrar', { alunoId: null, desfecho: null })}
+          aoTocar={() => {
+            // Entrar pela lista começa um registro em branco, sem aluno.
+            reiniciarRascunho('registro', REGISTRO_INICIAL);
+            ir('registrar', { alunoId: null });
+          }}
         />
       }
     >

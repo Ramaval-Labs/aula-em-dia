@@ -10,22 +10,28 @@ import { create } from 'zustand';
 import { CHAVE_ESTADO } from '../dados/armazenamento';
 import { estadoInicial } from '../dados/semente';
 import { hoje, somarDias } from '../dominio/datas';
-import { dinheiro, primeiroNome } from '../dominio/formato';
 import {
   estenderValidade as regraEstenderValidade,
   marcarReposicao as regraMarcarReposicao,
   registrarAula as regraRegistrarAula,
   registrarPagamento as regraRegistrarPagamento,
   saldo,
-  valorPacote,
 } from '../dominio/politica';
+import { calcularPacote, type PacoteCalculado } from '../dominio/pacote';
 import type {
   Aluno,
+  BlocoSemanal,
+  ConfigPacote,
   Desfecho,
+  Disponibilidade,
   EfeitoRegistro,
   Extratos,
+  Janela,
   Lancamento,
+  MeioDePagamento,
+  Perfil,
   Politicas,
+  StatusDaProposta,
 } from '../dominio/tipos';
 
 /** Pacote padrão vendido pelo app (README: 8 aulas a R$ 80). */
@@ -37,6 +43,8 @@ type Persistido = {
   alunos: Aluno[];
   extratos: Extratos;
   politicas: Politicas;
+  perfil: Perfil;
+  disponibilidade: Disponibilidade;
 };
 
 type Dados = Persistido & {
@@ -61,13 +69,35 @@ type Dados = Persistido & {
   criarPacote: (id: string) => string;
   renovarPacote: (id: string) => { saldo: number; validade: string };
   salvarPoliticas: (p: Politicas) => void;
+  salvarPerfil: (p: Perfil) => void;
+  salvarDisponibilidade: (d: Disponibilidade) => void;
+
+  criarAluno: (dados: NovoAluno) => string;
+  atualizarAluno: (id: string, patch: Partial<Aluno>) => void;
+  arquivarAluno: (id: string) => void;
+  criarPacoteCom: (id: string, cfg: ConfigPacote) => PacoteCalculado;
+  registrarPagamentoCom: (id: string, meio: MeioDePagamento) => void;
+  salvarDisponibilidadeDoAluno: (id: string, blocos: BlocoSemanal[]) => void;
+  enviarProposta: (id: string, janela: { dia: string; hora: string }, alternativas: Janela[]) => void;
+  responderProposta: (id: string, status: StatusDaProposta) => void;
 };
+
+/** O que a tela de cadastro entrega. */
+export interface NovoAluno {
+  nome: string;
+  disciplina: string;
+  dia: string;
+  hora: string;
+  telefone?: string;
+}
 
 function gravar(estado: Persistido) {
   const bruto = JSON.stringify({
     alunos: estado.alunos,
     extratos: estado.extratos,
     politicas: estado.politicas,
+    perfil: estado.perfil,
+    disponibilidade: estado.disponibilidade,
   });
   AsyncStorage.setItem(CHAVE_ESTADO, bruto).catch(() => {
     // Persistência é conveniência: falhar aqui não pode derrubar a tela.
@@ -108,7 +138,10 @@ export const useDados = create<Dados>((set, get) => {
         if (bruto) {
           const d = JSON.parse(bruto) as Partial<Persistido>;
           if (d && Array.isArray(d.alunos) && d.extratos && d.politicas) {
-            set({ alunos: d.alunos, extratos: d.extratos, politicas: d.politicas });
+            // Espalhar sobre a semente, e não substituir campo a campo: o
+            // estado persistido cresce a cada fase, e um payload gravado por
+            // uma versão anterior deixaria os campos novos indefinidos.
+            set({ ...estadoInicial(), ...d });
           }
         }
       } catch {
@@ -252,23 +285,134 @@ export const useDados = create<Dados>((set, get) => {
         return { politicas: p };
       });
     },
+
+    salvarPerfil(perfil) {
+      set((s) => {
+        const proximo = { ...s, perfil };
+        gravar(proximo);
+        return { perfil };
+      });
+    },
+
+    salvarDisponibilidade(disponibilidade) {
+      set((s) => {
+        const proximo = { ...s, disponibilidade };
+        gravar(proximo);
+        return { disponibilidade };
+      });
+    },
+
+    criarAluno(dados) {
+      const id = `al${Date.now().toString(36)}`;
+      const novo: Aluno = {
+        id,
+        name: dados.nome.trim(),
+        disciplina: dados.disciplina,
+        dia: dados.dia,
+        hora: dados.hora,
+        telefone: dados.telefone,
+        hoje: false,
+        total: 0,
+        usadas: 0,
+        validade: '',
+        reposicoes: 0,
+        semPacote: true,
+        criadoEm: hoje(),
+        pagamento: { status: 'sem' },
+      };
+      set((s) => {
+        const proximo = { ...s, alunos: [...s.alunos, novo], extratos: { ...s.extratos, [id]: [] } };
+        gravar(proximo);
+        return { alunos: proximo.alunos, extratos: proximo.extratos };
+      });
+      return id;
+    },
+
+    atualizarAluno(id, patch) {
+      mutar(id, (a) => ({ ...a, ...patch }));
+    },
+
+    arquivarAluno(id) {
+      mutar(id, (a) => ({ ...a, arquivado: true }));
+    },
+
+    criarPacoteCom(id, cfg) {
+      const atual = get().alunoPor(id);
+      const anterior = atual ? saldo(atual) : 0;
+      const calculado = calcularPacote(cfg, anterior, hoje());
+
+      mutar(id, (a) => ({
+        ...a,
+        semPacote: false,
+        encerrado: undefined,
+        total: calculado.total,
+        usadas: 0,
+        valorPorAula: cfg.valorPorAula,
+        validade: calculado.validade,
+        validadeEstendida: false,
+        pagamento: { status: 'aberto', vence: calculado.vence },
+      }));
+
+      lancar(id, {
+        d: hoje(),
+        t: `Pacote de ${cfg.aulas} aulas`,
+        s: cfg.somarSaldo && anterior > 0
+          ? `Renovação · somou ${anterior} do pacote anterior · validade ${calculado.validade}`
+          : `Validade ${calculado.validade} · aguardando pagamento`,
+        delta: cfg.aulas,
+        saldo: calculado.saldoFinal,
+      });
+
+      return calculado;
+    },
+
+    registrarPagamentoCom(id, meio) {
+      const atual = get().alunoPor(id);
+      if (!atual) return;
+      const { aluno, lancamento } = regraRegistrarPagamento(atual, hoje(), meio);
+      mutar(id, () => aluno);
+      lancar(id, lancamento);
+    },
+
+    salvarDisponibilidadeDoAluno(id, blocos) {
+      mutar(id, (a) => ({ ...a, disponibilidade: blocos }));
+    },
+
+    enviarProposta(id, janela, alternativas) {
+      mutar(id, (a) => ({
+        ...a,
+        proposta: { janela, enviadaEm: hoje(), status: 'enviada', alternativas },
+      }));
+      lancar(id, {
+        d: hoje(),
+        t: 'Proposta de reposição enviada',
+        s: `${janela.dia}, ${janela.hora} · aguardando resposta`,
+        delta: 0,
+        saldo: saldo(get().alunoPor(id) ?? ({ total: 0, usadas: 0 } as Aluno)),
+      });
+    },
+
+    responderProposta(id, status) {
+      const atual = get().alunoPor(id);
+      if (!atual?.proposta) return;
+      const janela = atual.proposta.janela;
+
+      if (status === 'recusada') {
+        mutar(id, (a) => ({
+          ...a,
+          proposta: a.proposta ? { ...a.proposta, status } : null,
+        }));
+        return;
+      }
+
+      // Aceita ou confirmada pelo professor: vira reposição marcada de fato.
+      const { aluno, lancamento } = regraMarcarReposicao(atual, janela, hoje());
+      mutar(id, () => ({ ...aluno, proposta: null }));
+      lancar(id, lancamento);
+    },
   };
 });
 
-/** Textos de toast que dependem do domínio, num lugar só. */
-export const avisos = {
-  reposicao: (a: Aluno, janela: { dia: string; hora: string }) =>
-    `Reposição de ${primeiroNome(a.name)} em ${janela.dia}, ${janela.hora}. Mensagem enviada.`,
-  pagamento: (a: Aluno) =>
-    `Pagamento de ${primeiroNome(a.name)} registrado: ${dinheiro(valorPacote(a))}.`,
-  lembrete: (a: Aluno) =>
-    `Lembrete enviado para ${primeiroNome(a.name)} com a chave Pix.`,
-  lembreteEmLote: (n: number) =>
-    `Lembrete enviado para ${n} ${n > 1 ? 'alunos' : 'aluno'} com a chave Pix.`,
-  pausa: (a: Aluno, pausado: boolean) =>
-    `Aulas de ${primeiroNome(a.name)} ${pausado ? 'pausadas' : 'retomadas'}.`,
-  validade: (nova: string) =>
-    `Validade agora vai até ${nova}. Um horário novo entrou na lista.`,
-  politicaSalva: 'Política salva. O registro de aula já usa a regra nova.',
-  estadoZerado: 'Dados de demonstração restaurados.',
-};
+// Os textos de toast moram em ./avisos.ts. O re-export mantém os imports
+// existentes (`import { avisos, useDados } from '../estado/dados'`) válidos.
+export { avisos } from './avisos';

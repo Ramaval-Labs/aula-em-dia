@@ -24,7 +24,7 @@ build no navegador.
 ## Verificação
 
 ```bash
-npm test          # 43 testes das regras de negócio (spec/casos-de-teste.md)
+npm test          # 218 testes: regras, navegação e montagem das telas
 npm run typecheck # tsc --noEmit
 ```
 
@@ -48,12 +48,22 @@ src/dominio/                 regras puras — sem UI, sem storage, sem rede
   datas.ts                     a data "hoje" do app, num lugar só
   formato.ts                   moeda e números em pt-BR, sem depender de Intl
   tipos.ts                     Aluno, Pagamento, Lancamento, Politicas…
-  __tests__/politica.test.ts   os 41 casos de spec/casos-de-teste.md
+  agenda.ts                    motor de sugestão de reposição
+  disponibilidade.ts           grade semanal, folgas, interseção
+  pacote.ts                    montagem e cálculo de pacote
+  mensagens.ts                 textos gerados da política
+  validacao.ts                 validação de formulário
+  __tests__/                   os casos de spec/casos-de-teste.md e mais
 src/dados/                   semente (cópia de ../data/seed.json) e chaves de storage
 src/estado/                  dados persistidos, máquina de navegação e toast
 src/tema/                    tokens tipados, tipografia Satoshi, provider de tema
 src/componentes/             chassi (curvas, navbar, cabeçalho, Tela) e peças
-src/telas/                   as nove telas
+src/telas/                   as 35 telas
+  entrada/                     login e onboarding (Fluxo A)
+  reposicao/                   assistente de 3 passos (Fluxo C)
+  aluno/                       visão do aluno (Fluxo F)
+  ajustes/                     sub-telas de configuração (Fluxo E)
+  registro.ts                  o mapa tela → componente
 assets/fonts/                Satoshi 400/500/600/700/800
 ```
 
@@ -72,6 +82,11 @@ assets/fonts/                Satoshi 400/500/600/700/800
   é escolhida pelo peso em `src/tema/tipografia.ts`.
 - **A data "hoje"** está em `src/dominio/datas.ts`. O padrão é `28/08` (a data em que a
   semente foi escrita); `USAR_DATA_REAL = true` passa tudo a usar a data do aparelho.
+- **O rodapé de ação flutua sobre a lista**, com a máscara em gradiente — ele não ocupa
+  espaço no fluxo. Antes roubava ~78px de altura da lista mesmo vazio.
+- **A faixa da curva acima da navbar é 44px**, não os 58px do handoff: acima da linha da
+  curva ela é transparente, e a maior parte daqueles 58px era fundo vazio. O valor é o
+  botão de ajuste em `src/tema/tokens.ts` → `TAMANHO.faixaCurva`.
 
 ## Onde a implementação diverge do protótipo
 

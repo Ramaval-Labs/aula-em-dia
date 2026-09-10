@@ -13,6 +13,7 @@ import { Tela } from '../componentes/Tela';
 import { primeiroNome } from '../dominio/formato';
 import { efeito, saldo, saldoBaixo } from '../dominio/politica';
 import { useDados } from '../estado/dados';
+import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
@@ -20,7 +21,8 @@ import { MARCA, TAMANHO } from '../tema/tokens';
 
 export function Resultado() {
   const cores = useCores();
-  const { alunoId, desfecho, avisoH, ir, trocarTab } = useNavegacao();
+  const { alunoId, ir, trocarTab } = useNavegacao();
+  const [{ desfecho, avisoH }] = useRascunho('registro', REGISTRO_INICIAL);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const politicas = useDados((s) => s.politicas);
 
@@ -80,7 +82,7 @@ export function Resultado() {
           {geradaReposicao ? (
             <BotaoAmarelo
               rotulo="Escolher horário"
-              aoTocar={() => ir('reposicao', { janela: null })}
+              aoTocar={() => ir('reposicao')}
             />
           ) : null}
           <BotaoContorno rotulo="Voltar aos alunos" aoTocar={() => trocarTab('home')} />

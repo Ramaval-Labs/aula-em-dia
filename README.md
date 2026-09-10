@@ -15,16 +15,17 @@ turma GPE17M80081, Grupo 08.
 
 ## Estado atual
 
-O aplicativo está **implementado e navegável**, com as nove telas do design, as regras de negócio
-cobertas por testes e estado persistido no aparelho.
+O aplicativo está **implementado e navegável**, com as 35 telas do design, as regras de negócio
+cobertas por testes e estado persistido no aparelho. Os dados são mock, de propósito.
 
 | Área | Situação |
 |---|---|
-| Nove telas do handoff | prontas, nos temas claro e noturno |
-| Regras de negócio (`politica.ts`) | módulo puro, 43 testes verdes |
-| Persistência local | AsyncStorage, chave `aulaemdia.app.v3` |
-| Motor de reposição | **ainda não existe** — as janelas são as três fixas do handoff |
-| Backend / sincronização | fora do escopo até aqui |
+| 35 telas do handoff | prontas, nos temas claro e noturno |
+| Entrada e onboarding | splash, login e 4 passos que gravam dados de verdade |
+| Regras de negócio | módulos puros em `src/dominio/`, 218 testes verdes |
+| Motor de reposição | **existe**: calcula contra agenda, folgas e aulas fixas |
+| Persistência local | AsyncStorage, chave `aulaemdia.app.v4` |
+| Backend / sincronização | fora do escopo até aqui — Supabase é a escolha registrada |
 
 O que falta está em **[PROXIMOS-PASSOS.md](PROXIMOS-PASSOS.md)**.
 
@@ -51,19 +52,21 @@ Para só conferir o visual, sem celular e sem conta: `npx expo start --web`.
 
 ```bash
 cd mobile
-npm test           # 43 testes das regras de negócio
+npm test           # 218 testes
 npm run typecheck  # tsc --noEmit
 ```
 
 Os testes portam os casos tabelados de [`spec/casos-de-teste.md`](spec/casos-de-teste.md) e
-conferem as strings letra a letra, porque elas aparecem na interface.
+conferem as strings letra a letra, porque elas aparecem na interface. Há também um teste que
+monta as 28 telas do app em quatro estados diferentes — é ele que pega tela quebrada antes
+do aparelho.
 
 ## Estrutura
 
 ```
 mobile/            o aplicativo (React Native + Expo + TypeScript)
   src/dominio/       regras de negócio puras, sem UI — comece por aqui
-  src/telas/         as nove telas
+  src/telas/         as 35 telas, agrupadas por fluxo
   src/componentes/   chassi visual (curvas, navbar de vidro, cabeçalho)
   src/tema/          tokens tipados e tipografia
   README.md          mapa interno, decisões de stack e solução de problemas

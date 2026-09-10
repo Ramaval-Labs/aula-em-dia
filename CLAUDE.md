@@ -1,6 +1,7 @@
 # Instruções para o Claude Code — projeto Aula em Dia
 
 O app **já está implementado** em `mobile/` (React Native + Expo, TypeScript, roda no Expo Go).
+**35 telas**: 7 na máquina de entrada (login e onboarding) e 28 no app.
 Este repositório é o handoff de design **mais** a implementação. Leia `mobile/README.md`
 antes de mexer no código; `HANDOFF.md` é a especificação de design (era o `README.md` do
 pacote original). `README.md` na raiz agora é a apresentação do projeto, e
@@ -13,7 +14,7 @@ cd mobile
 npm install
 npx expo login        # obrigatório desde o SDK 57 (conta gratuita)
 npx expo start        # QR Code para o Expo Go
-npm test              # 43 testes das regras de negócio
+npm test              # 218 testes: regras, navegação e montagem das 28 telas
 npm run typecheck     # tsc --noEmit
 ```
 
@@ -44,8 +45,10 @@ comuns estão em `mobile/README.md`.
    `mobile/src/tema/tipografia.ts` e `dinheiro()` de `mobile/src/dominio/formato.ts`.
    Não chame `toLocaleString` direto: o Hermes nem sempre traz ICU completo.
 7. **Regras de negócio não são negociáveis e não moram na UI.** Tudo em
-   `mobile/src/dominio/politica.ts`, que é puro. Mudou regra? Atualize o teste em
-   `mobile/src/dominio/__tests__/politica.test.ts` junto, e só depois ligue na tela.
+   `mobile/src/dominio/`, que é puro e testado: `politica.ts` (saldo e faltas),
+   `agenda.ts` (motor de sugestão de reposição), `disponibilidade.ts`, `pacote.ts`,
+   `mensagens.ts`, `validacao.ts`. Mudou regra? Atualize o teste junto, e só depois
+   ligue na tela.
 8. **Copy em português do Brasil**, exatamente como nos arquivos de referência.
    Código e nomes de arquivo também em português, seguindo o que já existe em `mobile/src`.
 
@@ -61,9 +64,20 @@ comuns estão em `mobile/README.md`.
   `comEspaco(estilo, { topo, base })`. Do mesmo jeito, não sobrescreva `fontSize` nem
   `lineHeight` em cima de um `TIPO.*`: chame `texto()` com o tamanho que você quer.
 - **Data "hoje"** só sai de `mobile/src/dominio/datas.ts`. Nunca escreva `'28/08'` numa tela.
-- **Navegação** é a máquina de `mobile/src/estado/navegacao.ts`, com o contrato de
-  `spec/navegacao.md`: `ir` empilha, `voltar` desempilha, `trocarTab` zera a pilha,
-  `concluir` substitui a pilha ao terminar um fluxo.
+- **São duas máquinas de navegação.** `estado/sessao.ts` cuida da entrada (splash,
+  login, 4 passos de onboarding) e `estado/navegacao.ts` cuida do app, com o contrato
+  de `spec/navegacao.md`: `ir` empilha, `voltar` desempilha, `trocarTab` zera a pilha,
+  `concluir` substitui a pilha ao terminar um fluxo. `App.tsx` escolhe entre elas.
+  Toda tela nova entra em três lugares: a união `Tela`, o mapa `ABA_DA_TELA` e o
+  `telas/registro.ts` — há teste que cobra os três.
+- **Formulário não usa `useState` quando o valor atravessa telas.** O chassi desmonta
+  a tela ao navegar, então rascunho de assistente mora em `estado/formularios.ts`
+  (`useRascunho`). `useState` só para o que morre com a tela.
+- **Seletor de store nunca cria objeto novo.** `useDados((s) => s.x ?? [])` devolve um
+  array diferente a cada chamada e trava o app em loop de render. Use uma constante
+  estável fora do seletor.
+- **O rodapé de ação flutua sobre a lista**, com a máscara em gradiente; ele não ocupa
+  espaço no fluxo. O conteúdo recebe padding inferior do tamanho medido do rodapé.
 - **Estado persistido** em `mobile/src/estado/dados.ts` (chave `aulaemdia.app.v3`).
   A tela nunca escreve no AsyncStorage direto.
 - **Acessibilidade** conforme `spec/acessibilidade.md`: aba com alvo de 48px, pontos do
@@ -75,6 +89,10 @@ comuns estão em `mobile/README.md`.
 
 ```
 mobile/                        o app (ver mobile/README.md para o mapa interno)
+  src/telas/entrada/             login e onboarding (Fluxo A)
+  src/telas/reposicao/           o assistente de 3 passos (Fluxo C)
+  src/telas/aluno/               a visão do aluno (Fluxo F)
+  src/telas/ajustes/             as sub-telas de configuração (Fluxo E)
 README.md                      apresentação do projeto (é a página inicial no GitHub)
 HANDOFF.md                     especificação de design (telas, medidas, tokens, estado)
 PROXIMOS-PASSOS.md             backlog priorizado do que vem depois

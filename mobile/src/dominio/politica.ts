@@ -8,6 +8,7 @@ import { dinheiro } from './formato';
 import type {
   Aluno,
   Desfecho,
+  MeioDePagamento,
   EfeitoRegistro,
   Faixa,
   Filtro,
@@ -28,7 +29,7 @@ export const POLITICAS_PADRAO: Politicas = {
 
 export const saldo = (a: Aluno): number => Math.max(0, a.total - a.usadas);
 
-export const valorPacote = (a: Aluno): number => a.total * VALOR_AULA;
+export const valorPacote = (a: Aluno): number => a.total * (a.valorPorAula ?? VALOR_AULA);
 
 export const temPacote = (a: Aluno): boolean => !a.semPacote && a.total > 0;
 
@@ -145,10 +146,12 @@ export function marcarReposicao(
 export function registrarPagamento(
   a: Aluno,
   hoje: string,
+  /** Parâmetro com padrão, e não campo novo: o pagamento continua `{status, em, meio}`. */
+  meio: MeioDePagamento = 'Pix',
 ): { aluno: Aluno; lancamento: Lancamento } {
   const aluno: Aluno = {
     ...a,
-    pagamento: { status: 'pago', em: hoje, meio: 'Pix' },
+    pagamento: { status: 'pago', em: hoje, meio },
     pausado: false,
   };
   return {
@@ -156,7 +159,7 @@ export function registrarPagamento(
     lancamento: {
       d: hoje,
       t: 'Pagamento recebido',
-      s: `${dinheiro(valorPacote(a))} · Pix`,
+      s: `${dinheiro(valorPacote(a))} · ${meio}`,
       delta: 0,
       saldo: saldo(a),
       dinheiro: true,

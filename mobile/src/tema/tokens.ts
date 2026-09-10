@@ -109,7 +109,13 @@ export const TAMANHO = {
   aba: 42,
   /** área tocável da aba (spec/acessibilidade.md) mantendo o visual de 42px */
   abaToque: 48,
-  faixaCurva: 58,
+  /**
+   * Faixa da curva acima da navbar. O handoff especifica 58px, mas acima da
+   * linha da curva ela é transparente — na esquerda são ~46px de fundo vazio.
+   * 44px mantém o desenho e devolve tela para a lista. Este é o botão de
+   * ajuste: subir para 58 volta ao valor do protótipo.
+   */
+  faixaCurva: 44,
   padCabecalho: 64,
   padCabecalhoCompacto: 62,
   padCabecalhoResultado: 70,

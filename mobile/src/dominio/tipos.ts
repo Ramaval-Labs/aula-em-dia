@@ -63,6 +63,20 @@ export interface Aluno {
   ultimoLembrete?: string;
   atrasosHistoricos?: number;
   pagamento: Pagamento;
+
+  // Campos da expansão. Todos opcionais de propósito: `alunoBase` nos testes
+  // de política é uma fixture literal, e um campo obrigatório aqui quebraria
+  // trinta e poucos testes de compilação.
+  /** só dígitos, com DDD: "51999994182" */
+  telefone?: string;
+  email?: string;
+  /** sobrepõe VALOR_AULA quando o pacote deste aluno tem outro preço */
+  valorPorAula?: number;
+  disponibilidade?: BlocoSemanal[];
+  arquivado?: boolean;
+  /** dd/mm */
+  criadoEm?: string;
+  proposta?: Proposta | null;
 }
 
 export interface Lancamento {
@@ -103,3 +117,77 @@ export interface Faixa {
   texto: string;
   sufixo: string;
 }
+
+// --- Expansão: agenda, perfil, pacote e mensagens -------------------------
+
+export type DiaDaSemana = 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab' | 'dom';
+
+/** As quatro faixas que o handoff usa nas grades (A5, C2, E3, F3). */
+export type FaixaHoraria = 'manha' | 'tarde' | 'fimTarde' | 'noite';
+
+export interface BlocoSemanal {
+  dia: DiaDaSemana;
+  faixa: FaixaHoraria;
+}
+
+export interface Folga {
+  /** dd/mm */
+  de: string;
+  /** dd/mm — igual a `de` quando é um dia só */
+  ate: string;
+  motivo: string;
+}
+
+export interface Disponibilidade {
+  blocos: BlocoSemanal[];
+  aceitaForaDosBlocos: boolean;
+  sugereSabado: boolean;
+  folgas: Folga[];
+}
+
+export type FaixaDeAlunos = '1–5' | '6–15' | '16+';
+
+export type Plano = 'gratuito' | 'pago';
+
+export interface Perfil {
+  nome: string;
+  iniciais: string;
+  email: string;
+  disciplinas: string[];
+  faixaDeAlunos: FaixaDeAlunos;
+  chavePix?: string;
+  plano: Plano;
+}
+
+export type MeioDePagamento = 'Pix' | 'Dinheiro' | 'Transferência';
+
+export type TomDeMensagem = 'cordial' | 'direto' | 'formal';
+
+/** O que a tela de novo pacote / renovação monta antes de gravar. */
+export interface ConfigPacote {
+  aulas: number;
+  valorPorAula: number;
+  validadeDias: number;
+  /** somar o saldo que sobrou do pacote anterior */
+  somarSaldo: boolean;
+}
+
+export type StatusDaProposta =
+  | 'enviada'
+  | 'aceita'
+  | 'recusada'
+  | 'confirmadaPeloProfessor';
+
+export interface Proposta {
+  janela: { dia: string; hora: string };
+  /** dd/mm */
+  enviadaEm: string;
+  status: StatusDaProposta;
+  alternativas: Janela[];
+}
+
+/** Filtros da tela de escolher outro horário (C4). */
+export type FiltroDeAgenda = 'livres' | 'todos' | 'fimDeSemana';
+
+/** Estados de carga do financeiro (D6). Sem rede, é alavanca de protótipo. */
+export type EstadoDeCarga = 'ok' | 'carregando' | 'erro';

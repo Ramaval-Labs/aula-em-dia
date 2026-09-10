@@ -101,6 +101,25 @@ export function comEspaco(
   };
 }
 
+/**
+ * Igual a `texto()`, mas sem a compensação de margem.
+ *
+ * A folga negativa de `texto()` é pensada para um `<Text>` em fluxo, onde a
+ * caixa precisa ocupar exatamente a altura do protótipo. Dentro de um
+ * `TextInput`, que tem altura própria e centraliza o conteúdo, essa margem
+ * desloca o texto dentro do campo. Use isto — e só isto — em campo de
+ * formulário.
+ */
+export function textoDeCampo(tamanho: number, peso: Peso, o: Opcoes = {}): TextStyle {
+  const { marginTop: _t, marginBottom: _b, ...resto } = texto(tamanho, peso, o);
+  return {
+    ...resto,
+    // O Android desenha o texto do campo colado no topo sem isto.
+    paddingVertical: 0,
+    textAlignVertical: 'center',
+  };
+}
+
 /** Escala nomeada do README, para não repetir números soltos nas telas. */
 export const TIPO = {
   heroi: texto(30, 800, { altura: 1, tracking: -0.04 }),

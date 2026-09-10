@@ -148,6 +148,7 @@ export function Financeiro() {
               sub={detalheDoPagamento(a)}
               alturaMinima={0}
               ultima={i === aVencer.length - 1}
+              aoTocar={() => ir('aluno', { alunoId: a.id })}
               direita={
                 <Text style={[texto(14, 700, { altura: 1 }), { color: cores.texto }]}>
                   {dinheiro(valorPacote(a))}
@@ -167,6 +168,7 @@ export function Financeiro() {
               sub={detalheDoPagamento(a)}
               alturaMinima={0}
               ultima={i === pagos.length - 1}
+              aoTocar={() => ir('aluno', { alunoId: a.id })}
               direita={
                 <Text style={[texto(14, 700, { altura: 1 }), { color: cores.verde }]}>
                   {dinheiro(valorPacote(a))}

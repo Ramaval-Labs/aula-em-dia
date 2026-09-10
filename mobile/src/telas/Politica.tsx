@@ -5,26 +5,28 @@
  */
 
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { Cartao } from '../componentes/Base';
-import { BotaoPrimario, BotaoTexto, Chip } from '../componentes/Botoes';
+import { Cartao, CartaoContexto } from '../componentes/Base';
+import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
+import { Contador, Interruptor } from '../componentes/Formulario';
 import { Tela } from '../componentes/Tela';
 import { temPacote } from '../dominio/politica';
 import type { Politicas } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
+import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
-import { MARCA, RAIO } from '../tema/tokens';
+import { MARCA } from '../tema/tokens';
 
-const PRAZOS = [4, 12, 24, 48];
+const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
 const VALIDADES = [
-  { dias: 30, rotulo: '30 dias' },
-  { dias: 60, rotulo: '60 dias' },
-  { dias: 0, rotulo: 'sem prazo' },
+  { valor: 30, rotulo: '30 dias' },
+  { valor: 60, rotulo: '60 dias' },
+  { valor: 0, rotulo: 'sem prazo' },
 ];
 const LIMITE_MAXIMO = 5;
 
@@ -67,17 +69,15 @@ function diff(
 
 export function Politica() {
   const cores = useCores();
-  const { rascunho, definirRascunho, concluir, voltar } = useNavegacao();
+  const { concluir, voltar } = useNavegacao();
   const salvas = useDados((s) => s.politicas);
   const alunos = useDados((s) => s.alunos);
   const salvarPoliticas = useDados((s) => s.salvarPoliticas);
   const avisar = useToast((s) => s.avisar);
 
-  const atual = rascunho ?? salvas;
+  const [atual, atualizar] = useRascunho('politica', salvas);
   const mudou = JSON.stringify(atual) !== JSON.stringify(salvas);
   const mudanca = diff(salvas, atual, alunos.filter(temPacote).length);
-
-  const atualizar = (patch: Partial<Politicas>) => definirRascunho({ ...atual, ...patch });
 
   return (
     <Tela
@@ -110,21 +110,13 @@ export function Politica() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Prazo mínimo de aviso
         </Text>
-        <View
-          accessibilityRole="radiogroup"
-          style={{ flexDirection: 'row', gap: 6, marginTop: 10 }}
-        >
-          {PRAZOS.map((h) => (
-            <Chip
-              key={h}
-              cresce
-              variante="caixa"
-              altura={42}
-              rotulo={`${h}h`}
-              ativo={atual.avisoHoras === h}
-              aoTocar={() => atualizar({ avisoHoras: h })}
-            />
-          ))}
+        <View style={{ marginTop: 10 }}>
+          <Segmentado
+            opcoes={PRAZOS}
+            valor={atual.avisoHoras}
+            aoTrocar={(avisoHoras) => atualizar({ avisoHoras })}
+            rotuloAcessivel="Prazo mínimo de aviso"
+          />
         </View>
       </Cartao>
 
@@ -137,23 +129,11 @@ export function Politica() {
           gap: 13,
         }}
       >
-        <Pressable
-          accessibilityRole="switch"
-          accessibilityLabel="Falta avisada devolve a aula"
-          accessibilityState={{ checked: atual.avisadaDevolve }}
-          onPress={() => atualizar({ avisadaDevolve: !atual.avisadaDevolve })}
-          style={{
-            width: 44,
-            height: 26,
-            borderRadius: RAIO.pastilha,
-            padding: 3,
-            flexDirection: 'row',
-            justifyContent: atual.avisadaDevolve ? 'flex-end' : 'flex-start',
-            backgroundColor: atual.avisadaDevolve ? cores.texto : cores.linha,
-          }}
-        >
-          <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: cores.cartao }} />
-        </Pressable>
+        <Interruptor
+          ligado={atual.avisadaDevolve}
+          aoTrocar={(avisadaDevolve) => atualizar({ avisadaDevolve })}
+          rotuloAcessivel="Falta avisada devolve a aula"
+        />
         <View style={{ flex: 1 }}>
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Falta avisada devolve a aula
@@ -183,41 +163,18 @@ export function Politica() {
               Depois do limite, a falta debita
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-            <PassoDoLimite
-              rotulo="−"
-              acessivel="Diminuir o limite de reposições"
-              ativo={atual.limiteReposicoes > 0}
-              variante="menos"
-              aoTocar={() =>
-                atualizar({ limiteReposicoes: Math.max(0, atual.limiteReposicoes - 1) })
-              }
-            />
-            <Text
-              accessibilityLabel={
-                atual.limiteReposicoes === 0
-                  ? 'sem limite de reposições'
-                  : `${atual.limiteReposicoes} reposições por pacote`
-              }
-              style={[
-                texto(20, 800, { altura: 1 }),
-                { minWidth: 18, textAlign: 'center', color: cores.texto },
-              ]}
-            >
-              {atual.limiteReposicoes === 0 ? '—' : String(atual.limiteReposicoes)}
-            </Text>
-            <PassoDoLimite
-              rotulo="+"
-              acessivel="Aumentar o limite de reposições"
-              ativo={atual.limiteReposicoes < LIMITE_MAXIMO}
-              variante="mais"
-              aoTocar={() =>
-                atualizar({
-                  limiteReposicoes: Math.min(LIMITE_MAXIMO, atual.limiteReposicoes + 1),
-                })
-              }
-            />
-          </View>
+          <Contador
+            valor={atual.limiteReposicoes}
+            minimo={0}
+            maximo={LIMITE_MAXIMO}
+            aoMudar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
+            formatar={(v) => (v === 0 ? '—' : String(v))}
+            rotuloAcessivel={
+              atual.limiteReposicoes === 0
+                ? 'sem limite de reposições'
+                : `${atual.limiteReposicoes} reposições por pacote`
+            }
+          />
         </View>
       </Cartao>
 
@@ -225,93 +182,23 @@ export function Politica() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Validade do pacote
         </Text>
-        <View
-          accessibilityRole="radiogroup"
-          style={{ flexDirection: 'row', gap: 6, marginTop: 10 }}
-        >
-          {VALIDADES.map((v) => (
-            <Chip
-              key={v.dias}
-              cresce
-              variante="caixa"
-              altura={42}
-              rotulo={v.rotulo}
-              ativo={atual.validadeDias === v.dias}
-              aoTocar={() => atualizar({ validadeDias: v.dias })}
-            />
-          ))}
+        <View style={{ marginTop: 10 }}>
+          <Segmentado
+            opcoes={VALIDADES}
+            valor={atual.validadeDias}
+            aoTrocar={(validadeDias) => atualizar({ validadeDias })}
+            rotuloAcessivel="Validade do pacote"
+          />
         </View>
       </Cartao>
 
       {mudanca ? (
-        <Cartao
-          estilo={{
-            borderLeftWidth: 4,
-            borderLeftColor: MARCA.amarelo,
-            paddingVertical: 13,
-            paddingHorizontal: 15,
-          }}
-        >
-          <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-            {mudanca.titulo}
-          </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
-            {mudanca.texto}
-          </Text>
-        </Cartao>
+        <CartaoContexto
+          cor={MARCA.amarelo}
+          titulo={mudanca.titulo}
+          detalhe={mudanca.texto}
+        />
       ) : null}
     </Tela>
-  );
-}
-
-function PassoDoLimite({
-  rotulo,
-  acessivel,
-  ativo,
-  variante,
-  aoTocar,
-}: {
-  rotulo: string;
-  acessivel: string;
-  ativo: boolean;
-  variante: 'menos' | 'mais';
-  aoTocar: () => void;
-}) {
-  const cores = useCores();
-
-  const fundo = ativo
-    ? variante === 'mais'
-      ? cores.texto
-      : cores.caixa
-    : variante === 'mais'
-      ? cores.caixa
-      : cores.hover;
-  const tinta = ativo
-    ? variante === 'mais'
-      ? cores.botaoTexto
-      : cores.suave
-    : variante === 'mais'
-      ? cores.fraco
-      : cores.inativo;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={acessivel}
-      accessibilityState={{ disabled: !ativo }}
-      disabled={!ativo}
-      onPress={aoTocar}
-      hitSlop={5}
-      style={{
-        width: 38,
-        height: 38,
-        borderRadius: RAIO.contador,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: fundo,
-      }}
-    >
-      <Text style={[texto(17, 600, { altura: 1 }), { color: tinta }]}>{rotulo}</Text>
-    </Pressable>
   );
 }

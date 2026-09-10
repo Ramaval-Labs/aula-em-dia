@@ -15,6 +15,7 @@ import { Tela } from '../componentes/Tela';
 import { efeito, podeRegistrar, saldo } from '../dominio/politica';
 import type { Aluno, Desfecho, Politicas } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
+import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
@@ -42,16 +43,11 @@ function notaDoAviso(avisoH: number, p: Politicas): string {
 
 export function Registrar() {
   const cores = useCores();
-  const {
-    alunoId,
-    desfecho,
-    avisoH,
-    definirDesfecho,
-    definirAvisoH,
-    definirAluno,
-    ir,
-    voltar,
-  } = useNavegacao();
+  const { alunoId, definirAluno, ir, voltar } = useNavegacao();
+  const [{ desfecho, avisoH }, atualizarRegistro] = useRascunho(
+    'registro',
+    REGISTRO_INICIAL,
+  );
 
   const alunos = useDados((s) => s.alunos);
   const politicas = useDados((s) => s.politicas);
@@ -111,7 +107,7 @@ export function Registrar() {
               politicas={politicas}
               avisoH={avisoH}
               selecionado={desfecho === o.chave}
-              aoTocar={() => definirDesfecho(o.chave)}
+              aoTocar={() => atualizarRegistro({ desfecho: o.chave })}
             >
               {desfecho === 'avisada' && o.chave === 'avisada' ? (
                 <View
@@ -137,7 +133,7 @@ export function Registrar() {
                         rotulo={`${h}h`}
                         altura={36}
                         ativo={avisoH === h}
-                        aoTocar={() => definirAvisoH(h)}
+                        aoTocar={() => atualizarRegistro({ avisoH: h })}
                       />
                     ))}
                   </View>

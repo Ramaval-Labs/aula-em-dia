@@ -53,10 +53,13 @@ export function BotaoPrimario({
 }
 
 /** Ação de ênfase amarela. Tinta sobre amarelo é sempre a mesma. */
-export function BotaoAmarelo({ rotulo, aoTocar, estilo }: Comum) {
+export function BotaoAmarelo({ rotulo, aoTocar, desabilitado, estilo }: Comum) {
+  const cores = useCores();
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: !!desabilitado }}
+      disabled={desabilitado}
       onPress={aoTocar}
       style={({ pressed }) => [
         {
@@ -64,12 +67,23 @@ export function BotaoAmarelo({ rotulo, aoTocar, estilo }: Comum) {
           borderRadius: RAIO.cartao,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: pressed ? '#F5C41E' : MARCA.amarelo,
+          backgroundColor: desabilitado
+            ? cores.linha
+            : pressed
+              ? '#F5C41E'
+              : MARCA.amarelo,
         },
         estilo,
       ]}
     >
-      <Text style={[TIPO.botao, { color: MARCA.tintaSobreAmarelo }]}>{rotulo}</Text>
+      <Text
+        style={[
+          TIPO.botao,
+          { color: desabilitado ? cores.desabFg : MARCA.tintaSobreAmarelo },
+        ]}
+      >
+        {rotulo}
+      </Text>
     </Pressable>
   );
 }
@@ -78,15 +92,18 @@ export function BotaoAmarelo({ rotulo, aoTocar, estilo }: Comum) {
 export function BotaoContorno({
   rotulo,
   aoTocar,
+  desabilitado,
   altura = 50,
   cor,
   estilo,
 }: Comum & { altura?: number; cor?: string }) {
   const cores = useCores();
-  const traco = cor ?? cores.texto;
+  const traco = desabilitado ? cores.desabFg : (cor ?? cores.texto);
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: !!desabilitado }}
+      disabled={desabilitado}
       onPress={aoTocar}
       style={({ pressed }) => [
         {
@@ -96,7 +113,7 @@ export function BotaoContorno({
           borderColor: traco,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: pressed ? cores.amareloFraco : 'transparent',
+          backgroundColor: pressed && !desabilitado ? cores.amareloFraco : 'transparent',
         },
         estilo,
       ]}
@@ -110,6 +127,7 @@ export function BotaoContorno({
 export function BotaoPequeno({
   rotulo,
   aoTocar,
+  desabilitado,
   variante = 'contorno',
   estilo,
 }: Comum & { variante?: 'contorno' | 'amarelo' | 'perigo' }) {
@@ -119,12 +137,15 @@ export function BotaoPequeno({
     contorno: { fundo: cores.cartao, borda: cores.texto, tinta: cores.texto },
     amarelo: { fundo: MARCA.amarelo, borda: MARCA.amarelo, tinta: MARCA.tintaSobreAmarelo },
     perigo: { fundo: cores.cartao, borda: cores.vermelho, tinta: cores.vermelho },
+    apagado: { fundo: cores.cartao, borda: cores.linha, tinta: cores.desabFg },
   } as const;
-  const p = paletas[variante];
+  const p = desabilitado ? paletas.apagado : paletas[variante];
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: !!desabilitado }}
+      disabled={desabilitado}
       onPress={aoTocar}
       style={({ pressed }) => [
         {
@@ -133,9 +154,12 @@ export function BotaoPequeno({
           alignSelf: 'flex-start',
           paddingHorizontal: 14,
           borderRadius: RAIO.cartao,
-          borderWidth: variante === 'amarelo' ? 0 : 1.5,
+          borderWidth: variante === 'amarelo' && !desabilitado ? 0 : 1.5,
           borderColor: p.borda,
-          backgroundColor: pressed && variante !== 'amarelo' ? cores.amareloFraco : p.fundo,
+          backgroundColor:
+            pressed && !desabilitado && variante !== 'amarelo'
+              ? cores.amareloFraco
+              : p.fundo,
           alignItems: 'center',
           justifyContent: 'center',
         },
@@ -149,18 +173,27 @@ export function BotaoPequeno({
 }
 
 /** Ação textual de rodapé (44px, cor suave). */
-export function BotaoTexto({ rotulo, aoTocar, estilo }: Comum) {
+export function BotaoTexto({ rotulo, aoTocar, desabilitado, estilo }: Comum) {
   const cores = useCores();
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: !!desabilitado }}
+      disabled={desabilitado}
       onPress={aoTocar}
       style={[
         { height: TAMANHO.botaoSecundario, alignItems: 'center', justifyContent: 'center' },
         estilo,
       ]}
     >
-      <Text style={[texto(14, 600, { altura: 1 }), { color: cores.suave }]}>{rotulo}</Text>
+      <Text
+        style={[
+          texto(14, 600, { altura: 1 }),
+          { color: desabilitado ? cores.desabFg : cores.suave },
+        ]}
+      >
+        {rotulo}
+      </Text>
     </Pressable>
   );
 }
@@ -217,5 +250,48 @@ export function Chip({
         </Text>
       </View>
     </Pressable>
+  );
+}
+
+/**
+ * Segmentado: uma linha de opções mutuamente exclusivas.
+ *
+ * É um envelope fino sobre o `Chip` que já existe — não tem visual próprio.
+ * Serve os quatro segmentados do handoff: prazo de aviso, validade do pacote,
+ * quantidade de aulas e faixa de alunos.
+ */
+export function Segmentado<T extends string | number>({
+  opcoes,
+  valor,
+  aoTrocar,
+  altura = 42,
+  variante = 'caixa',
+  rotuloAcessivel,
+}: {
+  opcoes: { valor: T; rotulo: string }[];
+  valor: T;
+  aoTrocar: (v: T) => void;
+  altura?: number;
+  variante?: 'contorno' | 'caixa';
+  rotuloAcessivel?: string;
+}) {
+  return (
+    <View
+      accessibilityRole="radiogroup"
+      accessibilityLabel={rotuloAcessivel}
+      style={{ flexDirection: 'row', gap: 6 }}
+    >
+      {opcoes.map((o) => (
+        <Chip
+          key={String(o.valor)}
+          cresce
+          altura={altura}
+          variante={variante}
+          rotulo={o.rotulo}
+          ativo={o.valor === valor}
+          aoTocar={() => aoTrocar(o.valor)}
+        />
+      ))}
+    </View>
   );
 }

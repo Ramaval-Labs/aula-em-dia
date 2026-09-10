@@ -1,26 +1,28 @@
 /** Tela 8 — Ajustes (raiz da aba 3, Fluxo E1). */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import { Caixa, LinhaLista, Lista } from '../componentes/Base';
+import { Avatar, Caixa, LinhaLista, Lista } from '../componentes/Base';
 import { BotaoPequeno, Chip } from '../componentes/Botoes';
 import { CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
-import { PROFESSOR } from '../dados/semente';
 import { dinheiro } from '../dominio/formato';
+import { resumo as resumoDaDisponibilidade } from '../dominio/disponibilidade';
 import { temPacote, VALOR_AULA } from '../dominio/politica';
 import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useTema } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
-import { MARCA, RAIO } from '../tema/tokens';
+import { RAIO } from '../tema/tokens';
 
 export function Ajustes() {
   const { cores, tema, trocarTema } = useTema();
   const alunos = useDados((s) => s.alunos);
+  const perfil = useDados((s) => s.perfil);
   const politicas = useDados((s) => s.politicas);
+  const disponibilidade = useDados((s) => s.disponibilidade);
   const zerar = useDados((s) => s.zerar);
   const { ir, trocarTab } = useNavegacao();
   const avisar = useToast((s) => s.avisar);
@@ -47,9 +49,10 @@ export function Ajustes() {
           <View style={{ marginTop: 8 }}>
             <TituloTela tamanho={22}>Ajustes</TituloTela>
           </View>
-          <View
-            accessible
-            accessibilityLabel={`${PROFESSOR.nome}. ${comPacote} alunos com pacote, ${alunos.length} cadastrados.`}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${perfil.nome}. ${comPacote} alunos com pacote, ${alunos.length} cadastrados. Editar perfil.`}
+            onPress={() => ir('perfil')}
             style={{
               marginTop: 14,
               flexDirection: 'row',
@@ -61,32 +64,17 @@ export function Ajustes() {
               paddingHorizontal: 14,
             }}
           >
-            <View
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: RAIO.cartao,
-                backgroundColor: MARCA.amarelo,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text
-                style={[texto(15, 800, { altura: 1 }), { color: MARCA.tintaSobreAmarelo }]}
-              >
-                {PROFESSOR.iniciais}
-              </Text>
-            </View>
+            <Avatar iniciais={perfil.iniciais} />
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={[texto(14.5, 600, { altura: 1.2 }), { color: '#FFFFFF' }]}>
-                {PROFESSOR.nome}
+                {perfil.nome}
               </Text>
               <Text style={[TIPO.nota, { marginTop: 3, color: cores.elevadoSuave }]}>
                 {`${comPacote} alunos com pacote · ${alunos.length} cadastrados`}
               </Text>
             </View>
             <Text style={[texto(16, 600, { altura: 1 }), { color: cores.topoFraco }]}>›</Text>
-          </View>
+          </Pressable>
         </CabecalhoEscuro>
       }
     >
@@ -96,22 +84,22 @@ export function Ajustes() {
           sub={resumoPolitica}
           alturaMinima={62}
           chevron
-          aoTocar={() => ir('politica', { rascunho: { ...politicas } })}
+          aoTocar={() => ir('politica')}
         />
         <LinhaLista
           titulo="Minha disponibilidade"
-          sub="13 blocos · 26h por semana"
+          sub={resumoDaDisponibilidade(disponibilidade.blocos)}
           alturaMinima={62}
           chevron
-          chevronApagado
+          aoTocar={() => ir('minhaDisponibilidade')}
         />
         <LinhaLista
           titulo="Pacotes e valores padrão"
           sub={pacotePadrao}
           alturaMinima={62}
           chevron
-          chevronApagado
           ultima
+          aoTocar={() => ir('pacotesPadrao')}
         />
       </Lista>
 
@@ -138,14 +126,19 @@ export function Ajustes() {
             </View>
           }
         />
-        <LinhaLista titulo="Avisos e lembretes" chevron chevronApagado />
-        <LinhaLista titulo="Chave Pix e dados de cobrança" chevron chevronApagado />
+        <LinhaLista titulo="Avisos e lembretes" chevron aoTocar={() => ir('avisos')} />
+        <LinhaLista
+          titulo="Chave Pix e dados de cobrança"
+          sub={perfil.chavePix ?? 'não configurada'}
+          chevron
+          aoTocar={() => ir('chavePix')}
+        />
         <LinhaLista
           titulo="Conta e assinatura"
-          sub="Plano gratuito"
+          sub={perfil.plano === 'pago' ? 'Plano pago' : 'Plano gratuito'}
           chevron
-          chevronApagado
           ultima
+          aoTocar={() => ir('conta')}
         />
       </Lista>
 
