@@ -19,6 +19,7 @@ import { FaixaCurvaNavbar } from './src/componentes/Curva';
 import { Navbar } from './src/componentes/Navbar';
 import { Toast } from './src/componentes/Toast';
 import { useDados } from './src/estado/dados';
+import { exporParaDepuracao } from './src/estado/depuracao';
 import { ABA_DA_TELA, TELAS_COM_NAVBAR, useNavegacao } from './src/estado/navegacao';
 import { useSessao } from './src/estado/sessao';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
@@ -26,6 +27,9 @@ import { telaDe } from './src/telas/registro';
 import { TemaProvider, useTema } from './src/tema/TemaProvider';
 import { ARQUIVOS_DE_FONTE } from './src/tema/tipografia';
 import { TAMANHO } from './src/tema/tokens';
+
+// Só no Expo Web em desenvolvimento: deixa o script de screenshots navegar.
+exporParaDepuracao();
 
 function App() {
   const { cores, carregado: temaCarregado } = useTema();

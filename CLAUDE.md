@@ -26,6 +26,24 @@ app; sem isso ele mostra "You need to be signed in to Expo Go and Expo CLI". `np
 é interativo e pede senha — quem roda é a pessoa usuária, nunca o agente. Outros erros
 comuns estão em `mobile/README.md`.
 
+## Agente de design (`/designer`)
+
+`/designer <alvo> [comando] [pedido]` roda o Impeccable sozinho sobre uma tela, fluxo ou
+componente: salva o que existia num commit de ponto de partida, abre a branch
+`designer/<data>-<alvo>`, avalia pelo subagente `revisor-design`, aplica um commit por comando,
+confere com screenshots antes e depois (Expo Web, 390×844), detector e testes, e grava o relatório
+em `docs/design/revisoes/`. A pessoa aprova, aprova parte ou descarta. O roteiro inteiro está em
+`.claude/skills/designer/SKILL.md`.
+
+- `PRODUCT.md` e `DESIGN.md` são o contexto que o Impeccable lê. O `DESIGN.md` espelha
+  `tokens.ts` — mudou um token, atualize os dois.
+- Os hooks automáticos do Impeccable estão desligados (`IMPECCABLE_HOOK_DISABLED=1` no settings
+  global e `.impeccable/config.json` neste projeto); o detector roda dentro do `/designer`.
+- **Fora do `/designer`:** ao terminar uma mudança em `src/telas/` ou `src/componentes/`, sugira
+  em uma linha rodar `/designer <tela>`. Não rode sem a pessoa pedir.
+- Screenshot avulso de qualquer tela: `npm run capturar -- --tela <chave> [--aluno raf]`
+  (em `mobile/`; opções no topo de `mobile/scripts/capturar.mjs`).
+
 ## Regras deste projeto
 
 1. **Os arquivos `.dc.html` são referência visual, não código para copiar.** Eles usam um
@@ -34,6 +52,9 @@ comuns estão em `mobile/README.md`.
 2. **Fidelidade alta.** Os tokens vivem em `mobile/src/tema/tokens.ts` (espelho tipado de
    `tokens/tokens.json`). Não inventar valores: se faltar um token, pergunte antes de criar.
    Não escreva cor ou medida solta numa tela — importe do tema.
+   **Exceção:** numa branch `designer/*`, o `/designer` pode criar token sozinho — em
+   `tokens.json`, `tokens.ts` e `DESIGN.md` — listando cada um no relatório. A aprovação
+   acontece quando a pessoa decide mesclar a branch.
 3. **As duas curvas são obrigatórias** e sempre na mesma direção (baixa à esquerda, reta no
    meio, subindo à direita). Já implementadas em `mobile/src/componentes/Curva.tsx`.
    Não substituir por `borderRadius`. A faixa da navbar ocupa espaço no fluxo, não é overlay.
@@ -97,6 +118,9 @@ mobile/                        o app (ver mobile/README.md para o mapa interno)
   src/telas/ajustes/             as sub-telas de configuração (Fluxo E)
 README.md                      apresentação do projeto (é a página inicial no GitHub)
 HANDOFF.md                     especificação de design (telas, medidas, tokens, estado)
+PRODUCT.md, DESIGN.md          contexto de produto e sistema visual que o Impeccable lê
+docs/design/revisoes/          relatórios das rodadas do /designer (capturas ficam fora do git)
+.claude/                       skill /designer e subagente revisor-design
 PROXIMOS-PASSOS.md             backlog priorizado do que vem depois
 IMPLEMENTACAO.md               plano em 6 fases — as seis estão concluídas
 tokens/                        tokens em JSON, CSS, SCSS e Tailwind (fonte dos tokens)

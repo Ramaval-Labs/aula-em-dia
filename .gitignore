@@ -33,6 +33,12 @@ desktop.ini
 !.vscode/extensions.json
 *.swp
 
+# Impeccable: configuração local, cache do detector e capturas do /designer
+# (o relatório .md de cada rodada é versionado; as imagens não)
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+docs/design/revisoes/capturas/
+
 # Logs
 *.log
 npm-debug.*
