@@ -266,13 +266,17 @@ export function AlunoProposta() {
   const responderProposta = useDados((s) => s.responderProposta);
   const avisar = useToast((s) => s.avisar);
 
-  const sugeridas = useMemo(
-    () => (aluno ? melhores(candidatos(aluno, alunos, disponibilidade, hoje()), 3) : []),
+  const todas = useMemo(
+    () => (aluno ? candidatos(aluno, alunos, disponibilidade, hoje()) : []),
     [aluno, alunos, disponibilidade],
   );
+  const sugeridas = melhores(todas, 3);
 
   const proposta = aluno?.proposta;
   const principal = proposta?.janela ?? sugeridas[0];
+  // Sem proposta em aberto, a página é só a prévia do que o aluno veria:
+  // aceitar e recusar ficam apagados, para não confirmar nada de mentira.
+  const emPrevia = !proposta;
 
   if (!aluno || !principal) {
     return (
@@ -286,6 +290,20 @@ export function AlunoProposta() {
   }
 
   const alternativas = proposta?.alternativas ?? sugeridas.slice(1);
+
+  // Os motivos são os da janela proposta, não os da primeira sugestão do
+  // motor — a proposta pode ter saído da lista completa (C4).
+  const razoes = (
+    proposta
+      ? todas.find((c) => c.dia === principal.dia && c.hora === principal.hora)
+      : sugeridas[0]
+  )?.razoes;
+
+  const aceitar = (j: { dia: string; hora: string }) => {
+    responderProposta(aluno.id, 'aceita', { dia: j.dia, hora: j.hora });
+    avisar(`Reposição confirmada em ${j.dia}, ${j.hora}. O professor foi avisado.`);
+    ir('aluno', { alunoId: aluno.id });
+  };
 
   return (
     <Tela
@@ -308,15 +326,13 @@ export function AlunoProposta() {
       rodape={
         <>
           <BotaoPrimario
-            rotulo={`Aceitar ${principal.hora}`}
-            aoTocar={() => {
-              responderProposta(aluno.id, 'aceita');
-              avisar('Reposição confirmada. O professor foi avisado.');
-              ir('aluno', { alunoId: aluno.id });
-            }}
+            rotulo={`Aceitar ${principal.dia}, ${principal.hora}`}
+            desabilitado={emPrevia}
+            aoTocar={() => aceitar(principal)}
           />
           <BotaoTexto
             rotulo="Recusar"
+            desabilitado={emPrevia}
             aoTocar={() => {
               responderProposta(aluno.id, 'recusada');
               avisar('Recusado. Informe sua disponibilidade para novas sugestões.');
@@ -326,10 +342,21 @@ export function AlunoProposta() {
         </>
       }
     >
+      {emPrevia ? (
+        <Caixa>
+          <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
+            {`Pré-visualização: ainda não há proposta enviada para ${primeiroNome(
+              aluno.name,
+            )}. Os botões funcionam quando você enviar um horário.`}
+          </Text>
+        </Caixa>
+      ) : null}
+
+      {razoes?.length ? (
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
         <RotuloSecao>Por que esse horário</RotuloSecao>
         <View style={{ marginTop: 12, gap: 11 }}>
-          {(sugeridas[0]?.razoes ?? ['Livre na agenda dos dois.']).map((r) => (
+          {razoes.map((r) => (
             <View key={r} style={{ flexDirection: 'row', gap: 12 }}>
               <View
                 style={{
@@ -349,6 +376,7 @@ export function AlunoProposta() {
           ))}
         </View>
       </Cartao>
+      ) : null}
 
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
         <RotuloSecao>Seu saldo hoje</RotuloSecao>
@@ -383,11 +411,7 @@ export function AlunoProposta() {
               titulo={`${j.dia} · ${j.hora}`}
               sub={j.motivo}
               ultima={i === alternativas.length - 1}
-              aoTocar={() => {
-                responderProposta(aluno.id, 'aceita');
-                avisar(`Reposição confirmada em ${j.dia}, ${j.hora}.`);
-                ir('aluno', { alunoId: aluno.id });
-              }}
+              aoTocar={emPrevia ? undefined : () => aceitar(j)}
             />
           ))}
         </Lista>

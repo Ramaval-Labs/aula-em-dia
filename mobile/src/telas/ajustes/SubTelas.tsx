@@ -6,11 +6,18 @@
  * bastante para justificar arquivo próprio.
  */
 
+import * as Clipboard from 'expo-clipboard';
 import React from 'react';
 import { Text, View } from 'react-native';
 
 import { Avatar, Caixa, Cartao, LinhaLista, Lista, RotuloSecao } from '../../componentes/Base';
-import { BotaoContorno, BotaoPequeno, BotaoPrimario, Segmentado } from '../../componentes/Botoes';
+import {
+  BotaoContorno,
+  BotaoPequeno,
+  BotaoPrimario,
+  Segmentado,
+  useDoisToques,
+} from '../../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../../componentes/Cabecalho';
 import { AcaoDoCampo, CampoDeTexto, Interruptor } from '../../componentes/Formulario';
 import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
@@ -19,15 +26,15 @@ import { alternarBloco, periodoDaFolga, resumo } from '../../dominio/disponibili
 import { dinheiro } from '../../dominio/formato';
 import { AULAS_OFERECIDAS } from '../../dominio/pacote';
 import { temPacote, VALOR_AULA } from '../../dominio/politica';
-import { iniciaisDe } from '../../dominio/validacao';
-import { avisos, useDados } from '../../estado/dados';
+import { emailValido, ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
+import { AVISOS_PADRAO, avisos, useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
-import { MARCA, RAIO } from '../../tema/tokens';
+import { MARCA } from '../../tema/tokens';
 
 /** Molde comum: cabeçalho escuro com voltar e título. */
 function TelaDeAjuste({
@@ -85,7 +92,29 @@ export function PerfilProfessor() {
     faixaDeAlunos: perfil.faixaDeAlunos,
   });
 
+  // O erro aparece só no campo que a pessoa mexeu: um e-mail vazio que já
+  // veio assim não bloqueia salvar o nome.
+  const erroNome =
+    form.nome !== perfil.nome && !nomeValido(form.nome)
+      ? form.nome.trim()
+        ? ERRO.nomeCurto
+        : ERRO.nomeVazio
+      : undefined;
+  const erroEmail =
+    form.email !== perfil.email && !emailValido(form.email)
+      ? form.email.trim()
+        ? ERRO.emailInvalido
+        : ERRO.emailVazio
+      : undefined;
+  const mudou =
+    form.nome !== perfil.nome ||
+    form.email !== perfil.email ||
+    form.disciplinas.join('|') !== perfil.disciplinas.join('|') ||
+    form.faixaDeAlunos !== perfil.faixaDeAlunos;
+  const podeSalvar = mudou && !erroNome && !erroEmail;
+
   const salvar = () => {
+    if (!podeSalvar) return;
     salvarPerfil({
       ...perfil,
       nome: form.nome.trim(),
@@ -102,7 +131,7 @@ export function PerfilProfessor() {
     <TelaDeAjuste
       comTeclado
       titulo="Meu perfil"
-      rodape={<BotaoPrimario rotulo="Salvar" aoTocar={salvar} />}
+      rodape={<BotaoPrimario rotulo="Salvar" desabilitado={!podeSalvar} aoTocar={salvar} />}
     >
       <Cartao
         estilo={{
@@ -128,6 +157,7 @@ export function PerfilProfessor() {
         rotulo="Nome"
         valor={form.nome}
         aoMudar={(nome) => atualizar({ nome })}
+        erro={erroNome}
         capitalizar="words"
         tamanhoDoValor={16.5}
       />
@@ -135,6 +165,7 @@ export function PerfilProfessor() {
         rotulo="E-mail"
         valor={form.email}
         aoMudar={(email) => atualizar({ email })}
+        erro={erroEmail}
         teclado="email"
       />
       <CampoDeTexto
@@ -160,6 +191,7 @@ export function MinhaDisponibilidade() {
   const avisar = useToast((s) => s.avisar);
 
   const [d, atualizar] = useRascunho('disponibilidadeProfessor', salva);
+  const mudou = JSON.stringify(d) !== JSON.stringify(salva);
 
   const salvar = () => {
     salvarDisponibilidade(d);
@@ -171,7 +203,7 @@ export function MinhaDisponibilidade() {
     <TelaDeAjuste
       titulo="Minha disponibilidade"
       subtitulo="É a base do cálculo de reposição."
-      rodape={<BotaoPrimario rotulo="Salvar" aoTocar={salvar} />}
+      rodape={<BotaoPrimario rotulo="Salvar" desabilitado={!mudou} aoTocar={salvar} />}
     >
       <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 12 }}>
         <GradeSemanal
@@ -262,14 +294,19 @@ export function PacotesPadrao() {
   const { concluir } = useNavegacao();
   const politicas = useDados((s) => s.politicas);
   const alunos = useDados((s) => s.alunos);
+  const salvo = useDados((s) => s.pacotePadrao);
+  const salvarPacotePadrao = useDados((s) => s.salvarPacotePadrao);
   const avisar = useToast((s) => s.avisar);
 
-  const [cfg, atualizar] = useRascunho('pacote', {
-    aulas: 8,
-    valorPorAula: VALOR_AULA,
-    validadeDias: politicas.validadeDias,
-    somarSaldo: false,
-  });
+  const [cfg, atualizar] = useRascunho(
+    'pacote',
+    salvo ?? {
+      aulas: 8,
+      valorPorAula: VALOR_AULA,
+      validadeDias: politicas.validadeDias,
+      somarSaldo: false,
+    },
+  );
 
   const opcoes = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 
@@ -282,6 +319,7 @@ export function PacotesPadrao() {
         <BotaoPrimario
           rotulo="Salvar padrão"
           aoTocar={() => {
+            salvarPacotePadrao(cfg);
             avisar('Padrão de pacote salvo.');
             concluir('ajustes');
           }}
@@ -329,12 +367,11 @@ export function Avisos() {
   const cores = useCores();
   const { concluir } = useNavegacao();
   const avisar = useToast((s) => s.avisar);
-  const [ligados, setLigados] = React.useState({
-    aulaDoDia: true,
-    saldoBaixo: true,
-    reposicaoPendente: true,
-    pagamentoVencendo: false,
-  });
+  // O `?? AVISOS_PADRAO` fica fora do seletor: dentro, criaria objeto novo a
+  // cada leitura e o zustand entraria em loop de render.
+  const salvas = useDados((s) => s.preferenciasDeAviso) ?? AVISOS_PADRAO;
+  const salvarPreferencias = useDados((s) => s.salvarPreferenciasDeAviso);
+  const [ligados, setLigados] = React.useState(salvas);
 
   const itens = [
     { chave: 'aulaDoDia' as const, titulo: 'Aula do dia', sub: 'Aviso na manhã de cada aula' },
@@ -359,6 +396,7 @@ export function Avisos() {
         <BotaoPrimario
           rotulo="Salvar"
           aoTocar={() => {
+            salvarPreferencias(ligados);
             avisar('Preferências de aviso salvas.');
             concluir('ajustes');
           }}
@@ -401,6 +439,7 @@ export function ChavePix() {
   const salvarPerfil = useDados((s) => s.salvarPerfil);
   const avisar = useToast((s) => s.avisar);
   const [chave, setChave] = React.useState(perfil.chavePix ?? '');
+  const mudou = chave.trim() !== (perfil.chavePix ?? '');
 
   return (
     <TelaDeAjuste
@@ -410,6 +449,7 @@ export function ChavePix() {
       rodape={
         <BotaoPrimario
           rotulo="Salvar"
+          desabilitado={!mudou}
           aoTocar={() => {
             salvarPerfil({ ...perfil, chavePix: chave.trim() || undefined });
             avisar('Chave Pix salva.');
@@ -425,7 +465,14 @@ export function ChavePix() {
         placeholder="e-mail, telefone ou aleatória"
         sufixo={
           chave ? (
-            <AcaoDoCampo rotulo="copiar" aoTocar={() => avisar('Chave Pix copiada.')} />
+            <AcaoDoCampo
+              rotulo="copiar"
+              rotuloAcessivel="Copiar chave Pix"
+              aoTocar={() => {
+                Clipboard.setStringAsync(chave.trim()).catch(() => {});
+                avisar('Chave Pix copiada.');
+              }}
+            />
           ) : undefined
         }
       />
@@ -442,9 +489,24 @@ export function Conta() {
   const { concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const alunos = useDados((s) => s.alunos);
+  const extratos = useDados((s) => s.extratos);
+  const politicas = useDados((s) => s.politicas);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
   const sair = useSessao((s) => s.sair);
   const avisar = useToast((s) => s.avisar);
+
+  // Sair leva de volta ao login: dois toques.
+  const sairDaConta = useDoisToques(() => {
+    sair();
+    avisar('Você saiu. Até logo!');
+  });
+
+  const exportar = () => {
+    Clipboard.setStringAsync(JSON.stringify({ alunos, extratos, politicas }, null, 2)).catch(
+      () => {},
+    );
+    avisar('Dados copiados para a área de transferência.');
+  };
 
   const ativos = alunos.filter((a) => !a.arquivado).length;
   const pago = perfil.plano === 'pago';
@@ -535,40 +597,31 @@ export function Conta() {
 
       <Lista rotulo="Conta">
         <LinhaLista titulo="E-mail da conta" sub={perfil.email} />
-        <LinhaLista titulo="Alterar senha" chevron chevronApagado />
+        {/* Sem chevron: não há para onde ir enquanto o login for mock. */}
+        <LinhaLista titulo="Alterar senha" sub="Chega junto com o login de verdade" />
         <LinhaLista
           titulo="Exportar meus dados"
           sub="Copia alunos, extratos e políticas"
           chevron
-          aoTocar={() => avisar('Dados copiados para a área de transferência.')}
+          aoTocar={exportar}
         />
         <LinhaLista
-          titulo="Sair da conta"
+          titulo={sairDaConta.armado ? 'Tocar de novo para sair' : 'Sair da conta'}
           chevron
           ultima
-          aoTocar={() => {
-            sair();
-            avisar('Você saiu. Até logo!');
-          }}
+          aoTocar={sairDaConta.tocar}
         />
       </Lista>
 
-      <View
-        style={{
-          borderRadius: RAIO.cartao,
-          borderWidth: 1,
-          borderColor: cores.vermelho,
-          paddingVertical: 14,
-          paddingHorizontal: 16,
-        }}
-      >
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.vermelho }]}>
-          Apagar minha conta
-        </Text>
-        <Text style={[TIPO.corpo, { marginTop: 5, color: cores.suave }]}>
-          Some com tudo, sem volta. Nesta versão de protótipo a ação não faz nada.
-        </Text>
-      </View>
+      {/* Linha sem ação, e não um bloco com cara de botão: nesta versão
+          nada é apagado, e a tela diz isso. */}
+      <Cartao estilo={{ overflow: 'hidden' }}>
+        <LinhaLista
+          titulo="Apagar minha conta"
+          sub="Indisponível no protótipo: nesta versão nada é apagado."
+          ultima
+        />
+      </Cartao>
     </TelaDeAjuste>
   );
 }

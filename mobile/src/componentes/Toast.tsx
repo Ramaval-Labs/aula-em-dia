@@ -16,8 +16,9 @@ export function Toast() {
 
   return (
     <View
+      // Região viva educada (spec/acessibilidade.md). O papel "alert" virava
+      // anúncio assertivo na web e interrompia o leitor de tela.
       accessibilityLiveRegion="polite"
-      accessibilityRole="alert"
       pointerEvents="none"
       style={{
         position: 'absolute',

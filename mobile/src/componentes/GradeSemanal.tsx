@@ -27,8 +27,14 @@ import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
-/** Largura da coluna de rótulos, à esquerda da grade. */
-const COLUNA_DE_ROTULOS = 44;
+/**
+ * Largura da coluna de rótulos, à esquerda da grade — 38 como no protótipo
+ * (Fluxo E). Com o vão de 4, as células passam de 44px de largura a 390pt;
+ * com 44 + 5 ficavam em ~42. O rótulo quebra em duas linhas ("fim da /
+ * tarde") em vez de ser cortado.
+ */
+const COLUNA_DE_ROTULOS = 38;
+const VAO = 4;
 
 export function GradeSemanal({
   marcados,
@@ -53,9 +59,9 @@ export function GradeSemanal({
     rotuloDaFaixa === 'nome' ? nomeDaFaixa(f) : horarioDaFaixa(f);
 
   return (
-    <View style={{ gap: 5 }}>
+    <View style={{ gap: VAO }}>
       {/* cabeçalho de colunas */}
-      <View style={{ flexDirection: 'row', gap: 5 }}>
+      <View style={{ flexDirection: 'row', gap: VAO }}>
         <View style={{ width: COLUNA_DE_ROTULOS }} />
         {dias.map((d) => (
           <View key={d} style={{ flex: 1, alignItems: 'center' }}>
@@ -72,11 +78,11 @@ export function GradeSemanal({
       </View>
 
       {faixas.map((f) => (
-        <View key={f} style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+        <View key={f} style={{ flexDirection: 'row', gap: VAO, alignItems: 'center' }}>
           <View style={{ width: COLUNA_DE_ROTULOS }}>
             <Text
               style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.suave }]}
-              numberOfLines={1}
+              numberOfLines={2}
             >
               {legenda(f)}
             </Text>

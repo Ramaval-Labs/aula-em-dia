@@ -37,6 +37,7 @@ export function Disponibilidade() {
       titulo="Quando você dá aula"
       subtitulo="Toque nos blocos. É a base do cálculo de reposição."
       podeAvancar={form.blocos.length > 0}
+      motivoDesabilitado="Marque pelo menos um bloco para continuar."
       aoAvancar={continuar}
     >
       <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 12 }}>

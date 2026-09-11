@@ -75,7 +75,7 @@ export function Politica() {
   const salvarPoliticas = useDados((s) => s.salvarPoliticas);
   const avisar = useToast((s) => s.avisar);
 
-  const [atual, atualizar] = useRascunho('politica', salvas);
+  const [atual, atualizar, , descartarRascunho] = useRascunho('politica', salvas);
   const mudou = JSON.stringify(atual) !== JSON.stringify(salvas);
   const mudanca = diff(salvas, atual, alunos.filter(temPacote).length);
 
@@ -83,7 +83,15 @@ export function Politica() {
     <Tela
       cabecalho={
         <CabecalhoEscuro corDaCurva={cores.tela}>
-          <BotaoVoltar rotulo="Ajustes" aoTocar={voltar} />
+          {/* Voltar sem salvar descarta o rascunho: sem isso, a edição
+              abandonada reaparecia na próxima visita como se fosse a salva. */}
+          <BotaoVoltar
+            rotulo="Ajustes"
+            aoTocar={() => {
+              descartarRascunho();
+              voltar();
+            }}
+          />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={21}>Política de faltas</TituloTela>
           </View>

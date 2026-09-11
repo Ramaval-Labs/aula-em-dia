@@ -17,7 +17,7 @@ import { candidatos, melhores, type Candidata } from '../dominio/agenda';
 import { hoje } from '../dominio/datas';
 import { podeRepor } from '../dominio/politica';
 import { avisos, useDados } from '../estado/dados';
-import { REPOSICAO_INICIAL, useRascunho } from '../estado/formularios';
+import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
@@ -122,12 +122,12 @@ export function Reposicao() {
             {`${todas.length} horários possíveis · as ${janelas.length} melhores`}
           </Text>
 
-          {janelas.map((j, i) => (
+          {janelas.map((j) => (
             <CartaoJanela
               key={`${j.data}-${j.hora}`}
               janela={j}
-              selecionada={form.janela === i}
-              aoTocar={() => atualizar({ janela: i })}
+              selecionada={mesmaJanela(form.janela, j)}
+              aoTocar={() => atualizar({ janela: { data: j.data, hora: j.hora } })}
             />
           ))}
 
@@ -173,7 +173,7 @@ function CartaoJanela({
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected: selecionada }}
+      accessibilityState={{ checked: selecionada }}
       accessibilityLabel={`${janela.melhor ? 'Melhor opção. ' : ''}${janela.dia}, ${
         janela.hora
       }. ${janela.razoes.join(' ')}`}

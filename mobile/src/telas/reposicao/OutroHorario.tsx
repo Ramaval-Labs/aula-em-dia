@@ -11,11 +11,14 @@ import { candidatos, filtrar, porSemana, type Candidata } from '../../dominio/ag
 import { hoje } from '../../dominio/datas';
 import type { FiltroDeAgenda } from '../../dominio/tipos';
 import { useDados } from '../../estado/dados';
-import { REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
+import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
 import { RAIO } from '../../tema/tokens';
+
+/** A lista mostra os mais próximos; o resto do horizonte fica de fora. */
+const MAXIMO_NA_LISTA = 24;
 
 const FILTROS: { valor: FiltroDeAgenda; rotulo: string }[] = [
   { valor: 'livres', rotulo: 'Livres' },
@@ -37,8 +40,15 @@ export function OutroHorario() {
     [aluno, alunos, disponibilidade],
   );
   const visiveis = filtrar(lista, form.filtro);
-  const semanas = porSemana(visiveis.slice(0, 24));
-  const escolhida = form.janela !== null ? visiveis[form.janela] : null;
+  const mostradas = visiveis.slice(0, MAXIMO_NA_LISTA);
+  const semanas = porSemana(mostradas);
+  // Pela identidade, não pelo índice: o C6 monta outra lista.
+  const escolhida = visiveis.find((c) => mesmaJanela(form.janela, c)) ?? null;
+
+  const sub =
+    visiveis.length > MAXIMO_NA_LISTA
+      ? `Os ${MAXIMO_NA_LISTA} mais próximos de ${lista.length} horários possíveis`
+      : `${lista.length} horários possíveis até a validade do pacote`;
 
   return (
     <Tela
@@ -48,9 +58,7 @@ export function OutroHorario() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Escolher outro horário</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
-            {`${lista.length} horários possíveis até a validade do pacote`}
-          </Text>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>{sub}</Text>
         </CabecalhoEscuro>
       }
       conteudoEstilo={{ gap: 12 }}
@@ -83,14 +91,8 @@ export function OutroHorario() {
               <LinhaDeHorario
                 key={`${j.data}-${j.hora}`}
                 janela={j}
-                selecionada={escolhida?.data === j.data && escolhida?.hora === j.hora}
-                aoTocar={() =>
-                  atualizar({
-                    janela: visiveis.findIndex(
-                      (x) => x.data === j.data && x.hora === j.hora,
-                    ),
-                  })
-                }
+                selecionada={mesmaJanela(form.janela, j)}
+                aoTocar={() => atualizar({ janela: { data: j.data, hora: j.hora } })}
               />
             ))}
           </View>
@@ -113,7 +115,7 @@ function LinhaDeHorario({
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected: selecionada }}
+      accessibilityState={{ checked: selecionada }}
       accessibilityLabel={`${janela.dia}, ${janela.hora}. ${janela.motivo}`}
       onPress={aoTocar}
     >

@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { Text, View } from 'react-native';
 
 import { Cartao, EstadoVazio, Lista, LinhaLista } from '../componentes/Base';
-import { BotaoPrimario } from '../componentes/Botoes';
+import { BotaoPrimario, useDoisToques } from '../componentes/Botoes';
 import { CabecalhoEscuro, Eyebrow, TituloTela } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
 import { mesPorExtenso } from '../dominio/datas';
@@ -35,6 +35,9 @@ export function Financeiro() {
   const { ir } = useNavegacao();
   const avisar = useToast((s) => s.avisar);
 
+  // Ação em lote sobre vários alunos: dois toques.
+  const cobrar = useDoisToques(() => avisar(avisos.lembreteEmLote(cobrarTodos())));
+
   const totais = useMemo(() => totaisFinanceiro(alunos), [alunos]);
   const comPacote = alunos.filter(temPacote);
   const atrasos = comPacote.filter((a) => a.pagamento.status === 'atraso');
@@ -54,6 +57,12 @@ export function Financeiro() {
     const reposicoes = alunos.reduce((t, a) => t + a.reposicoes, 0);
     return { aulasDadas, faltasDebitadas, reposicoes };
   }, [extratos, alunos]);
+
+  const segmentos = [
+    { chave: 'aulas', peso: resumo.aulasDadas, cor: cores.texto },
+    { chave: 'reposicoes', peso: resumo.reposicoes, cor: MARCA.amarelo },
+    { chave: 'faltas', peso: resumo.faltasDebitadas, cor: cores.vermelho },
+  ].filter((b) => b.peso > 0);
 
   const totaisTopo = [
     { rotulo: 'A receber', valor: totais.aReceber, cor: MARCA.amarelo },
@@ -102,11 +111,15 @@ export function Financeiro() {
         atrasos.length ? (
           <BotaoPrimario
             rotulo={
-              atrasos.length > 1
-                ? `Cobrar os ${atrasos.length} em atraso`
-                : 'Cobrar quem está em atraso'
+              cobrar.armado
+                ? `Tocar de novo para cobrar ${atrasos.length} ${
+                    atrasos.length > 1 ? 'alunos' : 'aluno'
+                  }`
+                : atrasos.length > 1
+                  ? `Cobrar os ${atrasos.length} em atraso`
+                  : 'Cobrar quem está em atraso'
             }
-            aoTocar={() => avisar(avisos.lembreteEmLote(cobrarTodos()))}
+            aoTocar={cobrar.tocar}
           />
         ) : undefined
       }
@@ -208,22 +221,22 @@ export function Financeiro() {
             } ${resumo.faltasDebitadas === 1 ? 'falta debitada' : 'faltas debitadas'}`}
           </Text>
         </View>
-        <View
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          style={{ marginTop: 13, flexDirection: 'row', gap: 3 }}
-        >
-          {[
-            { peso: Math.max(1, resumo.aulasDadas), cor: cores.texto },
-            { peso: Math.max(1, resumo.reposicoes), cor: MARCA.amarelo },
-            { peso: Math.max(1, resumo.faltasDebitadas), cor: cores.vermelho },
-          ].map((b, i) => (
-            <View
-              key={i}
-              style={{ flex: b.peso, height: 6, borderRadius: 3, backgroundColor: b.cor }}
-            />
-          ))}
-        </View>
+        {/* Segmento de peso zero não aparece: um tracinho vermelho com zero
+            faltas seria um débito que não existiu. Sem nada no mês, sem barra. */}
+        {segmentos.length ? (
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{ marginTop: 13, flexDirection: 'row', gap: 3 }}
+          >
+            {segmentos.map((b) => (
+              <View
+                key={b.chave}
+                style={{ flex: b.peso, height: 6, borderRadius: 3, backgroundColor: b.cor }}
+              />
+            ))}
+          </View>
+        ) : null}
       </Cartao>
     </Tela>
   );

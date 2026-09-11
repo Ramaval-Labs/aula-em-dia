@@ -154,11 +154,27 @@ export function CampoDeTexto({
   );
 }
 
-/** Ação textual dentro do campo — o "mostrar" da senha em A3. */
-export function AcaoDoCampo({ rotulo, aoTocar }: { rotulo: string; aoTocar: () => void }) {
+/**
+ * Ação textual dentro do campo — o "mostrar" da senha em A3.
+ * `rotuloAcessivel` diz o quê ("Mostrar senha"); o rótulo visível é curto.
+ */
+export function AcaoDoCampo({
+  rotulo,
+  aoTocar,
+  rotuloAcessivel,
+}: {
+  rotulo: string;
+  aoTocar: () => void;
+  rotuloAcessivel?: string;
+}) {
   const cores = useCores();
   return (
-    <Pressable accessibilityRole="button" onPress={aoTocar} hitSlop={10}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={rotuloAcessivel ?? rotulo}
+      onPress={aoTocar}
+      hitSlop={{ top: 16, bottom: 16, left: 10, right: 10 }}
+    >
       <Text style={[texto(12, 600, { altura: 1 }), { color: cores.suave }]}>{rotulo}</Text>
     </Pressable>
   );
@@ -184,7 +200,8 @@ export function Interruptor({
       accessibilityLabel={rotuloAcessivel}
       accessibilityState={{ checked: ligado }}
       onPress={() => aoTrocar(!ligado)}
-      hitSlop={8}
+      // 26px de trilha + 11 em cima e embaixo = 48px de alvo.
+      hitSlop={{ top: 11, bottom: 11, left: 8, right: 8 }}
       style={{
         width: 44,
         height: 26,

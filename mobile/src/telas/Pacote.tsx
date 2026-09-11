@@ -32,15 +32,17 @@ export function Pacote() {
   const { alunoId, concluir, voltar } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const politicas = useDados((s) => s.politicas);
+  const padrao = useDados((s) => s.pacotePadrao);
   const criarPacoteCom = useDados((s) => s.criarPacoteCom);
   const avisar = useToast((s) => s.avisar);
 
   const renovacao = !!aluno && temPacote(aluno);
   const sobrando = aluno ? saldo(aluno) : 0;
 
+  // Parte do padrão salvo em Ajustes; o valor combinado com o aluno vence.
   const [cfg, atualizar] = useRascunho('pacote', {
-    aulas: 8,
-    valorPorAula: aluno?.valorPorAula ?? VALOR_AULA,
+    aulas: padrao?.aulas ?? 8,
+    valorPorAula: aluno?.valorPorAula ?? padrao?.valorPorAula ?? VALOR_AULA,
     validadeDias: politicas.validadeDias,
     somarSaldo: renovacao && sobrando > 0,
   } as ConfigPacote);

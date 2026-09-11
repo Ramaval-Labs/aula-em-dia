@@ -13,7 +13,7 @@ import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { mascararTelefone, mensagemDeReposicao } from '../../dominio/mensagens';
 import { avisos, useDados } from '../../estado/dados';
-import { REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
+import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
@@ -37,11 +37,17 @@ export function ConfirmarReposicao() {
     editado: false,
   });
 
-  const lista = useMemo(
-    () => (aluno ? melhores(candidatos(aluno, alunos, disponibilidade, hoje()), 8) : []),
+  const todas = useMemo(
+    () => (aluno ? candidatos(aluno, alunos, disponibilidade, hoje()) : []),
     [aluno, alunos, disponibilidade],
   );
-  const janela = form.janela !== null ? lista[form.janela] : lista[0];
+  const lista = melhores(todas, 8);
+  // A janela vem pela identidade gravada em C3 ou C4 — procurada na lista
+  // inteira, porque um horário escolhido em C4 pode não estar entre as 8
+  // melhores. Sem escolha (atalho direto), cai na melhor.
+  const janela =
+    form.janela !== null ? todas.find((c) => mesmaJanela(form.janela, c)) : lista[0];
+  const alternativas = lista.filter((c) => !janela || !mesmaJanela(janela, c)).slice(0, 2);
 
   const texto_ =
     aluno && janela ? mensagemDeReposicao(aluno, janela, politicas) : '';
@@ -53,7 +59,7 @@ export function ConfirmarReposicao() {
     const alvo = { dia: janela.dia, hora: janela.hora };
 
     if (pedirConfirmacao) {
-      enviarProposta(aluno.id, alvo, lista.slice(1, 3));
+      enviarProposta(aluno.id, alvo, alternativas);
       avisar(avisos.propostaEnviada(aluno, janela.dia, janela.hora));
       concluir('aguardandoAceite', aluno.id);
       return;

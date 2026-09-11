@@ -8,7 +8,7 @@ import { Cartao, EstadoVazio, LinhaLista, Lista } from '../componentes/Base';
 import { BotaoPrimario } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, Eyebrow, Heroi } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
-import { dinheiro } from '../dominio/formato';
+import { dinheiro, primeiroNome } from '../dominio/formato';
 import { saldo, temPacote, valorPacote } from '../dominio/politica';
 import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
@@ -62,10 +62,32 @@ export function Inadimplencia() {
     {
       titulo: 'Combinar parcelamento',
       sub: `2 × ${dinheiro(valorPacote(aluno) / 2)}, registrado à mão`,
+      // O app não guarda parcelas: o aviso diz isso em vez de fingir que anotou.
       aoTocar: () =>
-        avisar('Parcelamento anotado. O registro do recebimento continua manual.'),
+        avisar(
+          `O app ainda não guarda parcelas. Combine com ${primeiroNome(
+            aluno.name,
+          )} e registre cada pagamento quando chegar.`,
+        ),
     },
   ];
+
+  // Uma situação por status, sem "em aberto" pintado de verde.
+  const p = aluno.pagamento;
+  const situacao =
+    p.status === 'atraso'
+      ? { rotulo: 'Em atraso', cor: cores.vermelho, nota: p.venceu ? `venceu ${p.venceu}` : null }
+      : p.status === 'aberto'
+        ? { rotulo: 'Em aberto', cor: cores.texto, nota: p.vence ? `vence ${p.vence}` : null }
+        : p.status === 'pago'
+          ? { rotulo: 'Pago', cor: cores.verde, nota: p.em ? `pago em ${p.em}` : null }
+          : { rotulo: 'Sem pacote', cor: cores.textoMedio, nota: null };
+
+  const proximaAula = aluno.hoje
+    ? `Aula marcada para hoje, ${aluno.hora}`
+    : aluno.hora
+      ? `Próxima aula: ${aluno.dia}, ${aluno.hora}`
+      : 'Sem horário fixo';
 
   const linhas = [
     { rotulo: 'Aulas dadas sem pagamento', valor: String(aluno.usadas) },
@@ -138,7 +160,7 @@ export function Inadimplencia() {
         />
         <View style={{ flex: 1 }}>
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: '#FFFFFF' }]}>
-            {aluno.hoje ? `Aula marcada para hoje, ${aluno.hora}` : 'Sem aula marcada nesta semana'}
+            {proximaAula}
           </Text>
           <Text style={[TIPO.corpo, { marginTop: 4, color: cores.elevadoSuave }]}>
             {emAtraso
@@ -159,21 +181,19 @@ export function Inadimplencia() {
         >
           <View>
             <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
-              Em aberto
+              {situacao.rotulo}
             </Text>
             <Text
               style={[
                 comEspaco(texto(28, 800, { altura: 1, tracking: -0.04 }), { topo: 8 }),
-                { color: emAtraso ? cores.vermelho : cores.verde },
+                { color: situacao.cor },
               ]}
             >
               {dinheiro(valorPacote(aluno))}
             </Text>
           </View>
           <Text style={[TIPO.legenda, { color: cores.suave, textAlign: 'right' }]}>
-            {`Pacote de ${aluno.total}\n${
-              aluno.pagamento.venceu ? `venceu ${aluno.pagamento.venceu}` : ''
-            }`}
+            {`Pacote de ${aluno.total}${situacao.nota ? `\n${situacao.nota}` : ''}`}
           </Text>
         </View>
 

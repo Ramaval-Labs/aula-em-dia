@@ -5,7 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { CartaoAluno } from '../componentes/Aluno';
 import { EstadoVazio } from '../componentes/Base';
-import { BotaoPrimario, Chip } from '../componentes/Botoes';
+import { BotaoPequeno, BotaoPrimario, Chip } from '../componentes/Botoes';
 import { CabecalhoEscuro, Eyebrow, Heroi, TituloTela } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
 import { dataPorExtenso } from '../dominio/datas';
@@ -26,12 +26,22 @@ export function Home() {
   const { filtro, definirFiltro, ir } = useNavegacao();
   const reiniciarRascunho = useFormularios((s) => s.substituir);
 
-  const lista = useMemo(
-    () => ordenar(alunos.filter((a) => !a.arquivado), filtro),
-    [alunos, filtro],
-  );
+  const ativos = useMemo(() => alunos.filter((a) => !a.arquivado), [alunos]);
+  const lista = useMemo(() => ordenar(ativos, filtro), [ativos, filtro]);
 
   const aulasHoje = alunos.filter((a) => a.hoje && temPacote(a) && !a.pausado).length;
+
+  // Mesmo destino do "+ Novo aluno" e da ação do estado vazio.
+  const abrirCadastro = () => {
+    reiniciarRascunho('aluno', {
+      nome: '',
+      disciplina: '',
+      dia: '',
+      hora: '',
+      telefone: '',
+    });
+    ir('alunoForm', { alunoId: null });
+  };
 
   return (
     <Tela
@@ -62,17 +72,10 @@ export function Home() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Cadastrar novo aluno"
-                onPress={() => {
-                  reiniciarRascunho('aluno', {
-                    nome: '',
-                    disciplina: '',
-                    dia: '',
-                    hora: '',
-                    telefone: '',
-                  });
-                  ir('alunoForm', { alunoId: null });
-                }}
-                hitSlop={8}
+                onPress={abrirCadastro}
+                // O rótulo tem ~16pt de altura; o hitSlop leva o alvo a ~48pt
+                // sem mexer no visual do cabeçalho.
+                hitSlop={{ top: 16, bottom: 16, left: 12, right: 12 }}
               >
                 <Text style={[TIPO.aba, { color: MARCA.amarelo }]}>+ Novo aluno</Text>
               </Pressable>
@@ -94,6 +97,7 @@ export function Home() {
     >
       <View
         accessibilityRole="radiogroup"
+        accessibilityLabel="Ordenar alunos"
         style={{ flexDirection: 'row', gap: 7 }}
       >
         {FILTROS.map((f) => (
@@ -101,7 +105,20 @@ export function Home() {
         ))}
       </View>
 
-      {lista.length === 0 ? (
+      {ativos.length === 0 ? (
+        // Sem aluno ativo nenhum filtro ajuda: a saída é cadastrar.
+        <View style={{ alignItems: 'center' }}>
+          <EstadoVazio
+            titulo="Você ainda não tem alunos ativos."
+            nota="Cadastre um aluno para registrar aulas e acompanhar o saldo."
+          />
+          <BotaoPequeno
+            rotulo="Cadastrar aluno"
+            aoTocar={abrirCadastro}
+            estilo={{ alignSelf: 'center' }}
+          />
+        </View>
+      ) : lista.length === 0 ? (
         <EstadoVazio
           titulo="Nenhuma aula marcada para hoje."
           nota="Troque o filtro para ver todos os alunos."

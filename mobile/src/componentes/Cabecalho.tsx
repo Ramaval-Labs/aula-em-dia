@@ -45,15 +45,20 @@ export function CabecalhoEscuro({
   );
 }
 
-/** "← Alunos" — o rótulo diz para onde volta, como no protótipo. */
+/**
+ * "← Alunos" — o rótulo diz para onde volta, como no protótipo.
+ *
+ * O visual tem ~15px de altura; o `hitSlop` vertical leva o alvo a ~48px
+ * (spec/acessibilidade.md) sem empurrar o título para baixo.
+ */
 export function BotaoVoltar({ rotulo, aoTocar }: { rotulo: string; aoTocar: () => void }) {
   const cores = useCores();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Voltar para ${rotulo}`}
+      accessibilityLabel={rotulo === 'Voltar' ? 'Voltar' : `Voltar para ${rotulo}`}
       onPress={aoTocar}
-      hitSlop={12}
+      hitSlop={{ top: 16, bottom: 16, left: 12, right: 16 }}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start' }}
     >
       <Text style={[texto(15, 400, { altura: 1 }), { color: cores.suave }]}>←</Text>

@@ -81,10 +81,15 @@ export function Lembrete() {
           <BotaoContorno
             rotulo="Agendar para amanhã, 9h"
             altura={44}
-            aoTocar={() => {
-              avisar(`Lembrete de ${primeiroNome(aluno.name)} agendado para amanhã, 9h.`);
-              concluir('inadimplencia', aluno.id);
-            }}
+            // Não existe agendamento no app: o aviso diz isso e a tela fica,
+            // para o professor copiar a mensagem.
+            aoTocar={() =>
+              avisar(
+                `O agendamento de lembretes ainda não existe nesta versão. Copie a mensagem para ${primeiroNome(
+                  aluno.name,
+                )} e envie quando quiser.`,
+              )
+            }
           />
         </>
       }
