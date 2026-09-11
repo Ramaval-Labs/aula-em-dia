@@ -185,7 +185,9 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
                   comEspaco(texto(8.5, 600, { altura: 1.15, tracking: 0.16, maiuscula: true }), {
                     topo: 5,
                   }),
-                  { color: cores.topoFraco, textAlign: 'center' },
+                  // Sobre `elevado`, elevadoSuave passa nos dois temas (topoFraco
+                  // dava 4.1:1 no noturno); sem pacote o fundo é claro (caixa).
+                  { color: com ? cores.elevadoSuave : cores.textoMedio, textAlign: 'center' },
                 ]}
               >
                 {com ? 'aulas' : 'sem pacote'}
