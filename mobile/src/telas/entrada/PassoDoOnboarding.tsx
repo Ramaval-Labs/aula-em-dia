@@ -20,7 +20,7 @@ import {
 import { Tela } from '../../componentes/Tela';
 import { TOTAL_DE_PASSOS, useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { TIPO } from '../../tema/tipografia';
+import { comEspaco, TIPO } from '../../tema/tipografia';
 import { TAMANHO } from '../../tema/tokens';
 
 export function PassoDoOnboarding({
@@ -66,7 +66,7 @@ export function PassoDoOnboarding({
             <TituloTela tamanho={22}>{titulo}</TituloTela>
           </View>
           {subtitulo ? (
-            <Text style={[TIPO.corpo, { marginTop: 9, color: cores.topoFraco }]}>
+            <Text style={[comEspaco(TIPO.corpo, { topo: 9 }), { color: cores.topoFraco }]}>
               {subtitulo}
             </Text>
           ) : null}

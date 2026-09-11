@@ -17,7 +17,7 @@ import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formul
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { TAMANHO } from '../../tema/tokens';
 
 export function ConfirmarReposicao() {
@@ -83,7 +83,7 @@ export function ConfirmarReposicao() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Confirmar reposição</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {janela ? `${janela.dia}, às ${janela.hora}` : 'Escolha um horário antes'}
           </Text>
         </CabecalhoEscuro>
@@ -146,7 +146,7 @@ export function ConfirmarReposicao() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Pedir confirmação dele
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             {pedirConfirmacao
               ? 'A reposição fica aguardando o aceite'
               : 'A reposição já entra marcada na agenda'}

@@ -14,7 +14,7 @@ import { useDados } from '../../estado/dados';
 import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { RAIO, TAMANHO } from '../../tema/tokens';
 
 /** A lista mostra os mais próximos; o resto do horizonte fica de fora. */
@@ -58,7 +58,7 @@ export function OutroHorario() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Escolher outro horário</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>{sub}</Text>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>{sub}</Text>
         </CabecalhoEscuro>
       }
       conteudoEstilo={{ gap: 12 }}
@@ -142,7 +142,7 @@ function LinhaDeHorario({
             </Text>
           </View>
           <Text
-            style={[texto(12, 400, { altura: 1.45 }), { marginTop: 4, color: cores.textoMedio }]}
+            style={[comEspaco(texto(12, 400, { altura: 1.45 }), { topo: 4 }), { color: cores.textoMedio }]}
           >
             {janela.motivo}
           </Text>

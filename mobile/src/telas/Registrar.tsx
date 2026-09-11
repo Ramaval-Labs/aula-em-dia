@@ -18,7 +18,7 @@ import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { RAIO, TAMANHO } from '../tema/tokens';
 
 const DESFECHOS: { chave: Desfecho; titulo: string; sub: string }[] = [
@@ -86,7 +86,7 @@ export function Registrar() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Registrar aula</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {aluno ? `${aluno.name} · ${aluno.disciplina}` : 'Escolha o aluno da aula'}
           </Text>
         </CabecalhoEscuro>
@@ -174,8 +174,8 @@ export function Registrar() {
                   </View>
                   <Text
                     style={[
-                      texto(12, 400, { altura: 1.45 }),
-                      { marginTop: 10, color: cores.textoMedio },
+                      comEspaco(texto(12, 400, { altura: 1.45 }), { topo: 10 }),
+                      { color: cores.textoMedio },
                     ]}
                   >
                     {notaDoAviso(avisoH, politicas)}
@@ -215,7 +215,7 @@ function EscolhaDeAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => void 
         >
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[TIPO.nome, { color: cores.texto }]}>{aluno.name}</Text>
-            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.textoMedio }]}>
+            <Text style={[comEspaco(TIPO.legenda, { topo: 3 }), { color: cores.textoMedio }]}>
               {linhaDeHorario(aluno)}
             </Text>
           </View>
@@ -290,7 +290,7 @@ function CartaoDesfecho({
           />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[TIPO.nome, { color: cores.texto }]}>{titulo}</Text>
-            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.textoMedio }]}>
+            <Text style={[comEspaco(TIPO.legenda, { topo: 3 }), { color: cores.textoMedio }]}>
               {selecionado ? ef.nota : sub}
             </Text>
           </View>

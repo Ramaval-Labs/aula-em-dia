@@ -33,7 +33,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { MARCA, TAMANHO } from '../../tema/tokens';
 
 /** Molde comum: cabeçalho escuro com voltar e título. */
@@ -62,7 +62,7 @@ function TelaDeAjuste({
             <TituloTela tamanho={22}>{titulo}</TituloTela>
           </View>
           {subtitulo ? (
-            <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+            <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
               {subtitulo}
             </Text>
           ) : null}
@@ -147,7 +147,7 @@ export function PerfilProfessor() {
           <Text style={[texto(15, 600, { altura: 1.2 }), { color: cores.texto }]}>
             {form.nome || 'Sem nome'}
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             {form.disciplinas.join(' e ') || 'Nenhuma disciplina'}
           </Text>
         </View>
@@ -231,7 +231,7 @@ export function MinhaDisponibilidade() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Aceitar reposição fora dos blocos
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             Só quando não houver outra saída
           </Text>
         </View>
@@ -255,7 +255,7 @@ export function MinhaDisponibilidade() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Sugerir sábados
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             Entra na lista de horários possíveis
           </Text>
         </View>
@@ -341,7 +341,7 @@ export function PacotesPadrao() {
       </Cartao>
 
       <CampoDeTexto
-        rotulo="Valor por aula"
+        rotulo="Valor por aula, em R$"
         valor={String(cfg.valorPorAula)}
         aoMudar={(v) => atualizar({ valorPorAula: Number(v.replace(/\D/g, '')) || 0 })}
         teclado="numerico"
@@ -423,7 +423,7 @@ export function Avisos() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               {i.titulo}
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>{i.sub}</Text>
+            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>{i.sub}</Text>
           </View>
         </Cartao>
       ))}
@@ -538,7 +538,7 @@ export function Conta() {
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
         <RotuloSecao>Plano atual</RotuloSecao>
         <Text
-          style={[texto(20, 700, { altura: 1.2 }), { marginTop: 9, color: cores.texto }]}
+          style={[comEspaco(texto(20, 700, { altura: 1.2 }), { topo: 9 }), { color: cores.texto }]}
         >
           {pago ? 'Pago' : 'Gratuito'}
         </Text>
@@ -562,7 +562,7 @@ export function Conta() {
                 }}
               />
             </View>
-            <Text style={[TIPO.nota, { marginTop: 9, color: cores.textoMedio }]}>
+            <Text style={[comEspaco(TIPO.nota, { topo: 9 }), { color: cores.textoMedio }]}>
               {`${ativos} de ${LIMITE_GRATUITO} alunos usados`}
             </Text>
           </>

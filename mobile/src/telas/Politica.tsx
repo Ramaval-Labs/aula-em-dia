@@ -19,7 +19,7 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA } from '../tema/tokens';
 
 const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
@@ -146,7 +146,7 @@ export function Politica() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Falta avisada devolve a aula
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             {atual.avisadaDevolve
               ? 'Dentro do prazo, o saldo não é debitado'
               : 'A aula é debitada mesmo com aviso'}
@@ -167,7 +167,7 @@ export function Politica() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               Reposições por pacote
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
               Depois do limite, a falta debita
             </Text>
           </View>

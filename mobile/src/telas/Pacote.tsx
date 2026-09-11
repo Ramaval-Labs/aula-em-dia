@@ -18,7 +18,7 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { TAMANHO } from '../tema/tokens';
 
 const OPCOES = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
@@ -72,7 +72,7 @@ export function Pacote() {
               {renovacao ? 'Renovar pacote' : 'Novo pacote'}
             </TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {aluno ? aluno.name : ''}
           </Text>
         </CabecalhoEscuro>
@@ -100,7 +100,7 @@ export function Pacote() {
       </Cartao>
 
       <CampoDeTexto
-        rotulo="Valor por aula"
+        rotulo="Valor por aula, em R$"
         valor={String(cfg.valorPorAula)}
         aoMudar={(v) => atualizar({ valorPorAula: Number(v.replace(/\D/g, '')) || 0 })}
         teclado="numerico"
@@ -140,7 +140,7 @@ export function Pacote() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               {`Somar as ${sobrando} ${sobrando === 1 ? 'aula' : 'aulas'} que sobraram`}
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
               Sem isso, o saldo antigo é descartado
             </Text>
           </View>
@@ -148,7 +148,7 @@ export function Pacote() {
       ) : null}
 
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           Resumo
         </Text>
         <View style={{ marginTop: 11, gap: 7 }}>

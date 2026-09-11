@@ -16,7 +16,7 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { TIPO } from '../tema/tipografia';
+import { comEspaco, TIPO } from '../tema/tipografia';
 import { TAMANHO } from '../tema/tokens';
 
 const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
@@ -70,7 +70,7 @@ export function Lembrete() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Lembrete de cobrança</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {`Para ${primeiroNome(aluno.name)}`}
           </Text>
         </CabecalhoEscuro>
@@ -97,7 +97,7 @@ export function Lembrete() {
       }
     >
       <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           Tom da mensagem
         </Text>
         <View style={{ marginTop: 10 }}>

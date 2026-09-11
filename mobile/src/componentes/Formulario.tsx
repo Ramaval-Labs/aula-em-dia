@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 
 import { useCores } from '../tema/TemaProvider';
-import { texto, textoDeCampo, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, textoDeCampo, TIPO } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
 export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'telefone';
@@ -88,7 +88,7 @@ export function CampoDeTexto({
       >
         <Text
           style={[
-            texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
+            TIPO.rotulo,
             { color: erro ? cores.vermelho : cores.suave },
           ]}
         >
@@ -141,12 +141,12 @@ export function CampoDeTexto({
       {erro ? (
         <Text
           accessibilityLiveRegion="polite"
-          style={[TIPO.nota, { marginTop: 6, paddingHorizontal: 2, color: cores.vermelho }]}
+          style={[comEspaco(TIPO.nota, { topo: 6 }), { paddingHorizontal: 2, color: cores.vermelho }]}
         >
           {erro}
         </Text>
       ) : ajuda ? (
-        <Text style={[TIPO.nota, { marginTop: 6, paddingHorizontal: 2, color: cores.textoMedio }]}>
+        <Text style={[comEspaco(TIPO.nota, { topo: 6 }), { paddingHorizontal: 2, color: cores.textoMedio }]}>
           {ajuda}
         </Text>
       ) : null}

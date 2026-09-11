@@ -43,7 +43,7 @@ import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { MARCA, TAMANHO } from '../../tema/tokens';
 
 /** Referencia estavel para aluno sem lancamentos. */
@@ -64,9 +64,10 @@ export function VerComoAluno() {
             <Eyebrow>Pré-visualização</Eyebrow>
           </View>
           <Text
+            accessibilityRole="header"
             style={[
-              texto(22, 600, { altura: 1.2, tracking: -0.02 }),
-              { marginTop: 10, color: '#FFFFFF' },
+              comEspaco(texto(22, 600, { altura: 1.2, tracking: -0.02 }), { topo: 10 }),
+              { color: cores.topoTexto },
             ]}
           >
             {aluno ? `O que ${primeiroNome(aluno.name)} vê` : 'O que o aluno vê'}
@@ -125,7 +126,7 @@ function TopoDoAluno({ children }: { children: React.ReactNode }) {
           gap: 12,
         }}
       >
-        <Wordmark cor="#FFFFFF" tamanho={14} alturaDasBarras={15} />
+        <Wordmark cor={cores.topoTexto} tamanho={14} alturaDasBarras={15} />
         <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.topoFraco }]}>
           {`${primeiroNome(perfil.nome)} · ${perfil.disciplinas[0] ?? ''}`}
         </Text>
@@ -173,11 +174,12 @@ export function AlunoSaldo() {
               rotulo="aulas"
               tamanho={52}
               alinhar="esquerda"
-              cor={restam <= 2 ? MARCA.amarelo : '#FFFFFF'}
-              rotuloAcessivel={`${restam} aulas restantes`}
+              cor={restam <= 2 ? MARCA.amarelo : cores.topoTexto}
+              // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
+              rotuloAcessivel={com ? `${restam} aulas restantes de ${aluno.total}` : 'sem pacote'}
             />
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 12, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 12 }), { color: cores.topoFraco }]}>
             {com
               ? `Pacote de ${aluno.total} aulas, ${aluno.usadas} já usadas. Válido até ${aluno.validade}.`
               : 'Sem pacote ativo no momento.'}
@@ -222,8 +224,8 @@ export function AlunoSaldo() {
         <RotuloSecao>A regra combinada</RotuloSecao>
         <Text
           style={[
-            texto(14.5, 400, { altura: 1.6 }),
-            { marginTop: 11, color: cores.textoMedio },
+            comEspaco(texto(14.5, 400, { altura: 1.6 }), { topo: 11 }),
+            { color: cores.textoMedio },
           ]}
         >
           {comoOAlunoVaiLer(politicas, false)}
@@ -313,9 +315,10 @@ export function AlunoProposta() {
             <Eyebrow>{`${primeiroNome(perfil.nome)} propôs uma reposição`}</Eyebrow>
           </View>
           <Text
+            accessibilityRole="header"
             style={[
-              texto(26, 600, { altura: 1.2, tracking: -0.03 }),
-              { marginTop: 12, color: '#FFFFFF' },
+              comEspaco(texto(26, 600, { altura: 1.2, tracking: -0.03 }), { topo: 12 }),
+              { color: cores.topoTexto },
             ]}
           >
             {`${principal.dia}\nàs ${principal.hora}`}
@@ -390,7 +393,7 @@ export function AlunoProposta() {
           </Text>
           <Text style={[texto(15, 600, { altura: 1 }), { color: cores.textoMedio }]}>aulas</Text>
         </View>
-        <Text style={[TIPO.nota, { marginTop: 9, color: cores.textoMedio }]}>
+        <Text style={[comEspaco(TIPO.nota, { topo: 9 }), { color: cores.textoMedio }]}>
           Aceitar não muda o saldo.
         </Text>
       </Cartao>
@@ -440,14 +443,15 @@ export function AlunoDisponibilidade() {
       cabecalho={
         <TopoDoAluno>
           <Text
+            accessibilityRole="header"
             style={[
-              texto(22, 600, { altura: 1.25, tracking: -0.02 }),
-              { marginTop: 20, color: '#FFFFFF' },
+              comEspaco(texto(22, 600, { altura: 1.25, tracking: -0.02 }), { topo: 20 }),
+              { color: cores.topoTexto },
             ]}
           >
             Quando você pode repor?
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 9, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 9 }), { color: cores.topoFraco }]}>
             Marque os blocos possíveis. Nada é agendado agora.
           </Text>
         </TopoDoAluno>

@@ -141,7 +141,7 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               >
                 {aluno.name}
               </Text>
-              <Text style={[TIPO.legenda, { marginTop: 4, color: cores.textoMedio }]}>
+              <Text style={[comEspaco(TIPO.legenda, { topo: 4 }), { color: cores.textoMedio }]}>
                 {linhaDeHorario(aluno)}
               </Text>
               {com ? (
@@ -175,7 +175,7 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               <Text
                 style={[
                   texto(24, 800, { altura: 0.9, tracking: -0.04 }),
-                  { color: !com ? cores.fraco : baixo ? MARCA.amarelo : '#FFFFFF' },
+                  { color: !com ? cores.fraco : baixo ? MARCA.amarelo : cores.topoTexto },
                 ]}
               >
                 {com ? String(restam) : '—'}
@@ -276,7 +276,7 @@ export function LinhaExtrato({ lancamento, ultima }: { lancamento: Lancamento; u
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           {lancamento.t}
         </Text>
-        <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>{lancamento.s}</Text>
+        <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>{lancamento.s}</Text>
       </View>
       <View style={{ alignItems: 'flex-end' }}>
         <Text style={[texto(13.5, 700, { altura: 1 }), { color: cor }]}>{deltaTexto}</Text>

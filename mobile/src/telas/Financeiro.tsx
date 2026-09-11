@@ -66,7 +66,7 @@ export function Financeiro() {
 
   const totaisTopo = [
     { rotulo: 'A receber', valor: totais.aReceber, cor: MARCA.amarelo },
-    { rotulo: 'Recebido', valor: totais.recebido, cor: '#FFFFFF' },
+    { rotulo: 'Recebido', valor: totais.recebido, cor: cores.topoTexto },
     { rotulo: 'Em atraso', valor: totais.emAtraso, cor: cores.vermelhoSobreTopo },
   ];
 
@@ -202,7 +202,7 @@ export function Financeiro() {
       ) : null}
 
       <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 16 }}>
-        <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           {`Aulas dadas em ${mesPorExtenso().split(' de ')[0].toLowerCase()}`}
         </Text>
         <View

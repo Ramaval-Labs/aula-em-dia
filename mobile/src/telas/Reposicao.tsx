@@ -21,7 +21,7 @@ import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../estado/formulari
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA, RAIO, TAMANHO } from '../tema/tokens';
 
 /** "Sexta, 29/08" → "sexta, 29/08", para caber no meio da frase do botão. */
@@ -80,7 +80,7 @@ export function Reposicao() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Escolher horário</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>{sub}</Text>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>{sub}</Text>
         </CabecalhoEscuro>
       }
       conteudoEstilo={{ gap: 9, paddingBottom: 12 }}
@@ -106,7 +106,7 @@ export function Reposicao() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Limite de reposições atingido
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
             {aluno
               ? `${aluno.reposicoes} de ${politicas.limiteReposicoes} usadas neste pacote. Sua política não permite mais.`
               : ''}
@@ -120,7 +120,7 @@ export function Reposicao() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Nenhum horário cabe
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
             A agenda até a validade do pacote está cheia. Veja as saídas possíveis.
           </Text>
           <View style={{ marginTop: 11 }}>
@@ -131,8 +131,8 @@ export function Reposicao() {
         <>
           <Text
             style={[
-              TIPO.eyebrow,
-              { letterSpacing: 1.6, color: cores.textoMedio, marginBottom: 2 },
+              comEspaco(TIPO.rotulo, { base: 2 }),
+              { color: cores.textoMedio },
             ]}
           >
             {`${todas.length} horários possíveis · as ${janelas.length} melhores`}

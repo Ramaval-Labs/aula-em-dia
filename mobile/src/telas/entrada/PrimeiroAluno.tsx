@@ -23,7 +23,7 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { RAIO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
@@ -169,7 +169,7 @@ export function PrimeiroAluno() {
             borderBottomColor: cores.linha,
           }}
         >
-          <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+          <Text style={[TIPO.rotulo, { color: cores.suave }]}>
             Como vai ficar na home
           </Text>
         </View>
@@ -197,7 +197,7 @@ function CaixaDeValor({ rotulo, valor }: { rotulo: string; valor: string }) {
         {rotulo}
       </Text>
       <Text
-        style={[texto(15, 600, { altura: 1 }), { marginTop: 7, color: cores.texto }]}
+        style={[comEspaco(texto(15, 600, { altura: 1 }), { topo: 7 }), { color: cores.texto }]}
       >
         {valor}
       </Text>

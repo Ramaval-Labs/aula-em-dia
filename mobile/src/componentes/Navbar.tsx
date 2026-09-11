@@ -163,7 +163,7 @@ function AbaItem({
               />
             </Svg>
             {ativa ? (
-              <Text numberOfLines={1} style={[TIPO.aba, { color: '#FFFFFF' }]}>
+              <Text numberOfLines={1} style={[TIPO.aba, { color: cores.topoTexto }]}>
                 {descricao.rotulo}
               </Text>
             ) : null}

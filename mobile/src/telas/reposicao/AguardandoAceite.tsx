@@ -13,7 +13,7 @@ import { avisos, useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { MARCA, TAMANHO } from '../../tema/tokens';
 
 export function AguardandoAceite() {
@@ -90,7 +90,7 @@ export function AguardandoAceite() {
               {`${proposta.janela.dia}, ${proposta.janela.hora}`}
             </TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {`Enviada em ${proposta.enviadaEm}${dias > 0 ? `, há ${dias} dias` : ', hoje'}`}
           </Text>
         </CabecalhoEscuro>
@@ -117,7 +117,7 @@ export function AguardandoAceite() {
 
       {proposta.alternativas.length > 0 ? (
         <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-          <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+          <Text style={[TIPO.rotulo, { color: cores.suave }]}>
             Alternativas que ele também recebeu
           </Text>
           <View style={{ marginTop: 11, gap: 8 }}>

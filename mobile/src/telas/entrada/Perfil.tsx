@@ -12,7 +12,7 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto } from '../../tema/tipografia';
+import { texto, TIPO } from '../../tema/tipografia';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
 /** Catálogo sugerido; "+ outra" acrescenta o que o professor escrever. */
@@ -93,7 +93,7 @@ export function Perfil() {
       <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
         <Text
           style={[
-            texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
+            TIPO.rotulo,
             { color: cores.suave },
           ]}
         >
@@ -118,7 +118,7 @@ export function Perfil() {
       <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
         <Text
           style={[
-            texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
+            TIPO.rotulo,
             { color: cores.suave },
           ]}
         >

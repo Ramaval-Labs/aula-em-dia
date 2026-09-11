@@ -14,7 +14,7 @@ import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useTema } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
 export function Ajustes() {
@@ -76,10 +76,10 @@ export function Ajustes() {
           >
             <Avatar iniciais={perfil.iniciais} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[texto(14.5, 600, { altura: 1.2 }), { color: '#FFFFFF' }]}>
+              <Text style={[texto(14.5, 600, { altura: 1.2 }), { color: cores.topoTexto }]}>
                 {perfil.nome}
               </Text>
-              <Text style={[TIPO.nota, { marginTop: 3, color: cores.elevadoSuave }]}>
+              <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.elevadoSuave }]}>
                 {`${comPacote} alunos com pacote · ${alunos.length} cadastrados`}
               </Text>
             </View>
@@ -156,7 +156,7 @@ export function Ajustes() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Estado do protótipo
         </Text>
-        <Text style={[TIPO.corpo, { marginTop: 5, color: cores.textoMedio }]}>
+        <Text style={[comEspaco(TIPO.corpo, { topo: 5 }), { color: cores.textoMedio }]}>
           Tudo o que você registra fica salvo neste aparelho. Zerar volta aos quatro alunos
           originais.
         </Text>

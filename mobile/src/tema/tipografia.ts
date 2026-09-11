@@ -133,5 +133,11 @@ export const TIPO = {
   legenda: texto(12, 400, { altura: 1.4 }),
   nota: texto(11.5, 400, { altura: 1.55 }),
   eyebrow: texto(10, 600, { altura: 1, tracking: 0.18, maiuscula: true }),
+  /**
+   * Rótulo de campo e de seção (10px, 0.16em, caixa alta) — o do Fluxo A e o
+   * dos cartões-lista. Criado pelo /designer: estava reescrito à mão em várias
+   * telas, ou montado como `TIPO.eyebrow` com `letterSpacing: 1.6` por cima.
+   */
+  rotulo: texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
   micro: texto(9, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
 } as const;

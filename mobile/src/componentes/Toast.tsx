@@ -42,7 +42,7 @@ export function Toast() {
           borderRadius: 2,
         }}
       />
-      <Text style={[texto(13, 500, { altura: 1.4 }), { flex: 1, color: '#FFFFFF' }]}>
+      <Text style={[texto(13, 500, { altura: 1.4 }), { flex: 1, color: cores.topoTexto }]}>
         {mensagem}
       </Text>
     </View>

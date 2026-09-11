@@ -114,7 +114,7 @@ export function Inadimplencia() {
               <Text
                 style={[
                   comEspaco(texto(22, 600, { altura: 1.15, tracking: -0.02 }), { topo: 8 }),
-                  { color: '#FFFFFF' },
+                  { color: cores.topoTexto },
                 ]}
               >
                 {aluno.name}
@@ -124,7 +124,7 @@ export function Inadimplencia() {
               numero={com ? String(saldo(aluno)) : '—'}
               rotulo="aulas"
               tamanho={28}
-              cor="#FFFFFF"
+              cor={cores.topoTexto}
               rotuloAcessivel={com ? `${saldo(aluno)} aulas restantes` : 'sem pacote'}
             />
           </View>
@@ -159,10 +159,10 @@ export function Inadimplencia() {
           }}
         />
         <View style={{ flex: 1 }}>
-          <Text style={[texto(14, 600, { altura: 1.25 }), { color: '#FFFFFF' }]}>
+          <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.topoTexto }]}>
             {proximaAula}
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.elevadoSuave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.elevadoSuave }]}>
             {emAtraso
               ? `O pagamento venceu há ${aluno.pagamento.dias} dias. Você decide se dá a aula.`
               : 'Pagamento regularizado.'}
@@ -180,7 +180,7 @@ export function Inadimplencia() {
           }}
         >
           <View>
-            <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+            <Text style={[TIPO.rotulo, { color: cores.suave }]}>
               {situacao.rotulo}
             </Text>
             <Text

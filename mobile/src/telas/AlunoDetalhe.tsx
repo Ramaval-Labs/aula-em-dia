@@ -24,7 +24,7 @@ import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA } from '../tema/tokens';
 
 /** Referencia estavel para aluno sem lancamentos. */
@@ -86,8 +86,8 @@ export function AlunoDetalhe() {
             }}
           >
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[TIPO.tituloInterno, { color: '#FFFFFF' }]}>{aluno.name}</Text>
-              <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+              <Text accessibilityRole="header" style={[TIPO.tituloInterno, { color: cores.topoTexto }]}>{aluno.name}</Text>
+              <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
                 {linhaDeHorario(aluno)}
               </Text>
             </View>
@@ -95,7 +95,7 @@ export function AlunoDetalhe() {
               numero={com ? String(restam) : '—'}
               rotulo="restam"
               tamanho={34}
-              cor={!com ? cores.fraco : baixo ? MARCA.amarelo : '#FFFFFF'}
+              cor={!com ? cores.fraco : baixo ? MARCA.amarelo : cores.topoTexto}
               rotuloAcessivel={
                 com ? `${restam} aulas restantes de ${aluno.total}` : 'sem pacote ativo'
               }
@@ -121,7 +121,7 @@ export function AlunoDetalhe() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Aulas pausadas
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
             Fora da lista de registro até o pagamento ser regularizado.
           </Text>
           <View style={{ marginTop: 11 }}>
@@ -202,7 +202,7 @@ export function AlunoDetalhe() {
               gap: 12,
             }}
           >
-            <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+            <Text style={[TIPO.rotulo, { color: cores.suave }]}>
               Pacote atual
             </Text>
             <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.textoMedio }]}>

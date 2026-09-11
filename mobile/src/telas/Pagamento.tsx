@@ -35,7 +35,7 @@ const MEIOS: { valor: MeioDePagamento; rotulo: string }[] = [
 ];
 
 /** Rótulo de campo do Fluxo A — o mesmo do `CampoDeTexto`. */
-const ROTULO = texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true });
+const ROTULO = TIPO.rotulo;
 /** Valor em destaque dentro de cartão, como os totais do Financeiro. */
 const VALOR = comEspaco(texto(19, 800, { altura: 1, tracking: -0.03 }), { topo: 9 });
 
@@ -87,7 +87,7 @@ export function Pagamento() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Registrar pagamento</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {`${aluno.name} · pacote de ${aluno.total} aulas`}
           </Text>
         </CabecalhoEscuro>

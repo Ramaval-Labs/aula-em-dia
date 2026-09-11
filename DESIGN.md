@@ -94,6 +94,12 @@ typography:
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "0.18em"
+  rotulo:
+    fontFamily: "Satoshi"
+    fontSize: "10px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "0.16em"
   micro:
     fontFamily: "Satoshi"
     fontSize: "9px"
@@ -265,6 +271,8 @@ aberto fazem o papel de legenda técnica.
 - **Legenda** (400, 12px, 1.4): meta do cartão (disciplina, horário).
 - **Nota** (400, 11.5px, 1.55): observações e rodapés de cartão.
 - **Eyebrow** (600, 10px, 0.18em, caixa alta): data no cabeçalho.
+- **Rótulo** (600, 10px, 0.16em, caixa alta): rótulo de campo e de seção ("E-MAIL",
+  "EXTRATO", "EM ATRASO"). `TIPO.rotulo`.
 - **Micro** (600, 9px, 0.16em, caixa alta): unidade do contador ("aulas"), rótulos mínimos.
 
 ### Named Rules

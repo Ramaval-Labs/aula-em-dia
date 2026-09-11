@@ -9,7 +9,7 @@ import { Barras } from '../../componentes/Marca';
 import { Tela } from '../../componentes/Tela';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto } from '../../tema/tipografia';
+import { comEspaco, texto } from '../../tema/tipografia';
 import { MARCA, TAMANHO } from '../../tema/tokens';
 
 const PASSOS = [
@@ -41,12 +41,12 @@ export function BoasVindas() {
       cabecalho={
         <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <View style={{ marginTop: 26 }}>
-            <Barras altura={22} espaco={4} cor="#FFFFFF" />
+            <Barras altura={22} espaco={4} cor={cores.topoTexto} />
           </View>
           <Text
             style={[
-              texto(27, 600, { altura: 1.2, tracking: -0.03 }),
-              { marginTop: 14, color: '#FFFFFF' },
+              comEspaco(texto(27, 600, { altura: 1.2, tracking: -0.03 }), { topo: 14 }),
+              { color: cores.topoTexto },
             ]}
           >
             Aula em Dia
@@ -73,16 +73,16 @@ export function BoasVindas() {
             </Text>
             <Text
               style={[
-                texto(19, 600, { altura: 1.3 }),
-                { marginTop: 8, color: cores.texto },
+                comEspaco(texto(19, 600, { altura: 1.3 }), { topo: 8 }),
+                { color: cores.texto },
               ]}
             >
               {p.titulo}
             </Text>
             <Text
               style={[
-                texto(14, 400, { altura: 1.5 }),
-                { marginTop: 6, color: cores.textoMedio },
+                comEspaco(texto(14, 400, { altura: 1.5 }), { topo: 6 }),
+                { color: cores.textoMedio },
               ]}
             >
               {p.apoio}

@@ -18,7 +18,7 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { RAIO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
@@ -82,7 +82,7 @@ export function PoliticaInicial() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Falta avisada devolve a aula
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             {p.avisadaDevolve
               ? 'Dentro do prazo, o saldo não é debitado'
               : 'A aula é debitada mesmo com aviso'}
@@ -103,7 +103,7 @@ export function PoliticaInicial() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               Reposições por pacote
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
               Depois do limite, a falta debita
             </Text>
           </View>
@@ -147,7 +147,7 @@ export function PoliticaInicial() {
       >
         <Text
           style={[
-            texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
+            TIPO.rotulo,
             { color: cores.topoFraco },
           ]}
         >
@@ -155,8 +155,8 @@ export function PoliticaInicial() {
         </Text>
         <Text
           style={[
-            texto(13.5, 400, { altura: 1.5 }),
-            { marginTop: 9, color: '#FFFFFF' },
+            comEspaco(texto(13.5, 400, { altura: 1.5 }), { topo: 9 }),
+            { color: cores.topoTexto },
           ]}
         >
           {comoOAlunoVaiLer(p)}

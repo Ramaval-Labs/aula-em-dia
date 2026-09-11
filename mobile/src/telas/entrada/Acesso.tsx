@@ -24,7 +24,7 @@ import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { TAMANHO } from '../../tema/tokens';
 
 const ACESSO_INICIAL = { email: '', senha: '', mostrarSenha: false, erro: null };
@@ -142,7 +142,7 @@ export function Acesso() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Primeira vez aqui?
         </Text>
-        <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
+        <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
           A configuração leva 3 minutos e termina com seu primeiro aluno cadastrado.
         </Text>
         <View style={{ marginTop: 12 }}>

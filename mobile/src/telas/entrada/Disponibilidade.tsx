@@ -11,7 +11,7 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
 export function Disponibilidade() {
@@ -66,7 +66,7 @@ export function Disponibilidade() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Aceitar reposição fora desses blocos
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             Só quando não houver outra saída
           </Text>
         </View>

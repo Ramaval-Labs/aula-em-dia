@@ -19,7 +19,7 @@ import { avisos, useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { TAMANHO } from '../../tema/tokens';
 
 export function SemHorario() {
@@ -89,7 +89,7 @@ export function SemHorario() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Nenhum horário cabe</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {aluno
               ? `Não achei janela para repor a aula do ${primeiroNome(aluno.name)}.`
               : ''}
@@ -99,7 +99,7 @@ export function SemHorario() {
       conteudoEstilo={{ gap: 12 }}
     >
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           Por quê
         </Text>
         <View style={{ marginTop: 12, gap: 11 }}>
