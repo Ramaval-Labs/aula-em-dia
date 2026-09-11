@@ -192,7 +192,7 @@ export function Inadimplencia() {
               {dinheiro(valorPacote(aluno))}
             </Text>
           </View>
-          <Text style={[TIPO.legenda, { color: cores.suave, textAlign: 'right' }]}>
+          <Text style={[TIPO.legenda, { color: cores.textoMedio, textAlign: 'right' }]}>
             {`Pacote de ${aluno.total}${situacao.nota ? `\n${situacao.nota}` : ''}`}
           </Text>
         </View>
@@ -211,7 +211,7 @@ export function Inadimplencia() {
               key={l.rotulo}
               style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}
             >
-              <Text style={[TIPO.corpo, { color: cores.suave }]}>{l.rotulo}</Text>
+              <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>{l.rotulo}</Text>
               <Text style={[texto(12.5, 600, { altura: 1.4 }), { color: cores.texto }]}>
                 {l.valor}
               </Text>

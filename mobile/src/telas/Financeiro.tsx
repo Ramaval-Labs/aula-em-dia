@@ -67,7 +67,7 @@ export function Financeiro() {
   const totaisTopo = [
     { rotulo: 'A receber', valor: totais.aReceber, cor: MARCA.amarelo },
     { rotulo: 'Recebido', valor: totais.recebido, cor: '#FFFFFF' },
-    { rotulo: 'Em atraso', valor: totais.emAtraso, cor: cores.vermelho },
+    { rotulo: 'Em atraso', valor: totais.emAtraso, cor: cores.vermelhoSobreTopo },
   ];
 
   return (
@@ -215,7 +215,7 @@ export function Financeiro() {
           }}
         >
           <Text style={[TIPO.heroi, { color: cores.texto }]}>{resumo.aulasDadas}</Text>
-          <Text style={[TIPO.legenda, { color: cores.suave, textAlign: 'right' }]}>
+          <Text style={[TIPO.legenda, { color: cores.textoMedio, textAlign: 'right' }]}>
             {`${resumo.reposicoes} ${resumo.reposicoes === 1 ? 'reposição' : 'reposições'}\n${
               resumo.faltasDebitadas
             } ${resumo.faltasDebitadas === 1 ? 'falta debitada' : 'faltas debitadas'}`}

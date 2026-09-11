@@ -62,7 +62,7 @@ function TelaDeAjuste({
             <TituloTela tamanho={22}>{titulo}</TituloTela>
           </View>
           {subtitulo ? (
-            <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+            <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
               {subtitulo}
             </Text>
           ) : null}
@@ -147,7 +147,7 @@ export function PerfilProfessor() {
           <Text style={[texto(15, 600, { altura: 1.2 }), { color: cores.texto }]}>
             {form.nome || 'Sem nome'}
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
             {form.disciplinas.join(' e ') || 'Nenhuma disciplina'}
           </Text>
         </View>
@@ -231,7 +231,7 @@ export function MinhaDisponibilidade() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Aceitar reposição fora dos blocos
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
             Só quando não houver outra saída
           </Text>
         </View>
@@ -255,7 +255,7 @@ export function MinhaDisponibilidade() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Sugerir sábados
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
             Entra na lista de horários possíveis
           </Text>
         </View>
@@ -351,7 +351,7 @@ export function PacotesPadrao() {
       />
 
       <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.suave }]}>
+        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
           {`A validade vem da política de faltas: ${
             politicas.validadeDias === 0 ? 'sem prazo' : `${politicas.validadeDias} dias`
           }. Hoje ${alunos.filter(temPacote).length} alunos têm pacote ativo.`}
@@ -423,7 +423,7 @@ export function Avisos() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               {i.titulo}
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>{i.sub}</Text>
+            <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>{i.sub}</Text>
           </View>
         </Cartao>
       ))}
@@ -562,7 +562,7 @@ export function Conta() {
                 }}
               />
             </View>
-            <Text style={[TIPO.nota, { marginTop: 9, color: cores.suave }]}>
+            <Text style={[TIPO.nota, { marginTop: 9, color: cores.textoMedio }]}>
               {`${ativos} de ${LIMITE_GRATUITO} alunos usados`}
             </Text>
           </>
@@ -587,7 +587,7 @@ export function Conta() {
               'Link público do aluno personalizado',
               'Relatórios mensais',
             ].map((b) => (
-              <Text key={b} style={[TIPO.corpo, { color: cores.suave }]}>
+              <Text key={b} style={[TIPO.corpo, { color: cores.textoMedio }]}>
                 {`· ${b}`}
               </Text>
             ))}

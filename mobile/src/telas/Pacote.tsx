@@ -71,7 +71,7 @@ export function Pacote() {
               {renovacao ? 'Renovar pacote' : 'Novo pacote'}
             </TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
             {aluno ? aluno.name : ''}
           </Text>
         </CabecalhoEscuro>
@@ -139,7 +139,7 @@ export function Pacote() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               {`Somar as ${sobrando} ${sobrando === 1 ? 'aula' : 'aulas'} que sobraram`}
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
               Sem isso, o saldo antigo é descartado
             </Text>
           </View>
@@ -165,7 +165,7 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
   const cores = useCores();
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-      <Text style={[TIPO.corpo, { color: cores.suave }]}>{rotulo}</Text>
+      <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>{rotulo}</Text>
       <Text style={[texto(12.5, 600, { altura: 1.4 }), { color: cores.texto }]}>
         {valor}
       </Text>

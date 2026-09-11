@@ -58,7 +58,7 @@ export function OutroHorario() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Escolher outro horário</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>{sub}</Text>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>{sub}</Text>
         </CabecalhoEscuro>
       }
       conteudoEstilo={{ gap: 12 }}
@@ -142,7 +142,7 @@ function LinhaDeHorario({
             </Text>
           </View>
           <Text
-            style={[texto(12, 400, { altura: 1.45 }), { marginTop: 4, color: cores.suave }]}
+            style={[texto(12, 400, { altura: 1.45 }), { marginTop: 4, color: cores.textoMedio }]}
           >
             {janela.motivo}
           </Text>

@@ -146,7 +146,7 @@ export function CampoDeTexto({
           {erro}
         </Text>
       ) : ajuda ? (
-        <Text style={[TIPO.nota, { marginTop: 6, paddingHorizontal: 2, color: cores.suave }]}>
+        <Text style={[TIPO.nota, { marginTop: 6, paddingHorizontal: 2, color: cores.textoMedio }]}>
           {ajuda}
         </Text>
       ) : null}
@@ -175,7 +175,7 @@ export function AcaoDoCampo({
       onPress={aoTocar}
       hitSlop={{ top: 16, bottom: 16, left: 10, right: 10 }}
     >
-      <Text style={[texto(12, 600, { altura: 1 }), { color: cores.suave }]}>{rotulo}</Text>
+      <Text style={[texto(12, 600, { altura: 1 }), { color: cores.textoMedio }]}>{rotulo}</Text>
     </Pressable>
   );
 }
@@ -306,7 +306,7 @@ function PassoDoContador({
   const tinta = ativo
     ? variante === 'mais'
       ? cores.botaoTexto
-      : cores.suave
+      : cores.textoMedio
     : variante === 'mais'
       ? cores.fraco
       : cores.inativo;

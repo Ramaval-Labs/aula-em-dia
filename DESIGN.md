@@ -28,6 +28,8 @@ colors:
   vermelho: "#E3001A"
   vermelho-fraco: "#FFF0F2"
   verde: "#1E7A55"
+  tinta-sobre-vermelho: "#FFFFFF"
+  vermelho-sobre-topo: "#FF4D5E"
 typography:
   heroi:
     fontFamily: "Satoshi"
@@ -154,7 +156,7 @@ components:
     textColor: "{colors.tinta-sobre-amarelo}"
   faixa-atraso:
     backgroundColor: "{colors.vermelho}"
-    textColor: "#FFFFFF"
+    textColor: "{colors.tinta-sobre-vermelho}"
   faixa-neutra:
     backgroundColor: "{colors.caixa}"
     textColor: "{colors.texto-medio}"
@@ -222,6 +224,11 @@ para atraso.
 - **Vermelho Vencido** (`vermelho`, `vermelho-fraco`): pagamento em atraso, delta negativo do
   extrato, vencimento.
 - **Verde Confirmado** (`verde`): delta neutro e dinheiro recebido no extrato.
+- **Tinta Sobre Vermelho** (`tinta-sobre-vermelho`): texto da faixa "Pagamento em atraso".
+  Branco no claro; tinta escura `#0E1626` no noturno, onde branco sobre `#FF4D5E` não passa.
+- **Vermelho Sobre o Painel** (`vermelho-sobre-topo`): número grande em vermelho dentro do
+  cabeçalho escuro (total "Em atraso" do Financeiro) — o `vermelho` do claro some sobre
+  `topo-cartao`.
 
 ### Tema noturno
 Mesmos nomes, outros valores (em `CORES.escuro` de `tokens.ts`): `tela` `#141E30`, `cartao`

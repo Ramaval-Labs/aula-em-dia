@@ -61,8 +61,8 @@ export function BotaoVoltar({ rotulo, aoTocar }: { rotulo: string; aoTocar: () =
       hitSlop={{ top: 16, bottom: 16, left: 12, right: 16 }}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start' }}
     >
-      <Text style={[texto(15, 400, { altura: 1 }), { color: cores.suave }]}>←</Text>
-      <Text style={[texto(12, 600, { altura: 1, tracking: 0.01 }), { color: cores.suave }]}>
+      <Text style={[texto(15, 400, { altura: 1 }), { color: cores.topoFraco }]}>←</Text>
+      <Text style={[texto(12, 600, { altura: 1, tracking: 0.01 }), { color: cores.topoFraco }]}>
         {rotulo}
       </Text>
     </Pressable>

@@ -99,7 +99,7 @@ export function AguardandoAceite() {
               {`${proposta.janela.dia}, ${proposta.janela.hora}`}
             </TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
             {`Enviada em ${proposta.enviadaEm}${dias > 0 ? `, há ${dias} dias` : ', hoje'}`}
           </Text>
         </CabecalhoEscuro>

@@ -88,7 +88,7 @@ export function SemHorario() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Nenhum horário cabe</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
             {aluno
               ? `Não achei janela para repor a aula do ${primeiroNome(aluno.name)}.`
               : ''}
@@ -135,7 +135,7 @@ export function SemHorario() {
       </Lista>
 
       <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.suave }]}>
+        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
           Deixar pendente também é uma escolha: a reposição continua na lista de alunos
           até você resolver.
         </Text>

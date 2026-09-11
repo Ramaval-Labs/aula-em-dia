@@ -174,7 +174,7 @@ export function AlunoForm() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Arquivar aluno
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 5, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 5, color: cores.textoMedio }]}>
             Ele sai da lista, mas o extrato e o histórico ficam guardados.
           </Text>
           <View style={{ marginTop: 11 }}>

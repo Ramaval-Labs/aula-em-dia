@@ -222,7 +222,7 @@ export function BotaoTexto({ rotulo, aoTocar, desabilitado, estilo }: Comum) {
       <Text
         style={[
           texto(14, 600, { altura: 1 }),
-          { color: desabilitado ? cores.desabFg : cores.suave },
+          { color: desabilitado ? cores.desabFg : cores.textoMedio },
         ]}
       >
         {rotulo}
@@ -278,7 +278,7 @@ export function Chip({
         <Text
           style={[
             texto(12, 600, { altura: 1 }),
-            { color: ativo ? cores.botaoTexto : cores.suave },
+            { color: ativo ? cores.botaoTexto : cores.textoMedio },
           ]}
         >
           {rotulo}

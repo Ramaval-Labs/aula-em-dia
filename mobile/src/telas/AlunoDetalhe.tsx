@@ -87,7 +87,7 @@ export function AlunoDetalhe() {
           >
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={[TIPO.tituloInterno, { color: '#FFFFFF' }]}>{aluno.name}</Text>
-              <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+              <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
                 {linhaDeHorario(aluno)}
               </Text>
             </View>
@@ -121,7 +121,7 @@ export function AlunoDetalhe() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Aulas pausadas
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
             Fora da lista de registro até o pagamento ser regularizado.
           </Text>
           <View style={{ marginTop: 11 }}>
@@ -205,7 +205,7 @@ export function AlunoDetalhe() {
             <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
               Pacote atual
             </Text>
-            <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.suave }]}>
+            <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.textoMedio }]}>
               {validadeTexto}
             </Text>
           </View>
@@ -215,10 +215,10 @@ export function AlunoDetalhe() {
           <View
             style={{ marginTop: 11, flexDirection: 'row', justifyContent: 'space-between' }}
           >
-            <Text style={[TIPO.legenda, { color: cores.suave }]}>
+            <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>
               {`${aluno.usadas} de ${aluno.total} usadas`}
             </Text>
-            <Text style={[TIPO.legenda, { color: cores.suave }]}>{reposicoesTexto}</Text>
+            <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>{reposicoesTexto}</Text>
           </View>
         </Cartao>
       ) : null}
@@ -301,7 +301,7 @@ function AcoesDoAluno({
 
       {com && aluno.pausado ? (
         <Text
-          style={[TIPO.nota, { color: cores.suave, textAlign: 'center', paddingHorizontal: 8 }]}
+          style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center', paddingHorizontal: 8 }]}
         >
           {`Registro bloqueado enquanto as aulas de ${primeiroNome(
             aluno.name,

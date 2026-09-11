@@ -156,7 +156,7 @@ export function Ajustes() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Estado do protótipo
         </Text>
-        <Text style={[TIPO.corpo, { marginTop: 5, color: cores.suave }]}>
+        <Text style={[TIPO.corpo, { marginTop: 5, color: cores.textoMedio }]}>
           Tudo o que você registra fica salvo neste aparelho. Zerar volta aos quatro alunos
           originais.
         </Text>

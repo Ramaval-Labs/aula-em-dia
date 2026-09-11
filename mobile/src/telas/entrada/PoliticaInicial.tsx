@@ -82,7 +82,7 @@ export function PoliticaInicial() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Falta avisada devolve a aula
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
             {p.avisadaDevolve
               ? 'Dentro do prazo, o saldo não é debitado'
               : 'A aula é debitada mesmo com aviso'}
@@ -103,7 +103,7 @@ export function PoliticaInicial() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               Reposições por pacote
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
               Depois do limite, a falta debita
             </Text>
           </View>

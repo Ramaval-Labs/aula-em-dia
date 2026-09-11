@@ -156,7 +156,7 @@ export function LinhaLista({
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[texto(14, 600, { altura: 1.3 }), { color: cores.texto }]}>{titulo}</Text>
         {sub ? (
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>{sub}</Text>
+          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>{sub}</Text>
         ) : null}
       </View>
       {direita}
@@ -191,13 +191,13 @@ export function EstadoVazio({ titulo, nota }: { titulo: string; nota?: string })
   return (
     <View style={{ paddingVertical: 28, paddingHorizontal: 20, alignItems: 'center' }}>
       <Text
-        style={[texto(13, 400, { altura: 1.5 }), { color: cores.suave, textAlign: 'center' }]}
+        style={[texto(13, 400, { altura: 1.5 }), { color: cores.textoMedio, textAlign: 'center' }]}
       >
         {titulo}
       </Text>
       {nota ? (
         <Text
-          style={[TIPO.nota, { marginTop: 4, color: cores.suave, textAlign: 'center' }]}
+          style={[TIPO.nota, { marginTop: 4, color: cores.textoMedio, textAlign: 'center' }]}
         >
           {nota}
         </Text>
@@ -301,7 +301,7 @@ export function CartaoContexto({
     >
       <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.texto }]}>{titulo}</Text>
       {detalhe ? (
-        <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>{detalhe}</Text>
+        <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>{detalhe}</Text>
       ) : null}
       {acao ? <View style={{ marginTop: 11 }}>{acao}</View> : null}
     </View>

@@ -69,7 +69,7 @@ export function Lembrete() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Lembrete de cobrança</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
             {`Para ${primeiroNome(aluno.name)}`}
           </Text>
         </CabecalhoEscuro>
@@ -116,7 +116,7 @@ export function Lembrete() {
 
       {segundoLembrete ? (
         <Caixa>
-          <Text style={[TIPO.corpo, { color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
             {`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete${
               aluno.ultimoLembrete ? `. O último foi em ${aluno.ultimoLembrete}.` : '.'
             } Vale considerar pausar as aulas ou combinar parcelamento.`}

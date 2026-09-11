@@ -69,7 +69,7 @@ export function DispAluno() {
         </>
       }
     >
-      <Text style={[TIPO.corpo, { color: cores.suave }]}>
+      <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
         Marque o que você já sabe. Quanto mais preenchido, melhores as sugestões — e dá
         para pular e sugerir só com a sua agenda.
       </Text>

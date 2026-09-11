@@ -61,7 +61,7 @@ export function PreviaDeMensagem({
           Mensagem
         </Text>
         {destino ? (
-          <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.suave }]}>
+          <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.textoMedio }]}>
             {destino}
           </Text>
         ) : null}

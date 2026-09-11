@@ -76,7 +76,7 @@ export function VerComoAluno() {
       conteudoEstilo={{ gap: 12 }}
     >
       <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.suave }]}>
+        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
           O aluno abre estas páginas por um link, sem instalar nada e sem login. Aqui elas
           aparecem como pré-visualização.
         </Text>
@@ -205,14 +205,14 @@ export function AlunoSaldo() {
           <Text style={[texto(16, 600, { altura: 1.3 }), { color: cores.texto }]}>
             {aluno.hora ? `${aluno.dia}, ${aluno.hora}` : 'Sem horário fixo'}
           </Text>
-          <Text style={[TIPO.legenda, { color: cores.suave }]}>Aula fixa</Text>
+          <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>Aula fixa</Text>
           {aluno.agendada ? (
             <>
               <View style={{ height: 1, backgroundColor: cores.linha }} />
               <Text style={[texto(16, 600, { altura: 1.3 }), { color: cores.texto }]}>
                 {`${aluno.agendada.dia} · ${aluno.agendada.hora}`}
               </Text>
-              <Text style={[TIPO.legenda, { color: cores.suave }]}>Reposição marcada</Text>
+              <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>Reposição marcada</Text>
             </>
           ) : null}
         </View>
@@ -247,7 +247,7 @@ export function AlunoSaldo() {
         </Cartao>
       </View>
 
-      <Text style={[TIPO.nota, { color: cores.suave, textAlign: 'center' }]}>
+      <Text style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center' }]}>
         Esta página é atualizada pelo professor. Não precisa instalar nada.
       </Text>
     </Tela>
@@ -388,9 +388,9 @@ export function AlunoProposta() {
           >
             {saldo(aluno)}
           </Text>
-          <Text style={[texto(15, 600, { altura: 1 }), { color: cores.suave }]}>aulas</Text>
+          <Text style={[texto(15, 600, { altura: 1 }), { color: cores.textoMedio }]}>aulas</Text>
         </View>
-        <Text style={[TIPO.nota, { marginTop: 9, color: cores.suave }]}>
+        <Text style={[TIPO.nota, { marginTop: 9, color: cores.textoMedio }]}>
           Aceitar não muda o saldo.
         </Text>
       </Cartao>
@@ -482,7 +482,7 @@ export function AlunoDisponibilidade() {
         />
       </Cartao>
 
-      <Text style={[TIPO.nota, { color: cores.suave, textAlign: 'center' }]}>
+      <Text style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center' }]}>
         {`${primeiroNome(perfil.nome)} recebe o aviso e propõe até três horários.`}
       </Text>
     </Tela>

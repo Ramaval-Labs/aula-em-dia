@@ -112,7 +112,7 @@ export function Acesso() {
         hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
         style={{ alignSelf: 'flex-start', paddingHorizontal: 2 }}
       >
-        <Text style={[texto(12.5, 400, { altura: 1.4 }), { color: cores.suave }]}>
+        <Text style={[texto(12.5, 400, { altura: 1.4 }), { color: cores.textoMedio }]}>
           Esqueci minha senha
         </Text>
       </Pressable>
@@ -141,7 +141,7 @@ export function Acesso() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Primeira vez aqui?
         </Text>
-        <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+        <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
           A configuração leva 3 minutos e termina com seu primeiro aluno cadastrado.
         </Text>
         <View style={{ marginTop: 12 }}>

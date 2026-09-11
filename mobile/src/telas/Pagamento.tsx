@@ -86,7 +86,7 @@ export function Pagamento() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Registrar pagamento</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
             {`${aluno.name} · pacote de ${aluno.total} aulas`}
           </Text>
         </CabecalhoEscuro>
@@ -155,7 +155,7 @@ export function Pagamento() {
       </Cartao>
 
       <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.suave }]}>
+        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
           O registro é manual. A cobrança automática por Pix entra numa fase futura, com o
           backend.
         </Text>

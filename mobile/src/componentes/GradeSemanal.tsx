@@ -68,7 +68,7 @@ export function GradeSemanal({
             <Text
               style={[
                 texto(10, 600, { altura: 1, tracking: 0.06 }),
-                { color: cores.suave },
+                { color: cores.textoMedio },
               ]}
             >
               {diaCurto(d)}
@@ -81,7 +81,7 @@ export function GradeSemanal({
         <View key={f} style={{ flexDirection: 'row', gap: VAO, alignItems: 'center' }}>
           <View style={{ width: COLUNA_DE_ROTULOS }}>
             <Text
-              style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.suave }]}
+              style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.textoMedio }]}
               numberOfLines={2}
             >
               {legenda(f)}
@@ -155,14 +155,14 @@ export function RodapeDaGrade({
         gap: 12,
       }}
     >
-      <Text style={[texto(11.5, 400, { altura: 1.4 }), { color: cores.suave }]}>
+      <Text style={[texto(11.5, 400, { altura: 1.4 }), { color: cores.textoMedio }]}>
         {esquerda}
       </Text>
       {direita ? (
         <Text
           style={[
             texto(11.5, 400, { altura: 1.4 }),
-            { color: cores.suave, textAlign: 'right' },
+            { color: cores.textoMedio, textAlign: 'right' },
           ]}
         >
           {direita}

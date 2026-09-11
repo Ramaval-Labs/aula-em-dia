@@ -67,7 +67,7 @@ export function BoasVindas() {
           {i > 0 ? <View style={{ height: 1, backgroundColor: cores.linha }} /> : null}
           <View>
             <Text
-              style={[texto(15, 800, { altura: 1 }), { color: MARCA.amarelo }]}
+              style={[texto(15, 800, { altura: 1 }), { color: cores.texto }]}
             >
               {p.numero}
             </Text>
@@ -82,7 +82,7 @@ export function BoasVindas() {
             <Text
               style={[
                 texto(14, 400, { altura: 1.5 }),
-                { marginTop: 6, color: cores.suave },
+                { marginTop: 6, color: cores.textoMedio },
               ]}
             >
               {p.apoio}

@@ -86,7 +86,7 @@ export function Registrar() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Registrar aula</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
             {aluno ? `${aluno.name} · ${aluno.disciplina}` : 'Escolha o aluno da aula'}
           </Text>
         </CabecalhoEscuro>
@@ -175,7 +175,7 @@ export function Registrar() {
                   <Text
                     style={[
                       texto(12, 400, { altura: 1.45 }),
-                      { marginTop: 10, color: cores.suave },
+                      { marginTop: 10, color: cores.textoMedio },
                     ]}
                   >
                     {notaDoAviso(avisoH, politicas)}
@@ -215,7 +215,7 @@ function EscolhaDeAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => void 
         >
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[TIPO.nome, { color: cores.texto }]}>{aluno.name}</Text>
-            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.textoMedio }]}>
               {linhaDeHorario(aluno)}
             </Text>
           </View>
@@ -290,7 +290,7 @@ function CartaoDesfecho({
           />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[TIPO.nome, { color: cores.texto }]}>{titulo}</Text>
-            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.textoMedio }]}>
               {selecionado ? ef.nota : sub}
             </Text>
           </View>

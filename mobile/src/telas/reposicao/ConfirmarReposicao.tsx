@@ -81,7 +81,7 @@ export function ConfirmarReposicao() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Confirmar reposição</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>
             {janela ? `${janela.dia}, às ${janela.hora}` : 'Escolha um horário antes'}
           </Text>
         </CabecalhoEscuro>
@@ -122,7 +122,7 @@ export function ConfirmarReposicao() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Pedir confirmação dele
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+          <Text style={[TIPO.nota, { marginTop: 3, color: cores.textoMedio }]}>
             {pedirConfirmacao
               ? 'A reposição fica aguardando o aceite'
               : 'A reposição já entra marcada na agenda'}
@@ -131,7 +131,7 @@ export function ConfirmarReposicao() {
       </Cartao>
 
       {msg.editado ? (
-        <Text style={[TIPO.nota, { color: cores.suave }]}>
+        <Text style={[TIPO.nota, { color: cores.textoMedio }]}>
           Mensagem editada por você.
         </Text>
       ) : null}

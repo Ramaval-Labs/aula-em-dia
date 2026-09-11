@@ -64,7 +64,7 @@ export function Reposicao() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Escolher horário</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>{sub}</Text>
+          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.topoFraco }]}>{sub}</Text>
         </CabecalhoEscuro>
       }
       conteudoEstilo={{ gap: 9, paddingBottom: 12 }}
@@ -90,7 +90,7 @@ export function Reposicao() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Limite de reposições atingido
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
             {aluno
               ? `${aluno.reposicoes} de ${politicas.limiteReposicoes} usadas neste pacote. Sua política não permite mais.`
               : ''}
@@ -104,7 +104,7 @@ export function Reposicao() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Nenhum horário cabe
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.textoMedio }]}>
             A agenda até a validade do pacote está cheia. Veja as saídas possíveis.
           </Text>
           <View style={{ marginTop: 11 }}>
@@ -116,7 +116,7 @@ export function Reposicao() {
           <Text
             style={[
               TIPO.eyebrow,
-              { letterSpacing: 1.6, color: cores.suave, marginBottom: 2 },
+              { letterSpacing: 1.6, color: cores.textoMedio, marginBottom: 2 },
             ]}
           >
             {`${todas.length} horários possíveis · as ${janelas.length} melhores`}
@@ -149,7 +149,7 @@ export function Reposicao() {
                 backgroundColor: cores.cartao,
               }}
             >
-              <Text style={[texto(13.5, 600, { altura: 1 }), { color: cores.suave }]}>
+              <Text style={[texto(13.5, 600, { altura: 1 }), { color: cores.textoMedio }]}>
                 Estender validade em 15 dias
               </Text>
             </Pressable>
@@ -229,7 +229,7 @@ function CartaoJanela({
               {janela.razoes.map((r) => (
                 <Text
                   key={r}
-                  style={[texto(12, 400, { altura: 1.45 }), { color: cores.suave }]}
+                  style={[texto(12, 400, { altura: 1.45 }), { color: cores.textoMedio }]}
                 >
                   {`· ${r}`}
                 </Text>
