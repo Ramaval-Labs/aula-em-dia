@@ -3,8 +3,8 @@
 import React, { useMemo } from 'react';
 import { Text, View } from 'react-native';
 
-import { BarraDePassos, Cartao } from '../../componentes/Base';
-import { BotaoContorno, BotaoPrimario } from '../../componentes/Botoes';
+import { BarraDePassos, Cartao, RotuloSecao } from '../../componentes/Base';
+import { BotaoPrimario, BotaoTexto } from '../../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../../componentes/Cabecalho';
 import { Interruptor } from '../../componentes/Formulario';
 import { PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
@@ -18,6 +18,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 
 export function ConfirmarReposicao() {
   const cores = useCores();
@@ -65,15 +66,16 @@ export function ConfirmarReposicao() {
       return;
     }
 
+    // "Agendar sem avisar": não sai mensagem nenhuma, e o aviso não diz que saiu.
     marcarReposicao(aluno.id, alvo);
-    avisar(avisos.reposicao(aluno, alvo));
+    avisar(avisos.reposicaoMarcada(aluno, alvo));
     concluir('aluno', aluno.id);
   };
 
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 12 }}>
             <BarraDePassos total={3} atual={3} rotulo="Passo 3 de 3" />
@@ -94,10 +96,32 @@ export function ConfirmarReposicao() {
             desabilitado={!janela}
             aoTocar={confirmar}
           />
-          <BotaoContorno rotulo="Trocar o horário" altura={44} aoTocar={voltar} />
+          <BotaoTexto rotulo="Trocar o horário" aoTocar={voltar} />
         </>
       }
     >
+      {/* O efeito aparece antes da ação (PRODUCT.md, princípio 2). */}
+      {aluno && janela ? (
+        <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 16 }}>
+          <RotuloSecao>O que muda</RotuloSecao>
+          <View style={{ marginTop: 11, gap: 7 }}>
+            <LinhaDeResumo rotulo="Reposição" valor={`${janela.dia} · ${janela.hora}`} />
+            {aluno.pendencia ? (
+              <LinhaDeResumo rotulo="Aula reposta" valor={`falta de ${aluno.pendencia.origem}`} />
+            ) : null}
+            <LinhaDeResumo
+              rotulo="Reposições, contando esta"
+              valor={
+                politicas.limiteReposicoes === 0
+                  ? `${aluno.reposicoes + 1}, sem limite`
+                  : `${aluno.reposicoes + 1} de ${politicas.limiteReposicoes}`
+              }
+            />
+            <LinhaDeResumo rotulo="Efeito no saldo" valor="sem alteração" />
+          </View>
+        </Cartao>
+      ) : null}
+
       <PreviaDeMensagem
         texto={texto_ || 'Escolha um horário para montar a mensagem.'}
         destino={mascararTelefone(aluno?.telefone)}
@@ -136,5 +160,23 @@ export function ConfirmarReposicao() {
         </Text>
       ) : null}
     </Tela>
+  );
+}
+
+/** Rótulo à esquerda, valor à direita — o mesmo desenho do resumo de Pacote. */
+function LinhaDeResumo({ rotulo, valor }: { rotulo: string; valor: string }) {
+  const cores = useCores();
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+      <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>{rotulo}</Text>
+      <Text
+        style={[
+          texto(12.5, 600, { altura: 1.4 }),
+          { flexShrink: 1, textAlign: 'right', color: cores.texto },
+        ]}
+      >
+        {valor}
+      </Text>
+    </View>
   );
 }

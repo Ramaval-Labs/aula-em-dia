@@ -16,6 +16,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 
 export function DispAluno() {
   const cores = useCores();
@@ -38,7 +39,7 @@ export function DispAluno() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 12 }}>
             <BarraDePassos total={3} atual={1} rotulo="Passo 1 de 3" />

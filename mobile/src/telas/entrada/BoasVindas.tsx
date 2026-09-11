@@ -10,7 +10,7 @@ import { Tela } from '../../componentes/Tela';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
 import { texto } from '../../tema/tipografia';
-import { MARCA } from '../../tema/tokens';
+import { MARCA, TAMANHO } from '../../tema/tokens';
 
 const PASSOS = [
   {
@@ -39,7 +39,7 @@ export function BoasVindas() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <View style={{ marginTop: 26 }}>
             <Barras altura={22} espaco={4} cor="#FFFFFF" />
           </View>

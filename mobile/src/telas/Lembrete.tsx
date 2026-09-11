@@ -4,7 +4,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 
 import { Caixa, Cartao, EstadoVazio } from '../componentes/Base';
-import { BotaoContorno, BotaoPrimario, Segmentado } from '../componentes/Botoes';
+import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
 import { Tela } from '../componentes/Tela';
@@ -17,6 +17,7 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { TIPO } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
 
 const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
   { valor: 'cordial', rotulo: 'Cordial' },
@@ -64,7 +65,7 @@ export function Lembrete() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Lembrete de cobrança</TituloTela>
@@ -78,9 +79,10 @@ export function Lembrete() {
       rodape={
         <>
           <BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />
-          <BotaoContorno
+          {/* Botão de texto: a ação ainda não existe, e contorno escuro dava a
+              ela o mesmo peso de "Marcar como enviado". */}
+          <BotaoTexto
             rotulo="Agendar para amanhã, 9h"
-            altura={44}
             // Não existe agendamento no app: o aviso diz isso e a tela fica,
             // para o professor copiar a mensagem.
             aoTocar={() =>

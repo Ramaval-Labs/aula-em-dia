@@ -14,7 +14,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
-import { MARCA } from '../../tema/tokens';
+import { MARCA, TAMANHO } from '../../tema/tokens';
 
 export function AguardandoAceite() {
   const cores = useCores();
@@ -71,15 +71,6 @@ export function AguardandoAceite() {
       aoTocar: () => ir('reposicao'),
     },
     {
-      titulo: 'Confirmar por ele',
-      sub: 'Ele avisou por fora que aceita',
-      aoTocar: () => {
-        responderProposta(aluno.id, 'confirmadaPeloProfessor');
-        avisar(avisos.propostaAceita(aluno));
-        concluir('aluno', aluno.id);
-      },
-    },
-    {
       titulo: cancelar.armado ? 'Tocar de novo para cancelar' : 'Cancelar a proposta',
       sub: 'A reposição volta a ficar pendente',
       aoTocar: cancelar.tocar,
@@ -89,7 +80,7 @@ export function AguardandoAceite() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <Eyebrow>Aguardando resposta</Eyebrow>
@@ -108,9 +99,11 @@ export function AguardandoAceite() {
       rodape={
         <BotaoPrimario
           rotulo="Confirmar e marcar na agenda"
+          // A única confirmação da tela (a lista tinha um "Confirmar por ele"
+          // que fazia o mesmo): é o professor confirmando pelo aluno.
           aoTocar={() => {
-            responderProposta(aluno.id, 'aceita');
-            avisar(avisos.reposicao(aluno, proposta.janela));
+            responderProposta(aluno.id, 'confirmadaPeloProfessor');
+            avisar(avisos.reposicaoMarcada(aluno, proposta.janela));
             concluir('aluno', aluno.id);
           }}
         />

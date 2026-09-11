@@ -10,7 +10,7 @@ import React, { useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { BarraDePassos, Caixa, Radio } from '../componentes/Base';
-import { BotaoContorno, BotaoPequeno, BotaoPrimario } from '../componentes/Botoes';
+import { BotaoPequeno, BotaoPrimario, BotaoTexto } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
 import { candidatos, melhores, type Candidata } from '../dominio/agenda';
@@ -22,7 +22,10 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
-import { MARCA, RAIO } from '../tema/tokens';
+import { MARCA, RAIO, TAMANHO } from '../tema/tokens';
+
+/** "Sexta, 29/08" → "sexta, 29/08", para caber no meio da frase do botão. */
+const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 export function Reposicao() {
   const cores = useCores();
@@ -45,6 +48,19 @@ export function Reposicao() {
   );
   const janelas = melhores(todas);
 
+  // A melhor opção já vem marcada, como na referência C3: o professor só
+  // troca se quiser. Uma escolha feita em C4 que não esteja entre as melhores
+  // não marca nenhum cartão, mas continua valendo no C6.
+  const marcada =
+    form.janela === null ? janelas[0] : janelas.find((j) => mesmaJanela(form.janela, j));
+
+  const continuar = () => {
+    if (form.janela === null && marcada) {
+      atualizar({ janela: { data: marcada.data, hora: marcada.hora } });
+    }
+    ir('confirmarReposicao');
+  };
+
   const sub = aluno
     ? `${aluno.name} · validade ${aluno.validade} · ${
         politicas.limiteReposicoes === 0
@@ -56,7 +72,7 @@ export function Reposicao() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 12 }}>
             <BarraDePassos total={3} atual={2} rotulo="Passo 2 de 3" />
@@ -71,16 +87,16 @@ export function Reposicao() {
       rodape={
         liberada && janelas.length > 0 ? (
           <>
+            {/* O botão diz o que vai acontecer; "Nenhum serve" é secundário
+                e não disputa peso com ele. */}
             <BotaoPrimario
-              rotulo="Continuar"
-              desabilitado={form.janela === null}
-              aoTocar={() => ir('confirmarReposicao')}
+              rotulo={
+                marcada ? `Propor ${minuscula(marcada.dia)} às ${marcada.hora}` : 'Continuar'
+              }
+              desabilitado={!marcada && form.janela === null}
+              aoTocar={continuar}
             />
-            <BotaoContorno
-              rotulo="Nenhum serve · escolher outro"
-              altura={44}
-              aoTocar={() => ir('outroHorario')}
-            />
+            <BotaoTexto rotulo="Nenhum serve · escolher outro" aoTocar={() => ir('outroHorario')} />
           </>
         ) : undefined
       }
@@ -126,7 +142,7 @@ export function Reposicao() {
             <CartaoJanela
               key={`${j.data}-${j.hora}`}
               janela={j}
-              selecionada={mesmaJanela(form.janela, j)}
+              selecionada={j === marcada}
               aoTocar={() => atualizar({ janela: { data: j.data, hora: j.hora } })}
             />
           ))}

@@ -117,7 +117,7 @@ export function AlunoDetalhe() {
       }
     >
       {aluno.pausado ? (
-        <Caixa>
+        <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 16 }}>
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Aulas pausadas
           </Text>
@@ -133,7 +133,7 @@ export function AlunoDetalhe() {
               }}
             />
           </View>
-        </Caixa>
+        </Cartao>
       ) : null}
 
       {aluno.pendencia ? (

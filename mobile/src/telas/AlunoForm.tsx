@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import { Caixa } from '../componentes/Base';
+import { Cartao } from '../componentes/Base';
 import { BotaoPequeno, BotaoPrimario, useDoisToques } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { CampoDeTexto } from '../componentes/Formulario';
@@ -16,6 +16,7 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
 
 export function AlunoForm() {
   const cores = useCores();
@@ -93,7 +94,7 @@ export function AlunoForm() {
     <Tela
       comTeclado
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>
@@ -170,7 +171,7 @@ export function AlunoForm() {
       />
 
       {emEdicao ? (
-        <Caixa estilo={{ marginTop: 6 }}>
+        <Cartao estilo={{ marginTop: 6, paddingVertical: 14, paddingHorizontal: 16 }}>
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Arquivar aluno
           </Text>
@@ -186,7 +187,7 @@ export function AlunoForm() {
               aoTocar={arquivar.tocar}
             />
           </View>
-        </Caixa>
+        </Cartao>
       ) : null}
     </Tela>
   );

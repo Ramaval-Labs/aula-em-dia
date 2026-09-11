@@ -163,7 +163,7 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
               style={{
-                width: 76,
+                minWidth: 76,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: com ? cores.elevado : cores.caixa,

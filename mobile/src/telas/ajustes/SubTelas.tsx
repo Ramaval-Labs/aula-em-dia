@@ -34,7 +34,7 @@ import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
-import { MARCA } from '../../tema/tokens';
+import { MARCA, TAMANHO } from '../../tema/tokens';
 
 /** Molde comum: cabeçalho escuro com voltar e título. */
 function TelaDeAjuste({
@@ -56,7 +56,7 @@ function TelaDeAjuste({
     <Tela
       comTeclado={comTeclado}
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Ajustes" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>{titulo}</TituloTela>

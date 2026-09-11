@@ -19,6 +19,7 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
 
 const OPCOES = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 const VALIDADES = [
@@ -64,7 +65,7 @@ export function Pacote() {
     <Tela
       comTeclado
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>

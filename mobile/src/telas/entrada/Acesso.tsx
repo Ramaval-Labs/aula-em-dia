@@ -25,6 +25,7 @@ import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 
 const ACESSO_INICIAL = { email: '', senha: '', mostrarSenha: false, erro: null };
 
@@ -62,7 +63,7 @@ export function Acesso() {
     <Tela
       comTeclado
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={38}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Início" aoTocar={() => voltarEntrada()} />
           <View style={{ marginTop: 14 }}>
             <Eyebrow>Acesso</Eyebrow>

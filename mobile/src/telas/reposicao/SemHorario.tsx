@@ -20,6 +20,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 
 export function SemHorario() {
   const cores = useCores();
@@ -83,7 +84,7 @@ export function SemHorario() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Nenhum horário cabe</TituloTela>

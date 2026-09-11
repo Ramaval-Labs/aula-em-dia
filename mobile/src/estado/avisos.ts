@@ -14,6 +14,9 @@ import type { Aluno } from '../dominio/tipos';
 export const avisos = {
   reposicao: (a: Aluno, janela: { dia: string; hora: string }) =>
     `Reposição de ${primeiroNome(a.name)} em ${janela.dia}, ${janela.hora}. Mensagem enviada.`,
+  /** Marcada sem mensagem: "Agendar sem avisar" e a confirmação feita pelo professor. */
+  reposicaoMarcada: (a: Aluno, janela: { dia: string; hora: string }) =>
+    `Reposição de ${primeiroNome(a.name)} marcada para ${janela.dia}, ${janela.hora}.`,
   pagamento: (a: Aluno) =>
     `Pagamento de ${primeiroNome(a.name)} registrado: ${dinheiro(valorPacote(a))}.`,
   // O app não envia mensagem nenhuma: quem manda é o professor, pelo WhatsApp.

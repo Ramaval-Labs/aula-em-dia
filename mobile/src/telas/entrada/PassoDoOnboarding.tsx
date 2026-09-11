@@ -21,6 +21,7 @@ import { Tela } from '../../componentes/Tela';
 import { TOTAL_DE_PASSOS, useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
 import { TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 
 export function PassoDoOnboarding({
   passo,
@@ -53,7 +54,7 @@ export function PassoDoOnboarding({
     <Tela
       comTeclado={comTeclado}
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={38}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={() => voltarEntrada()} />
           <View style={{ marginTop: 14 }}>
             <BarraDePassos total={TOTAL_DE_PASSOS} atual={passo} />

@@ -15,7 +15,7 @@ import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formul
 import { useNavegacao } from '../../estado/navegacao';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
-import { RAIO } from '../../tema/tokens';
+import { RAIO, TAMANHO } from '../../tema/tokens';
 
 /** A lista mostra os mais próximos; o resto do horizonte fica de fora. */
 const MAXIMO_NA_LISTA = 24;
@@ -53,7 +53,7 @@ export function OutroHorario() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Escolher outro horário</TituloTela>

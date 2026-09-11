@@ -44,7 +44,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto, TIPO } from '../../tema/tipografia';
-import { MARCA } from '../../tema/tokens';
+import { MARCA, TAMANHO } from '../../tema/tokens';
 
 /** Referencia estavel para aluno sem lancamentos. */
 const SEM_LANCAMENTOS: Lancamento[] = [];
@@ -58,7 +58,7 @@ export function VerComoAluno() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <Eyebrow>Pré-visualização</Eyebrow>
@@ -114,7 +114,7 @@ function TopoDoAluno({ children }: { children: React.ReactNode }) {
   const voltar = useNavegacao((s) => s.voltar);
 
   return (
-    <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+    <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
       <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
       <View
         style={{
