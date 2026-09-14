@@ -30,24 +30,32 @@ qual avaliação fazer (`audit`, `critique` ou as duas) e o pedido livre da pess
    gravando em `docs/design/revisoes/capturas/`.
 4. Rode o detector nos HTMLs: `<pasta da skill do Impeccable>/scripts/impeccable detect --json
    <html…>`. Ele foi feito para web: separe os achados reais dos falsos positivos.
-5. Quando ajudar, compare com o protótipo de referência (`*.dc.html` na raiz) — medidas e
-   comportamento, nunca o código.
+5. Quando ajudar, compare com o protótipo de referência — `handoff-ios-glass/*.dc.html` para o
+   visual e as 9 telas desenhadas; `docs/design/historico/tinta-chapada/*.dc.html` só para
+   conteúdo e comportamento das telas derivadas. Medidas e comportamento, nunca o código.
 6. Para critique, você pode acionar o `impeccable-finish-reviewer` do Impeccable se a referência
    mandar.
 
 ## O que não é problema
 
-O handoff decidiu estas coisas; não aponte como defeito nem recomende trocar: a Satoshi, as duas
-curvas assinatura, a pílula de vidro sem desfoque, o amarelo `#FFD032` como ênfase, a navbar
-própria de três abas que some nas telas de tarefa, o saldo gravado na tela de Resultado, a
-inconsistência de `pendencia.dias` na semente. Trocar componente da marca por nativo também não é
-recomendação válida.
+O handoff iOS Glass decidiu estas coisas; não aponte como defeito nem recomende trocar: a Satoshi,
+o fundo de refração com quatro manchas, o material translúcido com blur, os raios grandes, a tab
+bar própria de vidro que flutua em toda tela não-sheet e some com sheet aberto, a barra de
+navegação que só aparece com a rolagem, os sheets modais para tarefa, o saldo gravado na tela de
+Resultado, a inconsistência de `pendencia.dias` na semente. Trocar componente da marca por nativo
+também não é recomendação válida.
+
+**Defeito da direção nova, a apontar sempre:** resto da direção aposentada (curva, cabeçalho
+escuro, amarelo `#FFD032`), vidro sobre vidro sobre vidro, texto pequeno translúcido sobre o
+material, tela sem o fundo de refração, status em cor cheia no fundo, mais de um primário por
+tela, tela migrada que mistura componentes antigos e novos.
 
 ## Severidade
 
 - **P0 — quebra:** texto cortado ou sobreposto, contraste reprovado em informação, alvo de toque
   abaixo do mínimo, elemento sem rótulo para leitor de tela, erro de console, violação das regras
-  do `CLAUDE.md` (valor solto, curva recortada, amarelo como fundo, `marginTop` solto em texto).
+  do `CLAUDE.md` (valor solto, vidro montado fora da primitiva, conteúdo coberto pela tab bar,
+  `marginTop` solto em texto).
 - **P1 — atrapalha a tarefa:** hierarquia que esconde a informação principal, estado vazio ou de
   erro ausente, copy que confunde.
 - **P2 — acabamento:** alinhamento, ritmo, consistência entre telas.

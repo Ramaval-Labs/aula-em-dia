@@ -71,7 +71,8 @@ mobile/            o aplicativo (React Native + Expo + TypeScript)
   src/tema/          tokens tipados e tipografia
   README.md          mapa interno, decisões de stack e solução de problemas
 
-HANDOFF.md         especificação de design: telas, medidas, tokens, estado
+handoff-ios-glass/  especificação de design atual (iOS Glass): README e protótipos em HTML
+HANDOFF.md         aponta para a especificação atual
 IMPLEMENTACAO.md   plano em 6 fases, com o que ficou pendente
 PROXIMOS-PASSOS.md backlog priorizado
 CLAUDE.md          regras do projeto para quem for programar com IA
@@ -79,14 +80,17 @@ CLAUDE.md          regras do projeto para quem for programar com IA
 spec/              regras, navegação, componentes e acessibilidade
 tokens/            tokens de design em JSON, CSS, SCSS e Tailwind
 data/seed.json     dados-semente (alunos, extratos, políticas)
-assets/            SVGs das curvas e dos ícones
-*.dc.html          protótipos de design — referência visual, não código
+docs/design/       plano do redesign, histórico da direção anterior e revisões de design
 ```
+
+> **Redesign em andamento:** o app está trocando a direção visual *tinta chapada* (curvas,
+> cabeçalho escuro, amarelo) pela *iOS Glass* na branch `redesign/ios-glass`. Plano em
+> [`docs/design/redesign-ios-glass/PLANO.md`](docs/design/redesign-ios-glass/PLANO.md).
 
 ## Como este repositório funciona
 
-Ele guarda **duas coisas**: o pacote de handoff de design (specs, tokens, protótipos em HTML) e a
-implementação em `mobile/`. Os arquivos `.dc.html` são **referência visual, não código para
+Ele guarda **duas coisas**: o pacote de handoff de design (specs, tokens, protótipos em HTML, em
+`handoff-ios-glass/`) e a implementação em `mobile/`. Os arquivos `.dc.html` são **referência visual, não código para
 copiar** — usam um runtime de prototipagem próprio (`support.js`) que não vai para produção.
 
 Duas regras que valem para qualquer mudança:
