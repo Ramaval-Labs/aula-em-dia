@@ -4,7 +4,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 
 import { Caixa, Cartao, EstadoVazio } from '../componentes/Base';
-import { BotaoContorno, BotaoPrimario, Segmentado } from '../componentes/Botoes';
+import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
 import { Tela } from '../componentes/Tela';
@@ -16,7 +16,8 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { TIPO } from '../tema/tipografia';
+import { comEspaco, TIPO } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
 
 const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
   { valor: 'cordial', rotulo: 'Cordial' },
@@ -64,12 +65,12 @@ export function Lembrete() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Lembrete de cobrança</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {`Para ${primeiroNome(aluno.name)}`}
           </Text>
         </CabecalhoEscuro>
@@ -78,19 +79,25 @@ export function Lembrete() {
       rodape={
         <>
           <BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />
-          <BotaoContorno
+          {/* Botão de texto: a ação ainda não existe, e contorno escuro dava a
+              ela o mesmo peso de "Marcar como enviado". */}
+          <BotaoTexto
             rotulo="Agendar para amanhã, 9h"
-            altura={44}
-            aoTocar={() => {
-              avisar(`Lembrete de ${primeiroNome(aluno.name)} agendado para amanhã, 9h.`);
-              concluir('inadimplencia', aluno.id);
-            }}
+            // Não existe agendamento no app: o aviso diz isso e a tela fica,
+            // para o professor copiar a mensagem.
+            aoTocar={() =>
+              avisar(
+                `O agendamento de lembretes ainda não existe nesta versão. Copie a mensagem para ${primeiroNome(
+                  aluno.name,
+                )} e envie quando quiser.`,
+              )
+            }
           />
         </>
       }
     >
       <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           Tom da mensagem
         </Text>
         <View style={{ marginTop: 10 }}>
@@ -111,7 +118,7 @@ export function Lembrete() {
 
       {segundoLembrete ? (
         <Caixa>
-          <Text style={[TIPO.corpo, { color: cores.suave }]}>
+          <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
             {`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete${
               aluno.ultimoLembrete ? `. O último foi em ${aluno.ultimoLembrete}.` : '.'
             } Vale considerar pausar as aulas ou combinar parcelamento.`}

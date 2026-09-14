@@ -63,7 +63,7 @@ const CORES_DA_FAIXA: Record<
   (c: ReturnType<typeof useCores>) => { fundo: string; tinta: string }
 > = {
   pausado: (c) => ({ fundo: c.caixa, tinta: c.textoMedio }),
-  atraso: (c) => ({ fundo: c.vermelho, tinta: '#FFFFFF' }),
+  atraso: (c) => ({ fundo: c.vermelho, tinta: c.tintaSobreVermelho }),
   pendente: () => ({ fundo: MARCA.amarelo, tinta: MARCA.tintaSobreAmarelo }),
   marcada: (c) => ({ fundo: c.caixa, tinta: c.textoMedio }),
 };
@@ -141,7 +141,7 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               >
                 {aluno.name}
               </Text>
-              <Text style={[TIPO.legenda, { marginTop: 4, color: cores.suave }]}>
+              <Text style={[comEspaco(TIPO.legenda, { topo: 4 }), { color: cores.textoMedio }]}>
                 {linhaDeHorario(aluno)}
               </Text>
               {com ? (
@@ -152,7 +152,7 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               <Text
                 style={[
                   comEspaco(texto(11.5, 400, { altura: 1 }), { topo: 9 }),
-                  { color: cores.suave },
+                  { color: cores.textoMedio },
                 ]}
               >
                 {linhaDePacote(aluno)}
@@ -163,7 +163,7 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
               style={{
-                width: 76,
+                minWidth: 76,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: com ? cores.elevado : cores.caixa,
@@ -175,7 +175,7 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
               <Text
                 style={[
                   texto(24, 800, { altura: 0.9, tracking: -0.04 }),
-                  { color: !com ? cores.fraco : baixo ? MARCA.amarelo : '#FFFFFF' },
+                  { color: !com ? cores.fraco : baixo ? MARCA.amarelo : cores.topoTexto },
                 ]}
               >
                 {com ? String(restam) : '—'}
@@ -185,7 +185,9 @@ export function CartaoAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => v
                   comEspaco(texto(8.5, 600, { altura: 1.15, tracking: 0.16, maiuscula: true }), {
                     topo: 5,
                   }),
-                  { color: cores.suave, textAlign: 'center' },
+                  // Sobre `elevado`, elevadoSuave passa nos dois temas (topoFraco
+                  // dava 4.1:1 no noturno); sem pacote o fundo é claro (caixa).
+                  { color: com ? cores.elevadoSuave : cores.textoMedio, textAlign: 'center' },
                 ]}
               >
                 {com ? 'aulas' : 'sem pacote'}
@@ -217,7 +219,7 @@ export function ContadorSaldo({ numero }: { numero: string }) {
       <Text
         style={[
           texto(10, 600, { altura: 1, tracking: 0.14, maiuscula: true }),
-          { color: cores.suave },
+          { color: cores.textoMedio },
         ]}
       >
         aulas
@@ -269,19 +271,19 @@ export function LinhaExtrato({ lancamento, ultima }: { lancamento: Lancamento; u
         borderBottomColor: cores.linha,
       }}
     >
-      <Text style={[texto(11, 500, { altura: 1.3 }), { width: 36, color: cores.suave }]}>
+      <Text style={[texto(11, 500, { altura: 1.3 }), { width: 36, color: cores.textoMedio }]}>
         {lancamento.d}
       </Text>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           {lancamento.t}
         </Text>
-        <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>{lancamento.s}</Text>
+        <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>{lancamento.s}</Text>
       </View>
       <View style={{ alignItems: 'flex-end' }}>
         <Text style={[texto(13.5, 700, { altura: 1 }), { color: cor }]}>{deltaTexto}</Text>
         <Text
-          style={[comEspaco(texto(11, 400, { altura: 1 }), { topo: 4 }), { color: cores.suave }]}
+          style={[comEspaco(texto(11, 400, { altura: 1 }), { topo: 4 }), { color: cores.textoMedio }]}
         >
           {saldoTexto}
         </Text>

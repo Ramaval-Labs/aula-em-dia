@@ -8,17 +8,17 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { ContadorSaldo, linhaDeHorario } from '../componentes/Aluno';
-import { RotuloSecao } from '../componentes/Base';
-import { BotaoPrimario, Chip } from '../componentes/Botoes';
+import { EstadoVazio, RotuloSecao } from '../componentes/Base';
+import { BotaoPequeno, BotaoPrimario, Chip } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
 import { efeito, podeRegistrar, saldo } from '../dominio/politica';
 import type { Aluno, Desfecho, Politicas } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
-import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
+import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { RAIO, TAMANHO } from '../tema/tokens';
 
 const DESFECHOS: { chave: Desfecho; titulo: string; sub: string }[] = [
@@ -53,9 +53,24 @@ export function Registrar() {
   const politicas = useDados((s) => s.politicas);
   const registrarAula = useDados((s) => s.registrarAula);
 
+  const reiniciarRascunho = useFormularios((s) => s.substituir);
+
   const aluno = alunos.find((a) => a.id === alunoId);
   const selecionaveis = alunos.filter(podeRegistrar);
+  const temAlunoAtivo = alunos.some((a) => !a.arquivado);
   const pronto = !!aluno && !!desfecho;
+
+  // Mesmo destino do "+ Novo aluno" da lista.
+  const abrirCadastro = () => {
+    reiniciarRascunho('aluno', {
+      nome: '',
+      disciplina: '',
+      dia: '',
+      hora: '',
+      telefone: '',
+    });
+    ir('alunoForm', { alunoId: null });
+  };
 
   const confirmar = () => {
     if (!aluno || !desfecho) return;
@@ -71,7 +86,7 @@ export function Registrar() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Registrar aula</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {aluno ? `${aluno.name} · ${aluno.disciplina}` : 'Escolha o aluno da aula'}
           </Text>
         </CabecalhoEscuro>
@@ -83,7 +98,27 @@ export function Registrar() {
         ) : undefined
       }
     >
-      {!aluno ? (
+      {!aluno && selecionaveis.length === 0 ? (
+        // Sem ninguém para escolher, o rótulo "Qual aluno" sozinho é beco sem saída.
+        temAlunoAtivo ? (
+          <EstadoVazio
+            titulo="Nenhum aluno com pacote ativo."
+            nota="Crie ou renove o pacote na ficha do aluno para registrar a aula."
+          />
+        ) : (
+          <View style={{ alignItems: 'center' }}>
+            <EstadoVazio
+              titulo="Você ainda não tem alunos ativos."
+              nota="Cadastre um aluno para registrar a primeira aula."
+            />
+            <BotaoPequeno
+              rotulo="Cadastrar aluno"
+              aoTocar={abrirCadastro}
+              estilo={{ alignSelf: 'center' }}
+            />
+          </View>
+        )
+      ) : !aluno ? (
         <>
           <RotuloSecao estilo={{ marginBottom: 2 }}>Qual aluno</RotuloSecao>
           {selecionaveis.map((a) => (
@@ -139,8 +174,8 @@ export function Registrar() {
                   </View>
                   <Text
                     style={[
-                      texto(12, 400, { altura: 1.45 }),
-                      { marginTop: 10, color: cores.suave },
+                      comEspaco(texto(12, 400, { altura: 1.45 }), { topo: 10 }),
+                      { color: cores.textoMedio },
                     ]}
                   >
                     {notaDoAviso(avisoH, politicas)}
@@ -180,7 +215,7 @@ function EscolhaDeAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => void 
         >
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[TIPO.nome, { color: cores.texto }]}>{aluno.name}</Text>
-            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[comEspaco(TIPO.legenda, { topo: 3 }), { color: cores.textoMedio }]}>
               {linhaDeHorario(aluno)}
             </Text>
           </View>
@@ -225,7 +260,8 @@ function CartaoDesfecho({
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected: selecionado }}
+      // `checked` é o que o leitor de tela anuncia num radio; `selected` não.
+      accessibilityState={{ checked: selecionado }}
       accessibilityLabel={`${titulo}. ${selecionado ? ef.nota : sub}.${
         mostraEfeito ? ` Saldo de ${antes} para ${depois}.` : ''
       }`}
@@ -254,7 +290,7 @@ function CartaoDesfecho({
           />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[TIPO.nome, { color: cores.texto }]}>{titulo}</Text>
-            <Text style={[TIPO.legenda, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[comEspaco(TIPO.legenda, { topo: 3 }), { color: cores.textoMedio }]}>
               {selecionado ? ef.nota : sub}
             </Text>
           </View>

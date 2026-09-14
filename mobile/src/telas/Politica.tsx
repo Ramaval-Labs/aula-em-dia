@@ -19,7 +19,7 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA } from '../tema/tokens';
 
 const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
@@ -75,7 +75,7 @@ export function Politica() {
   const salvarPoliticas = useDados((s) => s.salvarPoliticas);
   const avisar = useToast((s) => s.avisar);
 
-  const [atual, atualizar] = useRascunho('politica', salvas);
+  const [atual, atualizar, , descartarRascunho] = useRascunho('politica', salvas);
   const mudou = JSON.stringify(atual) !== JSON.stringify(salvas);
   const mudanca = diff(salvas, atual, alunos.filter(temPacote).length);
 
@@ -83,7 +83,15 @@ export function Politica() {
     <Tela
       cabecalho={
         <CabecalhoEscuro corDaCurva={cores.tela}>
-          <BotaoVoltar rotulo="Ajustes" aoTocar={voltar} />
+          {/* Voltar sem salvar descarta o rascunho: sem isso, a edição
+              abandonada reaparecia na próxima visita como se fosse a salva. */}
+          <BotaoVoltar
+            rotulo="Ajustes"
+            aoTocar={() => {
+              descartarRascunho();
+              voltar();
+            }}
+          />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={21}>Política de faltas</TituloTela>
           </View>
@@ -138,7 +146,7 @@ export function Politica() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Falta avisada devolve a aula
           </Text>
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
             {atual.avisadaDevolve
               ? 'Dentro do prazo, o saldo não é debitado'
               : 'A aula é debitada mesmo com aviso'}
@@ -159,7 +167,7 @@ export function Politica() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               Reposições por pacote
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
               Depois do limite, a falta debita
             </Text>
           </View>

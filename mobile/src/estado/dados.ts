@@ -39,12 +39,33 @@ const AULAS_DO_PACOTE = 8;
 /** Dias somados pela ação "estender validade" na tela de reposição. */
 const DIAS_DE_EXTENSAO = 15;
 
+/**
+ * Preferências da tela "Avisos e lembretes". Só a escolha fica salva — nada é
+ * enviado nesta versão, e a tela diz isso.
+ */
+export interface PreferenciasDeAviso {
+  aulaDoDia: boolean;
+  saldoBaixo: boolean;
+  reposicaoPendente: boolean;
+  pagamentoVencendo: boolean;
+}
+
+export const AVISOS_PADRAO: PreferenciasDeAviso = {
+  aulaDoDia: true,
+  saldoBaixo: true,
+  reposicaoPendente: true,
+  pagamentoVencendo: false,
+};
+
 type Persistido = {
   alunos: Aluno[];
   extratos: Extratos;
   politicas: Politicas;
   perfil: Perfil;
   disponibilidade: Disponibilidade;
+  /** opcionais: entraram depois da v4 e não existem em estado gravado antes */
+  pacotePadrao?: ConfigPacote;
+  preferenciasDeAviso?: PreferenciasDeAviso;
 };
 
 type Dados = Persistido & {
@@ -71,6 +92,8 @@ type Dados = Persistido & {
   salvarPoliticas: (p: Politicas) => void;
   salvarPerfil: (p: Perfil) => void;
   salvarDisponibilidade: (d: Disponibilidade) => void;
+  salvarPacotePadrao: (cfg: ConfigPacote) => void;
+  salvarPreferenciasDeAviso: (p: PreferenciasDeAviso) => void;
 
   criarAluno: (dados: NovoAluno) => string;
   atualizarAluno: (id: string, patch: Partial<Aluno>) => void;
@@ -79,7 +102,15 @@ type Dados = Persistido & {
   registrarPagamentoCom: (id: string, meio: MeioDePagamento) => void;
   salvarDisponibilidadeDoAluno: (id: string, blocos: BlocoSemanal[]) => void;
   enviarProposta: (id: string, janela: { dia: string; hora: string }, alternativas: Janela[]) => void;
-  responderProposta: (id: string, status: StatusDaProposta) => void;
+  /**
+   * `janela` é a que o aluno tocou — a principal ou uma alternativa. Sem ela,
+   * vale a janela principal da proposta.
+   */
+  responderProposta: (
+    id: string,
+    status: StatusDaProposta,
+    janela?: { dia: string; hora: string },
+  ) => void;
 };
 
 /** O que a tela de cadastro entrega. */
@@ -98,6 +129,8 @@ function gravar(estado: Persistido) {
     politicas: estado.politicas,
     perfil: estado.perfil,
     disponibilidade: estado.disponibilidade,
+    pacotePadrao: estado.pacotePadrao,
+    preferenciasDeAviso: estado.preferenciasDeAviso,
   });
   AsyncStorage.setItem(CHAVE_ESTADO, bruto).catch(() => {
     // Persistência é conveniência: falhar aqui não pode derrubar a tela.
@@ -302,6 +335,22 @@ export const useDados = create<Dados>((set, get) => {
       });
     },
 
+    salvarPacotePadrao(pacotePadrao) {
+      set((s) => {
+        const proximo = { ...s, pacotePadrao };
+        gravar(proximo);
+        return { pacotePadrao };
+      });
+    },
+
+    salvarPreferenciasDeAviso(preferenciasDeAviso) {
+      set((s) => {
+        const proximo = { ...s, preferenciasDeAviso };
+        gravar(proximo);
+        return { preferenciasDeAviso };
+      });
+    },
+
     criarAluno(dados) {
       const id = `al${Date.now().toString(36)}`;
       const novo: Aluno = {
@@ -392,10 +441,10 @@ export const useDados = create<Dados>((set, get) => {
       });
     },
 
-    responderProposta(id, status) {
+    responderProposta(id, status, escolhida) {
       const atual = get().alunoPor(id);
       if (!atual?.proposta) return;
-      const janela = atual.proposta.janela;
+      const janela = escolhida ?? atual.proposta.janela;
 
       if (status === 'recusada') {
         mutar(id, (a) => ({

@@ -43,8 +43,8 @@ import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
-import { MARCA } from '../../tema/tokens';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
+import { MARCA, TAMANHO } from '../../tema/tokens';
 
 /** Referencia estavel para aluno sem lancamentos. */
 const SEM_LANCAMENTOS: Lancamento[] = [];
@@ -58,15 +58,16 @@ export function VerComoAluno() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <Eyebrow>Pré-visualização</Eyebrow>
           </View>
           <Text
+            accessibilityRole="header"
             style={[
-              texto(22, 600, { altura: 1.2, tracking: -0.02 }),
-              { marginTop: 10, color: '#FFFFFF' },
+              comEspaco(texto(22, 600, { altura: 1.2, tracking: -0.02 }), { topo: 10 }),
+              { color: cores.topoTexto },
             ]}
           >
             {aluno ? `O que ${primeiroNome(aluno.name)} vê` : 'O que o aluno vê'}
@@ -76,7 +77,7 @@ export function VerComoAluno() {
       conteudoEstilo={{ gap: 12 }}
     >
       <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.suave }]}>
+        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
           O aluno abre estas páginas por um link, sem instalar nada e sem login. Aqui elas
           aparecem como pré-visualização.
         </Text>
@@ -114,7 +115,7 @@ function TopoDoAluno({ children }: { children: React.ReactNode }) {
   const voltar = useNavegacao((s) => s.voltar);
 
   return (
-    <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+    <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
       <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
       <View
         style={{
@@ -125,7 +126,7 @@ function TopoDoAluno({ children }: { children: React.ReactNode }) {
           gap: 12,
         }}
       >
-        <Wordmark cor="#FFFFFF" tamanho={14} alturaDasBarras={15} />
+        <Wordmark cor={cores.topoTexto} tamanho={14} alturaDasBarras={15} />
         <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.topoFraco }]}>
           {`${primeiroNome(perfil.nome)} · ${perfil.disciplinas[0] ?? ''}`}
         </Text>
@@ -173,11 +174,12 @@ export function AlunoSaldo() {
               rotulo="aulas"
               tamanho={52}
               alinhar="esquerda"
-              cor={restam <= 2 ? MARCA.amarelo : '#FFFFFF'}
-              rotuloAcessivel={`${restam} aulas restantes`}
+              cor={restam <= 2 ? MARCA.amarelo : cores.topoTexto}
+              // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
+              rotuloAcessivel={com ? `${restam} aulas restantes de ${aluno.total}` : 'sem pacote'}
             />
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 12, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 12 }), { color: cores.topoFraco }]}>
             {com
               ? `Pacote de ${aluno.total} aulas, ${aluno.usadas} já usadas. Válido até ${aluno.validade}.`
               : 'Sem pacote ativo no momento.'}
@@ -205,14 +207,14 @@ export function AlunoSaldo() {
           <Text style={[texto(16, 600, { altura: 1.3 }), { color: cores.texto }]}>
             {aluno.hora ? `${aluno.dia}, ${aluno.hora}` : 'Sem horário fixo'}
           </Text>
-          <Text style={[TIPO.legenda, { color: cores.suave }]}>Aula fixa</Text>
+          <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>Aula fixa</Text>
           {aluno.agendada ? (
             <>
               <View style={{ height: 1, backgroundColor: cores.linha }} />
               <Text style={[texto(16, 600, { altura: 1.3 }), { color: cores.texto }]}>
                 {`${aluno.agendada.dia} · ${aluno.agendada.hora}`}
               </Text>
-              <Text style={[TIPO.legenda, { color: cores.suave }]}>Reposição marcada</Text>
+              <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>Reposição marcada</Text>
             </>
           ) : null}
         </View>
@@ -222,8 +224,8 @@ export function AlunoSaldo() {
         <RotuloSecao>A regra combinada</RotuloSecao>
         <Text
           style={[
-            texto(14.5, 400, { altura: 1.6 }),
-            { marginTop: 11, color: cores.textoMedio },
+            comEspaco(texto(14.5, 400, { altura: 1.6 }), { topo: 11 }),
+            { color: cores.textoMedio },
           ]}
         >
           {comoOAlunoVaiLer(politicas, false)}
@@ -247,7 +249,7 @@ export function AlunoSaldo() {
         </Cartao>
       </View>
 
-      <Text style={[TIPO.nota, { color: cores.suave, textAlign: 'center' }]}>
+      <Text style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center' }]}>
         Esta página é atualizada pelo professor. Não precisa instalar nada.
       </Text>
     </Tela>
@@ -266,13 +268,17 @@ export function AlunoProposta() {
   const responderProposta = useDados((s) => s.responderProposta);
   const avisar = useToast((s) => s.avisar);
 
-  const sugeridas = useMemo(
-    () => (aluno ? melhores(candidatos(aluno, alunos, disponibilidade, hoje()), 3) : []),
+  const todas = useMemo(
+    () => (aluno ? candidatos(aluno, alunos, disponibilidade, hoje()) : []),
     [aluno, alunos, disponibilidade],
   );
+  const sugeridas = melhores(todas, 3);
 
   const proposta = aluno?.proposta;
   const principal = proposta?.janela ?? sugeridas[0];
+  // Sem proposta em aberto, a página é só a prévia do que o aluno veria:
+  // aceitar e recusar ficam apagados, para não confirmar nada de mentira.
+  const emPrevia = !proposta;
 
   if (!aluno || !principal) {
     return (
@@ -287,6 +293,20 @@ export function AlunoProposta() {
 
   const alternativas = proposta?.alternativas ?? sugeridas.slice(1);
 
+  // Os motivos são os da janela proposta, não os da primeira sugestão do
+  // motor — a proposta pode ter saído da lista completa (C4).
+  const razoes = (
+    proposta
+      ? todas.find((c) => c.dia === principal.dia && c.hora === principal.hora)
+      : sugeridas[0]
+  )?.razoes;
+
+  const aceitar = (j: { dia: string; hora: string }) => {
+    responderProposta(aluno.id, 'aceita', { dia: j.dia, hora: j.hora });
+    avisar(`Reposição confirmada em ${j.dia}, ${j.hora}. O professor foi avisado.`);
+    ir('aluno', { alunoId: aluno.id });
+  };
+
   return (
     <Tela
       cabecalho={
@@ -295,9 +315,10 @@ export function AlunoProposta() {
             <Eyebrow>{`${primeiroNome(perfil.nome)} propôs uma reposição`}</Eyebrow>
           </View>
           <Text
+            accessibilityRole="header"
             style={[
-              texto(26, 600, { altura: 1.2, tracking: -0.03 }),
-              { marginTop: 12, color: '#FFFFFF' },
+              comEspaco(texto(26, 600, { altura: 1.2, tracking: -0.03 }), { topo: 12 }),
+              { color: cores.topoTexto },
             ]}
           >
             {`${principal.dia}\nàs ${principal.hora}`}
@@ -308,15 +329,13 @@ export function AlunoProposta() {
       rodape={
         <>
           <BotaoPrimario
-            rotulo={`Aceitar ${principal.hora}`}
-            aoTocar={() => {
-              responderProposta(aluno.id, 'aceita');
-              avisar('Reposição confirmada. O professor foi avisado.');
-              ir('aluno', { alunoId: aluno.id });
-            }}
+            rotulo={`Aceitar ${principal.dia}, ${principal.hora}`}
+            desabilitado={emPrevia}
+            aoTocar={() => aceitar(principal)}
           />
           <BotaoTexto
             rotulo="Recusar"
+            desabilitado={emPrevia}
             aoTocar={() => {
               responderProposta(aluno.id, 'recusada');
               avisar('Recusado. Informe sua disponibilidade para novas sugestões.');
@@ -326,10 +345,21 @@ export function AlunoProposta() {
         </>
       }
     >
+      {emPrevia ? (
+        <Caixa>
+          <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
+            {`Pré-visualização: ainda não há proposta enviada para ${primeiroNome(
+              aluno.name,
+            )}. Os botões funcionam quando você enviar um horário.`}
+          </Text>
+        </Caixa>
+      ) : null}
+
+      {razoes?.length ? (
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
         <RotuloSecao>Por que esse horário</RotuloSecao>
         <View style={{ marginTop: 12, gap: 11 }}>
-          {(sugeridas[0]?.razoes ?? ['Livre na agenda dos dois.']).map((r) => (
+          {razoes.map((r) => (
             <View key={r} style={{ flexDirection: 'row', gap: 12 }}>
               <View
                 style={{
@@ -349,6 +379,7 @@ export function AlunoProposta() {
           ))}
         </View>
       </Cartao>
+      ) : null}
 
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
         <RotuloSecao>Seu saldo hoje</RotuloSecao>
@@ -360,9 +391,9 @@ export function AlunoProposta() {
           >
             {saldo(aluno)}
           </Text>
-          <Text style={[texto(15, 600, { altura: 1 }), { color: cores.suave }]}>aulas</Text>
+          <Text style={[texto(15, 600, { altura: 1 }), { color: cores.textoMedio }]}>aulas</Text>
         </View>
-        <Text style={[TIPO.nota, { marginTop: 9, color: cores.suave }]}>
+        <Text style={[comEspaco(TIPO.nota, { topo: 9 }), { color: cores.textoMedio }]}>
           Aceitar não muda o saldo.
         </Text>
       </Cartao>
@@ -383,11 +414,7 @@ export function AlunoProposta() {
               titulo={`${j.dia} · ${j.hora}`}
               sub={j.motivo}
               ultima={i === alternativas.length - 1}
-              aoTocar={() => {
-                responderProposta(aluno.id, 'aceita');
-                avisar(`Reposição confirmada em ${j.dia}, ${j.hora}.`);
-                ir('aluno', { alunoId: aluno.id });
-              }}
+              aoTocar={emPrevia ? undefined : () => aceitar(j)}
             />
           ))}
         </Lista>
@@ -416,14 +443,15 @@ export function AlunoDisponibilidade() {
       cabecalho={
         <TopoDoAluno>
           <Text
+            accessibilityRole="header"
             style={[
-              texto(22, 600, { altura: 1.25, tracking: -0.02 }),
-              { marginTop: 20, color: '#FFFFFF' },
+              comEspaco(texto(22, 600, { altura: 1.25, tracking: -0.02 }), { topo: 20 }),
+              { color: cores.topoTexto },
             ]}
           >
             Quando você pode repor?
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 9, color: cores.topoFraco }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 9 }), { color: cores.topoFraco }]}>
             Marque os blocos possíveis. Nada é agendado agora.
           </Text>
         </TopoDoAluno>
@@ -458,7 +486,7 @@ export function AlunoDisponibilidade() {
         />
       </Cartao>
 
-      <Text style={[TIPO.nota, { color: cores.suave, textAlign: 'center' }]}>
+      <Text style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center' }]}>
         {`${primeiroNome(perfil.nome)} recebe o aviso e propõe até três horários.`}
       </Text>
     </Tela>

@@ -19,10 +19,10 @@ export function Splash() {
         gap: 22,
       }}
     >
-      <Barras largura={10} altura={64} espaco={7} cor="#FFFFFF" />
+      <Barras largura={10} altura={64} espaco={7} cor={cores.topoTexto} />
       <View style={{ alignItems: 'center', gap: 10 }}>
         <Text
-          style={[texto(26, 600, { altura: 1, tracking: -0.02 }), { color: '#FFFFFF' }]}
+          style={[texto(26, 600, { altura: 1, tracking: -0.02 }), { color: cores.topoTexto }]}
         >
           Aula em Dia
         </Text>

@@ -32,7 +32,15 @@ export type NomeDeCor =
   | 'amareloFraco'
   | 'vermelho'
   | 'vermelhoFraco'
-  | 'verde';
+  | 'verde'
+  /**
+   * Criados pelo /designer (branch designer/2026-09-11-tudo) para contraste:
+   * tinta da faixa "Pagamento em atraso" (branco sobre #FF4D5E dava 3.2:1 no
+   * noturno) e o vermelho de número grande dentro do cabeçalho escuro
+   * (#E3001A sobre topoCartao dava 2.4:1).
+   */
+  | 'tintaSobreVermelho'
+  | 'vermelhoSobreTopo';
 
 export type Paleta = Record<NomeDeCor, string>;
 
@@ -62,6 +70,8 @@ export const CORES: { claro: Paleta; escuro: Paleta } = {
     vermelho: '#E3001A',
     vermelhoFraco: '#FFF0F2',
     verde: '#1E7A55',
+    tintaSobreVermelho: '#FFFFFF',
+    vermelhoSobreTopo: '#FF4D5E',
   },
   escuro: {
     tela: '#141E30',
@@ -88,6 +98,8 @@ export const CORES: { claro: Paleta; escuro: Paleta } = {
     vermelho: '#FF4D5E',
     vermelhoFraco: '#3A1A20',
     verde: '#35B37E',
+    tintaSobreVermelho: '#0E1626',
+    vermelhoSobreTopo: '#FF4D5E',
   },
 };
 

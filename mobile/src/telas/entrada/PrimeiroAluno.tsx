@@ -18,12 +18,12 @@ import { dinheiro } from '../../dominio/formato';
 import { AULAS_OFERECIDAS, calcularPacote } from '../../dominio/pacote';
 import { VALOR_AULA } from '../../dominio/politica';
 import type { Aluno, ConfigPacote } from '../../dominio/tipos';
-import { nomeValido } from '../../dominio/validacao';
+import { ERRO, nomeValido } from '../../dominio/validacao';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { RAIO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
@@ -53,7 +53,20 @@ export function PrimeiroAluno() {
   } as ConfigPacote);
 
   const calculado = calcularPacote(pacote, 0, hoje());
-  const pronto = nomeValido(form.nome) && !!form.disciplina;
+  const temNome = nomeValido(form.nome);
+  const temDisciplina = !!form.disciplina;
+  const pronto = temNome && temDisciplina;
+
+  /** O que falta, dito acima do botão apagado. */
+  const motivo = !temNome
+    ? !temDisciplina
+      ? 'Falta o nome do aluno e a disciplina.'
+      : form.nome.trim()
+        ? `${ERRO.nomeCurto}.`
+        : 'Falta o nome do aluno.'
+    : !temDisciplina
+      ? 'Falta a disciplina.'
+      : undefined;
 
   /** Aluno sintético só para a prévia — não vai para o estado. */
   const previa: Aluno = {
@@ -89,6 +102,7 @@ export function PrimeiroAluno() {
       titulo="Seu primeiro aluno"
       rotuloDoBotao="Criar e ir para a home"
       podeAvancar={pronto}
+      motivoDesabilitado={motivo}
       aoAvancar={finalizar}
       acaoSecundaria={{ rotulo: 'Cadastrar depois', aoTocar: concluir }}
     >
@@ -155,7 +169,7 @@ export function PrimeiroAluno() {
             borderBottomColor: cores.linha,
           }}
         >
-          <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+          <Text style={[TIPO.rotulo, { color: cores.suave }]}>
             Como vai ficar na home
           </Text>
         </View>
@@ -183,7 +197,7 @@ function CaixaDeValor({ rotulo, valor }: { rotulo: string; valor: string }) {
         {rotulo}
       </Text>
       <Text
-        style={[texto(15, 600, { altura: 1 }), { marginTop: 7, color: cores.texto }]}
+        style={[comEspaco(texto(15, 600, { altura: 1 }), { topo: 7 }), { color: cores.texto }]}
       >
         {valor}
       </Text>

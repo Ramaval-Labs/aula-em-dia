@@ -4,7 +4,7 @@ import React from 'react';
 import { Pressable, Text, View, type ViewStyle } from 'react-native';
 
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA, RAIO } from '../tema/tokens';
 
 /** Cartão branco com borda fina — o contêiner padrão do conteúdo. */
@@ -73,7 +73,7 @@ export function RotuloSecao({
         estilo,
       ]}
     >
-      <Text style={[TIPO.eyebrow, { fontSize: 10, letterSpacing: 1.6, color: cores.suave }]}>
+      <Text style={[TIPO.rotulo, { color: cores.suave }]}>
         {children}
       </Text>
       {direita}
@@ -105,7 +105,7 @@ export function Lista({
           alignItems: 'center',
         }}
       >
-        <Text style={[TIPO.eyebrow, { fontSize: 10, letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           {rotulo}
         </Text>
         {direita}
@@ -156,7 +156,7 @@ export function LinhaLista({
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[texto(14, 600, { altura: 1.3 }), { color: cores.texto }]}>{titulo}</Text>
         {sub ? (
-          <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>{sub}</Text>
+          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>{sub}</Text>
         ) : null}
       </View>
       {direita}
@@ -191,13 +191,13 @@ export function EstadoVazio({ titulo, nota }: { titulo: string; nota?: string })
   return (
     <View style={{ paddingVertical: 28, paddingHorizontal: 20, alignItems: 'center' }}>
       <Text
-        style={[texto(13, 400, { altura: 1.5 }), { color: cores.suave, textAlign: 'center' }]}
+        style={[texto(13, 400, { altura: 1.5 }), { color: cores.textoMedio, textAlign: 'center' }]}
       >
         {titulo}
       </Text>
       {nota ? (
         <Text
-          style={[TIPO.nota, { marginTop: 4, color: cores.suave, textAlign: 'center' }]}
+          style={[comEspaco(TIPO.nota, { topo: 4 }), { color: cores.textoMedio, textAlign: 'center' }]}
         >
           {nota}
         </Text>
@@ -301,7 +301,7 @@ export function CartaoContexto({
     >
       <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.texto }]}>{titulo}</Text>
       {detalhe ? (
-        <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>{detalhe}</Text>
+        <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>{detalhe}</Text>
       ) : null}
       {acao ? <View style={{ marginTop: 11 }}>{acao}</View> : null}
     </View>
@@ -322,9 +322,9 @@ export function CartaoContexto({
         style={{ width: 4, alignSelf: 'stretch', backgroundColor: cor, borderRadius: 2 }}
       />
       <View style={{ flex: 1 }}>
-        <Text style={[texto(14, 600, { altura: 1.25 }), { color: '#FFFFFF' }]}>{titulo}</Text>
+        <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.topoTexto }]}>{titulo}</Text>
         {detalhe ? (
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.elevadoSuave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.elevadoSuave }]}>
             {detalhe}
           </Text>
         ) : null}

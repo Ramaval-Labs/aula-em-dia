@@ -9,8 +9,8 @@ import { Barras } from '../../componentes/Marca';
 import { Tela } from '../../componentes/Tela';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto } from '../../tema/tipografia';
-import { MARCA } from '../../tema/tokens';
+import { comEspaco, texto } from '../../tema/tipografia';
+import { MARCA, TAMANHO } from '../../tema/tokens';
 
 const PASSOS = [
   {
@@ -39,14 +39,14 @@ export function BoasVindas() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <View style={{ marginTop: 26 }}>
-            <Barras altura={22} espaco={4} cor="#FFFFFF" />
+            <Barras altura={22} espaco={4} cor={cores.topoTexto} />
           </View>
           <Text
             style={[
-              texto(27, 600, { altura: 1.2, tracking: -0.03 }),
-              { marginTop: 14, color: '#FFFFFF' },
+              comEspaco(texto(27, 600, { altura: 1.2, tracking: -0.03 }), { topo: 14 }),
+              { color: cores.topoTexto },
             ]}
           >
             Aula em Dia
@@ -67,22 +67,22 @@ export function BoasVindas() {
           {i > 0 ? <View style={{ height: 1, backgroundColor: cores.linha }} /> : null}
           <View>
             <Text
-              style={[texto(15, 800, { altura: 1 }), { color: MARCA.amarelo }]}
+              style={[texto(15, 800, { altura: 1 }), { color: cores.texto }]}
             >
               {p.numero}
             </Text>
             <Text
               style={[
-                texto(19, 600, { altura: 1.3 }),
-                { marginTop: 8, color: cores.texto },
+                comEspaco(texto(19, 600, { altura: 1.3 }), { topo: 8 }),
+                { color: cores.texto },
               ]}
             >
               {p.titulo}
             </Text>
             <Text
               style={[
-                texto(14, 400, { altura: 1.5 }),
-                { marginTop: 6, color: cores.suave },
+                comEspaco(texto(14, 400, { altura: 1.5 }), { topo: 6 }),
+                { color: cores.textoMedio },
               ]}
             >
               {p.apoio}

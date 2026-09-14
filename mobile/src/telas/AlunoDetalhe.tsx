@@ -24,7 +24,7 @@ import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA } from '../tema/tokens';
 
 /** Referencia estavel para aluno sem lancamentos. */
@@ -86,8 +86,8 @@ export function AlunoDetalhe() {
             }}
           >
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[TIPO.tituloInterno, { color: '#FFFFFF' }]}>{aluno.name}</Text>
-              <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+              <Text accessibilityRole="header" style={[TIPO.tituloInterno, { color: cores.topoTexto }]}>{aluno.name}</Text>
+              <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
                 {linhaDeHorario(aluno)}
               </Text>
             </View>
@@ -95,7 +95,7 @@ export function AlunoDetalhe() {
               numero={com ? String(restam) : '—'}
               rotulo="restam"
               tamanho={34}
-              cor={!com ? cores.fraco : baixo ? MARCA.amarelo : '#FFFFFF'}
+              cor={!com ? cores.fraco : baixo ? MARCA.amarelo : cores.topoTexto}
               rotuloAcessivel={
                 com ? `${restam} aulas restantes de ${aluno.total}` : 'sem pacote ativo'
               }
@@ -117,11 +117,11 @@ export function AlunoDetalhe() {
       }
     >
       {aluno.pausado ? (
-        <Caixa>
+        <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 16 }}>
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Aulas pausadas
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
             Fora da lista de registro até o pagamento ser regularizado.
           </Text>
           <View style={{ marginTop: 11 }}>
@@ -133,7 +133,7 @@ export function AlunoDetalhe() {
               }}
             />
           </View>
-        </Caixa>
+        </Cartao>
       ) : null}
 
       {aluno.pendencia ? (
@@ -202,10 +202,10 @@ export function AlunoDetalhe() {
               gap: 12,
             }}
           >
-            <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+            <Text style={[TIPO.rotulo, { color: cores.suave }]}>
               Pacote atual
             </Text>
-            <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.suave }]}>
+            <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.textoMedio }]}>
               {validadeTexto}
             </Text>
           </View>
@@ -215,10 +215,10 @@ export function AlunoDetalhe() {
           <View
             style={{ marginTop: 11, flexDirection: 'row', justifyContent: 'space-between' }}
           >
-            <Text style={[TIPO.legenda, { color: cores.suave }]}>
+            <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>
               {`${aluno.usadas} de ${aluno.total} usadas`}
             </Text>
-            <Text style={[TIPO.legenda, { color: cores.suave }]}>{reposicoesTexto}</Text>
+            <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>{reposicoesTexto}</Text>
           </View>
         </Cartao>
       ) : null}
@@ -301,7 +301,7 @@ function AcoesDoAluno({
 
       {com && aluno.pausado ? (
         <Text
-          style={[TIPO.nota, { color: cores.suave, textAlign: 'center', paddingHorizontal: 8 }]}
+          style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center', paddingHorizontal: 8 }]}
         >
           {`Registro bloqueado enquanto as aulas de ${primeiroNome(
             aluno.name,

@@ -18,7 +18,8 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
 
 const OPCOES = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 const VALIDADES = [
@@ -32,15 +33,17 @@ export function Pacote() {
   const { alunoId, concluir, voltar } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const politicas = useDados((s) => s.politicas);
+  const padrao = useDados((s) => s.pacotePadrao);
   const criarPacoteCom = useDados((s) => s.criarPacoteCom);
   const avisar = useToast((s) => s.avisar);
 
   const renovacao = !!aluno && temPacote(aluno);
   const sobrando = aluno ? saldo(aluno) : 0;
 
+  // Parte do padrão salvo em Ajustes; o valor combinado com o aluno vence.
   const [cfg, atualizar] = useRascunho('pacote', {
-    aulas: 8,
-    valorPorAula: aluno?.valorPorAula ?? VALOR_AULA,
+    aulas: padrao?.aulas ?? 8,
+    valorPorAula: aluno?.valorPorAula ?? padrao?.valorPorAula ?? VALOR_AULA,
     validadeDias: politicas.validadeDias,
     somarSaldo: renovacao && sobrando > 0,
   } as ConfigPacote);
@@ -62,14 +65,14 @@ export function Pacote() {
     <Tela
       comTeclado
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>
               {renovacao ? 'Renovar pacote' : 'Novo pacote'}
             </TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
             {aluno ? aluno.name : ''}
           </Text>
         </CabecalhoEscuro>
@@ -97,7 +100,7 @@ export function Pacote() {
       </Cartao>
 
       <CampoDeTexto
-        rotulo="Valor por aula"
+        rotulo="Valor por aula, em R$"
         valor={String(cfg.valorPorAula)}
         aoMudar={(v) => atualizar({ valorPorAula: Number(v.replace(/\D/g, '')) || 0 })}
         teclado="numerico"
@@ -137,7 +140,7 @@ export function Pacote() {
             <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
               {`Somar as ${sobrando} ${sobrando === 1 ? 'aula' : 'aulas'} que sobraram`}
             </Text>
-            <Text style={[TIPO.nota, { marginTop: 3, color: cores.suave }]}>
+            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
               Sem isso, o saldo antigo é descartado
             </Text>
           </View>
@@ -145,7 +148,7 @@ export function Pacote() {
       ) : null}
 
       <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           Resumo
         </Text>
         <View style={{ marginTop: 11, gap: 7 }}>
@@ -163,7 +166,7 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
   const cores = useCores();
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-      <Text style={[TIPO.corpo, { color: cores.suave }]}>{rotulo}</Text>
+      <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>{rotulo}</Text>
       <Text style={[texto(12.5, 600, { altura: 1.4 }), { color: cores.texto }]}>
         {valor}
       </Text>

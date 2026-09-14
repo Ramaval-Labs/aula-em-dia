@@ -6,13 +6,13 @@ import { Text, View } from 'react-native';
 import { Cartao } from '../../componentes/Base';
 import { Chip, Segmentado } from '../../componentes/Botoes';
 import { CampoDeTexto } from '../../componentes/Formulario';
-import { iniciaisDe, nomeValido } from '../../dominio/validacao';
+import { ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
 import type { FaixaDeAlunos } from '../../dominio/tipos';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { texto } from '../../tema/tipografia';
+import { texto, TIPO } from '../../tema/tipografia';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
 /** Catálogo sugerido; "+ outra" acrescenta o que o professor escrever. */
@@ -38,7 +38,20 @@ export function Perfil() {
     faixaDeAlunos: '1–5' as FaixaDeAlunos,
   });
 
-  const pronto = nomeValido(form.nome) && form.disciplinas.length > 0;
+  const temNome = nomeValido(form.nome);
+  const temDisciplina = form.disciplinas.length > 0;
+  const pronto = temNome && temDisciplina;
+
+  /** O que falta, dito acima do botão apagado. */
+  const motivo = !temNome
+    ? !temDisciplina
+      ? 'Falta o seu nome e pelo menos uma disciplina.'
+      : form.nome.trim()
+        ? `${ERRO.nomeCurto}.`
+        : 'Falta o seu nome.'
+    : !temDisciplina
+      ? `${ERRO.disciplinaVazia}.`
+      : undefined;
 
   const alternarDisciplina = (d: string) =>
     atualizar({
@@ -65,6 +78,7 @@ export function Perfil() {
       passo={1}
       titulo="Quem é você"
       podeAvancar={pronto}
+      motivoDesabilitado={motivo}
       aoAvancar={continuar}
     >
       <CampoDeTexto
@@ -79,7 +93,7 @@ export function Perfil() {
       <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
         <Text
           style={[
-            texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
+            TIPO.rotulo,
             { color: cores.suave },
           ]}
         >
@@ -104,7 +118,7 @@ export function Perfil() {
       <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
         <Text
           style={[
-            texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
+            TIPO.rotulo,
             { color: cores.suave },
           ]}
         >

@@ -1,11 +1,38 @@
 /** Botões do handoff. Alturas: primário 52, secundário 44, pequeno 38. */
 
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, Text, View, type ViewStyle } from 'react-native';
 
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
-import { MARCA, RAIO, TAMANHO } from '../tema/tokens';
+import { MARCA, MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+
+/**
+ * Confirmação em dois toques para ação destrutiva (arquivar, sair, zerar).
+ * O primeiro toque arma e a tela troca o rótulo ("Tocar de novo para…"); o
+ * segundo executa. Desarma sozinho no tempo do toast, para um toque perdido
+ * não deixar a ação engatilhada.
+ */
+export function useDoisToques(acao: () => void) {
+  const [armado, setArmado] = useState(false);
+
+  useEffect(() => {
+    if (!armado) return;
+    const t = setTimeout(() => setArmado(false), MOVIMENTO.toastMs);
+    return () => clearTimeout(t);
+  }, [armado]);
+
+  const tocar = useCallback(() => {
+    if (!armado) {
+      setArmado(true);
+      return;
+    }
+    setArmado(false);
+    acao();
+  }, [armado, acao]);
+
+  return { armado, tocar };
+}
 
 type Comum = {
   rotulo: string;
@@ -88,17 +115,23 @@ export function BotaoAmarelo({ rotulo, aoTocar, desabilitado, estilo }: Comum) {
   );
 }
 
-/** Botão de contorno — 1.5px na cor do texto. */
+/**
+ * Botão de contorno — 1.5px na cor do texto. `corDaBorda` separa as duas
+ * quando a borda precisa ser mais clara que o rótulo (o "Continuar com
+ * Google" do Acesso): borda apagada com rótulo apagado lê como desabilitado.
+ */
 export function BotaoContorno({
   rotulo,
   aoTocar,
   desabilitado,
   altura = 50,
   cor,
+  corDaBorda,
   estilo,
-}: Comum & { altura?: number; cor?: string }) {
+}: Comum & { altura?: number; cor?: string; corDaBorda?: string }) {
   const cores = useCores();
-  const traco = desabilitado ? cores.desabFg : (cor ?? cores.texto);
+  const tinta = desabilitado ? cores.desabFg : (cor ?? cores.texto);
+  const traco = desabilitado ? cores.desabFg : (corDaBorda ?? tinta);
   return (
     <Pressable
       accessibilityRole="button"
@@ -118,7 +151,7 @@ export function BotaoContorno({
         estilo,
       ]}
     >
-      <Text style={[texto(15, 600, { altura: 1 }), { color: traco }]}>{rotulo}</Text>
+      <Text style={[texto(15, 600, { altura: 1 }), { color: tinta }]}>{rotulo}</Text>
     </Pressable>
   );
 }
@@ -189,7 +222,7 @@ export function BotaoTexto({ rotulo, aoTocar, desabilitado, estilo }: Comum) {
       <Text
         style={[
           texto(14, 600, { altura: 1 }),
-          { color: desabilitado ? cores.desabFg : cores.suave },
+          { color: desabilitado ? cores.desabFg : cores.textoMedio },
         ]}
       >
         {rotulo}
@@ -223,7 +256,9 @@ export function Chip({
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected: ativo }}
+      // `checked` é o estado que o leitor de tela anuncia num radio;
+      // `selected` não vira aria-checked.
+      accessibilityState={{ checked: ativo }}
       onPress={aoTocar}
       hitSlop={{ top: 6, bottom: 6 }}
       style={{ flex: cresce ? 1 : undefined }}
@@ -243,7 +278,7 @@ export function Chip({
         <Text
           style={[
             texto(12, 600, { altura: 1 }),
-            { color: ativo ? cores.botaoTexto : cores.suave },
+            { color: ativo ? cores.botaoTexto : cores.textoMedio },
           ]}
         >
           {rotulo}

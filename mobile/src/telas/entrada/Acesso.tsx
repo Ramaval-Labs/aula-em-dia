@@ -7,25 +7,37 @@
  */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { Cartao } from '../../componentes/Base';
 import { BotaoContorno, BotaoPrimario } from '../../componentes/Botoes';
-import { CabecalhoEscuro, Eyebrow, TituloTela } from '../../componentes/Cabecalho';
+import {
+  BotaoVoltar,
+  CabecalhoEscuro,
+  Eyebrow,
+  TituloTela,
+} from '../../componentes/Cabecalho';
 import { AcaoDoCampo, CampoDeTexto } from '../../componentes/Formulario';
 import { Tela } from '../../componentes/Tela';
 import { ERRO, emailValido, senhaValida, validarAcesso } from '../../dominio/validacao';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
+import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 
 const ACESSO_INICIAL = { email: '', senha: '', mostrarSenha: false, erro: null };
+
+/** O login é mock: não há recuperação para oferecer, então o toque avisa. */
+const AVISO_RECUPERAR_SENHA = 'A recuperação de senha chega junto com o login de verdade.';
 
 export function Acesso() {
   const cores = useCores();
   const entrar = useSessao((s) => s.entrar);
   const criarConta = useSessao((s) => s.criarConta);
+  const voltarEntrada = useSessao((s) => s.voltarEntrada);
+  const avisar = useToast((s) => s.avisar);
   const [form, atualizar] = useRascunho('acesso', ACESSO_INICIAL);
 
   const erros = validarAcesso(form.email, form.senha);
@@ -51,8 +63,9 @@ export function Acesso() {
     <Tela
       comTeclado
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={38}>
-          <View style={{ marginTop: 18 }}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
+          <BotaoVoltar rotulo="Início" aoTocar={() => voltarEntrada()} />
+          <View style={{ marginTop: 14 }}>
             <Eyebrow>Acesso</Eyebrow>
           </View>
           <View style={{ marginTop: 10 }}>
@@ -87,19 +100,23 @@ export function Acesso() {
         sufixo={
           <AcaoDoCampo
             rotulo={form.mostrarSenha ? 'ocultar' : 'mostrar'}
+            rotuloAcessivel={form.mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
             aoTocar={() => atualizar({ mostrarSenha: !form.mostrarSenha })}
           />
         }
       />
 
-      <Text
-        style={[
-          texto(12.5, 400, { altura: 1.4 }),
-          { paddingHorizontal: 2, color: cores.suave },
-        ]}
+      {/* O texto tem ~17px; o hitSlop vertical leva o alvo a ~45px. */}
+      <Pressable
+        accessibilityRole="link"
+        onPress={() => avisar(AVISO_RECUPERAR_SENHA)}
+        hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+        style={{ alignSelf: 'flex-start', paddingHorizontal: 2 }}
       >
-        Esqueci minha senha
-      </Text>
+        <Text style={[texto(12.5, 400, { altura: 1.4 }), { color: cores.textoMedio }]}>
+          Esqueci minha senha
+        </Text>
+      </Pressable>
 
       <View
         style={{
@@ -117,7 +134,7 @@ export function Acesso() {
       <BotaoContorno
         rotulo="Continuar com Google"
         altura={52}
-        cor={cores.fraco}
+        corDaBorda={cores.fraco}
         aoTocar={() => entrar(form.email.trim() || 'professor@gmail.com')}
       />
 
@@ -125,7 +142,7 @@ export function Acesso() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Primeira vez aqui?
         </Text>
-        <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+        <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
           A configuração leva 3 minutos e termina com seu primeiro aluno cadastrado.
         </Text>
         <View style={{ marginTop: 12 }}>

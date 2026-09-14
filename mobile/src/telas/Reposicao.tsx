@@ -10,19 +10,22 @@ import React, { useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { BarraDePassos, Caixa, Radio } from '../componentes/Base';
-import { BotaoContorno, BotaoPequeno, BotaoPrimario } from '../componentes/Botoes';
+import { BotaoPequeno, BotaoPrimario, BotaoTexto } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
 import { candidatos, melhores, type Candidata } from '../dominio/agenda';
 import { hoje } from '../dominio/datas';
 import { podeRepor } from '../dominio/politica';
 import { avisos, useDados } from '../estado/dados';
-import { REPOSICAO_INICIAL, useRascunho } from '../estado/formularios';
+import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
-import { MARCA, RAIO } from '../tema/tokens';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { MARCA, RAIO, TAMANHO } from '../tema/tokens';
+
+/** "Sexta, 29/08" → "sexta, 29/08", para caber no meio da frase do botão. */
+const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 export function Reposicao() {
   const cores = useCores();
@@ -45,6 +48,19 @@ export function Reposicao() {
   );
   const janelas = melhores(todas);
 
+  // A melhor opção já vem marcada, como na referência C3: o professor só
+  // troca se quiser. Uma escolha feita em C4 que não esteja entre as melhores
+  // não marca nenhum cartão, mas continua valendo no C6.
+  const marcada =
+    form.janela === null ? janelas[0] : janelas.find((j) => mesmaJanela(form.janela, j));
+
+  const continuar = () => {
+    if (form.janela === null && marcada) {
+      atualizar({ janela: { data: marcada.data, hora: marcada.hora } });
+    }
+    ir('confirmarReposicao');
+  };
+
   const sub = aluno
     ? `${aluno.name} · validade ${aluno.validade} · ${
         politicas.limiteReposicoes === 0
@@ -56,7 +72,7 @@ export function Reposicao() {
   return (
     <Tela
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 12 }}>
             <BarraDePassos total={3} atual={2} rotulo="Passo 2 de 3" />
@@ -64,23 +80,23 @@ export function Reposicao() {
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>Escolher horário</TituloTela>
           </View>
-          <Text style={[TIPO.corpo, { marginTop: 6, color: cores.suave }]}>{sub}</Text>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>{sub}</Text>
         </CabecalhoEscuro>
       }
       conteudoEstilo={{ gap: 9, paddingBottom: 12 }}
       rodape={
         liberada && janelas.length > 0 ? (
           <>
+            {/* O botão diz o que vai acontecer; "Nenhum serve" é secundário
+                e não disputa peso com ele. */}
             <BotaoPrimario
-              rotulo="Continuar"
-              desabilitado={form.janela === null}
-              aoTocar={() => ir('confirmarReposicao')}
+              rotulo={
+                marcada ? `Propor ${minuscula(marcada.dia)} às ${marcada.hora}` : 'Continuar'
+              }
+              desabilitado={!marcada && form.janela === null}
+              aoTocar={continuar}
             />
-            <BotaoContorno
-              rotulo="Nenhum serve · escolher outro"
-              altura={44}
-              aoTocar={() => ir('outroHorario')}
-            />
+            <BotaoTexto rotulo="Nenhum serve · escolher outro" aoTocar={() => ir('outroHorario')} />
           </>
         ) : undefined
       }
@@ -90,7 +106,7 @@ export function Reposicao() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Limite de reposições atingido
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
             {aluno
               ? `${aluno.reposicoes} de ${politicas.limiteReposicoes} usadas neste pacote. Sua política não permite mais.`
               : ''}
@@ -104,7 +120,7 @@ export function Reposicao() {
           <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
             Nenhum horário cabe
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 4, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
             A agenda até a validade do pacote está cheia. Veja as saídas possíveis.
           </Text>
           <View style={{ marginTop: 11 }}>
@@ -115,19 +131,19 @@ export function Reposicao() {
         <>
           <Text
             style={[
-              TIPO.eyebrow,
-              { letterSpacing: 1.6, color: cores.suave, marginBottom: 2 },
+              comEspaco(TIPO.rotulo, { base: 2 }),
+              { color: cores.textoMedio },
             ]}
           >
             {`${todas.length} horários possíveis · as ${janelas.length} melhores`}
           </Text>
 
-          {janelas.map((j, i) => (
+          {janelas.map((j) => (
             <CartaoJanela
               key={`${j.data}-${j.hora}`}
               janela={j}
-              selecionada={form.janela === i}
-              aoTocar={() => atualizar({ janela: i })}
+              selecionada={j === marcada}
+              aoTocar={() => atualizar({ janela: { data: j.data, hora: j.hora } })}
             />
           ))}
 
@@ -149,7 +165,7 @@ export function Reposicao() {
                 backgroundColor: cores.cartao,
               }}
             >
-              <Text style={[texto(13.5, 600, { altura: 1 }), { color: cores.suave }]}>
+              <Text style={[texto(13.5, 600, { altura: 1 }), { color: cores.textoMedio }]}>
                 Estender validade em 15 dias
               </Text>
             </Pressable>
@@ -173,7 +189,7 @@ function CartaoJanela({
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected: selecionada }}
+      accessibilityState={{ checked: selecionada }}
       accessibilityLabel={`${janela.melhor ? 'Melhor opção. ' : ''}${janela.dia}, ${
         janela.hora
       }. ${janela.razoes.join(' ')}`}
@@ -229,7 +245,7 @@ function CartaoJanela({
               {janela.razoes.map((r) => (
                 <Text
                   key={r}
-                  style={[texto(12, 400, { altura: 1.45 }), { color: cores.suave }]}
+                  style={[texto(12, 400, { altura: 1.45 }), { color: cores.textoMedio }]}
                 >
                   {`· ${r}`}
                 </Text>

@@ -1,21 +1,22 @@
 /** Cadastro e edição de aluno. Arquivar mora aqui, no fim da tela. */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import { Caixa } from '../componentes/Base';
-import { BotaoPequeno, BotaoPrimario } from '../componentes/Botoes';
+import { Cartao } from '../componentes/Base';
+import { BotaoPequeno, BotaoPrimario, useDoisToques } from '../componentes/Botoes';
 import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { CampoDeTexto } from '../componentes/Formulario';
 import { Tela } from '../componentes/Tela';
 import { primeiroNome } from '../dominio/formato';
-import { formatarTelefone, nomeValido } from '../dominio/validacao';
+import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
 
 export function AlunoForm() {
   const cores = useCores();
@@ -37,6 +38,32 @@ export function AlunoForm() {
   });
 
   const pronto = nomeValido(form.nome) && !!form.disciplina;
+
+  // O erro do nome só aparece depois que a pessoa mexeu no campo: acusar
+  // um campo que ela nem tocou é bronca antes da hora. Morre com a tela.
+  const [nomeTocado, setNomeTocado] = useState(false);
+  const erroDoNome =
+    nomeTocado && !nomeValido(form.nome)
+      ? form.nome.trim()
+        ? ERRO.nomeCurto
+        : ERRO.nomeVazio
+      : undefined;
+
+  // O botão desabilitado diz o que falta, em vez de só ficar cinza.
+  const faltando = [
+    nomeValido(form.nome) ? null : 'o nome',
+    form.disciplina.trim() ? null : 'a disciplina',
+  ].filter(Boolean);
+  const notaDoQueFalta = faltando.length
+    ? `Para ${emEdicao ? 'salvar' : 'criar'}, falta informar ${faltando.join(' e ')}.`
+    : null;
+
+  const arquivar = useDoisToques(() => {
+    if (!emEdicao) return;
+    arquivarAluno(emEdicao.id);
+    avisar(`${primeiroNome(emEdicao.name)} foi arquivado.`);
+    concluir('home', null);
+  });
 
   const salvar = () => {
     if (!pronto) return;
@@ -67,7 +94,7 @@ export function AlunoForm() {
     <Tela
       comTeclado
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={40}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
           <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
           <View style={{ marginTop: 14 }}>
             <TituloTela tamanho={22}>
@@ -77,17 +104,33 @@ export function AlunoForm() {
         </CabecalhoEscuro>
       }
       rodape={
-        <BotaoPrimario
-          rotulo={emEdicao ? 'Salvar alterações' : 'Criar aluno'}
-          desabilitado={!pronto}
-          aoTocar={salvar}
-        />
+        <View>
+          {notaDoQueFalta ? (
+            <Text
+              style={[
+                comEspaco(TIPO.nota, { base: 8 }),
+                { color: cores.textoMedio, textAlign: 'center' },
+              ]}
+            >
+              {notaDoQueFalta}
+            </Text>
+          ) : null}
+          <BotaoPrimario
+            rotulo={emEdicao ? 'Salvar alterações' : 'Criar aluno'}
+            desabilitado={!pronto}
+            aoTocar={salvar}
+          />
+        </View>
       }
     >
       <CampoDeTexto
         rotulo="Nome"
         valor={form.nome}
-        aoMudar={(nome) => atualizar({ nome })}
+        aoMudar={(nome) => {
+          setNomeTocado(true);
+          atualizar({ nome });
+        }}
+        erro={erroDoNome}
         placeholder="Nome do aluno"
         capitalizar="words"
         tamanhoDoValor={16.5}
@@ -128,25 +171,23 @@ export function AlunoForm() {
       />
 
       {emEdicao ? (
-        <Caixa estilo={{ marginTop: 6 }}>
+        <Cartao estilo={{ marginTop: 6, paddingVertical: 14, paddingHorizontal: 16 }}>
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Arquivar aluno
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 5, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 5 }), { color: cores.textoMedio }]}>
             Ele sai da lista, mas o extrato e o histórico ficam guardados.
           </Text>
           <View style={{ marginTop: 11 }}>
+            {/* Dois toques: arquivar tira o aluno da lista e sai da tela. Contorno,
+                não vermelho — vermelho é só para o que venceu. */}
             <BotaoPequeno
-              variante="perigo"
-              rotulo="Arquivar"
-              aoTocar={() => {
-                arquivarAluno(emEdicao.id);
-                avisar(`${primeiroNome(emEdicao.name)} foi arquivado.`);
-                concluir('home', null);
-              }}
+              variante="contorno"
+              rotulo={arquivar.armado ? 'Tocar de novo para arquivar' : 'Arquivar aluno'}
+              aoTocar={arquivar.tocar}
             />
           </View>
-        </Caixa>
+        </Cartao>
       ) : null}
     </Tela>
   );

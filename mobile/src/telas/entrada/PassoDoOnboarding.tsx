@@ -1,6 +1,9 @@
 /**
- * Chassi dos quatro passos do onboarding: cabeçalho escuro com a barra de
- * progresso, eyebrow "Passo N de 4", título e o botão de avançar.
+ * Chassi dos quatro passos do onboarding: cabeçalho escuro com o voltar, a
+ * barra de progresso, eyebrow "Passo N de 4", título e o botão de avançar.
+ *
+ * O voltar na tela existe porque o iOS não tem botão físico: sem ele o
+ * `voltarEntrada` só seria alcançável no Android (BackHandler do `Portao`).
  */
 
 import React from 'react';
@@ -8,11 +11,17 @@ import { Text, View } from 'react-native';
 
 import { BarraDePassos } from '../../componentes/Base';
 import { BotaoPrimario, BotaoTexto } from '../../componentes/Botoes';
-import { CabecalhoEscuro, Eyebrow, TituloTela } from '../../componentes/Cabecalho';
+import {
+  BotaoVoltar,
+  CabecalhoEscuro,
+  Eyebrow,
+  TituloTela,
+} from '../../componentes/Cabecalho';
 import { Tela } from '../../componentes/Tela';
-import { TOTAL_DE_PASSOS } from '../../estado/sessao';
+import { TOTAL_DE_PASSOS, useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
-import { TIPO } from '../../tema/tipografia';
+import { comEspaco, TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 
 export function PassoDoOnboarding({
   passo,
@@ -22,6 +31,7 @@ export function PassoDoOnboarding({
   rotuloDoBotao = 'Continuar',
   aoAvancar,
   podeAvancar = true,
+  motivoDesabilitado,
   acaoSecundaria,
   comTeclado = false,
 }: {
@@ -32,17 +42,21 @@ export function PassoDoOnboarding({
   rotuloDoBotao?: string;
   aoAvancar: () => void;
   podeAvancar?: boolean;
+  /** o que falta para o botão acender; aparece logo acima dele */
+  motivoDesabilitado?: string;
   acaoSecundaria?: { rotulo: string; aoTocar: () => void };
   comTeclado?: boolean;
 }) {
   const cores = useCores();
+  const voltarEntrada = useSessao((s) => s.voltarEntrada);
 
   return (
     <Tela
       comTeclado={comTeclado}
       cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={38}>
-          <View style={{ marginTop: 8 }}>
+        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
+          <BotaoVoltar rotulo="Voltar" aoTocar={() => voltarEntrada()} />
+          <View style={{ marginTop: 14 }}>
             <BarraDePassos total={TOTAL_DE_PASSOS} atual={passo} />
           </View>
           <View style={{ marginTop: 16 }}>
@@ -52,7 +66,7 @@ export function PassoDoOnboarding({
             <TituloTela tamanho={22}>{titulo}</TituloTela>
           </View>
           {subtitulo ? (
-            <Text style={[TIPO.corpo, { marginTop: 9, color: cores.topoFraco }]}>
+            <Text style={[comEspaco(TIPO.corpo, { topo: 9 }), { color: cores.topoFraco }]}>
               {subtitulo}
             </Text>
           ) : null}
@@ -61,6 +75,11 @@ export function PassoDoOnboarding({
       conteudoEstilo={{ gap: 10 }}
       rodape={
         <>
+          {!podeAvancar && motivoDesabilitado ? (
+            <Text style={[TIPO.nota, { textAlign: 'center', color: cores.textoMedio }]}>
+              {motivoDesabilitado}
+            </Text>
+          ) : null}
           <BotaoPrimario
             rotulo={rotuloDoBotao}
             desabilitado={!podeAvancar}

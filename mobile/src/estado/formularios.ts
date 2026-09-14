@@ -70,9 +70,28 @@ export interface RascunhoMensagem {
   editado: boolean;
 }
 
+/**
+ * Identidade de uma janela candidata: a data (dd/mm) e a hora bastam para
+ * reencontrá-la em qualquer lista do motor. Não guardar o índice — C3, C4 e
+ * C6 montam listas diferentes (as melhores, a filtrada, a completa), e o
+ * mesmo índice apontaria para outro horário em cada uma.
+ */
+export interface IdDaJanela {
+  data: string;
+  hora: string;
+}
+
 export interface RascunhoReposicao {
-  janela: number | null;
+  janela: IdDaJanela | null;
   filtro: FiltroDeAgenda;
+}
+
+/** A candidata `c` é a janela guardada no rascunho? */
+export function mesmaJanela(
+  id: IdDaJanela | null,
+  c: { data: string; hora: string },
+): boolean {
+  return id !== null && id.data === c.data && id.hora === c.hora;
 }
 
 export interface RascunhoRegistro {

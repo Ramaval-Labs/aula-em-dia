@@ -57,11 +57,11 @@ export function PreviaDeMensagem({
           gap: 12,
         }}
       >
-        <Text style={[TIPO.eyebrow, { letterSpacing: 1.6, color: cores.suave }]}>
+        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
           Mensagem
         </Text>
         {destino ? (
-          <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.suave }]}>
+          <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.textoMedio }]}>
             {destino}
           </Text>
         ) : null}

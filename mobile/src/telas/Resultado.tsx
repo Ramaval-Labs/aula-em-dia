@@ -16,7 +16,7 @@ import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MARCA, TAMANHO } from '../tema/tokens';
 
 export function Resultado() {
@@ -62,13 +62,13 @@ export function Resultado() {
               rotulo="aulas restam"
               tamanho={40}
               alinhar="esquerda"
-              cor={saldoBaixo(aluno) ? MARCA.amarelo : '#FFFFFF'}
+              cor={saldoBaixo(aluno) ? MARCA.amarelo : cores.topoTexto}
               rotuloAcessivel={`${restam} aulas restam de ${aluno.total}`}
             />
             <Text
               style={[
                 texto(13, 500, { altura: 1.4 }),
-                { color: cores.suave, paddingBottom: 4 },
+                { color: cores.topoFraco, paddingBottom: 4 },
               ]}
             >
               {ef.delta === 0 ? 'sem debitar' : `${ef.delta} aula`}
@@ -99,7 +99,7 @@ export function Resultado() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Próximo passo
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 5, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 5 }), { color: cores.textoMedio }]}>
             Escolha o horário da reposição agora ou deixe pendente na lista de alunos.
           </Text>
         </Caixa>
@@ -110,7 +110,7 @@ export function Resultado() {
           <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
             Sem reposição
           </Text>
-          <Text style={[TIPO.corpo, { marginTop: 5, color: cores.suave }]}>
+          <Text style={[comEspaco(TIPO.corpo, { topo: 5 }), { color: cores.textoMedio }]}>
             {`${aluno.reposicoes} de ${politicas.limiteReposicoes} reposições já usadas neste pacote. Sua política não permite outra.`}
           </Text>
         </Caixa>

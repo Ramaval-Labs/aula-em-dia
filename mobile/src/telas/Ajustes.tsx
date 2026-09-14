@@ -4,7 +4,7 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { Avatar, Caixa, LinhaLista, Lista } from '../componentes/Base';
-import { BotaoPequeno, Chip } from '../componentes/Botoes';
+import { BotaoPequeno, Chip, useDoisToques } from '../componentes/Botoes';
 import { CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
 import { Tela } from '../componentes/Tela';
 import { dinheiro } from '../dominio/formato';
@@ -14,7 +14,7 @@ import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useTema } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
 export function Ajustes() {
@@ -23,9 +23,17 @@ export function Ajustes() {
   const perfil = useDados((s) => s.perfil);
   const politicas = useDados((s) => s.politicas);
   const disponibilidade = useDados((s) => s.disponibilidade);
+  const padraoSalvo = useDados((s) => s.pacotePadrao);
   const zerar = useDados((s) => s.zerar);
   const { ir, trocarTab } = useNavegacao();
   const avisar = useToast((s) => s.avisar);
+
+  // Zerar apaga tudo o que o professor registrou: dois toques.
+  const zerarDados = useDoisToques(() => {
+    zerar();
+    trocarTab('home');
+    avisar(avisos.estadoZerado);
+  });
 
   const comPacote = alunos.filter(temPacote).length;
 
@@ -37,7 +45,9 @@ export function Ajustes() {
       : `${politicas.limiteReposicoes} reposições`,
   ].join(' · ');
 
-  const pacotePadrao = `8 aulas · ${dinheiro(VALOR_AULA)} por aula · ${
+  const pacotePadrao = `${padraoSalvo?.aulas ?? 8} aulas · ${dinheiro(
+    padraoSalvo?.valorPorAula ?? VALOR_AULA,
+  )} por aula · ${
     politicas.validadeDias === 0 ? 'sem prazo' : `${politicas.validadeDias} dias`
   }`;
 
@@ -66,10 +76,10 @@ export function Ajustes() {
           >
             <Avatar iniciais={perfil.iniciais} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[texto(14.5, 600, { altura: 1.2 }), { color: '#FFFFFF' }]}>
+              <Text style={[texto(14.5, 600, { altura: 1.2 }), { color: cores.topoTexto }]}>
                 {perfil.nome}
               </Text>
-              <Text style={[TIPO.nota, { marginTop: 3, color: cores.elevadoSuave }]}>
+              <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.elevadoSuave }]}>
                 {`${comPacote} alunos com pacote · ${alunos.length} cadastrados`}
               </Text>
             </View>
@@ -146,19 +156,16 @@ export function Ajustes() {
         <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
           Estado do protótipo
         </Text>
-        <Text style={[TIPO.corpo, { marginTop: 5, color: cores.suave }]}>
+        <Text style={[comEspaco(TIPO.corpo, { topo: 5 }), { color: cores.textoMedio }]}>
           Tudo o que você registra fica salvo neste aparelho. Zerar volta aos quatro alunos
           originais.
         </Text>
         <View style={{ marginTop: 11 }}>
           <BotaoPequeno
-            variante="perigo"
-            rotulo="Zerar dados de demonstração"
-            aoTocar={() => {
-              zerar();
-              trocarTab('home');
-              avisar(avisos.estadoZerado);
-            }}
+            rotulo={
+              zerarDados.armado ? 'Tocar de novo para zerar' : 'Zerar dados de demonstração'
+            }
+            aoTocar={zerarDados.tocar}
           />
         </View>
       </Caixa>

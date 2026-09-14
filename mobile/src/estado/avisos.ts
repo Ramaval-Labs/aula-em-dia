@@ -14,12 +14,16 @@ import type { Aluno } from '../dominio/tipos';
 export const avisos = {
   reposicao: (a: Aluno, janela: { dia: string; hora: string }) =>
     `Reposição de ${primeiroNome(a.name)} em ${janela.dia}, ${janela.hora}. Mensagem enviada.`,
+  /** Marcada sem mensagem: "Agendar sem avisar" e a confirmação feita pelo professor. */
+  reposicaoMarcada: (a: Aluno, janela: { dia: string; hora: string }) =>
+    `Reposição de ${primeiroNome(a.name)} marcada para ${janela.dia}, ${janela.hora}.`,
   pagamento: (a: Aluno) =>
     `Pagamento de ${primeiroNome(a.name)} registrado: ${dinheiro(valorPacote(a))}.`,
-  lembrete: (a: Aluno) =>
-    `Lembrete enviado para ${primeiroNome(a.name)} com a chave Pix.`,
+  // O app não envia mensagem nenhuma: quem manda é o professor, pelo WhatsApp.
+  // Os avisos dizem o que o app fez de fato — marcou o lembrete.
+  lembrete: (a: Aluno) => `Lembrete de ${primeiroNome(a.name)} marcado como enviado.`,
   lembreteEmLote: (n: number) =>
-    `Lembrete enviado para ${n} ${n > 1 ? 'alunos' : 'aluno'} com a chave Pix.`,
+    `Cobrança marcada para ${n} ${n > 1 ? 'alunos' : 'aluno'}. As mensagens saem pelo seu WhatsApp.`,
   pausa: (a: Aluno, pausado: boolean) =>
     `Aulas de ${primeiroNome(a.name)} ${pausado ? 'pausadas' : 'retomadas'}.`,
   validade: (nova: string) =>
@@ -37,6 +41,8 @@ export const avisos = {
   propostaAceita: (a: Aluno) => `${primeiroNome(a.name)} aceitou o horário.`,
   propostaRecusada: (a: Aluno) =>
     `${primeiroNome(a.name)} recusou. Peça a disponibilidade dele.`,
+  propostaCancelada: (a: Aluno) =>
+    `Proposta cancelada. A reposição de ${primeiroNome(a.name)} voltou a ficar pendente.`,
   disponibilidadeSalva: 'Disponibilidade salva.',
   perfilSalvo: 'Perfil atualizado.',
   politicaSalva: 'Política salva. O registro de aula já usa a regra nova.',

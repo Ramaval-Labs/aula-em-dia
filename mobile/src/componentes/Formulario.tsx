@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 
 import { useCores } from '../tema/TemaProvider';
-import { texto, textoDeCampo, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, textoDeCampo, TIPO } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
 export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'telefone';
@@ -88,7 +88,7 @@ export function CampoDeTexto({
       >
         <Text
           style={[
-            texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
+            TIPO.rotulo,
             { color: erro ? cores.vermelho : cores.suave },
           ]}
         >
@@ -141,12 +141,12 @@ export function CampoDeTexto({
       {erro ? (
         <Text
           accessibilityLiveRegion="polite"
-          style={[TIPO.nota, { marginTop: 6, paddingHorizontal: 2, color: cores.vermelho }]}
+          style={[comEspaco(TIPO.nota, { topo: 6 }), { paddingHorizontal: 2, color: cores.vermelho }]}
         >
           {erro}
         </Text>
       ) : ajuda ? (
-        <Text style={[TIPO.nota, { marginTop: 6, paddingHorizontal: 2, color: cores.suave }]}>
+        <Text style={[comEspaco(TIPO.nota, { topo: 6 }), { paddingHorizontal: 2, color: cores.textoMedio }]}>
           {ajuda}
         </Text>
       ) : null}
@@ -154,12 +154,28 @@ export function CampoDeTexto({
   );
 }
 
-/** Ação textual dentro do campo — o "mostrar" da senha em A3. */
-export function AcaoDoCampo({ rotulo, aoTocar }: { rotulo: string; aoTocar: () => void }) {
+/**
+ * Ação textual dentro do campo — o "mostrar" da senha em A3.
+ * `rotuloAcessivel` diz o quê ("Mostrar senha"); o rótulo visível é curto.
+ */
+export function AcaoDoCampo({
+  rotulo,
+  aoTocar,
+  rotuloAcessivel,
+}: {
+  rotulo: string;
+  aoTocar: () => void;
+  rotuloAcessivel?: string;
+}) {
   const cores = useCores();
   return (
-    <Pressable accessibilityRole="button" onPress={aoTocar} hitSlop={10}>
-      <Text style={[texto(12, 600, { altura: 1 }), { color: cores.suave }]}>{rotulo}</Text>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={rotuloAcessivel ?? rotulo}
+      onPress={aoTocar}
+      hitSlop={{ top: 16, bottom: 16, left: 10, right: 10 }}
+    >
+      <Text style={[texto(12, 600, { altura: 1 }), { color: cores.textoMedio }]}>{rotulo}</Text>
     </Pressable>
   );
 }
@@ -184,7 +200,8 @@ export function Interruptor({
       accessibilityLabel={rotuloAcessivel}
       accessibilityState={{ checked: ligado }}
       onPress={() => aoTrocar(!ligado)}
-      hitSlop={8}
+      // 26px de trilha + 11 em cima e embaixo = 48px de alvo.
+      hitSlop={{ top: 11, bottom: 11, left: 8, right: 8 }}
       style={{
         width: 44,
         height: 26,
@@ -289,7 +306,7 @@ function PassoDoContador({
   const tinta = ativo
     ? variante === 'mais'
       ? cores.botaoTexto
-      : cores.suave
+      : cores.textoMedio
     : variante === 'mais'
       ? cores.fraco
       : cores.inativo;

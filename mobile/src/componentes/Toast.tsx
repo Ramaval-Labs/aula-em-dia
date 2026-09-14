@@ -16,8 +16,9 @@ export function Toast() {
 
   return (
     <View
+      // Região viva educada (spec/acessibilidade.md). O papel "alert" virava
+      // anúncio assertivo na web e interrompia o leitor de tela.
       accessibilityLiveRegion="polite"
-      accessibilityRole="alert"
       pointerEvents="none"
       style={{
         position: 'absolute',
@@ -41,7 +42,7 @@ export function Toast() {
           borderRadius: 2,
         }}
       />
-      <Text style={[texto(13, 500, { altura: 1.4 }), { flex: 1, color: '#FFFFFF' }]}>
+      <Text style={[texto(13, 500, { altura: 1.4 }), { flex: 1, color: cores.topoTexto }]}>
         {mensagem}
       </Text>
     </View>
