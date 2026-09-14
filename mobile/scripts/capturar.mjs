@@ -16,6 +16,11 @@
  *   node scripts/capturar.mjs --tela aluno --aluno raf --rolar fim
  *   node scripts/capturar.mjs --entrada acesso
  *   node scripts/capturar.mjs --entrada onboarding:2
+ *   node scripts/capturar.mjs --catalogo --tema escuro
+ *   node scripts/capturar.mjs --catalogo --rolar 400 --nome catalogo-rolado
+ *
+ * `--catalogo` abre o catálogo do redesign (src/componentes/__catalogo__) por
+ * cima do app, pelo gancho de depuração; `--rolar` e `--clicar` valem nele.
  *
  * O web não é idêntico ao Expo Go (sombra e renderização de fonte variam um
  * pouco), mas espaçamento, hierarquia, cor e texto cortado aparecem igual.
@@ -45,6 +50,7 @@ const { values: op } = parseArgs({
     aluno: { type: 'string' },
     tema: { type: 'string', default: 'claro' },
     entrada: { type: 'string' },
+    catalogo: { type: 'boolean', default: false },
     clicar: { type: 'string', multiple: true, default: [] },
     rolar: { type: 'string' },
     nome: { type: 'string' },
@@ -146,8 +152,12 @@ try {
   await pagina.evaluate(() => document.fonts.ready);
 
   await pagina.evaluate(
-    ({ tela, aluno, entrada, raizes }) => {
+    ({ tela, aluno, entrada, raizes, catalogo }) => {
       const { navegacao, sessao } = globalThis.__aulaEmDia;
+      if (catalogo) {
+        globalThis.__aulaEmDia.catalogo.getState().abrir();
+        return;
+      }
       if (entrada) {
         const [qual, passo] = entrada.split(':');
         if (qual === 'splash') sessao.setState({ fase: 'carregando' });
@@ -164,7 +174,13 @@ try {
       if (raizes.includes(tela)) navegacao.getState().trocarTab(tela);
       else navegacao.getState().ir(tela, aluno ? { alunoId: aluno } : undefined);
     },
-    { tela: op.tela, aluno: op.aluno ?? null, entrada: op.entrada ?? null, raizes: RAIZES },
+    {
+      tela: op.tela,
+      aluno: op.aluno ?? null,
+      entrada: op.entrada ?? null,
+      raizes: RAIZES,
+      catalogo: op.catalogo,
+    },
   );
   await pagina.waitForTimeout(500);
 
@@ -175,20 +191,27 @@ try {
 
   if (op.rolar) {
     // A rolagem do React Native Web é de um View interno, não do documento.
-    await pagina.evaluate((px) => {
+    await pagina.evaluate(({ px, catalogo }) => {
       const rolaveis = [...document.querySelectorAll('div')].filter((el) => {
         const s = getComputedStyle(el);
         return /(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight;
       });
+      // O catálogo fica por cima do app e vem depois no DOM: no empate de altura,
+      // a rolagem dele vence a da tela que está embaixo.
+      if (catalogo) rolaveis.reverse();
       const maior = rolaveis.sort((a, b) => b.clientHeight - a.clientHeight)[0];
       if (maior) maior.scrollTop = px === 'fim' ? maior.scrollHeight : Number(px);
-    }, op.rolar);
+    }, { px: op.rolar, catalogo: op.catalogo });
   }
 
   // Deixa assentar a expansão da aba ativa (220ms) e qualquer transição.
   await pagina.waitForTimeout(700);
 
-  const alvo = op.entrada ? `entrada-${op.entrada.replace(':', '-')}` : op.tela;
+  const alvo = op.catalogo
+    ? 'catalogo'
+    : op.entrada
+      ? `entrada-${op.entrada.replace(':', '-')}`
+      : op.tela;
   const nome = op.nome ?? [alvo, op.aluno, op.tema].filter(Boolean).join('-');
   mkdirSync(op.saida, { recursive: true });
   const png = join(op.saida, `${nome}.png`);

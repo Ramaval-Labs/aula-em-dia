@@ -15,11 +15,12 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import { Catalogo } from './src/componentes/__catalogo__/Catalogo';
 import { FaixaCurvaNavbar } from './src/componentes/Curva';
 import { Navbar } from './src/componentes/Navbar';
 import { Toast } from './src/componentes/Toast';
 import { useDados } from './src/estado/dados';
-import { exporParaDepuracao } from './src/estado/depuracao';
+import { exporParaDepuracao, useCatalogo } from './src/estado/depuracao';
 import { ABA_DA_TELA, TELAS_COM_NAVBAR, useNavegacao } from './src/estado/navegacao';
 import { useSessao } from './src/estado/sessao';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
@@ -101,6 +102,8 @@ function Portao() {
   const { carregado: temaCarregado } = useTema();
   const fase = useSessao((s) => s.fase);
   const carregarSessao = useSessao((s) => s.carregar);
+  // Catálogo do redesign (src/componentes/__catalogo__): só em desenvolvimento.
+  const catalogoAberto = useCatalogo((s) => s.aberto) && __DEV__;
 
   useEffect(() => {
     carregarSessao();
@@ -117,6 +120,7 @@ function Portao() {
     <View style={{ flex: 1 }}>
       {conteudo()}
       <Toast />
+      {catalogoAberto ? <Catalogo /> : null}
     </View>
   );
 }
