@@ -227,17 +227,7 @@ export function SuperficieVidro({
           ]}
         />
         {anel ? (
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              canto,
-              {
-                borderWidth: material.anelLargura,
-                borderColor: material.anelCor,
-                boxShadow: material.anelBrilho,
-              },
-            ]}
-          />
+          <View style={[StyleSheet.absoluteFill, canto, { boxShadow: material.anel }]} />
         ) : null}
         <View style={[StyleSheet.absoluteFill, canto, { boxShadow: material.gin }]} />
       </View>

@@ -328,7 +328,7 @@ export type Material = {
   reducaoAndroid: number;
   /** `--bf` literal, aplicado como `backdropFilter` no web. */
   filtroWeb: string;
-  /** `--bfRim` literal (anel da tab bar), para o web. */
+  /** `--bfRim` literal (anel da tab bar). Referência: o anel aproximado não o aplica. */
   filtroAnelWeb: string;
   /** `--gin`: reflexo especular interno (sombras inset). */
   gin: string;
@@ -348,12 +348,12 @@ export type Material = {
   alfaExtraFallback: number;
   /**
    * Anel de refração aproximado (tab bar), sem a máscara do CSS — o handoff
-   * manda não reimplementá-la em nativo. Moldura da largura do `padding` do
-   * anel (9px), clara e mais forte no topo.
+   * manda não reimplementá-la em nativo. Sombra inset com espalhamento e
+   * desfoque: uma moldura clara que some para dentro em ~9px (o `padding` do
+   * anel), mais um fio de luz no topo. Borda dura desenhava um segundo
+   * contorno por dentro da barra.
    */
-  anelLargura: number;
-  anelCor: string;
-  anelBrilho: string;
+  anel: string;
 };
 
 const GIN_CLARO =
@@ -384,10 +384,7 @@ export const MATERIAL: { claro: Material; escuro: Material } = {
     sombraTabBar: '0px 16px 40px rgba(9,15,30,0.13), 0px 2px 6px rgba(9,15,30,0.08)',
     sombraSheet: '0px -18px 50px rgba(6,10,20,0.32)',
     alfaExtraFallback: 0.22,
-    anelLargura: 9,
-    anelCor: 'rgba(255,255,255,0.16)',
-    anelBrilho:
-      'inset 0px 1px 0px 0px rgba(255,255,255,0.9), inset 0px -1px 0px 0px rgba(255,255,255,0.45)',
+    anel: 'inset 0px 0px 6px 3px rgba(255,255,255,0.5), inset 0px 1px 0px 0px rgba(255,255,255,0.9)',
   },
   escuro: {
     intensidade: 90,
@@ -402,10 +399,7 @@ export const MATERIAL: { claro: Material; escuro: Material } = {
     sombraTabBar: '0px 16px 40px rgba(0,0,0,0.5), 0px 2px 6px rgba(9,15,30,0.08)',
     sombraSheet: '0px -18px 50px rgba(6,10,20,0.32)',
     alfaExtraFallback: 0.28,
-    anelLargura: 9,
-    anelCor: 'rgba(255,255,255,0.07)',
-    anelBrilho:
-      'inset 0px 1px 0px 0px rgba(255,255,255,0.4), inset 0px -1px 0px 0px rgba(255,255,255,0.14)',
+    anel: 'inset 0px 0px 6px 3px rgba(255,255,255,0.12), inset 0px 1px 0px 0px rgba(255,255,255,0.4)',
   },
 };
 
