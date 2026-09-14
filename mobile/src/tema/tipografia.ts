@@ -141,3 +141,35 @@ export const TIPO = {
   rotulo: texto(10, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
   micro: texto(9, 600, { altura: 1, tracking: 0.16, maiuscula: true }),
 } as const;
+
+/**
+ * `line-height: normal` do CSS para o Satoshi: ascendente 1.010 + descendente
+ * 0.240 + entrelinha 0.100 (lidos dos TTFs). É o que o protótipo iOS Glass
+ * usa onde a tabela de tipografia não dá entrelinha.
+ */
+const ALTURA_NORMAL = 1.35;
+
+/**
+ * Papéis tipográficos do iOS Glass (handoff-ios-glass/README.md, "Tipografia —
+ * Satoshi"). Objeto separado do `TIPO` antigo porque há colisão de nomes
+ * (`botao`); na Onda 4 este vira o `TIPO`. Tamanho em faixa no handoff
+ * (resumo 21–34, título de bloco 14.5–15.5) fica no menor valor: para os
+ * outros, chame `texto()` com o tamanho e o mesmo peso/tracking.
+ */
+export const TIPO_VIDRO = {
+  tituloGrande: texto(34, 800, { altura: 1.05, tracking: -0.035 }),
+  tituloEmpilhada: texto(29, 800, { altura: 1.1, tracking: -0.035 }),
+  saldoResultado: texto(54, 800, { altura: ALTURA_NORMAL, tracking: -0.05 }),
+  saldoCartao: texto(40, 800, { altura: ALTURA_NORMAL, tracking: -0.045 }),
+  resumo: texto(21, 800, { altura: ALTURA_NORMAL, tracking: -0.04 }),
+  tituloSheet: texto(16, 700, { altura: ALTURA_NORMAL, tracking: -0.015 }),
+  tituloNav: texto(16.5, 700, { altura: ALTURA_NORMAL, tracking: -0.01 }),
+  nomeLista: texto(16, 700, { altura: 1.2, tracking: -0.015 }),
+  tituloBloco: texto(14.5, 700, { altura: ALTURA_NORMAL, tracking: -0.01 }),
+  botao: texto(16.5, 700, { altura: ALTURA_NORMAL, tracking: -0.015 }),
+  apoio: texto(13, 500, { altura: 1.3 }),
+  textoBloco: texto(12.5, 500, { altura: 1.4 }),
+  cabecalhoGrupo: texto(12, 600, { altura: ALTURA_NORMAL, tracking: 0.05, maiuscula: true }),
+  faixa: texto(10.5, 700, { altura: ALTURA_NORMAL, tracking: 0.02 }),
+  rotuloAba: texto(10.5, 700, { altura: ALTURA_NORMAL }),
+} as const;

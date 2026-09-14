@@ -3,7 +3,14 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { useColorScheme } from 'react-native';
 
 import { CHAVE_TEMA } from '../dados/armazenamento';
-import { CORES, type Paleta } from './tokens';
+import {
+  CORES,
+  CORES_VIDRO,
+  MATERIAL,
+  type Material,
+  type Paleta,
+  type PaletaVidro,
+} from './tokens';
 
 export type NomeDeTema = 'claro' | 'escuro';
 
@@ -64,4 +71,15 @@ export function useTema(): Contexto {
 /** Atalho para o caso comum de só precisar da paleta. */
 export function useCores(): Paleta {
   return useTema().cores;
+}
+
+export type Vidro = { tema: NomeDeTema; cores: PaletaVidro; material: Material };
+
+/**
+ * Paleta e material do iOS Glass para o tema atual. Convive com `useCores()`
+ * até a Onda 4, quando a paleta antiga sai.
+ */
+export function useVidro(): Vidro {
+  const { tema } = useTema();
+  return useMemo(() => ({ tema, cores: CORES_VIDRO[tema], material: MATERIAL[tema] }), [tema]);
 }
