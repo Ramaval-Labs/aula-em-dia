@@ -318,6 +318,14 @@ export type Material = {
    * handoff); o miolo translúcido de cada nível vai por cima dele.
    */
   tintDesfoque: TintDoDesfoque;
+  /**
+   * Android: o overlay de cor do tint cresce com `intensity` e somaria um
+   * segundo miolo ao nosso. Por isso lá a intensidade é baixa e o
+   * `blurReductionFactor` também, mantendo o mesmo raio (intensidade ÷
+   * redução = 20 no claro, 22.5 no escuro) com menos véu por cima.
+   */
+  intensidadeAndroid: number;
+  reducaoAndroid: number;
   /** `--bf` literal, aplicado como `backdropFilter` no web. */
   filtroWeb: string;
   /** `--bfRim` literal (anel da tab bar), para o web. */
@@ -366,6 +374,8 @@ export const MATERIAL: { claro: Material; escuro: Material } = {
   claro: {
     intensidade: 80,
     tintDesfoque: 'systemUltraThinMaterialLight',
+    intensidadeAndroid: 32,
+    reducaoAndroid: 1.6,
     filtroWeb: 'blur(16px) saturate(190%) brightness(1.08)',
     filtroAnelWeb: 'blur(9px) saturate(300%) brightness(1.2)',
     gin: GIN_CLARO,
@@ -382,6 +392,8 @@ export const MATERIAL: { claro: Material; escuro: Material } = {
   escuro: {
     intensidade: 90,
     tintDesfoque: 'systemUltraThinMaterialDark',
+    intensidadeAndroid: 36,
+    reducaoAndroid: 1.6,
     filtroWeb: 'blur(18px) saturate(175%) brightness(1.12)',
     filtroAnelWeb: 'blur(10px) saturate(240%) brightness(1.3)',
     gin: GIN_ESCURO,

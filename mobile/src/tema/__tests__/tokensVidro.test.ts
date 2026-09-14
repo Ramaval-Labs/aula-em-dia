@@ -31,6 +31,8 @@ describe('tokens iOS Glass', () => {
     expect(m.filtroWeb).toBe(j.filtroWeb);
     expect(m.opacidadeFundo).toBe(j.opacidadeFundo);
     expect(m.alfaExtraFallback).toBe(j.alfaExtraFallback);
+    expect(m.intensidadeAndroid).toBe(j.intensidadeAndroid);
+    expect(m.reducaoAndroid).toBe(j.reducaoAndroid);
     expect(m.intensidade).toBeGreaterThan(0);
     expect(m.intensidade).toBeLessThanOrEqual(100);
   });
