@@ -26,9 +26,12 @@ type Catalogo = {
  * Liga o catálogo de componentes do redesign
  * (`componentes/__catalogo__/Catalogo.tsx`) por cima do app. Só tem efeito em
  * desenvolvimento: o `App.tsx` ignora a flag fora do `__DEV__`.
+ *
+ * No aparelho não há console para chamar o gancho: suba o Metro com
+ * `EXPO_PUBLIC_CATALOGO=1` e o app abre direto no catálogo ("Fechar" volta).
  */
 export const useCatalogo = create<Catalogo>((set) => ({
-  aberto: false,
+  aberto: __DEV__ && process.env.EXPO_PUBLIC_CATALOGO === '1',
   abrir: () => set({ aberto: true }),
   fechar: () => set({ aberto: false }),
 }));
