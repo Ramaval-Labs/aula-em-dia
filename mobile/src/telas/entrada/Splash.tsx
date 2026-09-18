@@ -1,35 +1,52 @@
-/** A1 — Splash. Abertura de marca, sem interação. */
+/**
+ * A1 — Splash. Abertura de marca, sem interação.
+ *
+ * No iOS Glass a marca é só tipográfica: "Aula em Dia" em Satoshi 800 sobre o
+ * fundo de refração. As quatro barras amarelas da direção anterior saíram do
+ * sistema junto com o amarelo.
+ *
+ * Esta tela também é o que o `App.tsx` mostra enquanto as fontes carregam,
+ * então ela não pode depender de nada além do tema.
+ */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Barras } from '../../componentes/Marca';
-import { useCores } from '../../tema/TemaProvider';
-import { texto } from '../../tema/tipografia';
+import { FundoRefracao } from '../../componentes/Vidro';
+import { useVidro } from '../../tema/TemaProvider';
+import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
 
 export function Splash() {
-  const cores = useCores();
+  const { cores } = useVidro();
+
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: cores.topo,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 22,
-      }}
-    >
-      <Barras largura={10} altura={64} espaco={7} cor={cores.topoTexto} />
-      <View style={{ alignItems: 'center', gap: 10 }}>
-        <Text
-          style={[texto(26, 600, { altura: 1, tracking: -0.02 }), { color: cores.topoTexto }]}
-        >
+    <View style={estilos.cheio}>
+      <FundoRefracao />
+      <View accessible accessibilityRole="header" style={estilos.centro}>
+        <Text style={[TIPO_VIDRO.tituloGrande, estilos.aoCentro, { color: cores.tint }]}>
           Aula em Dia
         </Text>
-        <Text style={[texto(13, 400, { altura: 1 }), { color: cores.topoFraco }]}>
+        <Text
+          style={[
+            comEspaco(texto(13.5, 500, { altura: 1.4 }), { topo: 12 }),
+            estilos.aoCentro,
+            { color: cores.tinta2 },
+          ]}
+        >
           A conta das aulas, sem discussão
         </Text>
       </View>
     </View>
   );
 }
+
+const estilos = StyleSheet.create({
+  cheio: { flex: 1 },
+  centro: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  aoCentro: { textAlign: 'center' },
+});
