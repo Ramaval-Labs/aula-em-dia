@@ -5,6 +5,9 @@
  * pelo gancho de depuração (`__aulaEmDia.catalogo.getState().abrir()`) ou por
  * `npm run capturar -- --catalogo`.
  *
+ * Onda 2B: uma seção por família de componente (`Secoes.tsx`), cada peça em
+ * todos os seus estados. É a tela que prova o catálogo.
+ *
  * Onda 1 (prova do material): conteúdo colorido rolando POR BAIXO de uma
  * barra fixa de vidro e de uma tab bar falsa com anel, cartões com recorte
  * arredondado (o que quebrava antes), um bloco de status suave, um painel de
@@ -27,6 +30,7 @@ import {
   SuperficieVidro,
   type ModoVidro,
 } from '../Vidro';
+import { SecoesDoCatalogo } from './Secoes';
 
 const TEXTO_LONGO =
   'Professor particular controla pacotes de aulas pré-pagas: quantas o aluno já usou, ' +
@@ -61,6 +65,12 @@ export function Catalogo() {
             </Text>
 
             <SeletorDeTema tema={tema} aoTrocar={trocarTema} />
+
+            <SecoesDoCatalogo />
+
+            <Text style={[comEspaco(TIPO_VIDRO.tituloEmpilhada, { topo: 30 }), { color: cores.tinta }]}>
+              Material
+            </Text>
 
             <Palco />
 
