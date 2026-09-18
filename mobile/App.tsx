@@ -48,7 +48,6 @@ exporParaDepuracao();
  * título e o rodapé de verdade — e a chave sai deste mapa.
  */
 const SHEETS_NAO_MIGRADOS: Partial<Record<Tela, { titulo: string; altura?: AlturaSheet }>> = {
-  resultado: { titulo: 'Resultado', altura: 'resultado' },
   reposicao: { titulo: 'Escolher horário' },
   dispAluno: { titulo: 'Disponibilidade do aluno' },
   outroHorario: { titulo: 'Escolher outro horário' },
