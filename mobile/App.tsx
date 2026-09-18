@@ -21,7 +21,7 @@ import { Navbar } from './src/componentes/Navbar';
 import { Toast } from './src/componentes/Toast';
 import { useDados } from './src/estado/dados';
 import { exporParaDepuracao, useCatalogo } from './src/estado/depuracao';
-import { ABA_DA_TELA, TELAS_COM_NAVBAR, useNavegacao } from './src/estado/navegacao';
+import { ABA_DA_TELA, ehRaiz, useNavegacao } from './src/estado/navegacao';
 import { useSessao } from './src/estado/sessao';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
 import { telaDe } from './src/telas/registro';
@@ -54,7 +54,7 @@ function App() {
   }, [voltar]);
 
   const TelaAtual = telaDe(tela);
-  const comNavbar = TELAS_COM_NAVBAR.includes(tela);
+  const comNavbar = ehRaiz(tela);
 
   // Espera o estado salvo antes de pintar, para a lista não piscar da semente
   // para os dados reais do professor.
