@@ -1,25 +1,28 @@
 /**
- * Tela 3 — Registrar aula (Fluxo B).
- * O cartão selecionado mostra em tempo real o efeito no saldo calculado
- * pela política ativa. É a tela mais usada do app: dois toques e pronto.
+ * Tela 3 — Registrar aula (handoff-ios-glass/README.md §3).
+ *
+ * Sheet de tarefa (88%), título = nome do aluno. O ponto de design é que o
+ * efeito no saldo (`antes → depois`) aparece **antes** de confirmar, e
+ * recalcula ao vivo quando a antecedência do aviso muda.
+ *
+ * Quem decide o efeito é `dominio/politica.ts` — as três antecedências
+ * (48h/26h/10h) são só o que a tela oferece; o mínimo vem da política salva.
  */
 
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { ContadorSaldo, linhaDeHorario } from '../componentes/Aluno';
-import { EstadoVazio, RotuloSecao } from '../componentes/Base';
-import { BotaoPequeno, BotaoPrimario, Chip } from '../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
-import { Tela } from '../componentes/Tela';
-import { efeito, podeRegistrar, saldo } from '../dominio/politica';
+import { EstadoVazio } from '../componentes/Blocos';
+import { BotaoPrimario, CartaoEscolha, Segmentado } from '../componentes/Controles';
+import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
+import { Sheet } from '../componentes/Sheet';
+import { efeito, podeRegistrar, saldo, saldoBaixo, temPacote } from '../dominio/politica';
 import type { Aluno, Desfecho, Politicas } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
-import { useCores } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { RAIO, TAMANHO } from '../tema/tokens';
+import { useVidro } from '../tema/TemaProvider';
+import { comEspaco, texto } from '../tema/tipografia';
 
 const DESFECHOS: { chave: Desfecho; titulo: string; sub: string }[] = [
   { chave: 'realizada', titulo: 'Aula realizada', sub: 'Aconteceu como o combinado' },
@@ -28,10 +31,12 @@ const DESFECHOS: { chave: Desfecho; titulo: string; sub: string }[] = [
   { chave: 'cancelada_professor', titulo: 'Cancelei a aula', sub: 'A ausência foi sua' },
 ];
 
-/** Antecedências oferecidas no slider de aviso. */
-const ANTECEDENCIAS = [48, 26, 10];
+/** Antecedências oferecidas no segmentado do cartão "Falta avisada". */
+const ANTECEDENCIAS: number[] = [48, 26, 10];
 
-/** Texto de apoio do slider, dependente da política salva. */
+const OPCOES_DE_AVISO = ANTECEDENCIAS.map((h) => ({ valor: h, rotulo: `${h}h` }));
+
+/** Texto de apoio do segmentado, dependente da política salva. */
 function notaDoAviso(avisoH: number, p: Politicas): string {
   if (!p.avisadaDevolve) {
     return 'Sua política não devolve a aula em falta avisada, então o prazo não muda o resultado.';
@@ -41,13 +46,16 @@ function notaDoAviso(avisoH: number, p: Politicas): string {
     : `Abaixo do seu mínimo de ${p.avisoHoras}h. A aula é debitada e não gera reposição.`;
 }
 
+/** Linha de apoio da escolha de aluno: disciplina · dia, hora. */
+function linhaDeApoio(a: Aluno): string {
+  const horario = [a.dia, a.hora].filter(Boolean).join(', ');
+  return [a.disciplina, horario].filter(Boolean).join(' · ');
+}
+
 export function Registrar() {
-  const cores = useCores();
-  const { alunoId, definirAluno, ir, voltar } = useNavegacao();
-  const [{ desfecho, avisoH }, atualizarRegistro] = useRascunho(
-    'registro',
-    REGISTRO_INICIAL,
-  );
+  const { cores } = useVidro();
+  const { alunoId, definirAluno, ir } = useNavegacao();
+  const [{ desfecho, avisoH }, atualizarRegistro] = useRascunho('registro', REGISTRO_INICIAL);
 
   const alunos = useDados((s) => s.alunos);
   const politicas = useDados((s) => s.politicas);
@@ -78,151 +86,97 @@ export function Registrar() {
     ir('resultado');
   };
 
+  const semNinguem = !aluno && selecionaveis.length === 0;
+
+  const rodape = aluno ? (
+    <BotaoPrimario rotulo="Confirmar" desabilitado={!pronto} aoTocar={confirmar} />
+  ) : semNinguem && !temAlunoAtivo ? (
+    // Sem esta porta o sheet abriria só com um aviso e nenhuma saída.
+    <BotaoPrimario rotulo="Cadastrar aluno" aoTocar={abrirCadastro} />
+  ) : undefined;
+
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>Registrar aula</TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-            {aluno ? `${aluno.name} · ${aluno.disciplina}` : 'Escolha o aluno da aula'}
-          </Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 8, paddingBottom: 12 }}
-      rodape={
-        aluno ? (
-          <BotaoPrimario rotulo="Confirmar" desabilitado={!pronto} aoTocar={confirmar} />
-        ) : undefined
-      }
-    >
-      {!aluno && selecionaveis.length === 0 ? (
-        // Sem ninguém para escolher, o rótulo "Qual aluno" sozinho é beco sem saída.
-        temAlunoAtivo ? (
-          <EstadoVazio
-            titulo="Nenhum aluno com pacote ativo."
-            nota="Crie ou renove o pacote na ficha do aluno para registrar a aula."
-          />
-        ) : (
-          <View style={{ alignItems: 'center' }}>
+    <Sheet titulo={aluno ? aluno.name : 'Registrar aula'} rodape={rodape}>
+      {semNinguem ? (
+        <ListaAgrupada estilo={estilos.blocoTopo}>
+          {temAlunoAtivo ? (
+            <EstadoVazio
+              titulo="Nenhum aluno com pacote ativo."
+              nota="Crie ou renove o pacote na ficha do aluno para registrar a aula."
+            />
+          ) : (
             <EstadoVazio
               titulo="Você ainda não tem alunos ativos."
               nota="Cadastre um aluno para registrar a primeira aula."
             />
-            <BotaoPequeno
-              rotulo="Cadastrar aluno"
-              aoTocar={abrirCadastro}
-              estilo={{ alignSelf: 'center' }}
-            />
-          </View>
-        )
+          )}
+        </ListaAgrupada>
       ) : !aluno ? (
         <>
-          <RotuloSecao estilo={{ marginBottom: 2 }}>Qual aluno</RotuloSecao>
-          {selecionaveis.map((a) => (
-            <EscolhaDeAluno
-              key={a.id}
-              aluno={a}
-              aoTocar={() => definirAluno(a.id)}
-            />
-          ))}
+          <CabecalhoGrupo titulo="Qual aluno" />
+          <ListaAgrupada estilo={estilos.listaDoGrupo}>
+            {selecionaveis.map((a) => (
+              <LinhaAluno
+                key={a.id}
+                nome={a.name}
+                apoio={linhaDeApoio(a)}
+                estadoDoAvatar={!temPacote(a) ? 'sem' : saldoBaixo(a) ? 'baixo' : 'normal'}
+                porte="sheet"
+                valor={String(saldo(a))}
+                unidade="aulas"
+                caixaNoValor
+                chevron={false}
+                rotuloAcessivel={`${a.name}. ${linhaDeApoio(a)}. ${saldo(a)} aulas restantes.`}
+                aoTocar={() => definirAluno(a.id)}
+              />
+            ))}
+          </ListaAgrupada>
         </>
       ) : (
         <>
-          <RotuloSecao estilo={{ marginBottom: 2 }}>O que aconteceu</RotuloSecao>
-          {DESFECHOS.map((o) => (
-            <CartaoDesfecho
-              key={o.chave}
-              titulo={o.titulo}
-              sub={o.sub}
-              chave={o.chave}
-              aluno={aluno}
-              politicas={politicas}
-              avisoH={avisoH}
-              selecionado={desfecho === o.chave}
-              aoTocar={() => atualizarRegistro({ desfecho: o.chave })}
-            >
-              {desfecho === 'avisada' && o.chave === 'avisada' ? (
-                <View
-                  style={{
-                    marginTop: 12,
-                    paddingTop: 12,
-                    borderTopWidth: 1,
-                    borderTopColor: cores.linha,
-                  }}
-                >
-                  <Text
-                    style={[
-                      texto(10, 600, { altura: 1, tracking: 0.14, maiuscula: true }),
-                      { color: cores.suave },
-                    ]}
-                  >
-                    Avisou com quanta antecedência
-                  </Text>
-                  <View style={{ marginTop: 9, flexDirection: 'row', gap: 7 }}>
-                    {ANTECEDENCIAS.map((h) => (
-                      <Chip
-                        key={h}
-                        rotulo={`${h}h`}
-                        altura={36}
-                        ativo={avisoH === h}
-                        aoTocar={() => atualizarRegistro({ avisoH: h })}
-                      />
-                    ))}
-                  </View>
-                  <Text
-                    style={[
-                      comEspaco(texto(12, 400, { altura: 1.45 }), { topo: 10 }),
-                      { color: cores.textoMedio },
-                    ]}
-                  >
-                    {notaDoAviso(avisoH, politicas)}
-                  </Text>
-                </View>
-              ) : null}
-            </CartaoDesfecho>
-          ))}
+          <CabecalhoGrupo titulo="O que aconteceu" />
+          <View style={estilos.cartoes}>
+            {DESFECHOS.map((o) => (
+              <CartaoDesfecho
+                key={o.chave}
+                titulo={o.titulo}
+                sub={o.sub}
+                chave={o.chave}
+                aluno={aluno}
+                politicas={politicas}
+                avisoH={avisoH}
+                selecionado={desfecho === o.chave}
+                aoTocar={() => atualizarRegistro({ desfecho: o.chave })}
+              >
+                {desfecho === 'avisada' && o.chave === 'avisada' ? (
+                  <>
+                    <Text style={[estilos.rotuloSub, { color: cores.tinta3 }]}>
+                      Antecedência do aviso
+                    </Text>
+                    <Segmentado
+                      opcoes={OPCOES_DE_AVISO}
+                      valor={avisoH}
+                      porte="cartao"
+                      rotuloDoGrupo="Antecedência do aviso"
+                      aoTrocar={(h) => atualizarRegistro({ avisoH: h })}
+                      estilo={estilos.segmentado}
+                    />
+                    <Text
+                      style={[
+                        comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 11 }),
+                        { color: cores.tinta2 },
+                      ]}
+                    >
+                      {notaDoAviso(avisoH, politicas)}
+                    </Text>
+                  </>
+                ) : null}
+              </CartaoDesfecho>
+            ))}
+          </View>
         </>
       )}
-    </Tela>
-  );
-}
-
-function EscolhaDeAluno({ aluno, aoTocar }: { aluno: Aluno; aoTocar: () => void }) {
-  const cores = useCores();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${aluno.name}. ${linhaDeHorario(aluno)}. ${saldo(aluno)} aulas restantes.`}
-      onPress={aoTocar}
-    >
-      {({ pressed }) => (
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 13,
-            minHeight: 64,
-            paddingVertical: 12,
-            paddingHorizontal: 15,
-            backgroundColor: cores.cartao,
-            borderWidth: 1,
-            borderColor: pressed ? cores.suave : cores.linha,
-            borderRadius: RAIO.cartao,
-          }}
-        >
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={[TIPO.nome, { color: cores.texto }]}>{aluno.name}</Text>
-            <Text style={[comEspaco(TIPO.legenda, { topo: 3 }), { color: cores.textoMedio }]}>
-              {linhaDeHorario(aluno)}
-            </Text>
-          </View>
-          <ContadorSaldo numero={String(saldo(aluno))} />
-        </View>
-      )}
-    </Pressable>
+    </Sheet>
   );
 }
 
@@ -248,65 +202,35 @@ function CartaoDesfecho({
   aoTocar: () => void;
   children?: React.ReactNode;
 }) {
-  const cores = useCores();
+  const { cores } = useVidro();
   const ef = efeito(chave, avisoH, politicas);
   const antes = saldo(aluno);
   const depois = Math.max(0, antes + ef.delta);
 
   // "Falta avisada" só mostra o efeito depois de escolhida: ele depende do aviso.
   const mostraEfeito = chave !== 'avisada' || selecionado;
-  const previa = `${antes} → ${depois}`;
 
   return (
-    <Pressable
-      accessibilityRole="radio"
-      // `checked` é o que o leitor de tela anuncia num radio; `selected` não.
-      accessibilityState={{ checked: selecionado }}
-      accessibilityLabel={`${titulo}. ${selecionado ? ef.nota : sub}.${
+    <CartaoEscolha
+      titulo={titulo}
+      subtitulo={selecionado ? ef.nota : sub}
+      valor={mostraEfeito ? `${antes} → ${depois}` : undefined}
+      corDoValor={ef.delta < 0 ? cores.vermelho : cores.verde}
+      selecionado={selecionado}
+      aoTocar={aoTocar}
+      rotuloAcessivel={`${titulo}. ${selecionado ? ef.nota : sub}.${
         mostraEfeito ? ` Saldo de ${antes} para ${depois}.` : ''
       }`}
-      onPress={aoTocar}
     >
-      <View
-        style={{
-          paddingVertical: 12,
-          paddingHorizontal: 15,
-          backgroundColor: cores.cartao,
-          borderRadius: RAIO.cartao,
-          borderWidth: selecionado ? 1.5 : 1,
-          borderColor: selecionado ? cores.texto : cores.linha,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13, minHeight: 40 }}>
-          <View
-            style={{
-              width: 20,
-              height: 20,
-              borderRadius: 10,
-              backgroundColor: cores.cartao,
-              borderWidth: selecionado ? 6 : 1.5,
-              borderColor: selecionado ? cores.texto : cores.fraco,
-            }}
-          />
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={[TIPO.nome, { color: cores.texto }]}>{titulo}</Text>
-            <Text style={[comEspaco(TIPO.legenda, { topo: 3 }), { color: cores.textoMedio }]}>
-              {selecionado ? ef.nota : sub}
-            </Text>
-          </View>
-          {mostraEfeito ? (
-            <Text
-              style={[
-                texto(14, 700, { altura: 1 }),
-                { color: ef.delta < 0 ? cores.vermelho : cores.verde },
-              ]}
-            >
-              {previa}
-            </Text>
-          ) : null}
-        </View>
-        {children}
-      </View>
-    </Pressable>
+      {children}
+    </CartaoEscolha>
   );
 }
+
+const estilos = StyleSheet.create({
+  blocoTopo: { marginTop: 10 },
+  listaDoGrupo: { marginTop: 9 },
+  cartoes: { marginTop: 9, gap: 9 },
+  rotuloSub: texto(11.5, 600, { altura: 1.2, tracking: 0.04, maiuscula: true }),
+  segmentado: { marginTop: 9, alignSelf: 'stretch' },
+});
