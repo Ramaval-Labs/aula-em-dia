@@ -68,8 +68,9 @@ export function Icone({
       height={tamanho}
       viewBox="0 0 24 24"
       // O ícone nunca é a informação: quem chama rotula o controle.
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      // `aria-hidden` porque o react-native-svg repassa as props RN puras ao
+      // elemento <svg> do DOM no web, e o React reclama delas no console.
+      aria-hidden
       style={[girar ? { transform: [{ rotate: `${girar}deg` }] } : null, style]}
     >
       <Path

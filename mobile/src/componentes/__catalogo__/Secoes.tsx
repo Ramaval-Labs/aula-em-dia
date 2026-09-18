@@ -588,7 +588,7 @@ function SecaoBlocos() {
       <Amostra rotulo="cartões de resumo · barra proporcional">
         <View style={estilos.linhaResumo}>
           <CartaoResumo rotulo="A receber" valor="R$ 1.280" tom="ambar" />
-          <CartaoResumo rotulo="Recebido" valor="R$ 10.000,00" tom="verde" />
+          <CartaoResumo rotulo="Recebido" valor="R$ 10.000" tom="verde" />
           <CartaoResumo rotulo="Em atraso" valor="R$ 0" zerado />
         </View>
         <View style={estilos.espaco9} />
@@ -642,7 +642,7 @@ function SecaoDerivados() {
     <Secao titulo="Derivados">
       <Amostra rotulo="campo de texto · sem handoff">
         <CartaoVidro>
-          <View style={estilos.coluna}>
+          <View style={estilos.colunaCampos}>
             <CampoDeTexto rotulo="Nome do aluno" valor={nome} aoMudar={setNome} />
             <CampoDeTexto
               rotulo="E-mail"
@@ -693,6 +693,7 @@ const estilos = StyleSheet.create({
   secao: { marginTop: 30 },
   amostra: { marginTop: 18 },
   coluna: { gap: 10 },
+  colunaCampos: { gap: 16 },
   colunaCurta: { gap: 9 },
   linhaBotoes: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, alignItems: 'center' },
   linhaIcones: { flexDirection: 'row', gap: 16, marginTop: 14, alignItems: 'center' },

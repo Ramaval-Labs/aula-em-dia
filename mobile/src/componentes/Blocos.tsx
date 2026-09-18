@@ -284,8 +284,7 @@ export function Avatar({
   return (
     <View
       // Decorativo: o nome do aluno já está na linha, em texto.
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      aria-hidden
       style={[
         {
           width: tamanho,
@@ -325,11 +324,7 @@ export function MedidorPacote({
 }) {
   const { cores } = useVidro();
   return (
-    <View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={[estilos.medidor, estilo]}
-    >
+    <View aria-hidden style={[estilos.medidor, estilo]}>
       {Array.from({ length: Math.max(0, total) }, (_, i) => (
         <View
           key={i}
@@ -394,6 +389,7 @@ export function CartaoResumo({
   estilo,
 }: {
   rotulo: string;
+  /** já formatado em pt-BR e **sem centavos**, como no handoff */
   valor: string;
   tom?: TomDeStatus;
   zerado?: boolean;
@@ -411,6 +407,10 @@ export function CartaoResumo({
       <Text style={[texto(11, 600, { altura: 1.2 }), { color: cores.tinta2 }]} numberOfLines={2}>
         {rotulo}
       </Text>
+      {/* Uma linha sempre: são três cartões lado a lado e o handoff formata
+          o valor sem centavos ("R$ 1.280"). Valor comprido encolhe no
+          aparelho (`adjustsFontSizeToFit`); no web ele corta, porque o
+          react-native-web não implementa o encolhimento. */}
       <Text
         style={[comEspaco(TIPO_VIDRO.resumo, { topo: 10 }), { color: cor }]}
         numberOfLines={1}
