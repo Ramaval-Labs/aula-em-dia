@@ -1,0 +1,156 @@
+/**
+ * Grade de disponibilidade semanal no idioma iOS Glass — **derivada**: o
+ * handoff não desenha a tela de disponibilidade, mas quatro telas do app
+ * dependem dela (onboarding do professor, disponibilidade do aluno, ajustes
+ * e prévia do aluno).
+ *
+ * Mesma API da `GradeSemanal.tsx` antiga, que continua no ar para as telas
+ * ainda não migradas. O que muda é só o visual:
+ * - célula livre em `preenchimento` (o trilho do sistema), marcada em tint —
+ *   a mesma dupla do segmentado e do switch;
+ * - raio 9, o do segmento;
+ * - rótulos em `tinta3`/`tinta2`, nunca texto pequeno sobre o material.
+ *
+ * Só toque, sem arrastar: o arraste brigaria com a rolagem do ScrollView.
+ */
+
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import {
+  diaCurto,
+  DIAS_DA_SEMANA,
+  FAIXAS_HORARIAS,
+  horarioDaFaixa,
+  nomeDaFaixa,
+  nomeDoDia,
+  temBloco,
+} from '../dominio/disponibilidade';
+import type { BlocoSemanal, DiaDaSemana, FaixaHoraria } from '../dominio/tipos';
+import { useVidro } from '../tema/TemaProvider';
+import { texto } from '../tema/tipografia';
+import { RAIO_VIDRO } from '../tema/tokens';
+
+/** Coluna de rótulos à esquerda; com o vão de 4 as células passam de 44px. */
+const COLUNA_DE_ROTULOS = 38;
+const VAO = 4;
+
+export function GradeSemanalVidro({
+  marcados,
+  aoAlternar,
+  dias = DIAS_DA_SEMANA,
+  faixas = FAIXAS_HORARIAS,
+  /** "horario" mostra 8–12; "nome" mostra manhã */
+  rotuloDaFaixa = 'horario',
+  alturaDaCelula = 44,
+  somenteLeitura = false,
+}: {
+  marcados: BlocoSemanal[];
+  aoAlternar?: (bloco: BlocoSemanal) => void;
+  dias?: DiaDaSemana[];
+  faixas?: FaixaHoraria[];
+  rotuloDaFaixa?: 'horario' | 'nome';
+  alturaDaCelula?: number;
+  somenteLeitura?: boolean;
+}) {
+  const { cores } = useVidro();
+  const legenda = (f: FaixaHoraria) =>
+    rotuloDaFaixa === 'nome' ? nomeDaFaixa(f) : horarioDaFaixa(f);
+
+  const corDaCelula = (ligado: boolean) => (ligado ? cores.tint : cores.preenchimento);
+
+  return (
+    <View style={estilos.grade}>
+      <View style={estilos.linha}>
+        <View style={estilos.colunaDeRotulos} />
+        {dias.map((d) => (
+          <View key={d} style={estilos.cabecalhoDoDia}>
+            <Text style={[texto(10, 600, { tracking: 0.06 }), { color: cores.tinta3 }]}>
+              {diaCurto(d)}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {faixas.map((f) => (
+        <View key={f} style={estilos.linhaDeCelulas}>
+          <View style={estilos.colunaDeRotulos}>
+            <Text
+              style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.tinta2 }]}
+              numberOfLines={2}
+            >
+              {legenda(f)}
+            </Text>
+          </View>
+
+          {dias.map((d) => {
+            const bloco: BlocoSemanal = { dia: d, faixa: f };
+            const ligado = temBloco(marcados, bloco);
+            const rotulo = `${nomeDoDia(d)}, ${legenda(f)}, ${ligado ? 'marcado' : 'livre'}`;
+            const caixa = {
+              flex: 1,
+              height: alturaDaCelula,
+              borderRadius: RAIO_VIDRO.segmento,
+              backgroundColor: corDaCelula(ligado),
+            };
+
+            if (somenteLeitura || !aoAlternar) {
+              return <View key={d} accessible accessibilityLabel={rotulo} style={caixa} />;
+            }
+
+            return (
+              <Pressable
+                key={d}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: ligado }}
+                accessibilityLabel={rotulo}
+                onPress={() => aoAlternar(bloco)}
+                style={({ pressed }) => [caixa, pressed ? { opacity: 0.7 } : null]}
+              />
+            );
+          })}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Rodapé da grade: resumo à esquerda, nota à direita, separados por um fio. */
+export function RodapeDaGradeVidro({
+  esquerda,
+  direita,
+}: {
+  esquerda: string;
+  direita?: string;
+}) {
+  const { cores } = useVidro();
+  return (
+    <View style={[estilos.rodape, { borderTopColor: cores.fio }]}>
+      <Text style={[texto(11.5, 500, { altura: 1.4 }), { color: cores.tinta2 }]}>{esquerda}</Text>
+      {direita ? (
+        <Text
+          style={[texto(11.5, 500, { altura: 1.4 }), estilos.direita, { color: cores.tinta2 }]}
+        >
+          {direita}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  grade: { gap: VAO },
+  linha: { flexDirection: 'row', gap: VAO },
+  linhaDeCelulas: { flexDirection: 'row', gap: VAO, alignItems: 'center' },
+  colunaDeRotulos: { width: COLUNA_DE_ROTULOS },
+  cabecalhoDoDia: { flex: 1, alignItems: 'center' },
+  direita: { textAlign: 'right' },
+  rodape: {
+    marginTop: 13,
+    paddingTop: 12,
+    borderTopWidth: 0.5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+});
