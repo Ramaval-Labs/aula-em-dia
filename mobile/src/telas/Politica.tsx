@@ -1,26 +1,23 @@
 /**
- * Tela 9 — Política de faltas (Fluxo E2).
- * Edita um rascunho e mostra o diff antes de salvar. O que é salvo aqui
+ * Tela 9 — Política de faltas (Fluxo E2). Handoff iOS Glass §9.
+ * Edita um rascunho e mostra o impacto antes de salvar. O que é salvo aqui
  * muda o cálculo da tela Registrar aula no próximo registro.
  */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Cartao, CartaoContexto } from '../componentes/Base';
-import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
-import { Contador, Interruptor } from '../componentes/Formulario';
-import { Tela } from '../componentes/Tela';
+import { BlocoStatus, CartaoVidro } from '../componentes/Blocos';
+import { TelaVidro } from '../componentes/Chassi';
+import { BotaoPrimario, BotaoTexto, Segmentado, Stepper, Switch } from '../componentes/Controles';
 import { temPacote } from '../dominio/politica';
 import type { Politicas } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useCores } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { MARCA } from '../tema/tokens';
+import { useVidro } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
 
 const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
 const VALIDADES = [
@@ -67,8 +64,18 @@ function diff(
   return null;
 }
 
+/** Título de cartão do handoff §9: 14.5/700, −.01em. */
+function TituloDoCartao({ children }: { children: string }) {
+  const { cores } = useVidro();
+  return (
+    <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
+      {children}
+    </Text>
+  );
+}
+
 export function Politica() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const { concluir, voltar } = useNavegacao();
   const salvas = useDados((s) => s.politicas);
   const alunos = useDados((s) => s.alunos);
@@ -80,24 +87,16 @@ export function Politica() {
   const mudanca = diff(salvas, atual, alunos.filter(temPacote).length);
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela}>
-          {/* Voltar sem salvar descarta o rascunho: sem isso, a edição
-              abandonada reaparecia na próxima visita como se fosse a salva. */}
-          <BotaoVoltar
-            rotulo="Ajustes"
-            aoTocar={() => {
-              descartarRascunho();
-              voltar();
-            }}
-          />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={21}>Política de faltas</TituloTela>
-          </View>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ paddingTop: 14, gap: 9, paddingBottom: 12 }}
+    <TelaVidro
+      tipo="empilhada"
+      titulo="Política de faltas"
+      voltarPara="Ajustes"
+      // Voltar sem salvar descarta o rascunho: sem isso, a edição abandonada
+      // reaparecia na próxima visita como se fosse a salva.
+      aoVoltar={() => {
+        descartarRascunho();
+        voltar();
+      }}
       rodape={
         <>
           <BotaoPrimario
@@ -110,103 +109,109 @@ export function Politica() {
               avisar(avisos.politicaSalva);
             }}
           />
-          <BotaoTexto rotulo="Descartar" aoTocar={() => concluir('ajustes')} />
+          <BotaoTexto
+            rotulo="Descartar"
+            aoTocar={() => concluir('ajustes')}
+            estilo={estilos.descartar}
+          />
         </>
       }
     >
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-          Prazo mínimo de aviso
+      <View style={estilos.titulo}>
+        <Text style={[TIPO_VIDRO.tituloEmpilhada, { color: cores.tinta }]}>
+          Política de faltas
         </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={PRAZOS}
-            valor={atual.avisoHoras}
-            aoTrocar={(avisoHoras) => atualizar({ avisoHoras })}
-            rotuloAcessivel="Prazo mínimo de aviso"
-          />
-        </View>
-      </Cartao>
+      </View>
 
-      <Cartao
-        estilo={{
-          paddingVertical: 13,
-          paddingHorizontal: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-        }}
-      >
-        <Interruptor
-          ligado={atual.avisadaDevolve}
-          aoTrocar={(avisadaDevolve) => atualizar({ avisadaDevolve })}
-          rotuloAcessivel="Falta avisada devolve a aula"
+      <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
+        <TituloDoCartao>Prazo mínimo de aviso</TituloDoCartao>
+        <Segmentado
+          opcoes={PRAZOS}
+          valor={atual.avisoHoras}
+          aoTrocar={(avisoHoras) => atualizar({ avisoHoras })}
+          porte="cartao"
+          rotuloDoGrupo="Prazo mínimo de aviso"
+          estilo={estilos.controleLargo}
         />
-        <View style={{ flex: 1 }}>
-          <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-            Falta avisada devolve a aula
-          </Text>
-          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
+      </CartaoVidro>
+
+      <CartaoVidro estilo={[estilos.cartao, estilos.linha]}>
+        <View style={estilos.flexivel}>
+          <TituloDoCartao>Falta avisada devolve a aula</TituloDoCartao>
+          <Text
+            style={[
+              comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
+              { color: cores.tinta2 },
+            ]}
+          >
             {atual.avisadaDevolve
               ? 'Dentro do prazo, o saldo não é debitado'
               : 'A aula é debitada mesmo com aviso'}
           </Text>
         </View>
-      </Cartao>
+        <Switch
+          ligado={atual.avisadaDevolve}
+          aoAlternar={(avisadaDevolve) => atualizar({ avisadaDevolve })}
+          rotulo="Falta avisada devolve a aula"
+        />
+      </CartaoVidro>
 
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-          }}
-        >
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-              Reposições por pacote
-            </Text>
-            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
-              Depois do limite, a falta debita
-            </Text>
-          </View>
-          <Contador
-            valor={atual.limiteReposicoes}
-            minimo={0}
-            maximo={LIMITE_MAXIMO}
-            aoMudar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
-            formatar={(v) => (v === 0 ? '—' : String(v))}
-            rotuloAcessivel={
-              atual.limiteReposicoes === 0
-                ? 'sem limite de reposições'
-                : `${atual.limiteReposicoes} reposições por pacote`
-            }
-          />
+      <CartaoVidro estilo={[estilos.cartao, estilos.linha]}>
+        <View style={estilos.flexivel}>
+          <TituloDoCartao>Reposições por pacote</TituloDoCartao>
+          <Text
+            style={[
+              comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
+              { color: cores.tinta2 },
+            ]}
+          >
+            Depois do limite, a falta debita
+          </Text>
         </View>
-      </Cartao>
+        <Stepper
+          valor={atual.limiteReposicoes}
+          minimo={0}
+          maximo={LIMITE_MAXIMO}
+          aoTrocar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
+          formatar={(v) => (v === 0 ? '—' : String(v))}
+          rotulo={
+            atual.limiteReposicoes === 0
+              ? 'sem limite de reposições'
+              : `${atual.limiteReposicoes} reposições por pacote`
+          }
+        />
+      </CartaoVidro>
 
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-          Validade do pacote
-        </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={VALIDADES}
-            valor={atual.validadeDias}
-            aoTrocar={(validadeDias) => atualizar({ validadeDias })}
-            rotuloAcessivel="Validade do pacote"
-          />
-        </View>
-      </Cartao>
+      <CartaoVidro estilo={estilos.cartao}>
+        <TituloDoCartao>Validade do pacote</TituloDoCartao>
+        <Segmentado
+          opcoes={VALIDADES}
+          valor={atual.validadeDias}
+          aoTrocar={(validadeDias) => atualizar({ validadeDias })}
+          porte="cartao"
+          rotuloDoGrupo="Validade do pacote"
+          estilo={estilos.controleLargo}
+        />
+      </CartaoVidro>
 
       {mudanca ? (
-        <CartaoContexto
-          cor={MARCA.amarelo}
+        <BlocoStatus
+          tom="ambar"
           titulo={mudanca.titulo}
-          detalhe={mudanca.texto}
+          texto={mudanca.texto}
+          estilo={estilos.cartao}
         />
       ) : null}
-    </Tela>
+    </TelaVidro>
   );
 }
+
+const estilos = StyleSheet.create({
+  flexivel: { flex: 1, minWidth: 0 },
+  titulo: { paddingHorizontal: 6 },
+  cartao: { marginTop: 12, paddingVertical: 16, paddingHorizontal: 17 },
+  primeiro: { marginTop: 18 },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  controleLargo: { marginTop: 12, alignSelf: 'stretch' },
+  descartar: { marginTop: 8 },
+});

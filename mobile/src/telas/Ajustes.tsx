@@ -54,7 +54,9 @@ export function Ajustes() {
 
   return (
     <TelaVidro tipo="raiz" titulo="Ajustes">
-      <Text style={[TIPO_VIDRO.tituloGrande, { color: cores.tinta }]}>Ajustes</Text>
+      <View style={estilos.tituloRaiz}>
+        <Text style={[TIPO_VIDRO.tituloGrande, { color: cores.tinta }]}>Ajustes</Text>
+      </View>
 
       <Pressable
         accessibilityRole="button"
@@ -77,7 +79,7 @@ export function Ajustes() {
             <Text
               numberOfLines={1}
               style={[
-                comEspaco(texto(12.5, 500, { altura: 1.35 }), { topo: 3 }),
+                comEspaco(texto(12.5, 500, { altura: 1.35 }), { topo: 4 }),
                 { color: cores.tinta2 },
               ]}
             >
@@ -143,7 +145,7 @@ export function Ajustes() {
 
       <Text
         style={[
-          comEspaco(texto(11.5, 500), { topo: 24 }),
+          comEspaco(texto(11.5, 500, { altura: 1.5 }), { topo: 20 }),
           estilos.centro,
           { color: cores.tinta3 },
         ]}
@@ -158,6 +160,7 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
   pressionado: { opacity: 0.86 },
+  tituloRaiz: { paddingHorizontal: 6, paddingTop: 8, paddingBottom: 2 },
   perfil: { marginTop: 18 },
   cartaoPerfil: {
     paddingVertical: 15,
