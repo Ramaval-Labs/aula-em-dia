@@ -21,7 +21,17 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useTema } from '../tema/TemaProvider';
+import { TAMANHO_VIDRO } from '../tema/tokens';
+
+/**
+ * Transitório (Onda 2A → Onda 4): a tab bar do iOS Glass flutua sobre toda
+ * tela não-sheet em vez de ocupar espaço no fluxo. As telas ainda não migradas
+ * reservam a faixa dela (66 + 26 de base + 8 de respiro) para não ficarem
+ * cobertas; dentro de um sheet a tab bar não existe.
+ */
+const ZONA_TAB_BAR = TAMANHO_VIDRO.tabBar + TAMANHO_VIDRO.baseTabBar + 8;
 
 /**
  * A MESMA cor, com alfa zero.
@@ -66,12 +76,17 @@ export function Tela({
   comTeclado?: boolean;
 }) {
   const { cores, tema } = useTema();
+  const emSheet = useNavegacao((st) => ehSheet(st.tela));
   const cor = fundo ?? cores.tela;
   const [alturaDoRodape, setAlturaDoRodape] = useState(0);
 
   // O respiro que a tela já pedia continua valendo — o rodapé só soma a ele.
   const respiro =
     typeof conteudoEstilo?.paddingBottom === 'number' ? conteudoEstilo.paddingBottom : 16;
+
+  // Sem rodapé, é o conteúdo que reserva a faixa da tab bar; com rodapé, ela
+  // já entra na altura medida abaixo.
+  const zonaTabBar = emSheet || rodape ? 0 : ZONA_TAB_BAR;
 
   const corpo = (
     <View style={{ flex: 1 }}>
@@ -84,7 +99,7 @@ export function Tela({
             gap: 10,
           },
           conteudoEstilo,
-          { paddingBottom: respiro + alturaDoRodape },
+          { paddingBottom: respiro + alturaDoRodape + zonaTabBar },
         ]}
         showsVerticalScrollIndicator
         indicatorStyle={tema === 'escuro' ? 'white' : 'black'}
@@ -135,9 +150,10 @@ export function RodapeAcao({
   semMascara?: boolean;
 }) {
   const insets = useSafeAreaInsets();
-  // Com a navbar embaixo, a faixa da curva já separa o botão do resto: 14px de
-  // respiro aqui só empurrava a lista para cima sem ganho visual.
-  const padBaixo = comNavbar ? 4 : 14 + insets.bottom;
+  const emSheet = useNavegacao((st) => ehSheet(st.tela));
+  // Dentro do sheet o rodapé é a faixa do painel; fora dele, o botão sobe
+  // acima da tab bar flutuante.
+  const padBaixo = emSheet ? 14 + insets.bottom : ZONA_TAB_BAR;
 
   const conteudo = (
     <View style={{ paddingTop: 12, paddingHorizontal: 20, paddingBottom: padBaixo, gap: 9 }}>
