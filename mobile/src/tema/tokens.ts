@@ -443,9 +443,13 @@ export const RAIO_VIDRO = {
   botaoInline: 13,
   trilho: 12,
   iconeBloco: 12,
+  /** trilho do segmentado embutido em linha de lista (30px) */
+  trilhoLinha: 11,
   saldoLinha: 10,
   segmento: 9,
   iconeToast: 9,
+  /** segmento do segmentado embutido em linha de lista */
+  segmentoLinha: 8.5,
   faixa: 7,
   selo: 6,
   medidor: 4,
@@ -481,6 +485,69 @@ export const TAMANHO_VIDRO = {
   abaToque: 48,
   /** borda de vidro (.5px) */
   bordaVidro: 0.5,
+
+  /* linhas de lista agrupada (altura mínima) */
+  linhaAluno: 76,
+  /** linha de aluno dentro do sheet Registrar */
+  linhaEscolhaAluno: 68,
+  /** linha de cobrança do Financeiro */
+  linhaCobranca: 66,
+  /** linha de Ajustes, com sub-linha longa */
+  linhaAjustes: 64,
+  /** linha de lista padrão (ação, extrato) */
+  linhaLista: 62,
+  /** coluna de data do extrato */
+  colunaData: 38,
+
+  /* avatares, por diâmetro */
+  avatar62: 62,
+  avatar48: 48,
+  avatar44: 44,
+  avatar40: 40,
+  avatar38: 38,
+
+  /* peças pequenas */
+  faixaStatus: 21,
+  selo: 19,
+  /** barra do medidor de pacote e da barra proporcional */
+  medidor: 7,
+  /** quadrado do ícone de bloco de status */
+  iconeBloco: 34,
+  /** glifo dentro do ícone de bloco */
+  glifoBloco: 17,
+  chevron: 14,
+  /** ícone de mais dentro do botão primário */
+  iconeMais: 19,
+  /** marca redonda do cartão de escolha */
+  marcaEscolha: 24,
+  /** check dentro da marca */
+  checkEscolha: 14,
+  /** ícone da tab bar */
+  iconeAba: 23,
+
+  /* controles */
+  segmentoFiltro: 34,
+  segmentoCartao: 36,
+  segmentoLinha: 30,
+  stepperBotaoLargura: 38,
+  stepperBotaoAltura: 34,
+  switchBotao: 27,
+  /** trilho do campo de texto (derivado: escala do botão compacto) */
+  campo: 50,
+} as const;
+
+/**
+ * Espessura de traço dos ícones (handoff, "Assets"): 1.9 nas abas, 2.4–2.6
+ * em chevron, mais e alerta, 3 no check do cartão de escolha.
+ */
+export const TRACO_ICONE = {
+  aba: 1.9,
+  chevron: 2.6,
+  mais: 2.4,
+  alerta: 2.4,
+  check: 3,
+  /** check do bloco de status e do ícone de resultado */
+  checkBloco: 2.6,
 } as const;
 
 export const MOVIMENTO_VIDRO = {

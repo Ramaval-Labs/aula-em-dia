@@ -10,6 +10,7 @@ import {
   MOVIMENTO_VIDRO,
   RAIO_VIDRO,
   TAMANHO_VIDRO,
+  TRACO_ICONE,
 } from '../tokens';
 
 const json = require('../../../../tokens/tokens.json').iosGlass;
@@ -41,6 +42,7 @@ describe('tokens iOS Glass', () => {
     expect(RAIO_VIDRO).toEqual(json.radius);
     expect(TAMANHO_VIDRO).toEqual(json.size);
     expect(MOVIMENTO_VIDRO).toEqual(json.motion);
+    expect(TRACO_ICONE).toEqual(json.stroke);
   });
 
   it('papéis tipográficos existem no JSON com o mesmo tamanho', () => {
