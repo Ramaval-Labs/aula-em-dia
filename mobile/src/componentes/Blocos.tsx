@@ -27,21 +27,26 @@ import { SuperficieVidro } from './Vidro';
 
 /* ── Cartão ───────────────────────────────────────────────────────────── */
 
-/** O cartão base: vidro, raio 22, padding 17 × 18. */
+/**
+ * O cartão base: vidro, raio 22, padding 17 × 18. `raio` para o cartão de
+ * contexto de H§7, que é 20.
+ */
 export function CartaoVidro({
   children,
   semPadding = false,
+  raio = RAIO_VIDRO.cartao,
   estilo,
 }: {
   children: React.ReactNode;
   /** desliga o padding para listas que se recortam na borda */
   semPadding?: boolean;
+  raio?: number;
   estilo?: StyleProp<ViewStyle>;
 }) {
   return (
     <SuperficieVidro
       nivel="cartao"
-      raio={RAIO_VIDRO.cartao}
+      raio={raio}
       sombra
       style={[semPadding ? null : estilos.padCartao, estilo]}
     >
