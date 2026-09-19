@@ -17,46 +17,20 @@ import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoSecundario, Segmentado } from '../componentes/Controles';
 import { LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { dataPorExtenso } from '../dominio/datas';
-import { faixaStatus, ordenar, saldo, saldoBaixo, temPacote } from '../dominio/politica';
-import type { Aluno, Filtro, TipoDeFaixa } from '../dominio/tipos';
+import { ordenar, saldo, saldoBaixo, temPacote } from '../dominio/politica';
+import type { Filtro } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
+import { faixaDaLinha, linhaDeHorario } from './comum/aluno';
 
 const FILTROS: { valor: Filtro; rotulo: Filtro }[] = [
   { valor: 'Urgência', rotulo: 'Urgência' },
   { valor: 'A–Z', rotulo: 'A–Z' },
   { valor: 'Hoje', rotulo: 'Hoje' },
 ];
-
-/**
- * Linha 2 da linha de aluno: "{disciplina} · hoje, {hora}".
- * Mesma frase do `linhaDeHorario` antigo — o que muda é só onde ela aparece.
- */
-export function linhaDeApoio(a: Aluno): string {
-  if (!a.hora) return `${a.disciplina} · ${a.dia}`;
-  return `${a.disciplina} · ${a.hoje ? 'hoje' : a.dia}, ${a.hora}`;
-}
-
-/**
- * Faixa de status da linha: o estado e a prioridade vêm do domínio
- * (`faixaStatus`); o texto é o do handoff §1, montado aqui.
- */
-export function faixaDaLinha(a: Aluno): { tipo: TipoDeFaixa; texto: string } | undefined {
-  const f = faixaStatus(a);
-  if (!f) return undefined;
-  const rotulo =
-    f.tipo === 'pausado'
-      ? `Pausado ${f.sufixo}`
-      : f.tipo === 'atraso'
-        ? `Atraso de ${f.sufixo}`
-        : f.tipo === 'pendente'
-          ? `${f.texto} ${f.sufixo}`
-          : `Reposição ${f.sufixo}`;
-  return { tipo: f.tipo, texto: rotulo };
-}
 
 export function Home() {
   const { cores } = useVidro();
@@ -156,7 +130,7 @@ export function Home() {
                 <LinhaAluno
                   key={a.id}
                   nome={a.name}
-                  apoio={linhaDeApoio(a)}
+                  apoio={linhaDeHorario(a)}
                   estadoDoAvatar={!com ? 'sem' : baixo ? 'baixo' : 'normal'}
                   faixa={faixa}
                   valor={com ? String(restam) : '—'}
@@ -166,7 +140,7 @@ export function Home() {
                     a.name,
                     faixa?.texto,
                     com ? `${restam} aulas restantes de ${a.total}` : 'sem pacote',
-                    linhaDeApoio(a),
+                    linhaDeHorario(a),
                   ]
                     .filter(Boolean)
                     .join('. ')}

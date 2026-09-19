@@ -1,11 +1,13 @@
 /**
- * Ponte entre o `Lancamento` do domínio e a `LinhaExtrato` do catálogo novo
+ * Ponte entre o `Lancamento` do domínio e a `LinhaExtrato` do catálogo
  * (handoff-ios-glass §2, "Extrato").
  *
- * Fica aqui, e não na tela, porque duas telas da fatia mostram o mesmo
- * extrato: a ficha do aluno e a prévia "Meu saldo". A conversão é uma só —
- * cor do delta, texto do rodapé e a alternativa em palavras, que existe
- * porque cor não pode ser o único sinal (spec/acessibilidade.md).
+ * Mora em `telas/comum/`, e não em `componentes/`, porque é adaptador de
+ * domínio: o catálogo desenha a linha com texto pronto e não conhece
+ * `Lancamento`. Duas telas mostram o mesmo extrato — a ficha do aluno e a
+ * prévia "Meu saldo" —, então a conversão é uma só: cor do delta, texto do
+ * rodapé e a alternativa em palavras, que existe porque cor não pode ser o
+ * único sinal (spec/acessibilidade.md).
  */
 
 import React from 'react';

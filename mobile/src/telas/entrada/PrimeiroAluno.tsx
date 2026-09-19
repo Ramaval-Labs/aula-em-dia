@@ -4,7 +4,7 @@
  * A pré-visualização "Como vai ficar na home" não é um desenho à parte: é a
  * `LinhaAluno` do catálogo — a mesma linha da tela Alunos — dentro de uma
  * lista agrupada, alimentada por um `Aluno` sintetizado do rascunho e lida
- * pelas mesmas regras (`saldo`, `saldoBaixo`, `faixaStatus`). Assim a prévia
+ * pelas mesmas regras e frases (`saldo`, `saldoBaixo`, `faixaDaLinha`). Assim a prévia
  * é fiel por construção.
  */
 
@@ -18,7 +18,7 @@ import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../../componentes/Lis
 import { hoje } from '../../dominio/datas';
 import { dinheiro } from '../../dominio/formato';
 import { AULAS_OFERECIDAS, calcularPacote } from '../../dominio/pacote';
-import { faixaStatus, saldo, saldoBaixo, VALOR_AULA } from '../../dominio/politica';
+import { saldo, saldoBaixo, VALOR_AULA } from '../../dominio/politica';
 import type { Aluno, ConfigPacote } from '../../dominio/tipos';
 import { ERRO, nomeValido } from '../../dominio/validacao';
 import { useDados } from '../../estado/dados';
@@ -28,14 +28,9 @@ import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 import { RAIO_VIDRO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
+import { faixaDaLinha, linhaDeHorario } from '../comum/aluno';
 
 const OPCOES_DE_AULAS = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
-
-/** "{disciplina} · {dia}, {hora}" — a linha de horário da lista de alunos. */
-function linhaDeHorario(a: Aluno): string {
-  if (!a.hora) return `${a.disciplina} · ${a.dia}`;
-  return `${a.disciplina} · ${a.hoje ? 'hoje' : a.dia}, ${a.hora}`;
-}
 
 export function PrimeiroAluno() {
   const concluir = useSessao((s) => s.concluirOnboarding);
@@ -89,7 +84,7 @@ export function PrimeiroAluno() {
     reposicoes: 0,
     pagamento: { status: 'aberto', vence: calculado.vence },
   };
-  const faixa = faixaStatus(previa);
+  const faixa = faixaDaLinha(previa);
 
   const finalizar = () => {
     const id = criarAluno({
@@ -173,7 +168,7 @@ export function PrimeiroAluno() {
             nome={previa.name}
             apoio={linhaDeHorario(previa)}
             estadoDoAvatar={saldoBaixo(previa) ? 'baixo' : 'normal'}
-            faixa={faixa ? { tipo: faixa.tipo, texto: faixa.texto } : undefined}
+            faixa={faixa}
             valor={String(saldo(previa))}
             unidade="aulas"
             rotuloAcessivel={`Prévia: ${previa.name}. ${saldo(previa)} aulas restantes de ${previa.total}. ${linhaDeHorario(previa)}`}

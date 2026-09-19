@@ -23,12 +23,7 @@ import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
-
-/** "Disciplina · hoje, 17h" — a linha de apoio do cabeçalho. */
-function linhaDeHorario(a: Aluno): string {
-  if (!a.hora) return `${a.disciplina} · ${a.dia}`;
-  return `${a.disciplina} · ${a.hoje ? 'hoje' : a.dia}, ${a.hora}`;
-}
+import { linhaDeHorario } from './comum/aluno';
 
 export function Inadimplencia() {
   const { cores } = useVidro();

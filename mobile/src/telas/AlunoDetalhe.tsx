@@ -32,16 +32,11 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { LinhaDoExtrato } from './aluno/ExtratoVidro';
+import { LinhaDoExtrato } from './comum/Extrato';
+import { linhaDeHorario } from './comum/aluno';
 
 /** Referencia estavel para aluno sem lancamentos. */
 const SEM_LANCAMENTOS: Lancamento[] = [];
-
-/** "Disciplina · dia, hora" — a sub-linha da identificação (handoff §2). */
-function linhaDeHorario(a: Aluno): string {
-  if (!a.hora) return `${a.disciplina} · ${a.dia}`;
-  return `${a.disciplina} · ${a.hoje ? 'hoje' : a.dia}, ${a.hora}`;
-}
 
 export function AlunoDetalhe() {
   const { cores } = useVidro();

@@ -39,7 +39,7 @@ import { useToast } from '../../estado/toast';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
 import { RAIO_VIDRO } from '../../tema/tokens';
-import { LinhaDoExtrato } from './ExtratoVidro';
+import { LinhaDoExtrato } from '../comum/Extrato';
 
 /** Referencia estavel para aluno sem lancamentos. */
 const SEM_LANCAMENTOS: Lancamento[] = [];

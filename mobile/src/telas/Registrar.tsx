@@ -23,6 +23,7 @@ import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formula
 import { useNavegacao } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
+import { linhaDeHorario } from './comum/aluno';
 
 const DESFECHOS: { chave: Desfecho; titulo: string; sub: string }[] = [
   { chave: 'realizada', titulo: 'Aula realizada', sub: 'Aconteceu como o combinado' },
@@ -44,12 +45,6 @@ function notaDoAviso(avisoH: number, p: Politicas): string {
   return avisoH >= p.avisoHoras
     ? `Dentro do seu mínimo de ${p.avisoHoras}h. A aula volta para o saldo e uma reposição é gerada.`
     : `Abaixo do seu mínimo de ${p.avisoHoras}h. A aula é debitada e não gera reposição.`;
-}
-
-/** Linha de apoio da escolha de aluno: disciplina · dia, hora. */
-function linhaDeApoio(a: Aluno): string {
-  const horario = [a.dia, a.hora].filter(Boolean).join(', ');
-  return [a.disciplina, horario].filter(Boolean).join(' · ');
 }
 
 export function Registrar() {
@@ -119,14 +114,14 @@ export function Registrar() {
               <LinhaAluno
                 key={a.id}
                 nome={a.name}
-                apoio={linhaDeApoio(a)}
+                apoio={linhaDeHorario(a)}
                 estadoDoAvatar={!temPacote(a) ? 'sem' : saldoBaixo(a) ? 'baixo' : 'normal'}
                 porte="sheet"
                 valor={String(saldo(a))}
                 unidade="aulas"
                 caixaNoValor
                 chevron={false}
-                rotuloAcessivel={`${a.name}. ${linhaDeApoio(a)}. ${saldo(a)} aulas restantes.`}
+                rotuloAcessivel={`${a.name}. ${linhaDeHorario(a)}. ${saldo(a)} aulas restantes.`}
                 aoTocar={() => definirAluno(a.id)}
               />
             ))}
