@@ -6,7 +6,7 @@
  * dadas com a barra proporcional.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import {
@@ -21,6 +21,7 @@ import {
 import { TelaVidro } from '../componentes/Chassi';
 import { BotaoPrimario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
+import { useDoisToques } from '../componentes/useDoisToques';
 import { mesPorExtenso } from '../dominio/datas';
 import { dinheiro, milhar, plural } from '../dominio/formato';
 import { temPacote, totaisFinanceiro, valorPacote } from '../dominio/politica';
@@ -30,33 +31,6 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { MOVIMENTO_VIDRO } from '../tema/tokens';
-
-/**
- * Confirmação em dois toques para ação em lote, como no sistema antigo: o
- * primeiro toque arma, o segundo executa, e a arma cai sozinha depois da
- * janela do toast. (Local até o integrador promover para o catálogo.)
- */
-function useDoisToques(acao: () => void) {
-  const [armado, setArmado] = useState(false);
-
-  useEffect(() => {
-    if (!armado) return;
-    const t = setTimeout(() => setArmado(false), MOVIMENTO_VIDRO.toastDuracaoMs);
-    return () => clearTimeout(t);
-  }, [armado]);
-
-  const tocar = useCallback(() => {
-    if (!armado) {
-      setArmado(true);
-      return;
-    }
-    setArmado(false);
-    acao();
-  }, [armado, acao]);
-
-  return { armado, tocar };
-}
 
 /** Situação de pagamento em uma linha. */
 function detalheDoPagamento(a: Aluno): string {

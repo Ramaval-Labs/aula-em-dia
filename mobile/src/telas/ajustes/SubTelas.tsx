@@ -9,7 +9,7 @@
  */
 
 import * as Clipboard from 'expo-clipboard';
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Avatar, CartaoVidro, EstadoVazio, MedidorPacote } from '../../componentes/Blocos';
@@ -26,6 +26,7 @@ import {
 import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { PreviaDeMensagemVidro } from '../../componentes/PreviaVidro';
+import { useDoisToques } from '../../componentes/useDoisToques';
 import { alternarBloco, periodoDaFolga, resumo } from '../../dominio/disponibilidade';
 import { dinheiro } from '../../dominio/formato';
 import { mensagemDeCobranca } from '../../dominio/mensagens';
@@ -39,7 +40,7 @@ import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
-import { MOVIMENTO_VIDRO, RAIO_VIDRO, TAMANHO_VIDRO } from '../../tema/tokens';
+import { RAIO_VIDRO, TAMANHO_VIDRO } from '../../tema/tokens';
 
 /* ── Peças locais (candidatas a promoção para src/componentes) ─────────── */
 
@@ -141,32 +142,6 @@ function AcaoDoCampo({
       <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
     </Pressable>
   );
-}
-
-/**
- * Ação destrutiva em dois toques: o primeiro arma (e o rótulo avisa), o
- * segundo executa; desarma sozinho no tempo de um toast. Mesmo contrato do
- * `useDoisToques` antigo, que mora num arquivo que a tela migrada não importa.
- */
-function useDoisToques(acao: () => void) {
-  const [armado, setArmado] = useState(false);
-
-  useEffect(() => {
-    if (!armado) return;
-    const t = setTimeout(() => setArmado(false), MOVIMENTO_VIDRO.toastDuracaoMs);
-    return () => clearTimeout(t);
-  }, [armado]);
-
-  const tocar = useCallback(() => {
-    if (!armado) {
-      setArmado(true);
-      return;
-    }
-    setArmado(false);
-    acao();
-  }, [armado, acao]);
-
-  return { armado, tocar };
 }
 
 // --- Perfil do professor --------------------------------------------------

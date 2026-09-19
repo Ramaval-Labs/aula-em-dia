@@ -7,13 +7,14 @@
  * botão texto que pede dois toques.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro } from '../componentes/Blocos';
 import { CampoDeTexto } from '../componentes/Campos';
 import { BotaoPrimario, BotaoTexto } from '../componentes/Controles';
 import { Sheet } from '../componentes/Sheet';
+import { useDoisToques } from '../componentes/useDoisToques';
 import { primeiroNome } from '../dominio/formato';
 import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
@@ -22,33 +23,6 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
-import { MOVIMENTO_VIDRO } from '../tema/tokens';
-
-/**
- * Ação destrutiva em dois toques: o primeiro arma, o segundo executa. Desarma
- * sozinho no tempo de um toast. Cópia local do `useDoisToques` antigo
- * (`componentes/Botoes.tsx`), que a tela migrada não pode mais importar.
- */
-function useDoisToques(acao: () => void) {
-  const [armado, setArmado] = useState(false);
-
-  useEffect(() => {
-    if (!armado) return;
-    const t = setTimeout(() => setArmado(false), MOVIMENTO_VIDRO.toastDuracaoMs);
-    return () => clearTimeout(t);
-  }, [armado]);
-
-  const tocar = useCallback(() => {
-    if (!armado) {
-      setArmado(true);
-      return;
-    }
-    setArmado(false);
-    acao();
-  }, [armado, acao]);
-
-  return { armado, tocar };
-}
 
 export function AlunoForm() {
   const { cores } = useVidro();

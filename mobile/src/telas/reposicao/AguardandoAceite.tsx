@@ -20,7 +20,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
-import { useDoisToques } from './pecas';
+import { useDoisToques } from '../../componentes/useDoisToques';
 
 export function AguardandoAceite() {
   const { cores } = useVidro();
