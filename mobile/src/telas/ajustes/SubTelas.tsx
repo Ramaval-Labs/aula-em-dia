@@ -1,29 +1,34 @@
 /**
- * As seis telas que estavam decorativas em Ajustes.
+ * As seis telas que estavam decorativas em Ajustes (Fluxo E), no iOS Glass.
  *
- * Ficam juntas porque compartilham o mesmo molde — cabeçalho com voltar,
- * conteúdo em cartões, rodapé de salvar — e nenhuma delas é grande o
- * bastante para justificar arquivo próprio.
+ * O handoff novo não desenha nenhuma delas: o conteúdo e o comportamento são
+ * os de antes, e o visual segue as telas desenhadas mais parecidas — cartão
+ * de perfil de §8, cartões de controle de §9, listas agrupadas. Ficam juntas
+ * porque compartilham o mesmo molde (empilhada sob Ajustes, título no
+ * conteúdo, ação no fim) e nenhuma é grande o bastante para arquivo próprio.
  */
 
 import * as Clipboard from 'expo-clipboard';
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { Avatar, Caixa, Cartao, LinhaLista, Lista, RotuloSecao } from '../../componentes/Base';
+import { Avatar, CartaoVidro, EstadoVazio, MedidorPacote } from '../../componentes/Blocos';
+import { CampoDeTexto } from '../../componentes/Campos';
+import { TelaVidro } from '../../componentes/Chassi';
 import {
-  BotaoContorno,
-  BotaoPequeno,
+  BotaoInline,
   BotaoPrimario,
+  BotaoSecundario,
+  BotaoTexto,
   Segmentado,
-  useDoisToques,
-} from '../../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../../componentes/Cabecalho';
-import { AcaoDoCampo, CampoDeTexto, Interruptor } from '../../componentes/Formulario';
-import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
-import { Tela } from '../../componentes/Tela';
+  Switch,
+} from '../../componentes/Controles';
+import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
+import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
+import { PreviaDeMensagemVidro } from '../../componentes/PreviaVidro';
 import { alternarBloco, periodoDaFolga, resumo } from '../../dominio/disponibilidade';
 import { dinheiro } from '../../dominio/formato';
+import { mensagemDeCobranca } from '../../dominio/mensagens';
 import { AULAS_OFERECIDAS } from '../../dominio/pacote';
 import { temPacote, VALOR_AULA } from '../../dominio/politica';
 import { emailValido, ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
@@ -32,54 +37,142 @@ import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../../tema/tipografia';
-import { MARCA, TAMANHO } from '../../tema/tokens';
+import { useVidro } from '../../tema/TemaProvider';
+import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
+import { MOVIMENTO_VIDRO, RAIO_VIDRO, TAMANHO_VIDRO } from '../../tema/tokens';
 
-/** Molde comum: cabeçalho escuro com voltar e título. */
+/* ── Peças locais (candidatas a promoção para src/componentes) ─────────── */
+
+/**
+ * Molde comum: empilhada sob Ajustes, título de §9 no conteúdo (29/800, com
+ * o recuo de 6px do handoff) e uma linha de apoio opcional em `tinta2`.
+ */
 function TelaDeAjuste({
   titulo,
   subtitulo,
   children,
   rodape,
-  comTeclado,
 }: {
   titulo: string;
   subtitulo?: string;
   children: React.ReactNode;
   rodape?: React.ReactNode;
-  comTeclado?: boolean;
 }) {
-  const cores = useCores();
-  const voltar = useNavegacao((s) => s.voltar);
+  const { cores } = useVidro();
   return (
-    <Tela
-      comTeclado={comTeclado}
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Ajustes" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>{titulo}</TituloTela>
-          </View>
-          {subtitulo ? (
-            <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-              {subtitulo}
-            </Text>
-          ) : null}
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 10 }}
-      rodape={rodape}
-    >
+    <TelaVidro tipo="empilhada" titulo={titulo} voltarPara="Ajustes" rodape={rodape}>
+      <View style={estilos.cabecalho}>
+        <Text style={[TIPO_VIDRO.tituloEmpilhada, { color: cores.tinta }]}>{titulo}</Text>
+        {subtitulo ? (
+          <Text
+            style={[
+              comEspaco(texto(13.5, 500, { altura: 1.45 }), { topo: 8 }),
+              { color: cores.tinta2 },
+            ]}
+          >
+            {subtitulo}
+          </Text>
+        ) : null}
+      </View>
       {children}
-    </Tela>
+    </TelaVidro>
   );
+}
+
+/** Título de cartão de controle (§9): 14.5/700. */
+function TituloDoCartao({ children }: { children: string }) {
+  const { cores } = useVidro();
+  return (
+    <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
+      {children}
+    </Text>
+  );
+}
+
+/** Cartão de §9 com título, sub-linha e switch à direita. */
+function CartaoComSwitch({
+  titulo,
+  sub,
+  ligado,
+  aoAlternar,
+  estilo,
+}: {
+  titulo: string;
+  sub: string;
+  ligado: boolean;
+  aoAlternar: (v: boolean) => void;
+  estilo?: StyleProp<ViewStyle>;
+}) {
+  const { cores } = useVidro();
+  return (
+    <CartaoVidro estilo={[estilos.cartao, estilos.linha, estilo]}>
+      <View style={estilos.flexivel}>
+        <TituloDoCartao>{titulo}</TituloDoCartao>
+        <Text
+          style={[comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }), { color: cores.tinta2 }]}
+        >
+          {sub}
+        </Text>
+      </View>
+      <Switch ligado={ligado} aoAlternar={aoAlternar} rotulo={titulo} />
+    </CartaoVidro>
+  );
+}
+
+/** Ação de texto dentro do trilho do campo ("copiar"), em tint. */
+function AcaoDoCampo({
+  rotulo,
+  aoTocar,
+  rotuloAcessivel,
+}: {
+  rotulo: string;
+  aoTocar: () => void;
+  rotuloAcessivel?: string;
+}) {
+  const { cores } = useVidro();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={rotuloAcessivel ?? rotulo}
+      onPress={aoTocar}
+      hitSlop={{ top: 16, bottom: 16, left: 10, right: 10 }}
+      style={({ pressed }) => ({ opacity: pressed ? 0.86 : 1 })}
+    >
+      <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
+    </Pressable>
+  );
+}
+
+/**
+ * Ação destrutiva em dois toques: o primeiro arma (e o rótulo avisa), o
+ * segundo executa; desarma sozinho no tempo de um toast. Mesmo contrato do
+ * `useDoisToques` antigo, que mora num arquivo que a tela migrada não importa.
+ */
+function useDoisToques(acao: () => void) {
+  const [armado, setArmado] = useState(false);
+
+  useEffect(() => {
+    if (!armado) return;
+    const t = setTimeout(() => setArmado(false), MOVIMENTO_VIDRO.toastDuracaoMs);
+    return () => clearTimeout(t);
+  }, [armado]);
+
+  const tocar = useCallback(() => {
+    if (!armado) {
+      setArmado(true);
+      return;
+    }
+    setArmado(false);
+    acao();
+  }, [armado, acao]);
+
+  return { armado, tocar };
 }
 
 // --- Perfil do professor --------------------------------------------------
 
 export function PerfilProfessor() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const { concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
@@ -129,54 +222,55 @@ export function PerfilProfessor() {
 
   return (
     <TelaDeAjuste
-      comTeclado
       titulo="Meu perfil"
       rodape={<BotaoPrimario rotulo="Salvar" desabilitado={!podeSalvar} aoTocar={salvar} />}
     >
-      <Cartao
-        estilo={{
-          paddingVertical: 15,
-          paddingHorizontal: 16,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-        }}
-      >
-        <Avatar iniciais={iniciaisDe(form.nome) || perfil.iniciais} tamanho={48} />
-        <View style={{ flex: 1 }}>
-          <Text style={[texto(15, 600, { altura: 1.2 }), { color: cores.texto }]}>
+      <CartaoVidro estilo={[estilos.perfil, estilos.primeiro]}>
+        <Avatar texto={iniciaisDe(form.nome) || perfil.iniciais} estado="perfil" tamanho={48} />
+        <View style={estilos.flexivel}>
+          <Text
+            numberOfLines={1}
+            style={[texto(16.5, 700, { altura: 1.2, tracking: -0.015 }), { color: cores.tinta }]}
+          >
             {form.nome || 'Sem nome'}
           </Text>
-          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
+          <Text
+            numberOfLines={1}
+            style={[
+              comEspaco(texto(12.5, 500, { altura: 1.35 }), { topo: 4 }),
+              { color: cores.tinta2 },
+            ]}
+          >
             {form.disciplinas.join(' e ') || 'Nenhuma disciplina'}
           </Text>
         </View>
-      </Cartao>
+      </CartaoVidro>
 
-      <CampoDeTexto
-        rotulo="Nome"
-        valor={form.nome}
-        aoMudar={(nome) => atualizar({ nome })}
-        erro={erroNome}
-        capitalizar="words"
-        tamanhoDoValor={16.5}
-      />
-      <CampoDeTexto
-        rotulo="E-mail"
-        valor={form.email}
-        aoMudar={(email) => atualizar({ email })}
-        erro={erroEmail}
-        teclado="email"
-      />
-      <CampoDeTexto
-        rotulo="Disciplinas"
-        valor={form.disciplinas.join(', ')}
-        aoMudar={(v) =>
-          atualizar({ disciplinas: v.split(',').map((s) => s.trim()).filter(Boolean) })
-        }
-        placeholder="Inglês, Violão"
-        ajuda="Separe por vírgula."
-      />
+      <CartaoVidro estilo={[estilos.cartao, estilos.campos]}>
+        <CampoDeTexto
+          rotulo="Nome"
+          valor={form.nome}
+          aoMudar={(nome) => atualizar({ nome })}
+          erro={erroNome}
+          capitalizar="words"
+        />
+        <CampoDeTexto
+          rotulo="E-mail"
+          valor={form.email}
+          aoMudar={(email) => atualizar({ email })}
+          erro={erroEmail}
+          teclado="email"
+        />
+        <CampoDeTexto
+          rotulo="Disciplinas"
+          valor={form.disciplinas.join(', ')}
+          aoMudar={(v) =>
+            atualizar({ disciplinas: v.split(',').map((s) => s.trim()).filter(Boolean) })
+          }
+          placeholder="Inglês, Violão"
+          ajuda="Separe por vírgula."
+        />
+      </CartaoVidro>
     </TelaDeAjuste>
   );
 }
@@ -184,7 +278,6 @@ export function PerfilProfessor() {
 // --- E3, minha disponibilidade -------------------------------------------
 
 export function MinhaDisponibilidade() {
-  const cores = useCores();
   const { concluir } = useNavegacao();
   const salva = useDados((s) => s.disponibilidade);
   const salvarDisponibilidade = useDados((s) => s.salvarDisponibilidade);
@@ -205,75 +298,44 @@ export function MinhaDisponibilidade() {
       subtitulo="É a base do cálculo de reposição."
       rodape={<BotaoPrimario rotulo="Salvar" desabilitado={!mudou} aoTocar={salvar} />}
     >
-      <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 12 }}>
-        <GradeSemanal
+      <CartaoVidro estilo={[estilos.cartaoGrade, estilos.primeiro]}>
+        <GradeSemanalVidro
           marcados={d.blocos}
           aoAlternar={(b) => atualizar({ blocos: alternarBloco(d.blocos, b) })}
         />
-        <RodapeDaGrade esquerda={resumo(d.blocos)} direita="Domingo fechado" />
-      </Cartao>
+        <RodapeDaGradeVidro esquerda={resumo(d.blocos)} direita="Domingo fechado" />
+      </CartaoVidro>
 
-      <Cartao
-        estilo={{
-          paddingVertical: 13,
-          paddingHorizontal: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-        }}
-      >
-        <Interruptor
-          ligado={d.aceitaForaDosBlocos}
-          aoTrocar={(aceitaForaDosBlocos) => atualizar({ aceitaForaDosBlocos })}
-          rotuloAcessivel="Aceitar reposição fora dos blocos"
-        />
-        <View style={{ flex: 1 }}>
-          <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-            Aceitar reposição fora dos blocos
-          </Text>
-          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
-            Só quando não houver outra saída
-          </Text>
-        </View>
-      </Cartao>
+      <CartaoComSwitch
+        titulo="Aceitar reposição fora dos blocos"
+        sub="Só quando não houver outra saída"
+        ligado={d.aceitaForaDosBlocos}
+        aoAlternar={(aceitaForaDosBlocos) => atualizar({ aceitaForaDosBlocos })}
+      />
+      <CartaoComSwitch
+        titulo="Sugerir sábados"
+        sub="Entra na lista de horários possíveis"
+        ligado={d.sugereSabado}
+        aoAlternar={(sugereSabado) => atualizar({ sugereSabado })}
+      />
 
-      <Cartao
-        estilo={{
-          paddingVertical: 13,
-          paddingHorizontal: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-        }}
-      >
-        <Interruptor
-          ligado={d.sugereSabado}
-          aoTrocar={(sugereSabado) => atualizar({ sugereSabado })}
-          rotuloAcessivel="Sugerir sábados"
-        />
-        <View style={{ flex: 1 }}>
-          <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-            Sugerir sábados
-          </Text>
-          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
-            Entra na lista de horários possíveis
-          </Text>
-        </View>
-      </Cartao>
-
-      <Lista rotulo="Folgas e feriados">
+      <View style={estilos.grupo}>
+        <CabecalhoGrupo titulo="Folgas e feriados" />
+      </View>
+      <ListaAgrupada>
         {d.folgas.length === 0 ? (
-          <LinhaLista titulo="Nenhuma folga marcada" ultima />
+          <EstadoVazio titulo="Nenhuma folga marcada" />
         ) : (
-          d.folgas.map((f, i) => (
+          d.folgas.map((f) => (
             <LinhaLista
               key={`${f.de}-${f.motivo}`}
               titulo={periodoDaFolga(f)}
-              sub={f.motivo}
-              ultima={i === d.folgas.length - 1}
+              subtitulo={f.motivo}
               direita={
-                <BotaoPequeno
+                <BotaoInline
                   rotulo="Remover"
+                  variante="vidro"
+                  rotuloAcessivel={`Remover folga: ${periodoDaFolga(f)}`}
                   aoTocar={() =>
                     atualizar({ folgas: d.folgas.filter((x) => x.de !== f.de) })
                   }
@@ -282,7 +344,7 @@ export function MinhaDisponibilidade() {
             />
           ))
         )}
-      </Lista>
+      </ListaAgrupada>
     </TelaDeAjuste>
   );
 }
@@ -290,7 +352,7 @@ export function MinhaDisponibilidade() {
 // --- Pacotes e valores padrão --------------------------------------------
 
 export function PacotesPadrao() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const { concluir } = useNavegacao();
   const politicas = useDados((s) => s.politicas);
   const alunos = useDados((s) => s.alunos);
@@ -312,7 +374,6 @@ export function PacotesPadrao() {
 
   return (
     <TelaDeAjuste
-      comTeclado
       titulo="Pacotes e valores padrão"
       subtitulo="O que já vem preenchido ao criar um pacote novo."
       rodape={
@@ -326,45 +387,61 @@ export function PacotesPadrao() {
         />
       }
     >
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-          Quantidade padrão
-        </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={opcoes}
-            valor={cfg.aulas}
-            aoTrocar={(aulas) => atualizar({ aulas })}
-            rotuloAcessivel="Quantidade padrão de aulas"
-          />
-        </View>
-      </Cartao>
+      <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
+        <TituloDoCartao>Quantidade padrão</TituloDoCartao>
+        <Segmentado
+          opcoes={opcoes}
+          valor={cfg.aulas}
+          aoTrocar={(aulas) => atualizar({ aulas })}
+          porte="cartao"
+          rotuloDoGrupo="Quantidade padrão de aulas"
+          estilo={estilos.controleLargo}
+        />
+      </CartaoVidro>
 
-      <CampoDeTexto
-        rotulo="Valor por aula, em R$"
-        valor={String(cfg.valorPorAula)}
-        aoMudar={(v) => atualizar({ valorPorAula: Number(v.replace(/\D/g, '')) || 0 })}
-        teclado="numerico"
-        ajuda={`Pacote de ${cfg.aulas} aulas sai por ${dinheiro(
-          cfg.aulas * cfg.valorPorAula,
-        )}.`}
-      />
+      <CartaoVidro estilo={estilos.cartao}>
+        <CampoDeTexto
+          rotulo="Valor por aula, em R$"
+          valor={String(cfg.valorPorAula)}
+          aoMudar={(v) => atualizar({ valorPorAula: Number(v.replace(/\D/g, '')) || 0 })}
+          teclado="numerico"
+          ajuda={`Pacote de ${cfg.aulas} aulas sai por ${dinheiro(
+            cfg.aulas * cfg.valorPorAula,
+          )}.`}
+        />
+      </CartaoVidro>
 
-      <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
+      <View
+        style={[estilos.nota, { backgroundColor: cores.preenchimento, borderColor: cores.borda }]}
+      >
+        <Text style={[texto(13, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
           {`A validade vem da política de faltas: ${
             politicas.validadeDias === 0 ? 'sem prazo' : `${politicas.validadeDias} dias`
           }. Hoje ${alunos.filter(temPacote).length} alunos têm pacote ativo.`}
         </Text>
-      </Caixa>
+      </View>
     </TelaDeAjuste>
   );
 }
 
 // --- Avisos e lembretes ---------------------------------------------------
 
+const ITENS_DE_AVISO = [
+  { chave: 'aulaDoDia' as const, titulo: 'Aula do dia', sub: 'Aviso na manhã de cada aula' },
+  { chave: 'saldoBaixo' as const, titulo: 'Saldo baixo', sub: 'Quando restarem 2 aulas ou menos' },
+  {
+    chave: 'reposicaoPendente' as const,
+    titulo: 'Reposição pendente',
+    sub: 'Se ficar 3 dias sem horário escolhido',
+  },
+  {
+    chave: 'pagamentoVencendo' as const,
+    titulo: 'Pagamento vencendo',
+    sub: 'Três dias antes do vencimento',
+  },
+];
+
 export function Avisos() {
-  const cores = useCores();
   const { concluir } = useNavegacao();
   const avisar = useToast((s) => s.avisar);
   // O `?? AVISOS_PADRAO` fica fora do seletor: dentro, criaria objeto novo a
@@ -372,21 +449,6 @@ export function Avisos() {
   const salvas = useDados((s) => s.preferenciasDeAviso) ?? AVISOS_PADRAO;
   const salvarPreferencias = useDados((s) => s.salvarPreferenciasDeAviso);
   const [ligados, setLigados] = React.useState(salvas);
-
-  const itens = [
-    { chave: 'aulaDoDia' as const, titulo: 'Aula do dia', sub: 'Aviso na manhã de cada aula' },
-    { chave: 'saldoBaixo' as const, titulo: 'Saldo baixo', sub: 'Quando restarem 2 aulas ou menos' },
-    {
-      chave: 'reposicaoPendente' as const,
-      titulo: 'Reposição pendente',
-      sub: 'Se ficar 3 dias sem horário escolhido',
-    },
-    {
-      chave: 'pagamentoVencendo' as const,
-      titulo: 'Pagamento vencendo',
-      sub: 'Três dias antes do vencimento',
-    },
-  ];
 
   return (
     <TelaDeAjuste
@@ -403,29 +465,15 @@ export function Avisos() {
         />
       }
     >
-      {itens.map((i) => (
-        <Cartao
+      {ITENS_DE_AVISO.map((i, n) => (
+        <CartaoComSwitch
           key={i.chave}
-          estilo={{
-            paddingVertical: 13,
-            paddingHorizontal: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 13,
-          }}
-        >
-          <Interruptor
-            ligado={ligados[i.chave]}
-            aoTrocar={(v) => setLigados((s) => ({ ...s, [i.chave]: v }))}
-            rotuloAcessivel={i.titulo}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-              {i.titulo}
-            </Text>
-            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>{i.sub}</Text>
-          </View>
-        </Cartao>
+          titulo={i.titulo}
+          sub={i.sub}
+          ligado={ligados[i.chave]}
+          aoAlternar={(v) => setLigados((s) => ({ ...s, [i.chave]: v }))}
+          estilo={n === 0 ? estilos.primeiro : undefined}
+        />
       ))}
     </TelaDeAjuste>
   );
@@ -436,14 +484,21 @@ export function Avisos() {
 export function ChavePix() {
   const { concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
+  const alunos = useDados((s) => s.alunos);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
   const avisar = useToast((s) => s.avisar);
   const [chave, setChave] = React.useState(perfil.chavePix ?? '');
   const mudou = chave.trim() !== (perfil.chavePix ?? '');
 
+  // Prévia com um aluno de verdade, para mostrar onde a chave entra na
+  // cobrança. Sem aluno com pacote, não há cobrança para mostrar.
+  const exemplo = alunos.find((a) => !a.arquivado && temPacote(a));
+  const previa = exemplo
+    ? mensagemDeCobranca(exemplo, 'cordial', chave.trim() || undefined)
+    : null;
+
   return (
     <TelaDeAjuste
-      comTeclado
       titulo="Chave Pix e cobrança"
       subtitulo="Entra automaticamente na mensagem de cobrança."
       rodape={
@@ -458,24 +513,36 @@ export function ChavePix() {
         />
       }
     >
-      <CampoDeTexto
-        rotulo="Chave Pix"
-        valor={chave}
-        aoMudar={setChave}
-        placeholder="e-mail, telefone ou aleatória"
-        sufixo={
-          chave ? (
-            <AcaoDoCampo
-              rotulo="copiar"
-              rotuloAcessivel="Copiar chave Pix"
-              aoTocar={() => {
-                Clipboard.setStringAsync(chave.trim()).catch(() => {});
-                avisar('Chave Pix copiada.');
-              }}
-            />
-          ) : undefined
-        }
-      />
+      <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
+        <CampoDeTexto
+          rotulo="Chave Pix"
+          valor={chave}
+          aoMudar={setChave}
+          placeholder="e-mail, telefone ou aleatória"
+          capitalizar="none"
+          sufixo={
+            chave ? (
+              <AcaoDoCampo
+                rotulo="copiar"
+                rotuloAcessivel="Copiar chave Pix"
+                aoTocar={() => {
+                  Clipboard.setStringAsync(chave.trim()).catch(() => {});
+                  avisar('Chave Pix copiada.');
+                }}
+              />
+            ) : undefined
+          }
+        />
+      </CartaoVidro>
+
+      {previa ? (
+        <View style={estilos.bloco}>
+          <PreviaDeMensagemVidro
+            texto={previa}
+            aoCopiar={() => avisar(avisos.mensagemCopiada)}
+          />
+        </View>
+      ) : null}
     </TelaDeAjuste>
   );
 }
@@ -483,9 +550,14 @@ export function ChavePix() {
 // --- E4, conta e assinatura ----------------------------------------------
 
 const LIMITE_GRATUITO = 5;
+const BENEFICIOS = [
+  'Alunos ilimitados',
+  'Link público do aluno personalizado',
+  'Relatórios mensais',
+];
 
 export function Conta() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const { concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const alunos = useDados((s) => s.alunos);
@@ -510,118 +582,146 @@ export function Conta() {
 
   const ativos = alunos.filter((a) => !a.arquivado).length;
   const pago = perfil.plano === 'pago';
-  const proporcao = Math.min(1, ativos / LIMITE_GRATUITO);
+  const ocupadas = Math.min(ativos, LIMITE_GRATUITO);
 
   return (
     <TelaDeAjuste
       titulo="Conta e assinatura"
+      // "Sair" fecha a tela, depois das ações do plano: destrutivo nunca
+      // fica entre o conteúdo e o primário.
       rodape={
-        pago ? undefined : (
-          <>
-            <BotaoPrimario
-              rotulo="Assinar por R$ 29,90"
-              aoTocar={() => {
-                salvarPerfil({ ...perfil, plano: 'pago' });
-                avisar('Plano ativado. Alunos ilimitados.');
-                concluir('ajustes');
-              }}
-            />
-            <BotaoContorno
-              rotulo="Continuar no gratuito"
-              altura={44}
-              aoTocar={() => concluir('ajustes')}
-            />
-          </>
-        )
+        <>
+          {pago ? null : (
+            <>
+              <BotaoPrimario
+                rotulo="Assinar por R$ 29,90"
+                aoTocar={() => {
+                  salvarPerfil({ ...perfil, plano: 'pago' });
+                  avisar('Plano ativado. Alunos ilimitados.');
+                  concluir('ajustes');
+                }}
+              />
+              <BotaoSecundario
+                rotulo="Continuar no gratuito"
+                aoTocar={() => concluir('ajustes')}
+                estilo={estilos.segundaAcao}
+              />
+            </>
+          )}
+          <BotaoTexto
+            tom="destrutivo"
+            rotulo={sairDaConta.armado ? 'Tocar de novo para sair' : 'Sair da conta'}
+            aoTocar={sairDaConta.tocar}
+            estilo={pago ? undefined : estilos.segundaAcao}
+          />
+        </>
       }
     >
-      <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <RotuloSecao>Plano atual</RotuloSecao>
+      <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
+        <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>Plano atual</Text>
         <Text
-          style={[comEspaco(texto(20, 700, { altura: 1.2 }), { topo: 9 }), { color: cores.texto }]}
+          style={[
+            comEspaco(texto(22, 800, { altura: 1.15, tracking: -0.03 }), { topo: 8 }),
+            { color: cores.tinta },
+          ]}
         >
           {pago ? 'Pago' : 'Gratuito'}
         </Text>
         {!pago ? (
           <>
-            <View
-              style={{
-                marginTop: 13,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: cores.linha,
-                overflow: 'hidden',
-              }}
+            {/* Uma barra por vaga do plano, as ocupadas em cor (âmbar no
+                limite). O medidor do pacote pinta as "restantes" e as põe
+                no fim; por isso as vagas ocupadas entram como restantes e
+                a linha é espelhada, para a cor começar da esquerda.
+                Decorativo: o número vem logo abaixo, em texto. */}
+            <MedidorPacote
+              total={LIMITE_GRATUITO}
+              usadas={LIMITE_GRATUITO - ocupadas}
+              baixo={ativos >= LIMITE_GRATUITO}
+              estilo={estilos.medidor}
+            />
+            <Text
+              style={[
+                comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 9 }),
+                { color: cores.tinta2 },
+              ]}
             >
-              <View
-                style={{
-                  width: `${proporcao * 100}%`,
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: proporcao >= 1 ? cores.vermelho : cores.texto,
-                }}
-              />
-            </View>
-            <Text style={[comEspaco(TIPO.nota, { topo: 9 }), { color: cores.textoMedio }]}>
               {`${ativos} de ${LIMITE_GRATUITO} alunos usados`}
             </Text>
           </>
         ) : null}
-      </Cartao>
+      </CartaoVidro>
 
       {!pago ? (
-        <Cartao
-          estilo={{
-            paddingVertical: 15,
-            paddingHorizontal: 16,
-            borderLeftWidth: 4,
-            borderLeftColor: MARCA.amarelo,
-          }}
-        >
-          <Text style={[texto(15, 600, { altura: 1.3 }), { color: cores.texto }]}>
+        <CartaoVidro estilo={estilos.cartao}>
+          <Text
+            style={[texto(15.5, 700, { altura: 1.3, tracking: -0.012 }), { color: cores.tinta }]}
+          >
             Plano pago · R$ 29,90 por mês
           </Text>
-          <View style={{ marginTop: 11, gap: 7 }}>
-            {[
-              'Alunos ilimitados',
-              'Link público do aluno personalizado',
-              'Relatórios mensais',
-            ].map((b) => (
-              <Text key={b} style={[TIPO.corpo, { color: cores.textoMedio }]}>
+          <View style={estilos.beneficios}>
+            {BENEFICIOS.map((b) => (
+              <Text key={b} style={[texto(13, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
                 {`· ${b}`}
               </Text>
             ))}
           </View>
-        </Cartao>
+        </CartaoVidro>
       ) : null}
 
-      <Lista rotulo="Conta">
-        <LinhaLista titulo="E-mail da conta" sub={perfil.email} />
+      <View style={estilos.grupo}>
+        <CabecalhoGrupo titulo="Conta" />
+      </View>
+      <ListaAgrupada>
+        <LinhaLista titulo="E-mail da conta" subtitulo={perfil.email} />
         {/* Sem chevron: não há para onde ir enquanto o login for mock. */}
-        <LinhaLista titulo="Alterar senha" sub="Chega junto com o login de verdade" />
+        <LinhaLista titulo="Alterar senha" subtitulo="Chega junto com o login de verdade" />
         <LinhaLista
           titulo="Exportar meus dados"
-          sub="Copia alunos, extratos e políticas"
-          chevron
+          subtitulo="Copia alunos, extratos e políticas"
           aoTocar={exportar}
         />
-        <LinhaLista
-          titulo={sairDaConta.armado ? 'Tocar de novo para sair' : 'Sair da conta'}
-          chevron
-          ultima
-          aoTocar={sairDaConta.tocar}
-        />
-      </Lista>
+      </ListaAgrupada>
 
       {/* Linha sem ação, e não um bloco com cara de botão: nesta versão
           nada é apagado, e a tela diz isso. */}
-      <Cartao estilo={{ overflow: 'hidden' }}>
+      <ListaAgrupada estilo={estilos.bloco}>
         <LinhaLista
           titulo="Apagar minha conta"
-          sub="Indisponível no protótipo: nesta versão nada é apagado."
-          ultima
+          subtitulo="Indisponível no protótipo: nesta versão nada é apagado."
         />
-      </Cartao>
+      </ListaAgrupada>
+
     </TelaDeAjuste>
   );
 }
+
+const estilos = StyleSheet.create({
+  flexivel: { flex: 1, minWidth: 0 },
+  cabecalho: { paddingHorizontal: 6 },
+  primeiro: { marginTop: 18 },
+  cartao: { marginTop: 12, paddingVertical: 16, paddingHorizontal: 17 },
+  cartaoGrade: { marginTop: 12, paddingVertical: 15, paddingHorizontal: 13 },
+  perfil: {
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+  },
+  campos: { gap: 16 },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  controleLargo: { marginTop: 12, alignSelf: 'stretch' },
+  grupo: { marginTop: 24, marginBottom: 9 },
+  bloco: { marginTop: 12 },
+  nota: {
+    marginTop: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 17,
+    borderRadius: RAIO_VIDRO.cartao,
+    borderWidth: TAMANHO_VIDRO.bordaVidro,
+  },
+  medidor: { marginTop: 14, transform: [{ scaleX: -1 }] },
+  beneficios: { marginTop: 10, gap: 6 },
+  segundaAcao: { marginTop: 10 },
+});
