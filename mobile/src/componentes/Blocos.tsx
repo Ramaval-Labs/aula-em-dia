@@ -227,6 +227,114 @@ export function BlocoStatus({
   );
 }
 
+/* ── Cartão de débito ─────────────────────────────────────────────────── */
+
+export type TomDoDebito = 'vermelho' | 'verde' | 'neutro';
+
+/**
+ * O cartão de valor de H§7: rótulo em caixa alta, valor grande (32/800) à
+ * esquerda, notas ou um par rótulo/valor à direita e, depois do fio, os pares
+ * da dívida (`linhas`) ou uma nota (`children`). Raio 22, padding 18.
+ *
+ * - `vermelho`/`verde`: fundo suave do status com o valor na cor cheia
+ *   (Cobrança em atraso, pagamento em dia);
+ * - `neutro`: cartão de vidro com o valor em `tinta` (em aberto, e o resumo
+ *   do sheet Registrar pagamento).
+ */
+export function CartaoDeDebito({
+  tom = 'vermelho',
+  rotulo,
+  valor,
+  notas,
+  direita,
+  linhas,
+  children,
+  estilo,
+}: {
+  tom?: TomDoDebito;
+  rotulo: string;
+  /** já formatado em pt-BR */
+  valor: string;
+  /** texto à direita do valor, alinhado à direita ("Pacote de 8\nvenceu 12/08") */
+  notas?: string;
+  /** peça própria à direita, no lugar de `notas` */
+  direita?: React.ReactNode;
+  linhas?: readonly { rotulo: string; valor: string }[];
+  /** conteúdo depois do fio, no lugar de `linhas` */
+  children?: React.ReactNode;
+  estilo?: StyleProp<ViewStyle>;
+}) {
+  const { cores, material } = useVidro();
+  const { suave, cheia } = coresDoTom(cores, tom);
+  const neutro = tom === 'neutro';
+
+  const miolo = (
+    <>
+      <View style={estilos.linhaDebito}>
+        <View style={estilos.flexivel}>
+          <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>{rotulo}</Text>
+          <Text
+            style={[
+              comEspaco(texto(32, 800, { tracking: -0.045 }), { topo: 9 }),
+              { color: neutro ? cores.tinta : cheia },
+            ]}
+          >
+            {valor}
+          </Text>
+        </View>
+        {direita ??
+          (notas ? (
+            <Text
+              style={[texto(12, 500, { altura: 1.5 }), estilos.aDireita, { color: cores.tinta2 }]}
+            >
+              {notas}
+            </Text>
+          ) : null)}
+      </View>
+
+      {linhas?.length || children ? (
+        <View style={[estilos.separadorDebito, { borderTopColor: cores.fio }]}>
+          {linhas?.map((l) => (
+            <View key={l.rotulo} style={estilos.parDebito}>
+              <Text style={[texto(13, 500, { altura: 1.35 }), { color: cores.tinta2 }]}>
+                {l.rotulo}
+              </Text>
+              <Text style={[texto(13, 700, { altura: 1.35 }), { color: cores.tinta }]}>
+                {l.valor}
+              </Text>
+            </View>
+          ))}
+          {children}
+        </View>
+      ) : null}
+    </>
+  );
+
+  if (neutro) {
+    return (
+      <SuperficieVidro
+        nivel="cartao"
+        raio={RAIO_VIDRO.cartao}
+        sombra
+        style={[estilos.padDebito, estilo]}
+      >
+        {miolo}
+      </SuperficieVidro>
+    );
+  }
+  return (
+    <View
+      style={[
+        estilos.debito,
+        { backgroundColor: suave, borderColor: cores.borda, boxShadow: material.gin },
+        estilo,
+      ]}
+    >
+      {miolo}
+    </View>
+  );
+}
+
 /* ── Faixa de status ──────────────────────────────────────────────────── */
 
 export type TipoDeFaixaVidro = 'pausado' | 'atraso' | 'pendente' | 'marcada';
@@ -512,6 +620,26 @@ const estilos = StyleSheet.create({
   centro: { textAlign: 'center' },
   padCartao: { paddingVertical: 17, paddingHorizontal: 18 },
   padAjuste: { paddingVertical: 16, paddingHorizontal: 17 },
+  aDireita: { textAlign: 'right' },
+  padDebito: { padding: 18 },
+  debito: {
+    borderRadius: RAIO_VIDRO.cartao,
+    borderWidth: TAMANHO_VIDRO.bordaVidro,
+    padding: 18,
+  },
+  linhaDebito: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  separadorDebito: {
+    marginTop: 14,
+    paddingTop: 13,
+    borderTopWidth: TAMANHO_VIDRO.bordaVidro,
+    gap: 8,
+  },
+  parDebito: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   linhaAjuste: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   corpoAjuste: { marginTop: 12 },
   padResumo: { flex: 1, paddingVertical: 14, paddingHorizontal: 13 },

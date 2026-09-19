@@ -6,7 +6,12 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CartaoVidro, coresDoTom, EstadoVazio, type TomDeStatus } from '../componentes/Blocos';
+import {
+  CartaoDeDebito,
+  CartaoVidro,
+  EstadoVazio,
+  type TomDoDebito,
+} from '../componentes/Blocos';
 import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
@@ -17,76 +22,12 @@ import { avisos, useDados } from '../estado/dados';
 import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { comEspaco, texto } from '../tema/tipografia';
 
 /** "Disciplina · hoje, 17h" — a linha de apoio do cabeçalho. */
 function linhaDeHorario(a: Aluno): string {
   if (!a.hora) return `${a.disciplina} · ${a.dia}`;
   return `${a.disciplina} · ${a.hoje ? 'hoje' : a.dia}, ${a.hora}`;
-}
-
-/**
- * Cartão de débito de H§7: fundo suave do status, valor grande à esquerda,
- * duas notas à direita e os pares rótulo/valor depois do fio.
- *
- * Local porque o catálogo não tem um cartão colorido com valor em destaque —
- * o `BlocoStatus` é só título + texto. (Candidato a promover.)
- */
-function CartaoDeDebito({
-  tom,
-  rotulo,
-  valor,
-  notas,
-  linhas,
-}: {
-  tom: TomDeStatus;
-  rotulo: string;
-  valor: string;
-  notas: string;
-  linhas: readonly { rotulo: string; valor: string }[];
-}) {
-  const { cores, material } = useVidro();
-  const { suave, cheia } = coresDoTom(cores, tom);
-
-  return (
-    <View
-      style={[
-        estilos.debito,
-        { backgroundColor: suave, borderColor: cores.borda, boxShadow: material.gin },
-      ]}
-    >
-      <View style={estilos.linhaTopo}>
-        <View style={estilos.flexivel}>
-          <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>{rotulo}</Text>
-          <Text
-            style={[
-              comEspaco(texto(32, 800, { tracking: -0.045 }), { topo: 9 }),
-              { color: cheia },
-            ]}
-          >
-            {valor}
-          </Text>
-        </View>
-        <Text style={[texto(12, 500, { altura: 1.5 }), estilos.direita, { color: cores.tinta2 }]}>
-          {notas}
-        </Text>
-      </View>
-
-      <View style={[estilos.separador, { borderTopColor: cores.fio }]}>
-        {linhas.map((l) => (
-          <View key={l.rotulo} style={estilos.par}>
-            <Text style={[texto(13, 500, { altura: 1.35 }), { color: cores.tinta2 }]}>
-              {l.rotulo}
-            </Text>
-            <Text style={[texto(13, 700, { altura: 1.35 }), { color: cores.tinta }]}>
-              {l.valor}
-            </Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
 }
 
 export function Inadimplencia() {
@@ -148,7 +89,7 @@ export function Inadimplencia() {
 
   // Uma situação por status, sem "em aberto" pintado de verde.
   const p = aluno.pagamento;
-  const situacao: { rotulo: string; tom: TomDeStatus; nota: string | null } =
+  const situacao: { rotulo: string; tom: TomDoDebito; nota: string | null } =
     p.status === 'atraso'
       ? { rotulo: 'Em atraso', tom: 'vermelho', nota: p.venceu ? `venceu ${p.venceu}` : null }
       : p.status === 'aberto'
@@ -227,28 +168,8 @@ export function Inadimplencia() {
 }
 
 const estilos = StyleSheet.create({
-  flexivel: { flex: 1, minWidth: 0 },
-  direita: { textAlign: 'right' },
   espaco14: { marginTop: 14 },
   espaco18: { marginTop: 18 },
   espaco24: { marginTop: 24 },
   lista: { marginTop: 9 },
-  debito: {
-    borderRadius: RAIO_VIDRO.cartao,
-    borderWidth: TAMANHO_VIDRO.bordaVidro,
-    padding: 18,
-  },
-  linhaTopo: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  separador: {
-    marginTop: 14,
-    paddingTop: 13,
-    borderTopWidth: TAMANHO_VIDRO.bordaVidro,
-    gap: 8,
-  },
-  par: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
 });

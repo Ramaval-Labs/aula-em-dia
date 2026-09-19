@@ -16,7 +16,7 @@ import * as Clipboard from 'expo-clipboard';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CartaoDeAjuste, CartaoVidro, EstadoVazio } from '../componentes/Blocos';
+import { CartaoDeAjuste, CartaoDeDebito, CartaoVidro, EstadoVazio } from '../componentes/Blocos';
 import { BotaoInline, BotaoPrimario, Segmentado } from '../componentes/Controles';
 import { LinhaLista, ListaAgrupada } from '../componentes/Listas';
 import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
@@ -30,7 +30,6 @@ import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { TAMANHO_VIDRO } from '../tema/tokens';
 
 const MEIOS: { valor: MeioDePagamento; rotulo: string }[] = [
   { valor: 'Pix', rotulo: 'Pix' },
@@ -129,40 +128,29 @@ export function Pagamento() {
         )
       ) : null}
 
-      {/* Modelo: o cartão de débito da Cobrança — valor grande à esquerda,
-          a data à direita, a nota depois do fio. */}
-      <CartaoVidro estilo={estilos.espaco14}>
-        <View style={estilos.linhaTopo}>
-          <View style={estilos.flexivel}>
-            <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>Valor</Text>
-            <Text
-              style={[
-                comEspaco(texto(32, 800, { tracking: -0.045 }), { topo: 9 }),
-                { color: cores.tinta },
-              ]}
-            >
-              {dinheiro(valorPacote(aluno))}
-            </Text>
-          </View>
+      {/* O cartão de débito da Cobrança em vidro neutro — valor grande à
+          esquerda, a data à direita, a nota depois do fio. */}
+      <CartaoDeDebito
+        tom="neutro"
+        rotulo="Valor"
+        valor={dinheiro(valorPacote(aluno))}
+        estilo={estilos.espaco14}
+        direita={
           <View style={estilos.direita}>
             <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>Data</Text>
             <Text
-              style={[
-                comEspaco(texto(15, 700, { altura: 1.3 }), { topo: 9 }),
-                { color: cores.tinta },
-              ]}
+              style={[comEspaco(texto(15, 700, { altura: 1.3 }), { topo: 9 }), { color: cores.tinta }]}
             >
               {hoje()}
             </Text>
           </View>
-        </View>
-        <View style={[estilos.separador, { borderTopColor: cores.fio }]}>
-          <Text style={[texto(12.5, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
-            Registra o valor do pacote com a data de hoje. Pagamento parcial ou em outra data
-            ainda não entra no app.
-          </Text>
-        </View>
-      </CartaoVidro>
+        }
+      >
+        <Text style={[texto(12.5, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
+          Registra o valor do pacote com a data de hoje. Pagamento parcial ou em outra data
+          ainda não entra no app.
+        </Text>
+      </CartaoDeDebito>
 
       <Text
         style={[
@@ -185,15 +173,4 @@ const estilos = StyleSheet.create({
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
   linhaChave: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  linhaTopo: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  separador: {
-    marginTop: 14,
-    paddingTop: 13,
-    borderTopWidth: TAMANHO_VIDRO.bordaVidro,
-  },
 });
