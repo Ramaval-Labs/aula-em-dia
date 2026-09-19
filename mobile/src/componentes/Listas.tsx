@@ -138,12 +138,12 @@ function Linha({
   );
 }
 
-export type PorteDaLinha = 'padrao' | 'grande';
+export type PorteDaLinha = 'padrao' | 'grande' | 'app';
 
 /**
  * Linha de ação ou de configuração: título, sub-linha e chevron.
  * `padrao` é a lista de ações (62px, título 14.5); `grande` é a de Ajustes
- * (64px, título 15).
+ * (64px, título 15); `app` é o grupo APP de Ajustes (58px, título 15).
  */
 export function LinhaLista({
   titulo,
@@ -165,14 +165,20 @@ export function LinhaLista({
   rotuloAcessivel?: string;
 }) {
   const { cores } = useVidro();
-  const grande = porte === 'grande';
+  const grande = porte !== 'padrao';
   const mostraChevron = chevron ?? (!!aoTocar && !direita);
 
   return (
     <Linha
       aoTocar={aoTocar}
       rotuloAcessivel={rotuloAcessivel ?? [titulo, subtitulo].filter(Boolean).join('. ')}
-      minAltura={grande ? TAMANHO_VIDRO.linhaAjustes : TAMANHO_VIDRO.linhaLista}
+      minAltura={
+        porte === 'app'
+          ? TAMANHO_VIDRO.linhaApp
+          : grande
+            ? TAMANHO_VIDRO.linhaAjustes
+            : TAMANHO_VIDRO.linhaLista
+      }
       padHorizontal={15}
     >
       <View style={estilos.flexivel}>

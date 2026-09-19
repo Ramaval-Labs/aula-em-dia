@@ -1,7 +1,7 @@
 /**
  * Sheet modal do iOS Glass (handoff-ios-glass/README.md, "Sheet modal").
  *
- * Fundo `rgba(6,10,20,.4)` com fade de 200ms — a área acima do painel fecha ao
+ * Véu `veuSheet` (`rgba(6,10,20,.4)`) com fade de 200ms — a área acima do painel fecha ao
  * toque — e painel de vidro com raio 40 só no topo, subindo em 340ms com
  * `cubic-bezier(.32,.72,0,1)`.
  *
@@ -36,9 +36,6 @@ import { SuperficieVidro } from './Vidro';
 
 /** 88% para sheet de tarefa, 74% para o de resultado. */
 export type AlturaSheet = 'tarefa' | 'resultado';
-
-/** Fundo do sheet — o único preto do sistema, e ele não é token de cor. */
-const COR_DO_FUNDO = 'rgba(6,10,20,0.4)';
 
 /** Faixa mínima de toque acima do painel (handoff, "Sheet modal"). */
 const TOQUE_ACIMA = 44;
@@ -141,7 +138,7 @@ export function Sheet({
     >
       <Animated.View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: COR_DO_FUNDO, opacity: fade }]}
+        style={[StyleSheet.absoluteFill, { backgroundColor: cores.veuSheet, opacity: fade }]}
       />
 
       <Pressable

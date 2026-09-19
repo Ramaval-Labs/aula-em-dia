@@ -203,7 +203,7 @@ const estilos = StyleSheet.create({
   caixas: { marginTop: 10, flexDirection: 'row', gap: 10 },
   caixa: {
     flex: 1,
-    borderRadius: RAIO_VIDRO.botaoInline,
+    borderRadius: RAIO_VIDRO.caixaValor,
     paddingVertical: 11,
     paddingHorizontal: 13,
   },

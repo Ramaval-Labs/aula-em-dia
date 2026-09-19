@@ -8,6 +8,7 @@ import {
   CORES_VIDRO,
   MATERIAL,
   MOVIMENTO_VIDRO,
+  PILULA_ABA,
   RAIO_VIDRO,
   TAMANHO_VIDRO,
   TRACO_ICONE,
@@ -43,6 +44,18 @@ describe('tokens iOS Glass', () => {
     expect(TAMANHO_VIDRO).toEqual(json.size);
     expect(MOVIMENTO_VIDRO).toEqual(json.motion);
     expect(TRACO_ICONE).toEqual(json.stroke);
+  });
+
+  it('pílula da aba ativa bate com o JSON', () => {
+    const { _fonte, ...pilula } = json.pilulaAba;
+    expect(PILULA_ABA).toEqual(pilula);
+  });
+
+  it.each(['claro', 'escuro'] as const)('sombras novas do tema %s existem nos dois lados', (tema) => {
+    expect(MATERIAL[tema].sombraToast).toMatch(/16px 38px/);
+    expect(json.material[tema].sombraToast).toMatch(/16px 38px/);
+    expect(MATERIAL[tema].sombraBotaoSwitch).toMatch(/2px 6px/);
+    expect(json.material[tema].sombraBotaoSwitch).toMatch(/2px 6px/);
   });
 
   it('papéis tipográficos existem no JSON com o mesmo tamanho', () => {

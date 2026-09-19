@@ -454,7 +454,7 @@ export function FichaDeEscolha({
       accessibilityLabel={rotulo}
       accessibilityState={{ checked: marcada }}
       onPress={aoTocar}
-      hitSlop={folgaDeToque(TAMANHO_VIDRO.segmentoCartao)}
+      hitSlop={folgaDeToque(TAMANHO_VIDRO.ficha)}
       style={({ pressed }) => [
         estilos.ficha,
         {
@@ -491,7 +491,7 @@ export function Switch({
   desabilitado?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores, material } = useVidro();
   const reduzido = useReduzirMovimento();
   const anim = useRef(new Animated.Value(ligado ? 1 : 0)).current;
 
@@ -521,7 +521,14 @@ export function Switch({
     >
       <Animated.View style={[estilos.switchTrilho, { backgroundColor: fundo }]}>
         <Animated.View
-          style={[estilos.switchBotao, { transform: [{ translateX: desloca }] }]}
+          style={[
+            estilos.switchBotao,
+            {
+              backgroundColor: cores.botaoSwitch,
+              boxShadow: material.sombraBotaoSwitch,
+              transform: [{ translateX: desloca }],
+            },
+          ]}
         />
       </Animated.View>
     </Pressable>
@@ -768,9 +775,9 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
   ficha: {
-    height: TAMANHO_VIDRO.segmentoCartao,
+    height: TAMANHO_VIDRO.ficha,
     paddingHorizontal: 14,
-    borderRadius: RAIO_VIDRO.botaoInline,
+    borderRadius: RAIO_VIDRO.ficha,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -813,8 +820,6 @@ const estilos = StyleSheet.create({
     width: TAMANHO_VIDRO.switchBotao,
     height: TAMANHO_VIDRO.switchBotao,
     borderRadius: TAMANHO_VIDRO.switchBotao / 2,
-    backgroundColor: '#FFFFFF',
-    boxShadow: '0px 2px 6px rgba(9,15,30,0.28)',
   },
   trilhoStepper: {
     flexDirection: 'row',

@@ -63,7 +63,7 @@ export function ToastVidro() {
       <SuperficieVidro
         nivel="vidro"
         raio={RAIO_VIDRO.toast}
-        sombraExterna={material.sombraTabBar}
+        sombraExterna={material.sombraToast}
         style={{
           paddingVertical: 14,
           paddingHorizontal: 16,

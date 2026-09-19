@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Aba } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
 import { TIPO_VIDRO } from '../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { PILULA_ABA, RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -35,18 +35,6 @@ const ABAS: { chave: Aba; rotulo: string; icone: NomeDeIcone }[] = [
  * Onde a área segura é maior (navegação por gestos do Android), ela manda.
  */
 const RECUO_NA_AREA_SEGURA = 8;
-
-/** Gradiente do item ativo (handoff, "Tab bar" → Item). */
-const GRADIENTE_ATIVO = [
-  'rgba(255,255,255,0.28)',
-  'rgba(255,255,255,0.03)',
-  'rgba(255,255,255,0.02)',
-  'rgba(255,255,255,0.2)',
-] as const;
-const PARADAS_ATIVO = [0, 0.44, 0.7, 1] as const;
-
-const BRILHO_ATIVO = ['rgba(255,255,255,0)', 'rgba(255,255,255,0.55)'] as const;
-const PARADAS_BRILHO = [0.56, 1] as const;
 
 function ItemDeAba({
   icone,
@@ -96,8 +84,8 @@ function ItemDeAba({
             }}
           >
             <LinearGradient
-              colors={[...GRADIENTE_ATIVO]}
-              locations={[...PARADAS_ATIVO]}
+              colors={[...PILULA_ABA.gradiente]}
+              locations={[...PILULA_ABA.paradas]}
               style={{ flex: 1 }}
             />
           </View>
@@ -114,8 +102,8 @@ function ItemDeAba({
             }}
           >
             <LinearGradient
-              colors={[...BRILHO_ATIVO]}
-              locations={[...PARADAS_BRILHO]}
+              colors={[...PILULA_ABA.brilho]}
+              locations={[...PILULA_ABA.brilhoParadas]}
               style={{ flex: 1, borderRadius: RAIO_VIDRO.circulo }}
             />
           </View>

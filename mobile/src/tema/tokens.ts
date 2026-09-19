@@ -222,6 +222,15 @@ export type NomeDeCorVidro =
   | 'verde'
   | 'verdeSuave'
   | 'sombra'
+  /**
+   * glifo branco sobre cor cheia — o check do Resultado sobre verde e o glifo
+   * do ícone de bloco de status (handoff: "glifo branco", nos dois temas)
+   */
+  | 'sobreCor'
+  /** botão do switch ("círculo branco", nos dois temas) */
+  | 'botaoSwitch'
+  /** véu sob o sheet aberto (`rgba(6,10,20,.4)`, nos dois temas) */
+  | 'veuSheet'
   /** manchas do fundo de refração (--m1 a --m4) */
   | 'mancha1'
   | 'mancha2'
@@ -261,6 +270,9 @@ export const CORES_VIDRO: { claro: PaletaVidro; escuro: PaletaVidro } = {
     verde: '#158A61',
     verdeSuave: 'rgba(21,138,97,0.13)',
     sombra: 'rgba(9,15,30,0.13)',
+    sobreCor: '#FFFFFF',
+    botaoSwitch: '#FFFFFF',
+    veuSheet: 'rgba(6,10,20,0.4)',
     mancha1: '#8FB6FF',
     mancha2: '#FFD6A5',
     mancha3: '#CDB8FF',
@@ -291,6 +303,9 @@ export const CORES_VIDRO: { claro: PaletaVidro; escuro: PaletaVidro } = {
     verde: '#33D69F',
     verdeSuave: 'rgba(51,214,159,0.15)',
     sombra: 'rgba(0,0,0,0.5)',
+    sobreCor: '#FFFFFF',
+    botaoSwitch: '#FFFFFF',
+    veuSheet: 'rgba(6,10,20,0.4)',
     mancha1: '#1B3A80',
     mancha2: '#5C3A16',
     mancha3: '#3A2C73',
@@ -340,6 +355,10 @@ export type Material = {
   sombraTabBar: string;
   /** sombra externa do painel do sheet (sem o `gin`) */
   sombraSheet: string;
+  /** sombra externa do toast: `0 16px 38px --sombra` (sem o `gin`) */
+  sombraToast: string;
+  /** sombra do botão do switch */
+  sombraBotaoSwitch: string;
   /**
    * Alfa somado ao miolo quando não há blur (fallback). Sem handoff: sem
    * desfoque o que está atrás fica nítido e compete com o texto, então o
@@ -383,6 +402,8 @@ export const MATERIAL: { claro: Material; escuro: Material } = {
     opacidadeFundo: 0.85,
     sombraTabBar: '0px 16px 40px rgba(9,15,30,0.13), 0px 2px 6px rgba(9,15,30,0.08)',
     sombraSheet: '0px -18px 50px rgba(6,10,20,0.32)',
+    sombraToast: '0px 16px 38px rgba(9,15,30,0.13)',
+    sombraBotaoSwitch: '0px 2px 6px rgba(9,15,30,0.28)',
     alfaExtraFallback: 0.22,
     anel: 'inset 0px 0px 6px 3px rgba(255,255,255,0.5), inset 0px 1px 0px 0px rgba(255,255,255,0.9)',
   },
@@ -398,6 +419,8 @@ export const MATERIAL: { claro: Material; escuro: Material } = {
     opacidadeFundo: 0.6,
     sombraTabBar: '0px 16px 40px rgba(0,0,0,0.5), 0px 2px 6px rgba(9,15,30,0.08)',
     sombraSheet: '0px -18px 50px rgba(6,10,20,0.32)',
+    sombraToast: '0px 16px 38px rgba(0,0,0,0.5)',
+    sombraBotaoSwitch: '0px 2px 6px rgba(9,15,30,0.28)',
     alfaExtraFallback: 0.28,
     anel: 'inset 0px 0px 6px 3px rgba(255,255,255,0.12), inset 0px 1px 0px 0px rgba(255,255,255,0.4)',
   },
@@ -450,6 +473,10 @@ export const RAIO_VIDRO = {
   iconeToast: 9,
   /** segmento do segmentado embutido em linha de lista */
   segmentoLinha: 8.5,
+  /** ficha de escolha múltipla (derivada: raio do botão inline) */
+  ficha: 13,
+  /** caixa de valor lido dentro de cartão (derivada: raio do botão inline) */
+  caixaValor: 13,
   faixa: 7,
   selo: 6,
   medidor: 4,
@@ -496,6 +523,8 @@ export const TAMANHO_VIDRO = {
   linhaAjustes: 64,
   /** linha de lista padrão (ação, extrato) */
   linhaLista: 62,
+  /** linha do grupo APP em Ajustes (H§8) */
+  linhaApp: 58,
   /** coluna de data do extrato */
   colunaData: 38,
 
@@ -536,6 +565,35 @@ export const TAMANHO_VIDRO = {
   switchBotao: 27,
   /** trilho do campo de texto (derivado: escala do botão compacto) */
   campo: 50,
+  /** ficha de escolha múltipla (derivada: altura do segmento de cartão) */
+  ficha: 36,
+
+  /* Resultado (H§4) */
+  /** lado do ícone do topo */
+  medalhaResultado: 72,
+  /** check dentro dele */
+  glifoMedalha: 34,
+  /** largura máxima da explicação */
+  larguraExplicacao: 300,
+
+  /** marcador redondo de lista de motivos ("Por que esse horário") */
+  pontoLista: 6,
+} as const;
+
+/**
+ * Item ativo da tab bar (handoff, "Tab bar" → Item): gradiente vertical do
+ * miolo e o brilho desfocado acima dele. Branco nos dois temas.
+ */
+export const PILULA_ABA = {
+  gradiente: [
+    'rgba(255,255,255,0.28)',
+    'rgba(255,255,255,0.03)',
+    'rgba(255,255,255,0.02)',
+    'rgba(255,255,255,0.2)',
+  ] as const,
+  paradas: [0, 0.44, 0.7, 1] as const,
+  brilho: ['rgba(255,255,255,0)', 'rgba(255,255,255,0.55)'] as const,
+  brilhoParadas: [0.56, 1] as const,
 } as const;
 
 /**

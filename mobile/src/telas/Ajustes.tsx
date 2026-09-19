@@ -117,6 +117,7 @@ export function Ajustes() {
       </View>
       <ListaAgrupada>
         <LinhaLista
+          porte="app"
           titulo="Aparência"
           direita={
             <Segmentado
@@ -128,13 +129,15 @@ export function Ajustes() {
             />
           }
         />
-        <LinhaLista titulo="Avisos e lembretes" aoTocar={() => ir('avisos')} />
+        <LinhaLista porte="app" titulo="Avisos e lembretes" aoTocar={() => ir('avisos')} />
         <LinhaLista
+          porte="app"
           titulo="Chave Pix e dados de cobrança"
           subtitulo={perfil.chavePix ?? 'não configurada'}
           aoTocar={() => ir('chavePix')}
         />
         <LinhaLista
+          porte="app"
           titulo="Conta e assinatura"
           subtitulo={perfil.plano === 'pago' ? 'Plano pago' : 'Plano gratuito'}
           aoTocar={() => ir('conta')}

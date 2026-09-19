@@ -168,7 +168,7 @@ export function BlocoStatus({
             <Icone
               nome={icone}
               tamanho={TAMANHO_VIDRO.glifoBloco}
-              cor={tom === 'neutro' ? cores.sobreTint : '#FFFFFF'}
+              cor={tom === 'neutro' ? cores.sobreTint : cores.sobreCor}
             />
           </View>
         ) : null}

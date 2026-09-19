@@ -38,7 +38,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
-import { RAIO_VIDRO } from '../../tema/tokens';
+import { RAIO_VIDRO, TAMANHO_VIDRO } from '../../tema/tokens';
 import { LinhaDoExtrato } from '../comum/Extrato';
 
 /** Referencia estavel para aluno sem lancamentos. */
@@ -484,6 +484,11 @@ const estilos = StyleSheet.create({
   razoes: { marginTop: 12, gap: 11 },
   razao: { flexDirection: 'row', gap: 12 },
   // Marcador decorativo da lista de motivos; o texto ao lado carrega tudo.
-  ponto: { width: 6, height: 6, borderRadius: RAIO_VIDRO.circulo, marginTop: 8 },
+  ponto: {
+    width: TAMANHO_VIDRO.pontoLista,
+    height: TAMANHO_VIDRO.pontoLista,
+    borderRadius: RAIO_VIDRO.circulo,
+    marginTop: 8,
+  },
   escolhas: { marginTop: 9, gap: 10 },
 });

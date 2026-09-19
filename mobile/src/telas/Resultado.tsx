@@ -24,14 +24,7 @@ import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { RAIO_VIDRO } from '../tema/tokens';
-
-/** Medalha do topo: 72px com o check de 34 (handoff §4, item 1). */
-const LADO_DA_MEDALHA = 72;
-const GLIFO_DA_MEDALHA = 34;
-
-/** A explicação não estica até a borda: o handoff a segura em 300px. */
-const LARGURA_DA_EXPLICACAO = 300;
+import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
 
 export function Resultado() {
   const { cores, material } = useVidro();
@@ -94,8 +87,8 @@ export function Resultado() {
         >
           <Icone
             nome="checkBloco"
-            tamanho={GLIFO_DA_MEDALHA}
-            cor={debitou ? cores.sobreTint : '#FFFFFF'}
+            tamanho={TAMANHO_VIDRO.glifoMedalha}
+            cor={debitou ? cores.sobreTint : cores.sobreCor}
           />
         </View>
 
@@ -163,10 +156,11 @@ const estilos = StyleSheet.create({
   vazio: { marginTop: 10 },
   centro: { alignItems: 'center', paddingTop: 10, paddingHorizontal: 4 },
   texto: { textAlign: 'center' },
-  explicacao: { maxWidth: LARGURA_DA_EXPLICACAO },
+  // A explicação não estica até a borda: o handoff a segura em 300px.
+  explicacao: { maxWidth: TAMANHO_VIDRO.larguraExplicacao },
   medalha: {
-    width: LADO_DA_MEDALHA,
-    height: LADO_DA_MEDALHA,
+    width: TAMANHO_VIDRO.medalhaResultado,
+    height: TAMANHO_VIDRO.medalhaResultado,
     borderRadius: RAIO_VIDRO.iconeResultado,
     alignItems: 'center',
     justifyContent: 'center',
