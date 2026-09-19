@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T00:00:00Z",
+  "title": "Design System: Aula em Dia",
+  "extensions": {
+    "colorMeta": {
+      "tint": { "role": "primary", "displayName": "Azul-ardósia", "canonical": "#35577D" },
+      "tint-escuro": { "role": "primary", "displayName": "Azul-ardósia (escuro)", "canonical": "#9FBEDF" },
+      "tintSuave": { "role": "primary", "displayName": "Azul-ardósia suave", "canonical": "rgba(53,87,125,0.14)" },
+      "sobreTint": { "role": "primary", "displayName": "Sobre o destaque", "canonical": "#FFFFFF" },
+      "vermelho": { "role": "secondary", "displayName": "Vermelho de status", "canonical": "#DE203A" },
+      "ambar": { "role": "secondary", "displayName": "Âmbar de status", "canonical": "#C07C00" },
+      "verde": { "role": "secondary", "displayName": "Verde de status", "canonical": "#158A61" },
+      "tinta": { "role": "neutral", "displayName": "Tinta", "canonical": "#0B1220" },
+      "tinta2": { "role": "neutral", "displayName": "Tinta de apoio", "canonical": "rgba(11,18,32,0.72)" },
+      "tinta3": { "role": "neutral", "displayName": "Tinta de legenda", "canonical": "rgba(11,18,32,0.62)" },
+      "tela": { "role": "neutral", "displayName": "Tela", "canonical": "#E9EEF7" },
+      "cartao": { "role": "neutral", "displayName": "Miolo de cartão", "canonical": "rgba(255,255,255,0.558)" },
+      "vidro": { "role": "neutral", "displayName": "Miolo de barra", "canonical": "rgba(255,255,255,0.5084)" },
+      "preenchimento": { "role": "neutral", "displayName": "Preenchimento", "canonical": "rgba(118,138,178,0.15)" }
+    },
+    "typographyMeta": {
+      "saldoResultado": { "displayName": "Saldo do resultado", "purpose": "O saldo depois de registrar a aula, no sheet Resultado." },
+      "saldoCartao": { "displayName": "Saldo do cartão", "purpose": "O saldo do pacote na ficha do aluno." },
+      "tituloGrande": { "displayName": "Título grande", "purpose": "Raiz de aba e primeira tela da entrada." },
+      "tituloEmpilhada": { "displayName": "Título empilhado", "purpose": "Tela empilhada e passos do onboarding." },
+      "botao": { "displayName": "Botão", "purpose": "Rótulo do botão primário." },
+      "apoio": { "displayName": "Apoio", "purpose": "Linha de apoio, em tinta2." },
+      "cabecalhoGrupo": { "displayName": "Cabeçalho de grupo", "purpose": "Rótulo em caixa alta acima da lista agrupada, em tinta3." }
+    },
+    "materialPorPlataforma": {
+      "web": "backdropFilter: blur(16px) saturate(190%) brightness(1.08) no claro; blur(18px) saturate(175%) brightness(1.12) no escuro",
+      "ios": "BlurView systemUltraThinMaterialLight/Dark, intensidade 80 (claro) e 90 (escuro)",
+      "android": "BlurView com blurTarget a partir da API 31, intensidade 32/36 e redução 1.6; abaixo disso e dentro do alvo, fallback sem blur com alfa +0.22 (claro) / +0.28 (escuro)",
+      "fundoRefracao": [
+        "radial-gradient(58% 44% at 14% 6%, mancha1 0%, transparent 70%)",
+        "radial-gradient(52% 40% at 96% 14%, mancha2 0%, transparent 68%)",
+        "radial-gradient(64% 46% at 82% 92%, mancha3 0%, transparent 72%)",
+        "radial-gradient(50% 34% at 8% 74%, mancha4 0%, transparent 70%)"
+      ],
+      "opacidadeFundo": { "claro": 0.85, "escuro": 0.6 }
+    },
+    "shadows": [
+      { "name": "gin", "value": "inset 0 1.4px .8px -.7px rgba(255,255,255,.98), inset 0 -1.4px .8px -.7px rgba(255,255,255,.66), inset 1.4px 0 .8px -.7px rgba(255,255,255,.6), inset -1.4px 0 .8px -.7px rgba(255,255,255,.6), inset 0 0 14px 5px rgba(255,255,255,.16)", "purpose": "Reflexo especular interno de toda superfície de vidro (claro)." },
+      { "name": "gin-escuro", "value": "inset 0 1.4px .8px -.7px rgba(255,255,255,.6), inset 0 -1.4px .8px -.7px rgba(255,255,255,.26), inset 1.4px 0 .8px -.7px rgba(255,255,255,.22), inset -1.4px 0 .8px -.7px rgba(255,255,255,.22), inset 0 0 16px 5px rgba(255,255,255,.07)", "purpose": "Reflexo especular interno (escuro)." },
+      { "name": "gsh", "value": "0 10px 28px rgba(9,15,30,.13), 0 1px 2px rgba(9,15,30,.05)", "purpose": "Contato e difusa sob cartões (claro)." },
+      { "name": "gsh-escuro", "value": "0 12px 32px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.3)", "purpose": "Contato e difusa sob cartões (escuro)." },
+      { "name": "sombraTabBar", "value": "0 16px 40px rgba(9,15,30,.13), 0 2px 6px rgba(9,15,30,.08)", "purpose": "Tab bar flutuante (claro)." },
+      { "name": "sombraTabBar-escuro", "value": "0 16px 40px rgba(0,0,0,.5), 0 2px 6px rgba(9,15,30,.08)", "purpose": "Tab bar flutuante (escuro)." },
+      { "name": "sombraSheet", "value": "0 -18px 50px rgba(6,10,20,.32)", "purpose": "Sob o painel do sheet, nos dois temas." },
+      { "name": "sombraToast", "value": "0 16px 38px rgba(9,15,30,.13)", "purpose": "Toast (claro); no escuro rgba(0,0,0,.5)." },
+      { "name": "sombraPrimario", "value": "0 10px 26px rgba(53,87,125,.34)", "purpose": "Botão primário, somada ao gin; no escuro rgba(0,0,0,.45). A única sombra colorida." },
+      { "name": "sombraBotaoSwitch", "value": "0 2px 6px rgba(9,15,30,.28)", "purpose": "Botão do switch, nos dois temas." },
+      { "name": "anel", "value": "inset 0 0 6px 3px rgba(255,255,255,.5), inset 0 1px 0 0 rgba(255,255,255,.9)", "purpose": "Anel de refração aproximado, só na tab bar (claro); no escuro .12 e .4." }
+    ],
+    "motion": [
+      { "name": "sheet", "value": "340ms cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "Painel do sheet subindo." },
+      { "name": "fundoSheet", "value": "200ms ease", "purpose": "Véu do sheet, opacidade." },
+      { "name": "toast", "value": "200ms ease; dura 3600ms", "purpose": "Toast, opacidade." },
+      { "name": "barraNav", "value": "180ms linear", "purpose": "Opacidade da barra de navegação em degraus de 0.1." },
+      { "name": "switch", "value": "200ms", "purpose": "Fundo e botão do switch." },
+      { "name": "reduzirMovimento", "value": "0ms", "purpose": "Com reduzir movimento ligado, toda transição vira troca direta." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão primário",
+      "kind": "button",
+      "refersTo": "botao-primario",
+      "description": "A ação principal da tela, uma por tela.",
+      "html": "<button class=\"ds-btn-primario\">Registrar aula</button>",
+      "css": ".ds-btn-primario { width: 100%; height: 54px; border: none; border-radius: 18px; background: #35577D; color: #FFFFFF; font-family: Satoshi, system-ui, sans-serif; font-weight: 700; font-size: 16.5px; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; box-shadow: inset 0 1.4px .8px -.7px rgba(255,255,255,.98), inset 0 0 14px 5px rgba(255,255,255,.16), 0 10px 26px rgba(53,87,125,.34); transition: opacity .1s; } .ds-btn-primario:active { opacity: .86; } .ds-btn-primario:focus-visible { outline: 2px solid #35577D; outline-offset: 2px; } .ds-btn-primario:disabled { background: rgba(118,138,178,0.26); color: rgba(11,18,32,0.62); box-shadow: none; }"
+    },
+    {
+      "name": "Botão secundário",
+      "kind": "button",
+      "refersTo": "botao-secundario",
+      "description": "Ação de largura cheia em vidro2, texto em tint.",
+      "html": "<button class=\"ds-btn-secundario\">Novo aluno</button>",
+      "css": ".ds-btn-secundario { width: 100%; height: 52px; border-radius: 18px; background: rgba(255,255,255,0.7); border: .5px solid rgba(255,255,255,0.88); color: #35577D; font-family: Satoshi, system-ui, sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -0.015em; backdrop-filter: blur(16px) saturate(190%) brightness(1.08); } .ds-btn-secundario:active { opacity: .86; } .ds-btn-secundario:focus-visible { outline: 2px solid #35577D; outline-offset: 2px; }"
+    },
+    {
+      "name": "Controle segmentado",
+      "kind": "nav",
+      "refersTo": "segmentado-trilho",
+      "description": "Trilho preenchimento com um segmento ativo em vidro2.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\"><button class=\"ds-seg-item ds-seg-ativo\" role=\"radio\" aria-checked=\"true\">Urgência</button><button class=\"ds-seg-item\" role=\"radio\" aria-checked=\"false\">A–Z</button><button class=\"ds-seg-item\" role=\"radio\" aria-checked=\"false\">Hoje</button></div>",
+      "css": ".ds-seg { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(118,138,178,0.15); } .ds-seg-item { flex: 1; height: 34px; border-radius: 9px; border: .5px solid transparent; background: transparent; color: rgba(11,18,32,0.72); font-family: Satoshi, system-ui, sans-serif; font-weight: 600; font-size: 13.5px; letter-spacing: -0.01em; } .ds-seg-item:active { opacity: .86; } .ds-seg-item:focus-visible { outline: 2px solid #35577D; } .ds-seg-ativo { background: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.88); color: #0B1220; box-shadow: 0 1px 4px rgba(9,15,30,0.13); }"
+    },
+    {
+      "name": "Cartão de vidro",
+      "kind": "card",
+      "refersTo": "cartao-vidro",
+      "description": "O contêiner de tudo: miolo cartao, borda de .5px, gin e gsh.",
+      "html": "<div class=\"ds-cartao\"><div class=\"ds-cartao-rotulo\">SALDO DO PACOTE</div><div class=\"ds-cartao-saldo\">4 <span>aulas</span></div></div>",
+      "css": ".ds-cartao { border-radius: 22px; padding: 17px 18px; background: rgba(255,255,255,0.558); border: .5px solid rgba(255,255,255,0.88); backdrop-filter: blur(16px) saturate(190%) brightness(1.08); box-shadow: inset 0 1.4px .8px -.7px rgba(255,255,255,.98), inset 0 -1.4px .8px -.7px rgba(255,255,255,.66), inset 0 0 14px 5px rgba(255,255,255,.16), 0 10px 28px rgba(9,15,30,.13), 0 1px 2px rgba(9,15,30,.05); font-family: Satoshi, system-ui, sans-serif; } .ds-cartao-rotulo { font-weight: 600; font-size: 12px; letter-spacing: .04em; color: rgba(11,18,32,0.62); } .ds-cartao-saldo { margin-top: 9px; font-weight: 800; font-size: 40px; letter-spacing: -0.045em; color: #35577D; font-variant-numeric: tabular-nums; } .ds-cartao-saldo span { font-weight: 600; font-size: 14px; letter-spacing: 0; color: rgba(11,18,32,0.72); }"
+    },
+    {
+      "name": "Faixa de status",
+      "kind": "chip",
+      "refersTo": "faixa-status-atraso",
+      "description": "Pílula de 21px em fundo suave com o texto na cor cheia; uma por linha.",
+      "html": "<span class=\"ds-faixa ds-faixa-atraso\">Atraso de 12 dias</span> <span class=\"ds-faixa ds-faixa-pendente\">Reposição pendente</span>",
+      "css": ".ds-faixa { display: inline-flex; align-items: center; height: 21px; padding: 0 8px; border-radius: 7px; font-family: Satoshi, system-ui, sans-serif; font-weight: 700; font-size: 10.5px; letter-spacing: .02em; font-variant-numeric: tabular-nums; } .ds-faixa-atraso { background: rgba(222,32,58,0.12); color: #DE203A; } .ds-faixa-pendente { background: rgba(224,150,0,0.16); color: #C07C00; }"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "campo-de-texto",
+      "description": "Trilho preenchimento, raio 13, altura 50; foco em borda de 1px tint.",
+      "html": "<label class=\"ds-campo\"><span>COMO SEUS ALUNOS TE CHAMAM</span><input placeholder=\"Seu nome\"></label>",
+      "css": ".ds-campo { display: flex; flex-direction: column; gap: 8px; font-family: Satoshi, system-ui, sans-serif; } .ds-campo span { font-weight: 600; font-size: 11.5px; letter-spacing: .04em; color: rgba(11,18,32,0.62); } .ds-campo input { height: 50px; padding: 0 14px; border-radius: 13px; border: 1px solid transparent; background: rgba(118,138,178,0.15); color: #0B1220; font: 500 16px Satoshi, system-ui, sans-serif; outline: none; } .ds-campo input:focus-visible { border-color: #35577D; }"
+    },
+    {
+      "name": "Tab bar",
+      "kind": "nav",
+      "refersTo": "tab-bar",
+      "description": "Barra flutuante de três abas, a única peça com anel de refração.",
+      "html": "<nav class=\"ds-tabbar\"><a class=\"ds-aba ds-aba-ativa\">Alunos</a><a class=\"ds-aba\">Financeiro</a><a class=\"ds-aba\">Ajustes</a></nav>",
+      "css": ".ds-tabbar { display: flex; gap: 4px; height: 66px; padding: 5px; box-sizing: border-box; border-radius: 26px; background: rgba(255,255,255,0.5084); border: .5px solid rgba(255,255,255,0.88); backdrop-filter: blur(16px) saturate(190%) brightness(1.08); box-shadow: inset 0 0 6px 3px rgba(255,255,255,.5), inset 0 1px 0 0 rgba(255,255,255,.9), 0 16px 40px rgba(9,15,30,.13), 0 2px 6px rgba(9,15,30,.08); } .ds-aba { flex: 1; display: flex; align-items: center; justify-content: center; border-radius: 21px; color: rgba(11,18,32,0.62); font: 700 10.5px Satoshi, system-ui, sans-serif; cursor: pointer; } .ds-aba:focus-visible { outline: 2px solid #35577D; } .ds-aba-ativa { color: #35577D; border: .5px solid #FFFFFF; background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.03) 44%, rgba(255,255,255,.02) 70%, rgba(255,255,255,.2)); box-shadow: 0 4px 12px rgba(9,15,30,0.13); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Vidro que deixa a cor passar",
+    "overview": "O Aula em Dia fala a língua do iOS (título grande, lista agrupada, controle segmentado, tab bar flutuante de três abas, sheet modal para tarefa, barra de navegação que aparece com a rolagem) e fala do mesmo jeito no iOS e no Android. Por baixo de tudo existe uma luz colorida: quatro manchas em gradiente radial, o fundo de refração. Cartões, barras e sheets são vidro sobre essa luz, com blur baixo e saturação alta, para deixar a cor de trás passar em vez de apagá-la. Sem o fundo o material vira retângulo cinza; ele é a primeira peça do sistema, não uma decoração.\n\nA tela é densa e direta, feita para ser lida com pressa, com uma mão, entre uma aula e outra. Os números carregam a informação: o saldo do pacote em 40px, o resultado de um registro em 54px, e todo número é tabular. A cor é escassa e tem papel fixo. Um único destaque azul-ardósia marca o que se toca e o que é do sistema; vermelho, âmbar e verde só aparecem para dizer um status, e sempre como fundo suave com o texto na cor cheia.\n\nOs dois temas são de primeira classe e saem dos mesmos papéis: nenhum componente carrega cor própria, tudo passa por `useCores()`. O tema do sistema vale na primeira carga e a escolha manual em Ajustes vence depois.",
+    "keyCharacteristics": [
+      "Fundo de refração obrigatório sob todo o app, com quatro manchas (opacidade 0.85 no claro e 0.60 no escuro).",
+      "Material de vidro em quatro camadas, sempre pela primitiva `SuperficieVidro`.",
+      "Um nível de vidro por camada de profundidade: fundo, cartão, barra, sheet.",
+      "Um destaque (`tint`) que muda de valor entre os temas e nunca de identidade.",
+      "Satoshi em todo o app, números sempre tabulares, dinheiro em pt-BR.",
+      "Convenções de plataforma iOS como linguagem, iguais nos dois sistemas."
+    ],
+    "rules": [
+      { "name": "The Muda de Valor, Não de Identidade Rule", "body": "O destaque é um só. No escuro ele clareia e o texto sobre ele inverte (`sobreTint`), mas nunca vira outra matiz nem ganha um segundo destaque ao lado.", "section": "colors" },
+      { "name": "The Fundo Suave Rule", "body": "Status é sempre fundo suave (12–16% de alfa) com o texto na cor cheia. Cor cheia no fundo só em peça pequena sem texto corrido: o quadrado de 34px do ícone de bloco, o avatar, a medalha do Resultado.", "section": "colors" },
+      { "name": "The Um Primário Rule", "body": "Cada tela tem no máximo um botão primário. O resto é secundário, inline ou texto.", "section": "colors" },
+      { "name": "The Tabular Sempre Rule", "body": "Saldo, data, hora, contagem e valor são tabulares, sem exceção. Não se chama `toLocaleString` direto.", "section": "typography" },
+      { "name": "The Métrica Inteira Rule", "body": "Nada de `marginTop`/`marginBottom` soltos num texto, nem `fontSize` ou `lineHeight` sobrescritos em cima de um `TIPO.*`: isso apaga a compensação e corta o glifo.", "section": "typography" },
+      { "name": "The 126 Rule", "body": "Toda tela que convive com a tab bar reserva 126px embaixo. Conteúdo nunca passa por baixo dela sem saída.", "section": "layout" },
+      { "name": "The Um Nível por Camada Rule", "body": "Nunca vidro sobre vidro sobre vidro. Dentro de um cartão, o que precisa de fundo usa `preenchimento` (trilho, campo, caixa de valor), não outro vidro. A exceção contada é `vidro2` em controles pequenos sobre o cartão (segmento ativo, botão do stepper, botão secundário), que é o controle, não um plano.", "section": "elevation" },
+      { "name": "The Fundo Primeiro Rule", "body": "Nada chapado cobre a tela inteira por cima do fundo de refração. Sem ele o vidro não tem o que refratar.", "section": "elevation" },
+      { "name": "The Anel Só na Tab Bar Rule", "body": "O anel de refração não vai em peça pequena (come o ícone) nem onde texto passa por baixo.", "section": "elevation" }
+    ],
+    "dos": [
+      "**Do** desenhar o fundo de refração sob todo o app, com opacidade 0.85 no claro e 0.60 no escuro.",
+      "**Do** fazer todo vidro com `SuperficieVidro` e deixar a decisão entre blur e fallback para `blurLigado()`.",
+      "**Do** usar um nível de vidro por camada (fundo, cartão, barra, sheet) e `preenchimento` para o que precisa de fundo dentro de um cartão.",
+      "**Do** pegar toda cor de `useCores()`, com o papel certo: `tint` para destaque, `sobreTint` sobre ele, par suave e cheio para status.",
+      "**Do** manter um primário por tela e, no sheet, colocá-lo no rodapé fixo, com `NotaDoBotao` quando ele está apagado.",
+      "**Do** tirar todo texto de `TIPO` ou `texto()`, espaçar texto com `comEspaco()` e formatar dinheiro com `dinheiro()`.",
+      "**Do** reservar 126px embaixo em toda tela com tab bar e manter todo alvo de toque em 44px ou mais (aba com 48px).",
+      "**Do** dar cor explícita a todo texto; o React Native não herda `color`."
+    ],
+    "donts": [
+      "**Don't** cobrir a tela inteira com fundo chapado por cima do fundo de refração.",
+      "**Don't** empilhar vidro sobre vidro sobre vidro, nem remontar o material (blur, miolo, `gin`, borda) numa tela.",
+      "**Don't** usar o anel de refração fora da tab bar.",
+      "**Don't** pôr texto pequeno translúcido sobre o material; legenda usa `tinta3`, apoio usa `tinta2`, e só.",
+      "**Don't** usar cor de status como fundo cheio atrás de texto, nem vermelho, âmbar ou verde fora de status.",
+      "**Don't** criar um segundo destaque ou trocar a matiz do `tint` entre os temas.",
+      "**Don't** escrever cor ou medida solta numa tela, nem sobrescrever `fontSize`/`lineHeight` em cima de um `TIPO.*`.",
+      "**Don't** desenhar status bar ou indicador de home; o sistema já os tem."
+    ]
+  }
+}
