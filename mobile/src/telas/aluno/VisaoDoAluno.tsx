@@ -32,7 +32,7 @@ import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Lis
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
-import { primeiroNome } from '../../dominio/formato';
+import { plural, primeiroNome, unidade } from '../../dominio/formato';
 import { comoOAlunoVaiLer } from '../../dominio/mensagens';
 import { saldo, temPacote } from '../../dominio/politica';
 import type { Lancamento } from '../../dominio/tipos';
@@ -162,7 +162,11 @@ export function AlunoSaldo() {
         <View
           accessible
           // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
-          accessibilityLabel={com ? `${restam} aulas restantes de ${aluno.total}` : 'sem pacote'}
+          accessibilityLabel={
+            com
+              ? `${plural(restam, 'aula restante', 'aulas restantes')} de ${aluno.total}`
+              : 'sem pacote'
+          }
           style={estilos.numeroDoSaldo}
         >
           <Text
@@ -173,13 +177,19 @@ export function AlunoSaldo() {
           >
             {com ? String(restam) : '—'}
           </Text>
-          <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
+          <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
+            {unidade(restam, 'aula', 'aulas')}
+          </Text>
         </View>
         <Text
           style={[comEspaco(texto(13, 500, { altura: 1.45 }), { topo: 10 }), { color: cores.tinta2 }]}
         >
           {com
-            ? `Pacote de ${aluno.total} aulas, ${aluno.usadas} já usadas. Válido até ${aluno.validade}.`
+            ? `Pacote de ${plural(aluno.total, 'aula', 'aulas')}, ${aluno.usadas} já ${unidade(
+                aluno.usadas,
+                'usada',
+                'usadas',
+              )}. Válido até ${aluno.validade}.`
             : 'Sem pacote ativo no momento.'}
         </Text>
       </CartaoVidro>
@@ -386,7 +396,9 @@ export function AlunoProposta() {
           <Text style={[TIPO.saldoCartao, { color: cores.tinta }]}>
             {String(saldo(aluno))}
           </Text>
-          <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
+          <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
+            {unidade(saldo(aluno), 'aula', 'aulas')}
+          </Text>
         </View>
         <Text
           style={[comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 9 }), { color: cores.tinta2 }]}

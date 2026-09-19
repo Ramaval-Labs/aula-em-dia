@@ -194,6 +194,9 @@ type PropsSuperficie = {
   sombraExterna?: string;
   /** força um modo só nesta superfície (catálogo, diagnóstico) */
   modo?: ModoVidro;
+  /** a superfície é um elemento só para o leitor de tela */
+  accessible?: boolean;
+  accessibilityLabel?: string;
   /**
    * Nunca desfoca: miolo + `gin` + borda. Para o que o handoff define sem
    * `--bf` (secundário compacto, inline em vidro, botões do stepper).
@@ -220,6 +223,8 @@ export function SuperficieVidro({
   sombraExterna,
   modo,
   semDesfoque = false,
+  accessible,
+  accessibilityLabel,
   style,
   children,
 }: PropsSuperficie) {
@@ -242,7 +247,11 @@ export function SuperficieVidro({
     : { borderRadius: raio };
 
   return (
-    <View style={[canto, { overflow: 'hidden' }, externa ? { boxShadow: externa } : null, style]}>
+    <View
+      accessible={accessible}
+      accessibilityLabel={accessibilityLabel}
+      style={[canto, { overflow: 'hidden' }, externa ? { boxShadow: externa } : null, style]}
+    >
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, canto]}>
         {comBlur ? <CamadaDeDesfoque material={material} alvo={alvo} modo={modo} canto={canto} /> : null}
         <View

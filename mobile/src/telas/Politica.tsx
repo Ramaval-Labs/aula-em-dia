@@ -10,6 +10,7 @@ import { StyleSheet } from 'react-native';
 import { BlocoStatus, CartaoDeAjuste } from '../componentes/Blocos';
 import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoTexto, Segmentado, Stepper, Switch } from '../componentes/Controles';
+import { plural } from '../dominio/formato';
 import { temPacote } from '../dominio/politica';
 import type { Politicas } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
@@ -25,41 +26,61 @@ const VALIDADES = [
 ];
 const LIMITE_MAXIMO = 5;
 
-/** Resumo textual do que muda ao salvar — um campo por vez, o mais relevante. */
-function diff(
+/** Limite 0 é "sem limite" — o stepper mostra "—", que não se lê. */
+const rotuloDoLimite = (n: number) => (n === 0 ? 'sem limite' : String(n));
+
+export type MudancaDePolitica = { campo: string; titulo: string; texto: string };
+
+/**
+ * O que muda ao salvar, **um item por campo alterado** (H§9: o texto depende
+ * de qual campo mudou, e mais de um pode mudar antes de salvar).
+ */
+export function mudancas(
   de: Politicas,
   para: Politicas,
   pacotesEmAndamento: number,
-): { titulo: string; texto: string } | null {
+): MudancaDePolitica[] {
+  const lista: MudancaDePolitica[] = [];
+
   if (para.limiteReposicoes !== de.limiteReposicoes) {
-    return {
-      titulo: `Você mudou o limite de ${de.limiteReposicoes} para ${para.limiteReposicoes}`,
-      texto: `Vale só para pacotes novos. Os ${pacotesEmAndamento} pacotes em andamento seguem com a regra antiga até vencer.`,
-    };
+    lista.push({
+      campo: 'limiteReposicoes',
+      titulo: `Você mudou o limite de ${rotuloDoLimite(de.limiteReposicoes)} para ${rotuloDoLimite(
+        para.limiteReposicoes,
+      )}`,
+      texto: `Vale só para pacotes novos. ${
+        pacotesEmAndamento === 1
+          ? 'O pacote em andamento segue'
+          : `Os ${pacotesEmAndamento} pacotes em andamento seguem`
+      } com a regra antiga até vencer.`,
+    });
   }
   if (para.avisoHoras !== de.avisoHoras) {
-    return {
+    lista.push({
+      campo: 'avisoHoras',
       titulo: `Prazo de aviso muda de ${de.avisoHoras}h para ${para.avisoHoras}h`,
       texto: 'Vale a partir do próximo registro de aula. Os lançamentos já feitos não mudam.',
-    };
+    });
   }
   if (para.avisadaDevolve !== de.avisadaDevolve) {
-    return {
+    lista.push({
+      campo: 'avisadaDevolve',
       titulo: para.avisadaDevolve
         ? 'Falta avisada volta a devolver a aula'
         : 'Falta avisada passa a debitar sempre',
       texto: 'Vale a partir do próximo registro de aula.',
-    };
+    });
   }
   if (para.validadeDias !== de.validadeDias) {
-    return {
+    lista.push({
+      campo: 'validadeDias',
       titulo: `Validade padrão muda para ${
-        para.validadeDias === 0 ? 'sem prazo' : `${para.validadeDias} dias`
+        para.validadeDias === 0 ? 'sem prazo' : plural(para.validadeDias, 'dia', 'dias')
       }`,
       texto: 'Aplica-se aos pacotes criados a partir de agora.',
-    };
+    });
   }
-  return null;
+  return lista;
 }
 
 export function Politica() {
@@ -71,7 +92,7 @@ export function Politica() {
 
   const [atual, atualizar, , descartarRascunho] = useRascunho('politica', salvas);
   const mudou = JSON.stringify(atual) !== JSON.stringify(salvas);
-  const mudanca = diff(salvas, atual, alunos.filter(temPacote).length);
+  const impacto = mudancas(salvas, atual, alunos.filter(temPacote).length);
 
   return (
     <TelaVidro
@@ -160,15 +181,17 @@ export function Politica() {
         />
       </CartaoDeAjuste>
 
-      {mudanca ? (
+      {impacto.map((m, i) => (
         <BlocoStatus
+          key={m.campo}
           tom="ambar"
-          vivo
-          titulo={mudanca.titulo}
-          texto={mudanca.texto}
+          // Só o primeiro se anuncia: os outros entram na mesma leitura.
+          vivo={i === 0}
+          titulo={m.titulo}
+          texto={m.texto}
           estilo={estilos.aviso}
         />
-      ) : null}
+      ))}
     </TelaVidro>
   );
 }

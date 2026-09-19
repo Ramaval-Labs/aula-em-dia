@@ -17,6 +17,7 @@ import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoSecundario, Segmentado } from '../componentes/Controles';
 import { LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { dataPorExtenso } from '../dominio/datas';
+import { plural, unidade } from '../dominio/formato';
 import { ordenar, saldo, saldoBaixo, temPacote } from '../dominio/politica';
 import type { Filtro } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
@@ -83,7 +84,11 @@ export function Home() {
         acima={dataPorExtenso()}
         titulo="Alunos"
         direita={
-          <View accessible accessibilityLabel={`${aulasHoje} aulas hoje`} style={estilos.contagem}>
+          <View
+            accessible
+            accessibilityLabel={plural(aulasHoje, 'aula hoje', 'aulas hoje')}
+            style={estilos.contagem}
+          >
             <Text style={[texto(26, 800, { tracking: -0.04 }), { color: cores.tint }]}>
               {String(aulasHoje)}
             </Text>
@@ -134,12 +139,14 @@ export function Home() {
                   estadoDoAvatar={!com ? 'sem' : baixo ? 'baixo' : 'normal'}
                   faixa={faixa}
                   valor={com ? String(restam) : '—'}
-                  unidade={com ? 'aulas' : 'sem pacote'}
+                  unidade={com ? unidade(restam, 'aula', 'aulas') : 'sem pacote'}
                   corDoValor={!com ? cores.tinta3 : baixo ? cores.ambarTexto : cores.tinta}
                   rotuloAcessivel={[
                     a.name,
                     faixa?.texto,
-                    com ? `${restam} aulas restantes de ${a.total}` : 'sem pacote',
+                    com
+                      ? `${plural(restam, 'aula restante', 'aulas restantes')} de ${a.total}`
+                      : 'sem pacote',
                     linhaDeHorario(a),
                   ]
                     .filter(Boolean)

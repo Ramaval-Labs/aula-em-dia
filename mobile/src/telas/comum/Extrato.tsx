@@ -13,13 +13,14 @@
 import React from 'react';
 
 import { LinhaExtrato, type TomDoDelta } from '../../componentes/Listas';
+import { plural } from '../../dominio/formato';
 import type { Lancamento } from '../../dominio/tipos';
 
 /** Alternativa em texto para o delta — cor não pode ser o único sinal. */
 export function deltaEmPalavras(l: Lancamento): string {
   if (l.dinheiro) return 'pagamento recebido';
-  if (l.delta < 0) return `${Math.abs(l.delta)} aula debitada`;
-  if (l.delta > 0) return `${l.delta} aulas adicionadas`;
+  if (l.delta < 0) return plural(Math.abs(l.delta), 'aula debitada', 'aulas debitadas');
+  if (l.delta > 0) return plural(l.delta, 'aula adicionada', 'aulas adicionadas');
   return 'sem efeito no saldo';
 }
 

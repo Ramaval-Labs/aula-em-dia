@@ -23,7 +23,7 @@ import { BotaoPrimario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { useDoisToques } from '../componentes/useDoisToques';
 import { mesPorExtenso } from '../dominio/datas';
-import { dinheiro, milhar, plural } from '../dominio/formato';
+import { dinheiro, dinheiroCompacto, plural } from '../dominio/formato';
 import { temPacote, totaisFinanceiro, valorPacote } from '../dominio/politica';
 import type { Aluno } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
@@ -41,8 +41,12 @@ function detalheDoPagamento(a: Aluno): string {
   return 'Sem pacote ativo';
 }
 
-/** Valor dos cartões de resumo: "R$ N.NNN", sem centavos (handoff §6). */
-const semCentavos = (n: number) => `R$ ${milhar(n)}`;
+/**
+ * Valor dos cartões de resumo: sem centavos (handoff §6) e compacto a partir
+ * de 5 dígitos ("R$ 12,5 mil"), porque são três caixas lado a lado. O rótulo
+ * do leitor de tela leva o valor por extenso.
+ */
+const semCentavos = (n: number) => dinheiroCompacto(n);
 
 export function Financeiro() {
   const { cores } = useCores();
@@ -161,6 +165,7 @@ export function Financeiro() {
             <CartaoResumo
               rotulo={t.rotulo}
               valor={semCentavos(t.valor)}
+              rotuloAcessivel={`${t.rotulo}: ${dinheiro(t.valor)}`}
               tom={t.tom}
               zerado={!t.valor}
             />

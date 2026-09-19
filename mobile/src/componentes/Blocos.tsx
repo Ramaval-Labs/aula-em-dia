@@ -583,6 +583,7 @@ export function BarraProporcional({
 export function CartaoResumo({
   rotulo,
   valor,
+  rotuloAcessivel,
   tom = 'neutro',
   zerado = false,
   estilo,
@@ -590,6 +591,8 @@ export function CartaoResumo({
   rotulo: string;
   /** já formatado em pt-BR e **sem centavos**, como no handoff */
   valor: string;
+  /** o valor por extenso para o leitor de tela, quando o visível é compacto */
+  rotuloAcessivel?: string;
   tom?: TomDeStatus;
   zerado?: boolean;
   estilo?: StyleProp<ViewStyle>;
@@ -601,6 +604,8 @@ export function CartaoResumo({
       nivel="cartao"
       raio={RAIO.resumo}
       sombra
+      accessible={!!rotuloAcessivel}
+      accessibilityLabel={rotuloAcessivel}
       style={[estilos.padResumo, estilo]}
     >
       <Text style={[texto(11, 600, { altura: 1.2 }), { color: cores.tinta2 }]} numberOfLines={2}>

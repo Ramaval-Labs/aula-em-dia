@@ -38,7 +38,7 @@ import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Lis
 import { PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
 import { useDoisToques } from '../../componentes/useDoisToques';
 import { alternarBloco, periodoDaFolga, resumo } from '../../dominio/disponibilidade';
-import { dinheiro } from '../../dominio/formato';
+import { dinheiro, plural } from '../../dominio/formato';
 import { mensagemDeCobranca } from '../../dominio/mensagens';
 import { AULAS_OFERECIDAS } from '../../dominio/pacote';
 import { temPacote, VALOR_AULA } from '../../dominio/politica';
@@ -357,7 +357,11 @@ export function PacotesPadrao() {
         <Text style={[texto(13, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
           {`A validade vem da política de faltas: ${
             politicas.validadeDias === 0 ? 'sem prazo' : `${politicas.validadeDias} dias`
-          }. Hoje ${alunos.filter(temPacote).length} alunos têm pacote ativo.`}
+          }. Hoje ${plural(
+            alunos.filter(temPacote).length,
+            'aluno tem',
+            'alunos têm',
+          )} pacote ativo.`}
         </Text>
       </View>
     </TelaDeAjuste>

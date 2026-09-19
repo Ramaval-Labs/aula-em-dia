@@ -23,7 +23,7 @@ import {
 import { TelaVidro } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoSecundario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
-import { dinheiro, primeiroNome } from '../dominio/formato';
+import { dinheiro, plural, primeiroNome, unidade } from '../dominio/formato';
 import { podeRegistrar, saldo, saldoBaixo, temPacote, valorPacote } from '../dominio/politica';
 import type { Aluno, Lancamento } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
@@ -71,8 +71,12 @@ export function AlunoDetalhe() {
   }`;
   const reposicoesTexto =
     politicas.limiteReposicoes === 0
-      ? `${aluno.reposicoes} reposições`
-      : `${aluno.reposicoes} de ${politicas.limiteReposicoes} reposições`;
+      ? plural(aluno.reposicoes, 'reposição', 'reposições')
+      : `${aluno.reposicoes} de ${plural(
+          politicas.limiteReposicoes,
+          'reposição',
+          'reposições',
+        )}`;
 
   return (
     <TelaVidro
@@ -124,7 +128,11 @@ export function AlunoDetalhe() {
               </Text>
               <View
                 accessible
-                accessibilityLabel={`${restam} aulas restantes de ${aluno.total}`}
+                accessibilityLabel={`${plural(
+                  restam,
+                  'aula restante',
+                  'aulas restantes',
+                )} de ${aluno.total}`}
                 style={estilos.numeroDoSaldo}
               >
                 <Text
@@ -135,7 +143,9 @@ export function AlunoDetalhe() {
                 >
                   {String(restam)}
                 </Text>
-                <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
+                <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
+                  {unidade(restam, 'aula', 'aulas')}
+                </Text>
               </View>
             </View>
             <View style={estilos.ladoDireito}>
@@ -162,7 +172,7 @@ export function AlunoDetalhe() {
           <Text
             style={[comEspaco(texto(12.5, 500), { topo: 10 }), { color: cores.tinta2 }]}
           >
-            {`${aluno.usadas} de ${aluno.total} usadas`}
+            {`${aluno.usadas} de ${aluno.total} ${unidade(aluno.total, 'usada', 'usadas')}`}
           </Text>
         </CartaoVidro>
       ) : null}
@@ -204,7 +214,7 @@ export function AlunoDetalhe() {
           titulo="Reposição pendente"
           texto={`Falta avisada em ${aluno.pendencia.origem}.${
             aluno.pendencia.dias > 0
-              ? ` Sem horário escolhido há ${aluno.pendencia.dias} dias.`
+              ? ` Sem horário escolhido há ${plural(aluno.pendencia.dias, 'dia', 'dias')}.`
               : ' Escolha o horário.'
           }`}
           acao={{ rotulo: 'Ver sugestões', aoTocar: () => ir('dispAluno') }}

@@ -29,6 +29,7 @@ import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
+import { plural, unidade } from '../dominio/formato';
 import { comEspaco, texto } from '../tema/tipografia';
 import { linhaDeHorario } from './comum/aluno';
 
@@ -133,10 +134,14 @@ export function Registrar() {
                 estadoDoAvatar={!temPacote(a) ? 'sem' : saldoBaixo(a) ? 'baixo' : 'normal'}
                 porte="sheet"
                 valor={String(saldo(a))}
-                unidade="aulas"
+                unidade={unidade(saldo(a), 'aula', 'aulas')}
                 caixaNoValor
                 chevron={false}
-                rotuloAcessivel={`${a.name}. ${linhaDeHorario(a)}. ${saldo(a)} aulas restantes.`}
+                rotuloAcessivel={`${a.name}. ${linhaDeHorario(a)}. ${plural(
+                  saldo(a),
+                  'aula restante',
+                  'aulas restantes',
+                )}.`}
                 aoTocar={() => definirAluno(a.id)}
               />
             ))}
