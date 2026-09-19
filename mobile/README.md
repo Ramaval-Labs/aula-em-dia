@@ -142,6 +142,16 @@ conteúdo e comportamento é o histórico em `../docs/design/historico/tinta-cha
 11. **A escolha de aluno no Registrar diz "hoje"** como as outras listas (a linha de apoio é a
     mesma `linhaDeHorario` da Home).
 12. **"13 blocos · 26h por semana":** o protótipo conta 2h por bloco; o app usa a duração real.
+13. **"Agosto de 2025", não 2026.** O `ANO_DEMO` de `dominio/datas.ts` é 2025 porque os dias da
+    semana da semente (Valentin na quarta 17h, Rafael na segunda 19h, com a data de referência
+    28/08) só batem em 2025; o "2026" escrito no protótipo é que é inconsistente com os próprios
+    dados dele.
+14. **Status como texto usa os tokens `*Texto`, e `sobreCor` no escuro é `#0B1524`.** As cores
+    cheias do handoff (`#C07C00`, `#158A61`, `#DE203A`) ficam em 1,8–2,4:1 no claro sobre o
+    próprio `*Suave` com as manchas por trás, e o glifo branco sobre verde/âmbar escuros fica em
+    1,6–1,9:1. Os valores novos são a mesma matiz ajustada até passar 4,5:1 no pior caso — a
+    conta está no comentário de `CORES` (`tema/tokens.ts`) e a tabela em
+    `../spec/acessibilidade.md`.
 
 ## Pendências que exigem decisão do time
 

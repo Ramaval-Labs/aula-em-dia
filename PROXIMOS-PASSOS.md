@@ -116,6 +116,38 @@ montado com o catálogo, seguindo a tela desenhada mais parecida — `MAPA-DE-TE
 
 ---
 
+## Depois do redesign iOS Glass
+
+O que a revisão final das 35 telas (três `revisor-design`) levantou e a Onda 5 **não** fez —
+os P0/P1 foram corrigidos; o que ficou é o que exige regra nova, dependência nova ou aparelho.
+
+**Regra e domínio**
+- Resumo do mês do Financeiro para o domínio, com filtro por mês: hoje a tela soma o extrato
+  inteiro, então "aulas dadas em agosto" cresce para sempre.
+- Validar o "valor por aula" em Pacotes padrão: digitar "62,50" vira 6250 (o campo só tira o
+  que não é dígito).
+- "Marcar folga" em Minha disponibilidade não faz nada: ou implementa, ou sai da tela.
+
+**Movimento e plataforma**
+- Sheet sem animação de saída e sem arrastar-para-fechar (só "Cancelar", toque fora e voltar).
+- `useNativeDriver: false` em todas as animações (sheet, toast, barra, switch): medir no
+  aparelho antes de trocar, porque a cor e a altura animadas não rodam no driver nativo.
+- Brilho da pílula da aba ativa usa `filter: blur()`, que o iOS não aplica — lá o realce vem
+  só do gradiente e da borda.
+- Alvo de 48dp no Android (o app garante os 44pt do iOS; as linhas de lista já passam).
+- Calibrar o blur no aparelho e conferir o teclado do sheet no Android (a altura do painel
+  passou a reagir ao teclado, mas só foi testada no web).
+
+**Acabamento visual (P2/P3 da revisão)**
+- Telas derivadas ainda por validar com design (lista do P2 acima).
+- Medidas soltas que ainda não são token (paddings internos de cartão, `alturaDaCelula={52}`).
+- Cartão de escolha desabilitado, agora por cor: conferir com design se o contraste do
+  `tinta3` no título basta.
+- `EstadoVazio` e blocos de status não têm ilustração nenhuma — decisão consciente, mas vale
+  revisar com design.
+
+---
+
 ## Dívidas técnicas conhecidas
 
 - **Teste de interface só de fumaça.** Existe um teste que monta as 28 telas do app em quatro
