@@ -103,7 +103,7 @@ export function Catalogo() {
                 },
               ]}
             >
-              <Text style={[TIPO.tituloBloco, { color: cores.vermelho }]}>
+              <Text style={[TIPO.tituloBloco, { color: cores.vermelhoTexto }]}>
                 Pagamento em atraso
               </Text>
               <Text style={[comEspaco(TIPO.textoBloco, { topo: 4 }), { color: cores.tinta2 }]}>

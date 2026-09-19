@@ -110,19 +110,23 @@ export function CartaoDeAjuste({
 
 export type TomDeStatus = 'neutro' | 'tint' | 'vermelho' | 'ambar' | 'verde';
 
-/** Par (fundo suave, cor cheia) de cada tom. `neutro` não tem cor cheia. */
+/**
+ * Trio de cada tom: fundo suave, cor cheia (barra, medidor, ícone) e cor de
+ * **texto** (`*Texto`, que passa 4.5:1 sobre o suave — tokens.ts). `neutro`
+ * não tem cor cheia.
+ */
 export function coresDoTom(cores: CoresDoTema['cores'], tom: TomDeStatus) {
   switch (tom) {
     case 'tint':
-      return { suave: cores.tintSuave, cheia: cores.tint };
+      return { suave: cores.tintSuave, cheia: cores.tint, texto: cores.tint };
     case 'vermelho':
-      return { suave: cores.vermelhoSuave, cheia: cores.vermelho };
+      return { suave: cores.vermelhoSuave, cheia: cores.vermelho, texto: cores.vermelhoTexto };
     case 'ambar':
-      return { suave: cores.ambarSuave, cheia: cores.ambar };
+      return { suave: cores.ambarSuave, cheia: cores.ambar, texto: cores.ambarTexto };
     case 'verde':
-      return { suave: cores.verdeSuave, cheia: cores.verde };
+      return { suave: cores.verdeSuave, cheia: cores.verde, texto: cores.verdeTexto };
     default:
-      return { suave: cores.preenchimento, cheia: cores.tinta };
+      return { suave: cores.preenchimento, cheia: cores.tinta, texto: cores.tinta };
   }
 }
 
@@ -130,7 +134,7 @@ export function coresDoTom(cores: CoresDoTema['cores'], tom: TomDeStatus) {
 
 /**
  * O aviso de uma linha e meia das telas 2, 5 e 9: fundo suave do tom, título
- * na cor cheia, texto em `tinta2`.
+ * na cor de texto do tom, texto em `tinta2`.
  *
  * Com ícone o handoff aperta o bloco (padding 15 × 16, título 14.5); só com
  * texto ele respira (16 × 17, título 15 e texto 13). O `acao` vira botão
@@ -157,7 +161,7 @@ export function BlocoStatus({
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
-  const { suave, cheia } = coresDoTom(cores, tom);
+  const { suave, cheia, texto: corDoTitulo } = coresDoTom(cores, tom);
   const comIcone = !!icone;
 
   const conteudo = (
@@ -178,7 +182,7 @@ export function BlocoStatus({
               comIcone
                 ? texto(14.5, 700, { altura: 1.25 })
                 : texto(15, 700, { altura: 1.25, tracking: -0.01 }),
-              { color: cheia },
+              { color: corDoTitulo },
             ]}
           >
             {titulo}
@@ -270,7 +274,7 @@ export function CartaoDeDebito({
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores, material } = useCores();
-  const { suave, cheia } = coresDoTom(cores, tom);
+  const { suave, texto: corDoValor } = coresDoTom(cores, tom);
   const neutro = tom === 'neutro';
 
   const miolo = (
@@ -281,7 +285,7 @@ export function CartaoDeDebito({
           <Text
             style={[
               comEspaco(texto(32, 800, { tracking: -0.045 }), { topo: 9 }),
-              { color: neutro ? cores.tinta : cheia },
+              { color: neutro ? cores.tinta : corDoValor },
             ]}
           >
             {valor}
@@ -371,9 +375,9 @@ export function FaixaStatus({
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
-  const { suave, cheia } = coresDoTom(cores, TOM_DA_FAIXA[tipo]);
-  // No tom neutro a cor cheia é a tinta de leitura; o handoff pede `ink2`.
-  const tinta = tipo === 'pausado' ? cores.tinta2 : cheia;
+  const { suave, texto: corDoTexto } = coresDoTom(cores, TOM_DA_FAIXA[tipo]);
+  // No tom neutro a cor de texto é a tinta de leitura; o handoff pede `ink2`.
+  const tinta = tipo === 'pausado' ? cores.tinta2 : corDoTexto;
   return (
     <View style={[estilos.faixa, { backgroundColor: suave }, estilo]}>
       <Text style={[TIPO.faixa, { color: tinta }]} numberOfLines={1}>
@@ -438,10 +442,11 @@ export function Avatar({
   const { cores } = useCores();
   const par = {
     normal: { fundo: cores.tintSuave, tinta: cores.tint },
-    baixo: { fundo: cores.ambarSuave, tinta: cores.ambar },
+    // As iniciais são texto sobre o suave: cor de texto do tom.
+    baixo: { fundo: cores.ambarSuave, tinta: cores.ambarTexto },
     sem: { fundo: cores.preenchimento, tinta: cores.tinta3 },
-    atraso: { fundo: cores.vermelhoSuave, tinta: cores.vermelho },
-    pago: { fundo: cores.verdeSuave, tinta: cores.verde },
+    atraso: { fundo: cores.vermelhoSuave, tinta: cores.vermelhoTexto },
+    pago: { fundo: cores.verdeSuave, tinta: cores.verdeTexto },
     perfil: { fundo: cores.tint, tinta: cores.sobreTint },
   }[estado];
 
@@ -572,7 +577,7 @@ export function CartaoResumo({
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
-  const cor = zerado ? cores.tinta3 : tom === 'neutro' ? cores.tinta : coresDoTom(cores, tom).cheia;
+  const cor = zerado ? cores.tinta3 : tom === 'neutro' ? cores.tinta : coresDoTom(cores, tom).texto;
   return (
     <SuperficieVidro
       nivel="cartao"

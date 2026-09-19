@@ -25,6 +25,9 @@ colors:
   ambarSuave: "rgba(224,150,0,0.16)"
   verde: "#158A61"
   verdeSuave: "rgba(21,138,97,0.13)"
+  ambarTexto: "#6C4500"
+  verdeTexto: "#0D563C"
+  vermelhoTexto: "#8E1425"
   sombra: "rgba(9,15,30,0.13)"
   sobreCor: "#FFFFFF"
   botaoSwitch: "#FFFFFF"
@@ -56,8 +59,11 @@ colors:
   ambarSuave-escuro: "rgba(255,194,77,0.16)"
   verde-escuro: "#33D69F"
   verdeSuave-escuro: "rgba(51,214,159,0.15)"
+  ambarTexto-escuro: "#FFC24D"
+  verdeTexto-escuro: "#33D69F"
+  vermelhoTexto-escuro: "#FF7A8A"
   sombra-escuro: "rgba(0,0,0,0.5)"
-  sobreCor-escuro: "#FFFFFF"
+  sobreCor-escuro: "#0B1524"
   botaoSwitch-escuro: "#FFFFFF"
   veuSheet-escuro: "rgba(6,10,20,0.4)"
   mancha1-escuro: "#1B3A80"
@@ -276,19 +282,19 @@ components:
     height: "76px"
   bloco-status-ambar:
     backgroundColor: "{colors.ambarSuave}"
-    textColor: "{colors.ambar}"
+    textColor: "{colors.ambarTexto}"
     typography: "{typography.tituloBloco}"
     rounded: "{rounded.bloco}"
     padding: "16px 17px"
   bloco-status-vermelho:
     backgroundColor: "{colors.vermelhoSuave}"
-    textColor: "{colors.vermelho}"
+    textColor: "{colors.vermelhoTexto}"
     typography: "{typography.tituloBloco}"
     rounded: "{rounded.bloco}"
     padding: "15px 16px"
   faixa-status-atraso:
     backgroundColor: "{colors.vermelhoSuave}"
-    textColor: "{colors.vermelho}"
+    textColor: "{colors.vermelhoTexto}"
     typography: "{typography.faixa}"
     rounded: "{rounded.faixa}"
     padding: "0 8px"
@@ -399,7 +405,7 @@ A tela é densa e direta, feita para ser lida com pressa, com uma mão, entre um
 números carregam a informação: o saldo do pacote em 40px, o resultado de um registro em 54px, e
 todo número é tabular. A cor é escassa e tem papel fixo. Um único destaque azul-ardósia marca o
 que se toca e o que é do sistema; vermelho, âmbar e verde só aparecem para dizer um status, e
-sempre como fundo suave com o texto na cor cheia.
+sempre como fundo suave com o texto na cor de texto do status (`*Texto`).
 
 Os dois temas são de primeira classe e saem dos mesmos papéis: nenhum componente carrega cor
 própria, tudo passa por `useCores()`. O tema do sistema vale na primeira carga e a escolha manual
@@ -436,6 +442,12 @@ de status que nunca viram decoração.
 - **Âmbar** (`ambar` / `ambarSuave`): reposição pendente, saldo baixo (≤ 2 aulas), limite atingido,
   aviso de impacto da Política.
 - **Verde** (`verde` / `verdeSuave`): pago, confirmado, aula devolvida, reposição marcada.
+- **Status como texto** (`vermelhoTexto`, `ambarTexto`, `verdeTexto`): todo texto de status —
+  título de bloco, faixa, valor, delta do extrato, saldo baixo, erro de campo — usa o token de
+  texto; a cor cheia fica para barra, medidor, preenchimento e ícone. No claro são a mesma matiz
+  escurecida até 4.5:1 no pior caso das manchas (`#6C4500`, `#0D563C`, `#8E1425`); no escuro
+  âmbar e verde são as próprias cores cheias e o vermelho clareia para `#FF7A8A`. Divergem do
+  handoff por contraste (`spec/acessibilidade.md`).
 
 ### Neutral
 - **Tinta** (`tinta`): títulos e texto de leitura.
@@ -452,15 +464,16 @@ de status que nunca viram decoração.
   campo, bloco neutro, célula livre da grade; `preenchimento2` para aula usada no medidor, switch
   desligado e primário desabilitado.
 - **Tela e manchas** (`tela`, `mancha1` a `mancha4`): a base do fundo de refração.
-- **Utilitárias** (`sombra`, `sobreCor`, `botaoSwitch`, `veuSheet`): sombra genérica, glifo branco
-  sobre cor cheia (ícone do bloco de status, medalha do Resultado), botão do switch e véu sob o
-  sheet aberto. As três últimas têm o mesmo valor nos dois temas.
+- **Utilitárias** (`sombra`, `sobreCor`, `botaoSwitch`, `veuSheet`): sombra genérica, glifo
+  sobre cor cheia (ícone do bloco de status, medalha do Resultado — branco no claro, `#0B1524` no
+  escuro, onde o branco do handoff não passava 2:1), botão do switch e véu sob o sheet aberto.
+  Os dois últimos têm o mesmo valor nos dois temas.
 
 ### Named Rules
 **The Muda de Valor, Não de Identidade Rule.** O destaque é um só. No escuro ele clareia e o texto
 sobre ele inverte (`sobreTint`), mas nunca vira outra matiz nem ganha um segundo destaque ao lado.
 
-**The Fundo Suave Rule.** Status é sempre fundo suave (12–16% de alfa) com o texto na cor cheia.
+**The Fundo Suave Rule.** Status é sempre fundo suave (12–16% de alfa) com o texto em `*Texto`.
 Cor cheia no fundo só em peça pequena sem texto corrido: o quadrado de 34px do ícone de bloco, o
 avatar, a medalha do Resultado.
 
@@ -480,7 +493,7 @@ do tamanho, nunca de uma segunda família.
 
 ### Hierarchy
 - **Display** (`saldoResultado` 54px/800 e `saldoCartao` 40px/800): o saldo do pacote. Em `tint`,
-  ou `ambar` com saldo ≤ 2.
+  ou `ambarTexto` com saldo ≤ 2.
 - **Headline** (`tituloGrande` 34px/800, entrelinha 1.05; `tituloEmpilhada` 29px/800, 1.1): o
   título que mora no conteúdo. Grande na raiz de aba e na primeira tela da entrada; empilhada nas
   telas sob uma raiz e nos passos do onboarding. `resumo` (21px/800) é o número dos cartões de
@@ -647,7 +660,7 @@ servem também a entrada.
 - **`BotaoInline`**: 40px, raio 13, largura do conteúdo, dentro de bloco; variante `tint` para a
   ação que continua o fluxo, `vidro` para a alternativa.
 - **`BotaoTexto`**: 46px, sem caixa, 15/600 em `tinta2` (`tinta` ao pressionar); tom `destrutivo`
-  em `vermelho`.
+  em `vermelhoTexto`.
 - Pressionar escurece por opacidade (0,86) no lugar do hover de mouse do protótipo. Peças abaixo de
   44px ganham `hitSlop` até fechar o alvo.
 - **`Segmentado`**: trilho `preenchimento`, segmento ativo em `vidro2` com borda e sombra leve,
@@ -667,8 +680,8 @@ servem também a entrada.
 - **`CartaoDeAjuste`**: o molde de toda configuração (Política, onboarding, sub-telas de Ajustes):
   título 14,5/700, sub-linha opcional, controle à direita ou embaixo, padding 16 × 17.
 - **`BlocoStatus`**: fundo suave do tom (`neutro`, `tint`, `vermelho`, `ambar`, `verde` via
-  `coresDoTom`), borda de 0,5px, raio 20, título na cor cheia e texto em `tinta2`; ícone opcional
-  em quadrado de 34px de cor cheia com glifo branco; ação opcional como `BotaoInline`; o bloco
+  `coresDoTom`), borda de 0,5px, raio 20, título em `*Texto` e texto em `tinta2`; ícone opcional
+  em quadrado de 34px de cor cheia com glifo `sobreCor`; ação opcional como `BotaoInline`; o bloco
   inteiro pode ser tocável com chevron.
 - **`CartaoDeDebito`**: rótulo em caixa alta, valor 32/800 e os pares da dívida depois do fio; tom
   `vermelho`/`verde` em fundo suave ou `neutro` em vidro.
@@ -678,7 +691,7 @@ servem também a entrada.
   (`tintSuave`/`tint`), `baixo` (âmbar), `sem` (`preenchimento`/`tinta3`), `atraso`, `pago` e
   `perfil` (`tint` cheio com `sobreTint`).
 - **`MedidorPacote`**: uma barra de 7px por aula, usadas em `preenchimento2`, restantes em `tint`
-  (ou `ambar` com saldo ≤ 2). Decorativo para o leitor de tela; o saldo é anunciado por inteiro.
+  (ou `ambar` com saldo ≤ 2; o número ao lado em `ambarTexto`). Decorativo para o leitor de tela; o saldo é anunciado por inteiro.
 - **`BarraProporcional`**, **`CartaoResumo`** (raio 19, zero em `tinta3`) e **`EstadoVazio`**.
 
 ### Listas (`Listas.tsx`)
@@ -692,7 +705,7 @@ sinal).
 
 ### Campos (`Campos.tsx`, derivado)
 `CampoDeTexto`: trilho `preenchimento`, altura 50, raio 13, rótulo acima em 11,5/600 caixa alta
-`tinta3`. Foco em borda de 1px `tint`; erro em borda e mensagem `vermelho`, com a mensagem como
+`tinta3`. Foco em borda de 1px `tint`; erro em borda `vermelho` e mensagem `vermelhoTexto`, com a mensagem como
 live region. `AcaoDoCampo` é a ação de texto em `tint` ao lado do campo.
 
 ### Peças derivadas de conteúdo (`GradeSemanal.tsx`, `PreviaDeMensagem.tsx`)

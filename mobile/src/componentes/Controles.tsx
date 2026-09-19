@@ -262,7 +262,7 @@ export function BotaoTexto({
   const cor = desabilitado
     ? cores.tinta3
     : tom === 'destrutivo'
-      ? cores.vermelho
+      ? cores.vermelhoTexto
       : cores.tinta2;
 
   return (

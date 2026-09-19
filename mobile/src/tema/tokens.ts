@@ -47,10 +47,24 @@ export type NomeDeCor =
   | 'ambarSuave'
   | 'verde'
   | 'verdeSuave'
+  /**
+   * Status como **texto** (título de bloco, faixa, valor, delta, saldo baixo).
+   * A cor cheia (`ambar`, `verde`, `vermelho`) fica para barra, medidor,
+   * preenchimento e ícone; como texto ela não passa 4.5:1 no claro sobre o
+   * próprio `*Suave` com as manchas por trás (1.8–2.4:1). Sem handoff: valores
+   * na mesma matiz, escurecidos até o pior caso passar. Contas no fim de
+   * `CORES`.
+   */
+  | 'ambarTexto'
+  | 'verdeTexto'
+  | 'vermelhoTexto'
   | 'sombra'
   /**
-   * glifo branco sobre cor cheia — o check do Resultado sobre verde e o glifo
-   * do ícone de bloco de status (handoff: "glifo branco", nos dois temas)
+   * glifo sobre cor cheia — o check do Resultado sobre verde e o glifo do
+   * ícone de bloco de status. Handoff: "glifo branco", nos dois temas; no
+   * escuro o branco sobre verde/âmbar claros fica em 1.6–1.9:1, então lá ele é
+   * o `sobreTint` escuro (#0B1524: 9.8:1 no verde, 11.4:1 no âmbar, 6.2:1 no
+   * vermelho). No claro continua branco.
    */
   | 'sobreCor'
   /** botão do switch ("círculo branco", nos dois temas) */
@@ -95,6 +109,9 @@ export const CORES: { claro: Paleta; escuro: Paleta } = {
     ambarSuave: 'rgba(224,150,0,0.16)',
     verde: '#158A61',
     verdeSuave: 'rgba(21,138,97,0.13)',
+    ambarTexto: '#6C4500',
+    verdeTexto: '#0D563C',
+    vermelhoTexto: '#8E1425',
     sombra: 'rgba(9,15,30,0.13)',
     sobreCor: '#FFFFFF',
     botaoSwitch: '#FFFFFF',
@@ -128,8 +145,11 @@ export const CORES: { claro: Paleta; escuro: Paleta } = {
     ambarSuave: 'rgba(255,194,77,0.16)',
     verde: '#33D69F',
     verdeSuave: 'rgba(51,214,159,0.15)',
+    ambarTexto: '#FFC24D',
+    verdeTexto: '#33D69F',
+    vermelhoTexto: '#FF7A8A',
     sombra: 'rgba(0,0,0,0.5)',
-    sobreCor: '#FFFFFF',
+    sobreCor: '#0B1524',
     botaoSwitch: '#FFFFFF',
     veuSheet: 'rgba(6,10,20,0.4)',
     mancha1: '#1B3A80',
@@ -138,6 +158,25 @@ export const CORES: { claro: Paleta; escuro: Paleta } = {
     mancha4: '#164A45',
   },
 };
+
+/*
+ * Contraste dos tokens `*Texto` (WCAG 2, 4.5:1 para texto normal).
+ *
+ * Pior caso: o texto sobre o `*Suave` composto **direto** sobre o fundo de
+ * refração (bloco de status fora de cartão), sobre o `*Suave` dentro de um
+ * `cartao`, sobre o `cartao` e sobre o fundo, com o campo das quatro manchas
+ * amostrado de 6 em 6px na área visível de 390 × 844 (entre a barra de 94px e
+ * a tab bar). No claro o pior ponto é a mancha azul (mancha1).
+ *
+ *   claro   ambarTexto    #6C4500  pior 4.53 · sobre cartão/tela 7.90 · suave em cartão 6.93
+ *           verdeTexto    #0D563C  pior 4.51 · sobre cartão/tela 8.14 · suave em cartão 6.95
+ *           vermelhoTexto #8E1425  pior 4.56 · sobre cartão/tela 8.63 · suave em cartão 7.17
+ *           (as cheias: âmbar 1.84, verde 2.25, vermelho 2.37 no mesmo pior caso)
+ *   escuro  ambarTexto    #FFC24D  pior 6.16 (= ambar)
+ *           verdeTexto    #33D69F  pior 5.56 (= verde)
+ *           vermelhoTexto #FF7A8A  pior 4.59 — o `vermelho` cheio #FF5F72 fica em
+ *                                  3.89 sobre o próprio suave, então clareia um degrau
+ */
 
 /** Tints do BlurView que o expo-blur aceita e que usamos. */
 export type TintDoDesfoque = 'systemUltraThinMaterialLight' | 'systemUltraThinMaterialDark';

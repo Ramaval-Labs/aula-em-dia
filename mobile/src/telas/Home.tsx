@@ -135,7 +135,7 @@ export function Home() {
                   faixa={faixa}
                   valor={com ? String(restam) : '—'}
                   unidade={com ? 'aulas' : 'sem pacote'}
-                  corDoValor={!com ? cores.tinta3 : baixo ? cores.ambar : cores.tinta}
+                  corDoValor={!com ? cores.tinta3 : baixo ? cores.ambarTexto : cores.tinta}
                   rotuloAcessivel={[
                     a.name,
                     faixa?.texto,

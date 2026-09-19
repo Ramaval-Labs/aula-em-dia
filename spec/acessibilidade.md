@@ -17,32 +17,35 @@ conta; no aparelho eles clareiam um pouco o miolo (ajudam no claro, atrapalham n
 | `tinta` sobre `vidro` (barra, toast) | 14.0–17.4 | 12.8–15.9 | título da barra, toast |
 | `tint` sobre `cartao` | 5.7–7.0 | 7.9–9.3 | voltar, "Cancelar", links, saldo |
 | `sobreTint` sobre `tint` | 7.5 | 9.5 | botão primário, avatar de perfil |
-| `vermelho` sobre `cartao` | 3.7–4.5 | 5.2–6.1 | valor em atraso (800, ≥15px) |
-| `verde` sobre `cartao` | 3.3–4.1 | 8.1–9.6 | valor recebido (800, ≥15px) |
-| `ambar` sobre `cartao` | **2.6–3.2** | 9.5–11.2 | saldo baixo, "A receber" |
-| `vermelho` sobre `vermelhoSuave` | 3.1–3.7 | 4.1–5.0 | título de bloco e faixa de atraso |
-| `verde` sobre `verdeSuave` | 2.9–3.5 | 5.9–7.2 | título de bloco e faixa "marcada" |
-| `ambar` sobre `ambarSuave` | **2.4–2.8** | 6.5–7.9 | título de bloco e faixa "pendente" |
+| `vermelhoTexto` sobre `cartao` | 7.1–8.6 | 6.1–7.2 | valor em atraso, delta negativo, erro de campo |
+| `verdeTexto` sobre `cartao` | 6.7–8.1 | 8.1–9.6 | valor recebido, delta de devolução |
+| `ambarTexto` sobre `cartao` | 6.5–7.9 | 9.5–11.2 | saldo baixo, "A receber" |
+| `vermelhoTexto` sobre `vermelhoSuave` | 5.9–7.2 | 4.9–5.8 | título de bloco e faixa de atraso |
+| `verdeTexto` sobre `verdeSuave` | 5.8–6.9 | 5.9–7.2 | título de bloco e faixa "marcada" |
+| `ambarTexto` sobre `ambarSuave` | 5.8–6.9 | 6.5–7.9 | título de bloco e faixa "pendente" |
 | `tint` sobre `tintSuave` | 4.7–5.7 | 5.1–6.1 | bloco tint, selo "MELHOR" |
 | `tinta2` sobre qualquer `*Suave` | 5.9–6.9 | 6.3–8.8 | texto dos blocos de status |
 | `tinta3` sobre `preenchimento2` | 4.4–4.7 | 4.7–5.4 | botão desabilitado |
-| `sobreCor` sobre `vermelho` | 4.8 | 2.9 | glifo do ícone de bloco |
-| `sobreCor` sobre `verde` | 4.3 | **1.9** | check da medalha do Resultado |
-| `sobreCor` sobre `ambar` | 3.4 | **1.6** | glifo do ícone de bloco âmbar |
+| `sobreCor` sobre `vermelho` | 4.8 | 6.2 | glifo do ícone de bloco |
+| `sobreCor` sobre `verde` | 4.3 | 9.8 | check da medalha do Resultado |
+| `sobreCor` sobre `ambar` | 3.4 | 11.4 | glifo do ícone de bloco âmbar |
 
 Leitura:
 - **Texto de leitura passa folgado** nos dois temas (`tinta`, `tinta2`, `tint`, `sobreTint`).
   `tinta3` fica entre 4.4 e 5.1 no claro: serve para legenda e rótulo, não para informação que
   só existe ali.
-- **Âmbar no tema claro não chega a 3:1** como texto (bloco "Reposição pendente", faixa
-  "pendente", saldo baixo, "A receber"). É valor do handoff (`#C07C00`); o título do bloco é
-  700/15px e o número 800, mas nenhum é "texto grande" pela WCAG. Pendência registrada em
-  `PROXIMOS-PASSOS.md` — decidir com o design um âmbar de texto mais escuro no claro.
+- **Status como texto usa os tokens `*Texto`** (`ambarTexto`, `verdeTexto`, `vermelhoTexto`).
+  As cores cheias do handoff (`#C07C00`, `#158A61`, `#DE203A`) ficam em 1.8–2.4:1 no claro
+  sobre o próprio `*Suave` com as manchas por trás, então só pintam barra, medidor,
+  preenchimento e ícone. Os tokens de texto são a mesma matiz escurecida até o **pior caso**
+  passar 4.5:1: o `*Suave` composto direto sobre o fundo de refração, amostrado na área visível
+  (a conta está no comentário de `CORES`, em `tokens.ts`). No escuro âmbar e verde de texto são
+  as próprias cores cheias; o vermelho clareia um degrau (`#FF7A8A`), porque o `#FF5F72` fica em
+  3.9:1 sobre o `vermelhoSuave` no pior caso.
 - **Status nunca é só cor:** toda faixa e todo bloco têm texto; o título do bloco repete o que a
   cor diz.
-- **Glifo branco (`sobreCor`) sobre verde/âmbar no escuro** fica abaixo de 3:1. O handoff pede
-  "glifo branco" nos dois temas; o glifo é decorativo (o título do bloco e o texto do Resultado
-  dizem o mesmo), mas vale revisar com o design — `sobreTint` (`#0B1524`) daria 9+:1.
+- **Glifo sobre cor cheia (`sobreCor`)** é branco no claro e `#0B1524` (o `sobreTint`) no
+  escuro: o branco do handoff ficava em 1.6–1.9:1 sobre verde e âmbar claros.
 
 ## Alvos de toque
 - Botão primário 54px, secundário 52, compacto 50, texto 46. Botão inline (40), segmento

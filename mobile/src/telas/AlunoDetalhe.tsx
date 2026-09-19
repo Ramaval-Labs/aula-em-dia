@@ -130,7 +130,7 @@ export function AlunoDetalhe() {
                 <Text
                   style={[
                     TIPO.saldoCartao,
-                    { color: baixo ? cores.ambar : cores.tint },
+                    { color: baixo ? cores.ambarTexto : cores.tint },
                   ]}
                 >
                   {String(restam)}

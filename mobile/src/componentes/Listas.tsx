@@ -83,7 +83,7 @@ export function CabecalhoGrupo({
       <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>{titulo}</Text>
       {contagem ? (
         <Text
-          style={[texto(12, 700), { color: tom === 'atraso' ? cores.vermelho : cores.tinta3 }]}
+          style={[texto(12, 700), { color: tom === 'atraso' ? cores.vermelhoTexto : cores.tinta3 }]}
         >
           {contagem}
         </Text>
@@ -382,10 +382,10 @@ export function LinhaExtrato({
 }) {
   const { cores } = useCores();
   const cor = {
-    debito: cores.vermelho,
+    debito: cores.vermelhoTexto,
     credito: cores.tint,
-    neutro: cores.verde,
-    pagamento: cores.verde,
+    neutro: cores.verdeTexto,
+    pagamento: cores.verdeTexto,
   }[tom];
 
   return (

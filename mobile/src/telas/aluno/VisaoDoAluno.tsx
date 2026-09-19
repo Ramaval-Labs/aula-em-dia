@@ -164,7 +164,7 @@ export function AlunoSaldo() {
           <Text
             style={[
               TIPO.saldoCartao,
-              { color: !com ? cores.tinta3 : restam <= 2 ? cores.ambar : cores.tint },
+              { color: !com ? cores.tinta3 : restam <= 2 ? cores.ambarTexto : cores.tint },
             ]}
           >
             {com ? String(restam) : '—'}

@@ -269,7 +269,7 @@ function SecaoControles() {
             titulo="Aula realizada"
             subtitulo="Aconteceu como o combinado"
             valor="4 → 3"
-            corDoValor={cores.vermelho}
+            corDoValor={cores.vermelhoTexto}
             selecionado={escolha === 'realizada'}
             aoTocar={() => setEscolha('realizada')}
           />
@@ -277,7 +277,7 @@ function SecaoControles() {
             titulo="Falta avisada"
             subtitulo={escolha === 'avisada' ? 'Avisou com 26h: dentro do prazo de 24h' : 'O aluno avisou antes'}
             valor="4 → 4"
-            corDoValor={cores.verde}
+            corDoValor={cores.verdeTexto}
             selecionado={escolha === 'avisada'}
             aoTocar={() => setEscolha('avisada')}
           >
@@ -341,7 +341,7 @@ function SecaoListas() {
             faixa={{ tipo: 'atraso', texto: 'Atraso de 12 dias' }}
             valor="2"
             unidade="aulas"
-            corDoValor={cores.ambar}
+            corDoValor={cores.ambarTexto}
             estadoDoAvatar="baixo"
             aoTocar={() => {}}
           />
@@ -393,7 +393,7 @@ function SecaoListas() {
             nome="Valentina Rocha"
             apoio="Venceu 16/08 · 12 dias"
             valor="R$ 10.000,00"
-            corDoValor={cores.vermelho}
+            corDoValor={cores.vermelhoTexto}
             estadoDoAvatar="atraso"
             aoTocar={() => {}}
           />
@@ -402,7 +402,7 @@ function SecaoListas() {
             nome="Marina Alves"
             apoio="Pago em 05/08 · Pix"
             valor="R$ 640"
-            corDoValor={cores.verde}
+            corDoValor={cores.verdeTexto}
             estadoDoAvatar="pago"
           />
         </ListaAgrupada>
@@ -517,7 +517,7 @@ function SecaoBlocos() {
                 Saldo do pacote
               </Text>
               <View style={estilos.linhaSaldo}>
-                <Text style={[TIPO.saldoCartao, { color: cores.ambar }]}>2</Text>
+                <Text style={[TIPO.saldoCartao, { color: cores.ambarTexto }]}>2</Text>
                 <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
               </View>
             </View>

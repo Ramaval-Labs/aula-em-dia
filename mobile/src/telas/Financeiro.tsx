@@ -173,7 +173,7 @@ export function Financeiro() {
             'Em atraso',
             atrasos,
             'atraso',
-            cores.vermelho,
+            cores.vermelhoTexto,
             (a) => ir('inadimplencia', { alunoId: a.id }),
             true,
             plural(atrasos.length, 'aluno', 'alunos'),
@@ -192,7 +192,7 @@ export function Financeiro() {
         : null}
 
       {pagos.length
-        ? grupo('Recebido', pagos, 'pago', cores.verde, (a) => ir('aluno', { alunoId: a.id }), false)
+        ? grupo('Recebido', pagos, 'pago', cores.verdeTexto, (a) => ir('aluno', { alunoId: a.id }), false)
         : null}
 
       {comPacote.length === 0 ? (

@@ -91,7 +91,7 @@ export function CampoDeTexto({
       <Text
         style={[
           texto(11.5, 600, { tracking: 0.04, maiuscula: true }),
-          { color: erro ? cores.vermelho : cores.tinta3 },
+          { color: erro ? cores.vermelhoTexto : cores.tinta3 },
         ]}
       >
         {rotulo}
@@ -150,7 +150,7 @@ export function CampoDeTexto({
           style={[
             comEspaco(texto(12, 500, { altura: 1.4 }), { topo: 6 }),
             estilos.nota,
-            { color: cores.vermelho },
+            { color: cores.vermelhoTexto },
           ]}
         >
           {erro}

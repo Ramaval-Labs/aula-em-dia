@@ -111,7 +111,7 @@ export function Resultado() {
           <Text
             style={[
               TIPO.saldoResultado,
-              { color: saldoBaixo(aluno) ? cores.ambar : cores.tint },
+              { color: saldoBaixo(aluno) ? cores.ambarTexto : cores.tint },
             ]}
           >
             {restam}

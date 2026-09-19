@@ -210,7 +210,7 @@ function CartaoDesfecho({
       titulo={titulo}
       subtitulo={selecionado ? ef.nota : sub}
       valor={mostraEfeito ? `${antes} → ${depois}` : undefined}
-      corDoValor={ef.delta < 0 ? cores.vermelho : cores.verde}
+      corDoValor={ef.delta < 0 ? cores.vermelhoTexto : cores.verdeTexto}
       selecionado={selecionado}
       aoTocar={aoTocar}
       rotuloAcessivel={`${titulo}. ${selecionado ? ef.nota : sub}.${
