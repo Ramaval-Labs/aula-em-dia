@@ -1,13 +1,17 @@
-/** D5 — Lembrete de cobrança, nos três tons. */
+/**
+ * D5 — Lembrete de cobrança, nos três tons (sheet 88%, derivada).
+ *
+ * Tom em segmentado dentro de cartão (padrão dos cartões de H§9), mensagem na
+ * `PreviaDeMensagemVidro` e o aviso de lembrete repetido como bloco âmbar.
+ */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Caixa, Cartao, EstadoVazio } from '../componentes/Base';
-import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
-import { PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
-import { Tela } from '../componentes/Tela';
+import { BlocoStatus, CartaoVidro, EstadoVazio } from '../componentes/Blocos';
+import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Controles';
+import { PreviaDeMensagemVidro } from '../componentes/PreviaVidro';
+import { Sheet } from '../componentes/Sheet';
 import { primeiroNome } from '../dominio/formato';
 import { mascararTelefone, mensagemDeCobranca } from '../dominio/mensagens';
 import type { TomDeMensagem } from '../dominio/tipos';
@@ -15,9 +19,8 @@ import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useCores } from '../tema/TemaProvider';
-import { comEspaco, TIPO } from '../tema/tipografia';
-import { TAMANHO } from '../tema/tokens';
+import { useVidro } from '../tema/TemaProvider';
+import { texto } from '../tema/tipografia';
 
 const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
   { valor: 'cordial', rotulo: 'Cordial' },
@@ -25,9 +28,11 @@ const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
   { valor: 'formal', rotulo: 'Formal' },
 ];
 
+const TITULO = 'Lembrete de cobrança';
+
 export function Lembrete() {
-  const cores = useCores();
-  const { alunoId, concluir, voltar } = useNavegacao();
+  const { cores } = useVidro();
+  const { alunoId, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const perfil = useDados((s) => s.perfil);
   const enviarLembrete = useDados((s) => s.enviarLembrete);
@@ -41,15 +46,9 @@ export function Lembrete() {
 
   if (!aluno) {
     return (
-      <Tela
-        cabecalho={
-          <CabecalhoEscuro corDaCurva={cores.tela}>
-            <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          </CabecalhoEscuro>
-        }
-      >
+      <Sheet titulo={TITULO}>
         <EstadoVazio titulo="Aluno não encontrado." />
-      </Tela>
+      </Sheet>
     );
   }
 
@@ -63,24 +62,13 @@ export function Lembrete() {
   };
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>Lembrete de cobrança</TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-            {`Para ${primeiroNome(aluno.name)}`}
-          </Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 12 }}
+    <Sheet
+      titulo={TITULO}
       rodape={
-        <>
+        <View style={estilos.rodape}>
           <BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />
-          {/* Botão de texto: a ação ainda não existe, e contorno escuro dava a
-              ela o mesmo peso de "Marcar como enviado". */}
+          {/* Botão de texto: a ação ainda não existe, e não pode ter o peso
+              de "Marcar como enviado". */}
           <BotaoTexto
             rotulo="Agendar para amanhã, 9h"
             // Não existe agendamento no app: o aviso diz isso e a tela fica,
@@ -93,38 +81,54 @@ export function Lembrete() {
               )
             }
           />
-        </>
+        </View>
       }
     >
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
+      <Text style={[texto(13, 500, { altura: 1.4 }), estilos.subLinha, { color: cores.tinta2 }]}>
+        {`Para ${primeiroNome(aluno.name)}`}
+      </Text>
+
+      <CartaoVidro estilo={estilos.espaco16}>
+        <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
           Tom da mensagem
         </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={TONS}
-            valor={msg.tom}
-            aoTrocar={(tom) => atualizar({ tom, editado: false })}
-            rotuloAcessivel="Tom da mensagem"
-          />
-        </View>
-      </Cartao>
+        <Segmentado
+          porte="cartao"
+          opcoes={TONS}
+          valor={msg.tom}
+          aoTrocar={(tom) => atualizar({ tom, editado: false })}
+          rotuloDoGrupo="Tom da mensagem"
+          estilo={estilos.segmentado}
+        />
+      </CartaoVidro>
 
-      <PreviaDeMensagem
-        texto={texto_}
-        destino={mascararTelefone(aluno.telefone)}
-        aoCopiar={() => avisar(avisos.mensagemCopiada)}
-      />
+      <View style={estilos.espaco14}>
+        <PreviaDeMensagemVidro
+          texto={texto_}
+          destino={mascararTelefone(aluno.telefone)}
+          aoCopiar={() => avisar(avisos.mensagemCopiada)}
+        />
+      </View>
 
       {segundoLembrete ? (
-        <Caixa>
-          <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
-            {`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete${
-              aluno.ultimoLembrete ? `. O último foi em ${aluno.ultimoLembrete}.` : '.'
-            } Vale considerar pausar as aulas ou combinar parcelamento.`}
-          </Text>
-        </Caixa>
+        <BlocoStatus
+          tom="ambar"
+          titulo={`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete`}
+          texto={`${
+            aluno.ultimoLembrete ? `O último foi em ${aluno.ultimoLembrete}. ` : ''
+          }Vale considerar pausar as aulas ou combinar parcelamento.`}
+          estilo={estilos.espaco14}
+        />
       ) : null}
-    </Tela>
+    </Sheet>
   );
 }
+
+const estilos = StyleSheet.create({
+  subLinha: { paddingTop: 4, paddingHorizontal: 6 },
+  espaco14: { marginTop: 14 },
+  espaco16: { marginTop: 16 },
+  // O trilho do catálogo se encolhe ao conteúdo; aqui ele ocupa o cartão.
+  segmentado: { marginTop: 12, alignSelf: 'stretch' },
+  rodape: { gap: 4 },
+});
