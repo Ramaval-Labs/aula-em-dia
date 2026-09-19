@@ -14,40 +14,20 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
 
 import type { Aba } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
 import { TIPO_VIDRO } from '../tema/tipografia';
 import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
-/**
- * Ícones de aba do handoff ("Tab bar"): viewBox 24 × 24, traço 1.9, sem
- * preenchimento. Ficam aqui porque o `ICONES_ABA` de `tokens.ts` ainda é o
- * conjunto antigo (traço 1.8), que as telas não migradas usam — os dois só se
- * encontram na Onda 4.
- */
-const ICONES_ABA_VIDRO: Record<Aba, string> = {
-  home:
-    'M9.3 11.2a3.1 3.1 0 100-6.2 3.1 3.1 0 000 6.2M3.7 19.3c0-3.1 2.5-4.9 5.6-4.9s5.6 1.8 5.6 4.9' +
-    'M16.4 11.5a2.6 2.6 0 100-5.2M17.5 14.6c1.9.4 3 1.9 3 4.7',
-  financeiro:
-    'M3.9 9.9A2.4 2.4 0 016.3 7.5h11.4a2.4 2.4 0 012.4 2.4v6.2a2.4 2.4 0 01-2.4 2.4H6.3a2.4 2.4 0 ' +
-    '01-2.4-2.4zM3.9 11.7h16.2M6.9 15.5h3.2',
-  ajustes:
-    'M4.4 8.2h6.4M14.2 8.2h5.4M4.4 15.8h5.3M13.4 15.8h6.2M10.8 8.2a1.7 1.7 0 103.4 0 1.7 1.7 0 ' +
-    '10-3.4 0M9.7 15.8a1.7 1.7 0 103.4 0 1.7 1.7 0 10-3.4 0',
-};
-
-const ABAS: { chave: Aba; rotulo: string }[] = [
-  { chave: 'home', rotulo: 'Alunos' },
-  { chave: 'financeiro', rotulo: 'Financeiro' },
-  { chave: 'ajustes', rotulo: 'Ajustes' },
+/** As três abas, com o ícone de `Icone.tsx` (traço 1.9, `PATHS_ABA`). */
+const ABAS: { chave: Aba; rotulo: string; icone: NomeDeIcone }[] = [
+  { chave: 'home', rotulo: 'Alunos', icone: 'abaAlunos' },
+  { chave: 'financeiro', rotulo: 'Financeiro', icone: 'abaFinanceiro' },
+  { chave: 'ajustes', rotulo: 'Ajustes', icone: 'abaAjustes' },
 ];
-
-const TRACO_ICONE = 1.9;
-const TAMANHO_ICONE = 23;
 
 /**
  * Os 26px da base foram medidos no aparelho de referência, onde a área segura
@@ -69,12 +49,12 @@ const BRILHO_ATIVO = ['rgba(255,255,255,0)', 'rgba(255,255,255,0.55)'] as const;
 const PARADAS_BRILHO = [0.56, 1] as const;
 
 function ItemDeAba({
-  chave,
+  icone,
   rotulo,
   ativa,
   aoTocar,
 }: {
-  chave: Aba;
+  icone: NomeDeIcone;
   rotulo: string;
   ativa: boolean;
   aoTocar: () => void;
@@ -142,16 +122,7 @@ function ItemDeAba({
         </>
       ) : null}
 
-      <Svg width={TAMANHO_ICONE} height={TAMANHO_ICONE} viewBox="0 0 24 24">
-        <Path
-          d={ICONES_ABA_VIDRO[chave]}
-          fill="none"
-          stroke={cor}
-          strokeWidth={TRACO_ICONE}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </Svg>
+      <Icone nome={icone} tamanho={TAMANHO_VIDRO.iconeAba} cor={cor} />
       <Text numberOfLines={1} style={[TIPO_VIDRO.rotuloAba, { color: cor }]}>
         {rotulo}
       </Text>
@@ -196,7 +167,7 @@ export function TabBar({
         {ABAS.map((a) => (
           <ItemDeAba
             key={a.chave}
-            chave={a.chave}
+            icone={a.icone}
             rotulo={a.rotulo}
             ativa={a.chave === abaAtiva}
             aoTocar={() => aoTrocar(a.chave)}
