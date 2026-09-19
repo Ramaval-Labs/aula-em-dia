@@ -55,8 +55,6 @@ const SHEETS_NAO_MIGRADOS: Partial<Record<Tela, { titulo: string; altura?: Altur
   outroHorario: { titulo: 'Escolher outro horário' },
   semHorario: { titulo: 'Sem horário disponível' },
   confirmarReposicao: { titulo: 'Confirmar reposição' },
-  alunoForm: { titulo: 'Aluno' },
-  pacote: { titulo: 'Pacote' },
 };
 
 function App() {
