@@ -23,7 +23,9 @@ export const avisos = {
   // O app não manda mensagem: o lembrete fica marcado e o envio acontece na
   // Cobrança de cada aluno, com a mensagem pronta para copiar.
   lembreteEmLote: (n: number) =>
-    `Lembrete marcado para ${plural(n, 'aluno', 'alunos')}. O envio é pela Cobrança de cada um.`,
+    `Lembrete marcado para ${plural(n, 'aluno', 'alunos')}. O envio é pela Cobrança${
+      n > 1 ? ' de cada um' : ''
+    }.`,
   pausa: (a: Aluno, pausado: boolean) =>
     `Aulas de ${primeiroNome(a.name)} ${pausado ? 'pausadas' : 'retomadas'}.`,
   // Diz o que mudou de fato: a validade. Quais horários isso abre é a lista
