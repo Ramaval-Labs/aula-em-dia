@@ -70,15 +70,13 @@ export function Inadimplencia() {
       aoTocar: () => avisar(avisos.pausa(aluno, alternarPausa(aluno.id))),
     },
     {
+      // O app não guarda parcelas: a linha explica e não é tocável — um toast
+      // que só pede uma ação ao professor não é confirmação de nada.
       titulo: 'Combinar parcelamento',
-      sub: `2 × ${dinheiro(valorPacote(aluno) / 2)}, registrado à mão`,
-      // O app não guarda parcelas: o aviso diz isso em vez de fingir que anotou.
-      aoTocar: () =>
-        avisar(
-          `O app ainda não guarda parcelas. Combine com ${primeiroNome(
-            aluno.name,
-          )} e registre cada pagamento quando chegar.`,
-        ),
+      sub: `2 × ${dinheiro(
+        valorPacote(aluno) / 2,
+      )} — o app ainda não guarda parcelas: registre cada pagamento quando chegar`,
+      aoTocar: undefined,
     },
   ];
 
@@ -154,7 +152,7 @@ export function Inadimplencia() {
               titulo={a.titulo}
               subtitulo={a.sub}
               aoTocar={a.aoTocar}
-              chevron
+              chevron={!!a.aoTocar}
             />
           ))}
         </ListaAgrupada>

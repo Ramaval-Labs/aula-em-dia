@@ -9,7 +9,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { BlocoStatus, CartaoDeAjuste, EstadoVazio } from '../componentes/Blocos';
-import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Controles';
+import { BotaoPrimario, Segmentado } from '../componentes/Controles';
 import { PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
 import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { primeiroNome } from '../dominio/formato';
@@ -61,25 +61,10 @@ export function Lembrete() {
   return (
     <Sheet
       titulo={TITULO}
-      rodape={
-        <View style={estilos.rodape}>
-          <BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />
-          {/* Botão de texto: a ação ainda não existe, e não pode ter o peso
-              de "Marcar como enviado". */}
-          <BotaoTexto
-            rotulo="Agendar para amanhã, 9h"
-            // Não existe agendamento no app: o aviso diz isso e a tela fica,
-            // para o professor copiar a mensagem.
-            aoTocar={() =>
-              avisar(
-                `O agendamento de lembretes ainda não existe nesta versão. Copie a mensagem para ${primeiroNome(
-                  aluno.name,
-                )} e envie quando quiser.`,
-              )
-            }
-          />
-        </View>
-      }
+      // Um primário só: agendar o envio não existe no app, e um botão que só
+      // explica isso ocupava o lugar da ação de verdade. A limitação está na
+      // nota abaixo da prévia.
+      rodape={<BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />}
     >
       <SubLinhaSheet texto={`Para ${primeiroNome(aluno.name)}`} />
 
@@ -97,6 +82,9 @@ export function Lembrete() {
         <PreviaDeMensagem
           texto={mensagem}
           destino={mascararTelefone(aluno.telefone)}
+          nota={`Copie e envie para ${primeiroNome(
+            aluno.name,
+          )} quando quiser: agendar o envio ainda não existe nesta versão.`}
           aoCopiar={() => avisar(avisos.mensagemCopiada)}
         />
       </View>
@@ -118,5 +106,4 @@ export function Lembrete() {
 const estilos = StyleSheet.create({
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
-  rodape: { gap: 4 },
 });

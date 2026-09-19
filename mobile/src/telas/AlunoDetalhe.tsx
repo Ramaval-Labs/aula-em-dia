@@ -3,11 +3,13 @@
  *
  * Identificação → cartão de saldo → blocos de status → extrato → lista "MAIS"
  * → ação. Os blocos só aparecem quando o estado existe, e o primário é um só:
- * "Registrar aula" para quem tem pacote, "Criar pacote de 8 aulas" para quem
- * não tem; "Renovar pacote" entra como secundário quando o saldo está baixo.
+ * "Registrar aula" para quem tem pacote, "Criar pacote" para quem não tem — o
+ * sheet é que escolhe a quantidade (4, 8 ou 12), então o botão não promete "de
+ * 8"; "Renovar pacote" entra como secundário quando o saldo está baixo.
  *
  * A lista "MAIS" guarda as ações que o handoff não desenha (ver como o aluno
- * vê, editar, pacote), como manda o mapa de telas.
+ * vê, editar, pacote), como manda o mapa de telas — sem repetir a ação que já
+ * está no rodapé.
  */
 
 import React from 'react';
@@ -237,7 +239,7 @@ export function AlunoDetalhe() {
           tom="verde"
           icone="checkBloco"
           titulo="Reposição confirmada"
-          texto={`${aluno.agendada.dia}, ${aluno.agendada.hora}. Mensagem enviada ao aluno.`}
+          texto={`${aluno.agendada.dia}, ${aluno.agendada.hora}. Marcada na sua agenda.`}
         />
       ) : null}
 
@@ -262,13 +264,17 @@ export function AlunoDetalhe() {
           subtitulo="Nome, disciplina, horário e telefone"
           aoTocar={() => ir('alunoForm')}
         />
-        <LinhaLista
-          titulo={com ? 'Renovar pacote' : 'Criar pacote'}
-          subtitulo={
-            com ? 'Escolher quantidade, valor e validade' : 'Primeiro pacote deste aluno'
-          }
-          aoTocar={() => ir('pacote')}
-        />
+        {/* Só quando o rodapé não oferece a mesma coisa (renovar aparece lá
+            com saldo baixo; criar, para quem não tem pacote). */}
+        {(com && !saldoBaixo(aluno)) || (!com && !aluno.semPacote) ? (
+          <LinhaLista
+            titulo={com ? 'Renovar pacote' : 'Criar pacote'}
+            subtitulo={
+              com ? 'Escolher quantidade, valor e validade' : 'Primeiro pacote deste aluno'
+            }
+            aoTocar={() => ir('pacote')}
+          />
+        ) : null}
       </ListaAgrupada>
     </TelaVidro>
   );
@@ -300,7 +306,7 @@ function AcoesDoAluno({
       ) : null}
 
       {aluno.semPacote ? (
-        <BotaoPrimario rotulo="Criar pacote de 8 aulas" aoTocar={aoCriarPacote} />
+        <BotaoPrimario rotulo="Criar pacote" aoTocar={aoCriarPacote} />
       ) : null}
 
       {com && saldoBaixo(aluno) ? (

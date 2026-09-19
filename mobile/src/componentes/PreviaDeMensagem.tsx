@@ -11,6 +11,8 @@
  *
  * O botão copia em vez de abrir o WhatsApp: os alunos do protótipo são
  * fictícios e um link `wa.me` mostraria "número inválido" na apresentação.
+ * Por isso a nota abaixo do botão diz que o envio é manual — instrução mora
+ * na tela, não no toast, que só confirma o que foi feito.
  */
 
 import * as Clipboard from 'expo-clipboard';
@@ -27,6 +29,7 @@ export function PreviaDeMensagem({
   texto: mensagem,
   destino,
   rotuloDoBotao = 'Copiar mensagem',
+  nota = 'O envio é seu: cole a mensagem na conversa com o aluno.',
   aoCopiar,
   rodape,
 }: {
@@ -34,6 +37,8 @@ export function PreviaDeMensagem({
   /** telefone mascarado, como no handoff antigo: "+55 51 9•••• 4182" */
   destino?: string;
   rotuloDoBotao?: string;
+  /** o que fazer com a mensagem depois de copiar */
+  nota?: string;
   aoCopiar?: () => void;
   rodape?: React.ReactNode;
 }) {
@@ -68,6 +73,11 @@ export function PreviaDeMensagem({
       </View>
 
       <BotaoCompacto rotulo={rotuloDoBotao} aoTocar={copiar} />
+      {nota ? (
+        <Text style={[estilos.nota, texto(12, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
+          {nota}
+        </Text>
+      ) : null}
       {rodape ? <View style={estilos.rodape}>{rodape}</View> : null}
     </CartaoVidro>
   );
@@ -86,5 +96,6 @@ const estilos = StyleSheet.create({
     padding: 14,
     borderRadius: RAIO.botaoInline,
   },
+  nota: { marginTop: 10, textAlign: 'center' },
   rodape: { marginTop: 10 },
 });

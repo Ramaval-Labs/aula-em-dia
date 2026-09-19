@@ -45,7 +45,7 @@ import { temPacote, VALOR_AULA } from '../../dominio/politica';
 import { emailValido, ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
 import { AVISOS_PADRAO, avisos, useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
-import { useNavegacao } from '../../estado/navegacao';
+import { ehSheet, useNavegacao, type Tela } from '../../estado/navegacao';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
@@ -64,18 +64,21 @@ function TelaDeAjuste({
   children,
   rodape,
   comTeclado = false,
+  voltarPara = 'Ajustes',
 }: {
   titulo: string;
   subtitulo?: string;
   children: React.ReactNode;
   rodape?: React.ReactNode;
   comTeclado?: boolean;
+  /** de onde se veio, quando não foi de Ajustes (a Chave Pix abre da Cobrança) */
+  voltarPara?: string;
 }) {
   return (
     <TelaVidro
       tipo="empilhada"
       titulo={titulo}
-      voltarPara="Ajustes"
+      voltarPara={voltarPara}
       rodape={rodape}
       comTeclado={comTeclado}
     >
@@ -425,14 +428,29 @@ export function Avisos() {
 
 // --- Chave Pix ------------------------------------------------------------
 
+/** Título curto de cada tela que pode abrir a Chave Pix (rótulo do voltar). */
+const ROTULO_DA_ORIGEM: Partial<Record<Tela, string>> = {
+  ajustes: 'Ajustes',
+  inadimplencia: 'Cobrança',
+  financeiro: 'Financeiro',
+  aluno: 'Aluno',
+};
+
 export function ChavePix() {
-  const { concluir } = useNavegacao();
+  const { concluir, voltar } = useNavegacao();
+  const pilha = useNavegacao((s) => s.pilha);
   const perfil = useDados((s) => s.perfil);
   const alunos = useDados((s) => s.alunos);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
   const avisar = useToast((s) => s.avisar);
   const [chave, setChave] = React.useState(perfil.chavePix ?? '');
   const mudou = chave.trim() !== (perfil.chavePix ?? '');
+
+  // A Chave Pix também abre pelo sheet de pagamento: o voltar leva o rótulo
+  // de onde se veio e Salvar desempilha em vez de saltar para Ajustes
+  // (o mesmo padrão de `Inadimplencia.tsx`).
+  const origem = [...pilha].reverse().find((q) => !ehSheet(q.tela))?.tela;
+  const deAjustes = origem === undefined || origem === 'ajustes';
 
   // Prévia com um aluno de verdade, para mostrar onde a chave entra na
   // cobrança. Sem aluno com pacote, não há cobrança para mostrar.
@@ -446,6 +464,7 @@ export function ChavePix() {
       comTeclado
       titulo="Chave Pix e cobrança"
       subtitulo="Entra automaticamente na mensagem de cobrança."
+      voltarPara={(origem && ROTULO_DA_ORIGEM[origem]) ?? 'Ajustes'}
       rodape={
         <BotaoPrimario
           rotulo="Salvar"
@@ -453,7 +472,8 @@ export function ChavePix() {
           aoTocar={() => {
             salvarPerfil({ ...perfil, chavePix: chave.trim() || undefined });
             avisar('Chave Pix salva.');
-            concluir('ajustes');
+            if (deAjustes) concluir('ajustes');
+            else voltar();
           }}
         />
       }
