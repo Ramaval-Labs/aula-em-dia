@@ -1,32 +1,36 @@
 /**
- * D2 — Registrar pagamento recebido.
+ * D2 — Registrar pagamento recebido (sheet 88%, derivada; modelo: cartão de
+ * débito de H§7).
  *
  * Valor e data aparecem como leitura, não como campos: a regra de registro
  * (`dominio/politica.ts`) grava sempre o valor do pacote com a data de hoje.
  * Campos editáveis que o app descartava em silêncio eram promessa falsa.
  * Pagamento parcial e data retroativa estão no backlog — exigem mudar a regra.
+ *
+ * Aberto a partir da Cobrança, conclui voltando para ela (handoff: "Cobrança →
+ * Registrar pagamento → volta, com toast"); de outro lugar, vai para o
+ * Financeiro, como antes.
  */
 
 import * as Clipboard from 'expo-clipboard';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Caixa, Cartao, EstadoVazio, LinhaLista } from '../componentes/Base';
-import { BotaoPrimario, Segmentado } from '../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
-import { AcaoDoCampo } from '../componentes/Formulario';
-import { Tela } from '../componentes/Tela';
+import { CartaoVidro, EstadoVazio } from '../componentes/Blocos';
+import { BotaoInline, BotaoPrimario, Segmentado } from '../componentes/Controles';
+import { LinhaLista, ListaAgrupada } from '../componentes/Listas';
+import { Sheet } from '../componentes/Sheet';
 import { hoje } from '../dominio/datas';
 import { dinheiro } from '../dominio/formato';
 import { valorPacote } from '../dominio/politica';
 import type { MeioDePagamento } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
-import { useNavegacao } from '../estado/navegacao';
+import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useCores } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { TAMANHO } from '../tema/tokens';
+import { useVidro } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { TAMANHO_VIDRO } from '../tema/tokens';
 
 const MEIOS: { valor: MeioDePagamento; rotulo: string }[] = [
   { valor: 'Pix', rotulo: 'Pix' },
@@ -34,14 +38,12 @@ const MEIOS: { valor: MeioDePagamento; rotulo: string }[] = [
   { valor: 'Transferência', rotulo: 'Transferência' },
 ];
 
-/** Rótulo de campo do Fluxo A — o mesmo do `CampoDeTexto`. */
-const ROTULO = TIPO.rotulo;
-/** Valor em destaque dentro de cartão, como os totais do Financeiro. */
-const VALOR = comEspaco(texto(19, 800, { altura: 1, tracking: -0.03 }), { topo: 9 });
+const TITULO = 'Registrar pagamento';
 
 export function Pagamento() {
-  const cores = useCores();
-  const { alunoId, concluir, ir, voltar } = useNavegacao();
+  const { cores } = useVidro();
+  const { alunoId, concluir, ir } = useNavegacao();
+  const pilha = useNavegacao((s) => s.pilha);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const perfil = useDados((s) => s.perfil);
   const registrarPagamentoCom = useDados((s) => s.registrarPagamentoCom);
@@ -55,22 +57,20 @@ export function Pagamento() {
 
   if (!aluno) {
     return (
-      <Tela
-        cabecalho={
-          <CabecalhoEscuro corDaCurva={cores.tela}>
-            <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          </CabecalhoEscuro>
-        }
-      >
+      <Sheet titulo={TITULO}>
         <EstadoVazio titulo="Aluno não encontrado." />
-      </Tela>
+      </Sheet>
     );
   }
+
+  // De onde o sheet foi aberto: a última tela não-sheet da pilha.
+  const origem = [...pilha].reverse().find((q) => !ehSheet(q.tela))?.tela;
 
   const confirmar = () => {
     registrarPagamentoCom(aluno.id, form.meio);
     avisar(avisos.pagamentoCom(aluno, form.meio));
-    concluir('financeiro');
+    if (origem === 'inadimplencia') concluir('inadimplencia', aluno.id);
+    else concluir('financeiro');
   };
 
   const copiarChave = () => {
@@ -80,87 +80,126 @@ export function Pagamento() {
   };
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>Registrar pagamento</TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-            {`${aluno.name} · pacote de ${aluno.total} aulas`}
-          </Text>
-        </CabecalhoEscuro>
-      }
+    <Sheet
+      titulo={TITULO}
       rodape={<BotaoPrimario rotulo="Confirmar recebimento" aoTocar={confirmar} />}
     >
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
+      <Text style={[texto(13, 500, { altura: 1.4 }), estilos.subLinha, { color: cores.tinta2 }]}>
+        {`${aluno.name} · pacote de ${aluno.total} aulas`}
+      </Text>
+
+      <CartaoVidro estilo={estilos.espaco16}>
+        <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
           Como você recebeu
         </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={MEIOS}
-            valor={form.meio}
-            aoTrocar={(meio) => atualizar({ meio })}
-            rotuloAcessivel="Meio de pagamento"
-          />
-        </View>
-      </Cartao>
+        <Segmentado
+          porte="cartao"
+          opcoes={MEIOS}
+          valor={form.meio}
+          aoTrocar={(meio) => atualizar({ meio })}
+          rotuloDoGrupo="Meio de pagamento"
+          estilo={estilos.espaco12}
+        />
+      </CartaoVidro>
 
       {form.meio === 'Pix' ? (
         perfil.chavePix ? (
-          <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-            <Text style={[ROTULO, { color: cores.suave }]}>Sua chave Pix</Text>
-            <View
-              style={{ marginTop: 9, flexDirection: 'row', alignItems: 'center', gap: 10 }}
-            >
-              <Text style={[texto(15, 500, { altura: 1.25 }), { flex: 1, color: cores.texto }]}>
+          <CartaoVidro estilo={estilos.espaco14}>
+            <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>
+              Sua chave Pix
+            </Text>
+            <View style={estilos.linhaChave}>
+              <Text
+                style={[texto(15, 600, { altura: 1.3 }), estilos.flexivel, { color: cores.tinta }]}
+              >
                 {perfil.chavePix}
               </Text>
-              <AcaoDoCampo
-                rotulo="copiar"
+              <BotaoInline
+                rotulo="Copiar"
+                variante="vidro"
                 rotuloAcessivel="Copiar chave Pix"
                 aoTocar={copiarChave}
               />
             </View>
-          </Cartao>
+          </CartaoVidro>
         ) : (
-          <Cartao estilo={{ overflow: 'hidden' }}>
+          <ListaAgrupada estilo={estilos.espaco14}>
             <LinhaLista
               titulo="Configurar chave Pix"
-              sub="Para ela aparecer nas mensagens de cobrança"
+              subtitulo="Para ela aparecer nas mensagens de cobrança"
               chevron
-              ultima
               aoTocar={() => ir('chavePix')}
             />
-          </Cartao>
+          </ListaAgrupada>
         )
       ) : null}
 
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={[ROTULO, { color: cores.suave }]}>Valor</Text>
-            <Text style={[VALOR, { color: cores.texto }]}>{dinheiro(valorPacote(aluno))}</Text>
+      {/* Modelo: o cartão de débito da Cobrança — valor grande à esquerda,
+          a data à direita, a nota depois do fio. */}
+      <CartaoVidro estilo={estilos.espaco14}>
+        <View style={estilos.linhaTopo}>
+          <View style={estilos.flexivel}>
+            <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>Valor</Text>
+            <Text
+              style={[
+                comEspaco(texto(32, 800, { tracking: -0.045 }), { topo: 9 }),
+                { color: cores.tinta },
+              ]}
+            >
+              {dinheiro(valorPacote(aluno))}
+            </Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[ROTULO, { color: cores.suave }]}>Data</Text>
-            <Text style={[VALOR, { color: cores.texto }]}>{hoje()}</Text>
+          <View style={estilos.direita}>
+            <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>Data</Text>
+            <Text
+              style={[
+                comEspaco(texto(15, 700, { altura: 1.3 }), { topo: 9 }),
+                { color: cores.tinta },
+              ]}
+            >
+              {hoje()}
+            </Text>
           </View>
         </View>
-        <Text style={[comEspaco(TIPO.nota, { topo: 11 }), { color: cores.textoMedio }]}>
-          Registra o valor do pacote com a data de hoje. Pagamento parcial ou em outra data
-          ainda não entra no app.
-        </Text>
-      </Cartao>
+        <View style={[estilos.separador, { borderTopColor: cores.fio }]}>
+          <Text style={[texto(12.5, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
+            Registra o valor do pacote com a data de hoje. Pagamento parcial ou em outra data
+            ainda não entra no app.
+          </Text>
+        </View>
+      </CartaoVidro>
 
-      <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
-          O registro é manual. A cobrança automática por Pix entra numa fase futura, com o
-          backend.
-        </Text>
-      </Caixa>
-    </Tela>
+      <Text
+        style={[
+          comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 14 }),
+          estilos.nota,
+          { color: cores.tinta2 },
+        ]}
+      >
+        O registro é manual. A cobrança automática por Pix entra numa fase futura, com o backend.
+      </Text>
+    </Sheet>
   );
 }
+
+const estilos = StyleSheet.create({
+  flexivel: { flex: 1, minWidth: 0 },
+  direita: { alignItems: 'flex-end' },
+  subLinha: { paddingTop: 4, paddingHorizontal: 6 },
+  nota: { paddingHorizontal: 6 },
+  espaco12: { marginTop: 12, alignSelf: 'stretch' },
+  espaco14: { marginTop: 14 },
+  espaco16: { marginTop: 16 },
+  linhaChave: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  linhaTopo: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  separador: {
+    marginTop: 14,
+    paddingTop: 13,
+    borderTopWidth: TAMANHO_VIDRO.bordaVidro,
+  },
+});
