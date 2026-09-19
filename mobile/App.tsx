@@ -37,7 +37,7 @@ import { ARQUIVOS_DE_FONTE } from './src/tema/tipografia';
 // Só no Expo Web em desenvolvimento: deixa o script de screenshots navegar.
 exporParaDepuracao();
 
-function App() {
+export function App() {
   const { carregado: temaCarregado } = useTema();
   const tela = useNavegacao((s) => s.tela);
   const fundo = useNavegacao(telaDeFundo);
