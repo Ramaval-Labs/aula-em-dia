@@ -4,41 +4,52 @@
  * Autenticação é mock: qualquer e-mail bem formado com senha de 6 caracteres
  * entra. "Entrar" vai direto para o app (quem já tem conta); "Criar conta"
  * abre o onboarding de quatro passos.
+ *
+ * No iOS Glass as duas intenções viram um segmentado no topo, e a ação
+ * primária do rodapé acompanha a aba escolhida. A validação é a mesma de
+ * antes: entrar exige e-mail e senha válidos; criar conta, só o e-mail.
  */
 
-import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Cartao } from '../../componentes/Base';
-import { BotaoContorno, BotaoPrimario } from '../../componentes/Botoes';
+import { BlocoStatus, CartaoVidro } from '../../componentes/Blocos';
+import { CampoDeTexto } from '../../componentes/Campos';
 import {
-  BotaoVoltar,
-  CabecalhoEscuro,
-  Eyebrow,
-  TituloTela,
-} from '../../componentes/Cabecalho';
-import { AcaoDoCampo, CampoDeTexto } from '../../componentes/Formulario';
-import { Tela } from '../../componentes/Tela';
+  BotaoPrimario,
+  BotaoSecundario,
+  Segmentado,
+  type OpcaoSegmentada,
+} from '../../componentes/Controles';
 import { ERRO, emailValido, senhaValida, validarAcesso } from '../../dominio/validacao';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../../tema/tipografia';
-import { TAMANHO } from '../../tema/tokens';
+import { useVidro } from '../../tema/TemaProvider';
+import { texto } from '../../tema/tipografia';
+import { TAMANHO_VIDRO } from '../../tema/tokens';
+import { modoDeAcessoInicial, type ModoDeAcesso } from './modoDeAcesso';
+import { TelaDeEntrada } from './TelaDeEntrada';
 
 const ACESSO_INICIAL = { email: '', senha: '', mostrarSenha: false, erro: null };
 
 /** O login é mock: não há recuperação para oferecer, então o toque avisa. */
 const AVISO_RECUPERAR_SENHA = 'A recuperação de senha chega junto com o login de verdade.';
 
+const MODOS: readonly OpcaoSegmentada<ModoDeAcesso>[] = [
+  { valor: 'entrar', rotulo: 'Entrar' },
+  { valor: 'criar', rotulo: 'Criar conta' },
+];
+
 export function Acesso() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const entrar = useSessao((s) => s.entrar);
   const criarConta = useSessao((s) => s.criarConta);
   const voltarEntrada = useSessao((s) => s.voltarEntrada);
   const avisar = useToast((s) => s.avisar);
   const [form, atualizar] = useRascunho('acesso', ACESSO_INICIAL);
+  // Aba escolhida: morre com a tela, então é estado local.
+  const [modo, setModo] = useState<ModoDeAcesso>(modoDeAcessoInicial);
 
   const erros = validarAcesso(form.email, form.senha);
   const podeEntrar = emailValido(form.email) && senhaValida(form.senha);
@@ -59,96 +70,128 @@ export function Acesso() {
     criarConta(form.email.trim());
   };
 
+  const criando = modo === 'criar';
+  const confirmar = criando ? tentarCriar : tentarEntrar;
+
+  const trocarModo = (m: ModoDeAcesso) => {
+    setModo(m);
+    atualizar({ erro: null });
+  };
+
   return (
-    <Tela
+    <TelaDeEntrada
       comTeclado
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Início" aoTocar={() => voltarEntrada()} />
-          <View style={{ marginTop: 14 }}>
-            <Eyebrow>Acesso</Eyebrow>
-          </View>
-          <View style={{ marginTop: 10 }}>
-            <TituloTela tamanho={22}>Entrar no Aula em Dia</TituloTela>
-          </View>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 10 }}
-      rodape={<BotaoPrimario rotulo="Entrar" aoTocar={tentarEntrar} />}
+      titulo={criando ? 'Criar conta no Aula em Dia' : 'Entrar no Aula em Dia'}
+      voltar={{ rotulo: 'Início', aoTocar: () => voltarEntrada() }}
+      rodape={<BotaoPrimario rotulo={criando ? 'Criar conta' : 'Entrar'} aoTocar={confirmar} />}
     >
-      <CampoDeTexto
-        rotulo="E-mail"
-        valor={form.email}
-        aoMudar={(email) => atualizar({ email, erro: null })}
-        placeholder="voce@email.com"
-        teclado="email"
-        erro={form.erro && !emailValido(form.email) ? form.erro : undefined}
+      <Segmentado
+        opcoes={MODOS}
+        valor={modo}
+        aoTrocar={trocarModo}
+        rotuloDoGrupo="Entrar ou criar conta"
+        estilo={estilos.largo}
       />
 
-      <CampoDeTexto
-        rotulo="Senha"
-        valor={form.senha}
-        aoMudar={(senha) => atualizar({ senha, erro: null })}
-        placeholder="pelo menos 6 caracteres"
-        senha={!form.mostrarSenha}
-        aoEnviar={tentarEntrar}
-        erro={
-          form.erro && emailValido(form.email) && !senhaValida(form.senha)
-            ? form.erro
-            : undefined
-        }
-        sufixo={
-          <AcaoDoCampo
-            rotulo={form.mostrarSenha ? 'ocultar' : 'mostrar'}
-            rotuloAcessivel={form.mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
-            aoTocar={() => atualizar({ mostrarSenha: !form.mostrarSenha })}
-          />
-        }
-      />
+      <CartaoVidro estilo={estilos.campos}>
+        <CampoDeTexto
+          rotulo="E-mail"
+          valor={form.email}
+          aoMudar={(email) => atualizar({ email, erro: null })}
+          placeholder="voce@email.com"
+          teclado="email"
+          erro={form.erro && !emailValido(form.email) ? form.erro : undefined}
+        />
 
-      {/* O texto tem ~17px; o hitSlop vertical leva o alvo a ~45px. */}
-      <Pressable
-        accessibilityRole="link"
-        onPress={() => avisar(AVISO_RECUPERAR_SENHA)}
-        hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
-        style={{ alignSelf: 'flex-start', paddingHorizontal: 2 }}
-      >
-        <Text style={[texto(12.5, 400, { altura: 1.4 }), { color: cores.textoMedio }]}>
-          Esqueci minha senha
-        </Text>
-      </Pressable>
+        <CampoDeTexto
+          rotulo="Senha"
+          valor={form.senha}
+          aoMudar={(senha) => atualizar({ senha, erro: null })}
+          placeholder="pelo menos 6 caracteres"
+          senha={!form.mostrarSenha}
+          aoEnviar={confirmar}
+          erro={
+            !criando && form.erro && emailValido(form.email) && !senhaValida(form.senha)
+              ? form.erro
+              : undefined
+          }
+          sufixo={
+            <AcaoDoCampo
+              rotulo={form.mostrarSenha ? 'ocultar' : 'mostrar'}
+              rotuloAcessivel={form.mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              aoTocar={() => atualizar({ mostrarSenha: !form.mostrarSenha })}
+            />
+          }
+        />
 
-      <View
-        style={{
-          marginTop: 6,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 12,
-        }}
-      >
-        <View style={{ flex: 1, height: 1, backgroundColor: cores.linha }} />
-        <Text style={[texto(11, 500, { altura: 1 }), { color: cores.suave }]}>ou</Text>
-        <View style={{ flex: 1, height: 1, backgroundColor: cores.linha }} />
+        {criando ? null : (
+          // O texto tem ~17px; o hitSlop vertical leva o alvo a ~45px.
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => avisar(AVISO_RECUPERAR_SENHA)}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+            style={estilos.link}
+          >
+            <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.tint }]}>
+              Esqueci minha senha
+            </Text>
+          </Pressable>
+        )}
+      </CartaoVidro>
+
+      {criando ? (
+        <BlocoStatus
+          titulo="Primeira vez aqui?"
+          texto="A configuração leva 3 minutos e termina com seu primeiro aluno cadastrado."
+        />
+      ) : null}
+
+      <View style={estilos.ou}>
+        <View style={[estilos.fio, { backgroundColor: cores.fio }]} />
+        <Text style={[texto(12, 600), { color: cores.tinta3 }]}>ou</Text>
+        <View style={[estilos.fio, { backgroundColor: cores.fio }]} />
       </View>
 
-      <BotaoContorno
+      <BotaoSecundario
         rotulo="Continuar com Google"
-        altura={52}
-        corDaBorda={cores.fraco}
         aoTocar={() => entrar(form.email.trim() || 'professor@gmail.com')}
       />
-
-      <Cartao estilo={{ marginTop: 4, paddingVertical: 14, paddingHorizontal: 16 }}>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-          Primeira vez aqui?
-        </Text>
-        <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
-          A configuração leva 3 minutos e termina com seu primeiro aluno cadastrado.
-        </Text>
-        <View style={{ marginTop: 12 }}>
-          <BotaoContorno rotulo="Criar conta" altura={44} aoTocar={tentarCriar} />
-        </View>
-      </Cartao>
-    </Tela>
+    </TelaDeEntrada>
   );
 }
+
+/**
+ * "mostrar"/"ocultar" dentro do trilho do campo. O `CampoDeTexto` do
+ * catálogo aceita um `sufixo`, mas não traz a ação pronta.
+ */
+function AcaoDoCampo({
+  rotulo,
+  rotuloAcessivel,
+  aoTocar,
+}: {
+  rotulo: string;
+  rotuloAcessivel: string;
+  aoTocar: () => void;
+}) {
+  const { cores } = useVidro();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={rotuloAcessivel}
+      onPress={aoTocar}
+      hitSlop={{ left: 8, right: 8 }}
+      style={({ pressed }) => [estilos.acao, { opacity: pressed ? 0.6 : 1 }]}
+    >
+      <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
+    </Pressable>
+  );
+}
+
+const estilos = StyleSheet.create({
+  largo: { alignSelf: 'stretch' },
+  campos: { gap: 16 },
+  link: { alignSelf: 'flex-start', paddingHorizontal: 2 },
+  ou: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  fio: { flex: 1, height: TAMANHO_VIDRO.bordaVidro },
+  acao: { height: TAMANHO_VIDRO.alvoMinimo, justifyContent: 'center' },
+});
