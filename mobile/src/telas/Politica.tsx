@@ -5,10 +5,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { BlocoStatus, CartaoDeAjuste } from '../componentes/Blocos';
-import { TelaVidro } from '../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoTexto, Segmentado, Stepper, Switch } from '../componentes/Controles';
 import { temPacote } from '../dominio/politica';
 import type { Politicas } from '../dominio/tipos';
@@ -16,8 +16,6 @@ import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
-import { TIPO_VIDRO } from '../tema/tipografia';
 
 const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
 const VALIDADES = [
@@ -65,7 +63,6 @@ function diff(
 }
 
 export function Politica() {
-  const { cores } = useVidro();
   const { concluir, voltar } = useNavegacao();
   const salvas = useDados((s) => s.politicas);
   const alunos = useDados((s) => s.alunos);
@@ -107,11 +104,7 @@ export function Politica() {
         </>
       }
     >
-      <View style={estilos.titulo}>
-        <Text style={[TIPO_VIDRO.tituloEmpilhada, { color: cores.tinta }]}>
-          Política de faltas
-        </Text>
-      </View>
+      <TituloDeConteudo titulo="Política de faltas" />
 
       <CartaoDeAjuste titulo="Prazo mínimo de aviso" estilo={estilos.primeiro}>
         <Segmentado
@@ -185,7 +178,6 @@ export function Politica() {
 }
 
 const estilos = StyleSheet.create({
-  titulo: { paddingHorizontal: 6 },
   cartao: { marginTop: 12 },
   aviso: { marginTop: 12 },
   primeiro: { marginTop: 18 },

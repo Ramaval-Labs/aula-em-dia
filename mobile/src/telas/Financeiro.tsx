@@ -18,7 +18,7 @@ import {
   type SegmentoProporcional,
   type TomDeStatus,
 } from '../componentes/Blocos';
-import { TelaVidro } from '../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { useDoisToques } from '../componentes/useDoisToques';
@@ -148,12 +148,7 @@ export function Financeiro() {
         ) : undefined
       }
     >
-      <View style={estilos.cabecalho}>
-        <Text style={[texto(13, 600), { color: cores.tinta2 }]}>{mesPorExtenso()}</Text>
-        <Text style={[comEspaco(TIPO_VIDRO.tituloGrande, { topo: 8 }), { color: cores.tinta }]}>
-          Financeiro
-        </Text>
-      </View>
+      <TituloDeConteudo porte="grande" acima={mesPorExtenso()} titulo="Financeiro" />
 
       <View style={estilos.resumo}>
         {totaisTopo.map((t) => (
@@ -236,7 +231,6 @@ export function Financeiro() {
 
 const estilos = StyleSheet.create({
   flexivel: { flex: 1 },
-  cabecalho: { paddingTop: 8, paddingBottom: 2, paddingHorizontal: 6 },
   resumo: { marginTop: 18, flexDirection: 'row', gap: 9 },
   grupo: { marginTop: 24 },
   lista: { marginTop: 9 },

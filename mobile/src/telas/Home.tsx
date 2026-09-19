@@ -13,7 +13,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro, EstadoVazio } from '../componentes/Blocos';
-import { TelaVidro } from '../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoSecundario, Segmentado } from '../componentes/Controles';
 import { LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { dataPorExtenso } from '../dominio/datas';
@@ -23,7 +23,7 @@ import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { comEspaco, texto } from '../tema/tipografia';
 
 const FILTROS: { valor: Filtro; rotulo: Filtro }[] = [
   { valor: 'Urgência', rotulo: 'Urgência' },
@@ -104,27 +104,21 @@ export function Home() {
         </View>
       }
     >
-      <View style={estilos.cabecalho}>
-        <View style={estilos.flexivel}>
-          <Text style={[texto(13, 600, { tracking: -0.01 }), { color: cores.tinta2 }]}>
-            {dataPorExtenso()}
-          </Text>
-          <Text
-            accessibilityRole="header"
-            style={[comEspaco(TIPO_VIDRO.tituloGrande, { topo: 8 }), { color: cores.tinta }]}
-          >
-            Alunos
-          </Text>
-        </View>
-        <View accessible accessibilityLabel={`${aulasHoje} aulas hoje`} style={estilos.contagem}>
-          <Text style={[texto(26, 800, { tracking: -0.04 }), { color: cores.tint }]}>
-            {String(aulasHoje)}
-          </Text>
-          <Text style={[comEspaco(texto(11, 600), { topo: 4 }), { color: cores.tinta2 }]}>
-            hoje
-          </Text>
-        </View>
-      </View>
+      <TituloDeConteudo
+        porte="grande"
+        acima={dataPorExtenso()}
+        titulo="Alunos"
+        direita={
+          <View accessible accessibilityLabel={`${aulasHoje} aulas hoje`} style={estilos.contagem}>
+            <Text style={[texto(26, 800, { tracking: -0.04 }), { color: cores.tint }]}>
+              {String(aulasHoje)}
+            </Text>
+            <Text style={[comEspaco(texto(11, 600), { topo: 4 }), { color: cores.tinta2 }]}>
+              hoje
+            </Text>
+          </View>
+        }
+      />
 
       <Segmentado
         opcoes={FILTROS}
@@ -188,16 +182,6 @@ export function Home() {
 }
 
 const estilos = StyleSheet.create({
-  flexivel: { flex: 1, minWidth: 0 },
-  cabecalho: {
-    paddingTop: 8,
-    paddingHorizontal: 6,
-    paddingBottom: 2,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 14,
-  },
   contagem: { alignItems: 'flex-end', paddingBottom: 4 },
   // O trilho do segmentado hoje se encolhe ao conteúdo (`alignSelf:
   // 'flex-start'`, que o porte "linha" precisa); como filtro de tela ele é de

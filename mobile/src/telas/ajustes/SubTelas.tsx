@@ -20,7 +20,7 @@ import {
   MedidorPacote,
 } from '../../componentes/Blocos';
 import { CampoDeTexto } from '../../componentes/Campos';
-import { TelaVidro } from '../../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../../componentes/Chassi';
 import {
   BotaoInline,
   BotaoPrimario,
@@ -65,22 +65,9 @@ function TelaDeAjuste({
   children: React.ReactNode;
   rodape?: React.ReactNode;
 }) {
-  const { cores } = useVidro();
   return (
     <TelaVidro tipo="empilhada" titulo={titulo} voltarPara="Ajustes" rodape={rodape}>
-      <View style={estilos.cabecalho}>
-        <Text style={[TIPO_VIDRO.tituloEmpilhada, { color: cores.tinta }]}>{titulo}</Text>
-        {subtitulo ? (
-          <Text
-            style={[
-              comEspaco(texto(13.5, 500, { altura: 1.45 }), { topo: 8 }),
-              { color: cores.tinta2 },
-            ]}
-          >
-            {subtitulo}
-          </Text>
-        ) : null}
-      </View>
+      <TituloDeConteudo titulo={titulo} abaixo={subtitulo} />
       {children}
     </TelaVidro>
   );
@@ -662,7 +649,6 @@ export function Conta() {
 
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
-  cabecalho: { paddingHorizontal: 6 },
   primeiro: { marginTop: 18 },
   cartao: { marginTop: 12, paddingVertical: 16, paddingHorizontal: 17 },
   cartaoGrade: { marginTop: 12, paddingVertical: 15, paddingHorizontal: 13 },

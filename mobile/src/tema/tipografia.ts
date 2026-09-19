@@ -170,6 +170,8 @@ export const TIPO_VIDRO = {
   apoio: texto(13, 500, { altura: 1.3 }),
   textoBloco: texto(12.5, 500, { altura: 1.4 }),
   cabecalhoGrupo: texto(12, 600, { altura: ALTURA_NORMAL, tracking: 0.05, maiuscula: true }),
+  /** rótulo dentro de cartão ("SALDO DO PACOTE", H§2) — mais fechado que o de grupo */
+  rotuloCartao: texto(12, 600, { altura: ALTURA_NORMAL, tracking: 0.04, maiuscula: true }),
   faixa: texto(10.5, 700, { altura: ALTURA_NORMAL, tracking: 0.02 }),
   rotuloAba: texto(10.5, 700, { altura: ALTURA_NORMAL }),
 } as const;

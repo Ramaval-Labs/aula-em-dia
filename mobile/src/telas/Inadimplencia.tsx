@@ -7,7 +7,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro, coresDoTom, EstadoVazio, type TomDeStatus } from '../componentes/Blocos';
-import { TelaVidro } from '../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
 import { dinheiro, primeiroNome } from '../dominio/formato';
@@ -180,14 +180,7 @@ export function Inadimplencia() {
         ) : undefined
       }
     >
-      <View style={estilos.cabecalho}>
-        <Text style={[texto(13, 600), { color: cores.tinta2 }]}>{linhaDeHorario(aluno)}</Text>
-        <Text
-          style={[comEspaco(TIPO_VIDRO.tituloEmpilhada, { topo: 7 }), { color: cores.tinta }]}
-        >
-          {aluno.name}
-        </Text>
-      </View>
+      <TituloDeConteudo acima={linhaDeHorario(aluno)} titulo={aluno.name} />
 
       <View style={estilos.espaco18}>
         <CartaoDeDebito
@@ -236,7 +229,6 @@ export function Inadimplencia() {
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   direita: { textAlign: 'right' },
-  cabecalho: { paddingHorizontal: 4 },
   espaco14: { marginTop: 14 },
   espaco18: { marginTop: 18 },
   espaco24: { marginTop: 24 },

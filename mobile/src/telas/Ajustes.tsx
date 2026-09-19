@@ -4,7 +4,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar, CartaoVidro } from '../componentes/Blocos';
-import { TelaVidro } from '../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { Segmentado } from '../componentes/Controles';
 import { Icone } from '../componentes/Icone';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
@@ -14,7 +14,7 @@ import { temPacote, VALOR_AULA } from '../dominio/politica';
 import { useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useTema, useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { comEspaco, texto } from '../tema/tipografia';
 import { TAMANHO_VIDRO } from '../tema/tokens';
 
 /** Rodapé do handoff §8, sem o "protótipo acadêmico" (mapa de telas). */
@@ -54,9 +54,7 @@ export function Ajustes() {
 
   return (
     <TelaVidro tipo="raiz" titulo="Ajustes">
-      <View style={estilos.tituloRaiz}>
-        <Text style={[TIPO_VIDRO.tituloGrande, { color: cores.tinta }]}>Ajustes</Text>
-      </View>
+      <TituloDeConteudo porte="grande" titulo="Ajustes" />
 
       <Pressable
         accessibilityRole="button"
@@ -160,7 +158,6 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
   pressionado: { opacity: 0.86 },
-  tituloRaiz: { paddingHorizontal: 6, paddingTop: 8, paddingBottom: 2 },
   perfil: { marginTop: 18 },
   cartaoPerfil: {
     paddingVertical: 15,

@@ -37,7 +37,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { useNavegacao } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
-import { texto, TIPO_VIDRO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
 import { MOVIMENTO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
 import { SuperficieVidro } from './Vidro';
 
@@ -176,6 +176,76 @@ export function BotaoVoltar({
   );
 }
 
+/* ── Título de conteúdo ───────────────────────────────────────────────── */
+
+/**
+ * O cabeçalho que mora **no conteúdo** (a barra de navegação só aparece com
+ * a rolagem): sub-linha opcional acima (a data em Alunos, a disciplina em
+ * Cobrança), o título e uma linha de apoio opcional abaixo. Recuo de 6px,
+ * como em H§1 e H§9.
+ *
+ * - `grande` (34/800): raiz de aba e primeira tela da entrada;
+ * - `empilhada` (29/800): tela empilhada e passos do onboarding.
+ *
+ * `direita` acompanha o título na base (a contagem "N hoje" de H§1).
+ */
+export function TituloDeConteudo({
+  titulo,
+  acima,
+  abaixo,
+  porte = 'empilhada',
+  direita,
+  estilo,
+}: {
+  titulo: string;
+  acima?: string;
+  abaixo?: string;
+  porte?: 'grande' | 'empilhada';
+  direita?: React.ReactNode;
+  estilo?: StyleProp<ViewStyle>;
+}) {
+  const { cores } = useVidro();
+  const grande = porte === 'grande';
+  const papel = grande ? TIPO_VIDRO.tituloGrande : TIPO_VIDRO.tituloEmpilhada;
+
+  const textos = (
+    <View style={direita ? styles.flexivel : null}>
+      {acima ? (
+        <Text style={[texto(13, 600, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta2 }]}>
+          {acima}
+        </Text>
+      ) : null}
+      <Text
+        accessibilityRole="header"
+        style={[comEspaco(papel, { topo: acima ? (grande ? 8 : 7) : 0 }), { color: cores.tinta }]}
+      >
+        {titulo}
+      </Text>
+      {abaixo ? (
+        <Text
+          style={[comEspaco(texto(13.5, 500, { altura: 1.45 }), { topo: 8 }), { color: cores.tinta2 }]}
+        >
+          {abaixo}
+        </Text>
+      ) : null}
+    </View>
+  );
+
+  return (
+    <View
+      style={[
+        styles.titulo,
+        grande ? styles.tituloGrande : null,
+        direita ? styles.tituloComDireita : null,
+        estilo,
+      ]}
+    >
+      {textos}
+      {direita}
+    </View>
+  );
+}
+
 /* ── Tela ─────────────────────────────────────────────────────────────── */
 
 export type PropsTelaVidro = {
@@ -263,4 +333,13 @@ export function TelaVidro({
 
 const styles = StyleSheet.create({
   cheio: { flex: 1 },
+  flexivel: { flex: 1, minWidth: 0 },
+  titulo: { paddingHorizontal: 6 },
+  tituloGrande: { paddingTop: 8, paddingBottom: 2 },
+  tituloComDireita: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 14,
+  },
 });

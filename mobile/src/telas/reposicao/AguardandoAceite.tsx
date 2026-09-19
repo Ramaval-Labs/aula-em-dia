@@ -7,10 +7,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { BlocoStatus, EstadoVazio } from '../../componentes/Blocos';
-import { TelaVidro } from '../../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../../componentes/Chassi';
 import { BotaoCompacto, BotaoPrimario } from '../../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { diasEntre } from '../../dominio/datas';
@@ -18,12 +18,9 @@ import { primeiroNome } from '../../dominio/formato';
 import { avisos, useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useVidro } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
 import { useDoisToques } from '../../componentes/useDoisToques';
 
 export function AguardandoAceite() {
-  const { cores } = useVidro();
   const { alunoId, ir, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const responderProposta = useDados((s) => s.responderProposta);
@@ -101,24 +98,11 @@ export function AguardandoAceite() {
         />
       }
     >
-      <Text style={[texto(13, 600, { altura: 1.3 }), estilos.recuo, { color: cores.tinta2 }]}>
-        Aguardando resposta
-      </Text>
-      <Text
-        accessibilityRole="header"
-        style={[comEspaco(TIPO_VIDRO.tituloEmpilhada, { topo: 7 }), estilos.recuo, { color: cores.tinta }]}
-      >
-        {titulo}
-      </Text>
-      <Text
-        style={[
-          comEspaco(texto(13, 500, { altura: 1.4 }), { topo: 6 }),
-          estilos.recuo,
-          { color: cores.tinta2 },
-        ]}
-      >
-        {`Enviada em ${proposta.enviadaEm}${dias > 0 ? `, há ${dias} dias` : ', hoje'}`}
-      </Text>
+      <TituloDeConteudo
+        acima="Aguardando resposta"
+        titulo={titulo}
+        abaixo={`Enviada em ${proposta.enviadaEm}${dias > 0 ? `, há ${dias} dias` : ', hoje'}`}
+      />
 
       <BlocoStatus
         tom="ambar"
@@ -153,7 +137,6 @@ export function AguardandoAceite() {
 }
 
 const estilos = StyleSheet.create({
-  recuo: { paddingHorizontal: 4 },
   bloco: { marginTop: 18 },
   cabecalho: { marginTop: 24 },
   lista: { marginTop: 9 },

@@ -124,12 +124,7 @@ export function AlunoDetalhe() {
         <CartaoVidro estilo={estilos.cartaoSaldo}>
           <View style={estilos.linhaSaldo}>
             <View style={estilos.flexivel}>
-              <Text
-                style={[
-                  texto(12, 600, { tracking: 0.04, maiuscula: true }),
-                  { color: cores.tinta3 },
-                ]}
-              >
+              <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>
                 Saldo do pacote
               </Text>
               <View

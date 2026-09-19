@@ -16,7 +16,7 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { BlocoStatus, CartaoVidro, EstadoVazio } from '../../componentes/Blocos';
-import { TelaVidro } from '../../componentes/Chassi';
+import { TelaVidro, TituloDeConteudo } from '../../componentes/Chassi';
 import {
   BotaoPrimario,
   BotaoSecundario,
@@ -63,37 +63,6 @@ function useAssinatura(): string {
   return `Página de ${primeiroNome(perfil.nome)} · ${perfil.disciplinas[0] ?? ''}`;
 }
 
-/** Título de tela empilhada, com sub-linha opcional acima. */
-function Titulo({ acima, children }: { acima?: string; children: string }) {
-  const { cores } = useVidro();
-  return (
-    <View style={estilos.titulo}>
-      {acima ? (
-        <Text style={[texto(13, 600, { tracking: -0.01 }), { color: cores.tinta2 }]}>{acima}</Text>
-      ) : null}
-      <Text
-        accessibilityRole="header"
-        style={[
-          comEspaco(TIPO_VIDRO.tituloEmpilhada, { topo: acima ? 7 : 0 }),
-          { color: cores.tinta },
-        ]}
-      >
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-/** Rótulo de cartão: 12/600 caixa alta em `tinta3`, como "SALDO DO PACOTE". */
-function RotuloDoCartao({ children }: { children: string }) {
-  const { cores } = useVidro();
-  return (
-    <Text style={[texto(12, 600, { tracking: 0.04, maiuscula: true }), { color: cores.tinta3 }]}>
-      {children}
-    </Text>
-  );
-}
-
 /* ── Menu: qual das três páginas ──────────────────────────────────────── */
 
 export function VerComoAluno() {
@@ -108,9 +77,10 @@ export function VerComoAluno() {
     >
       <FaixaPrevia texto="O aluno abre estas páginas por um link, sem instalar nada e sem login. Aqui elas aparecem como pré-visualização." />
 
-      <Titulo>
-        {aluno ? `O que ${primeiroNome(aluno.name)} vê` : 'O que o aluno vê'}
-      </Titulo>
+      <TituloDeConteudo
+        titulo={aluno ? `O que ${primeiroNome(aluno.name)} vê` : 'O que o aluno vê'}
+        estilo={estilos.titulo}
+      />
 
       <CabecalhoGrupo titulo="Páginas do aluno" estilo={estilos.tituloGrupo} />
       <ListaAgrupada estilo={estilos.lista}>
@@ -184,7 +154,7 @@ export function AlunoSaldo() {
       <FaixaPrevia texto={assinatura} />
 
       <CartaoVidro estilo={estilos.cartaoGrande}>
-        <RotuloDoCartao>Seu saldo</RotuloDoCartao>
+        <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo</Text>
         <View
           accessible
           // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
@@ -225,7 +195,7 @@ export function AlunoSaldo() {
       </ListaAgrupada>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <RotuloDoCartao>A regra combinada</RotuloDoCartao>
+        <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>A regra combinada</Text>
         <Text
           style={[
             comEspaco(texto(14, 500, { altura: 1.55 }), { topo: 10 }),
@@ -350,9 +320,11 @@ export function AlunoProposta() {
     >
       <FaixaPrevia texto={assinatura} />
 
-      <Titulo acima={`${primeiroNome(perfil.nome)} propôs uma reposição`}>
-        {`${principal.dia}\nàs ${principal.hora}`}
-      </Titulo>
+      <TituloDeConteudo
+        acima={`${primeiroNome(perfil.nome)} propôs uma reposição`}
+        titulo={`${principal.dia}\nàs ${principal.hora}`}
+        estilo={estilos.titulo}
+      />
 
       {emPrevia ? (
         <BlocoStatus
@@ -366,7 +338,7 @@ export function AlunoProposta() {
 
       {razoes?.length ? (
         <CartaoVidro estilo={estilos.cartao}>
-          <RotuloDoCartao>Por que esse horário</RotuloDoCartao>
+          <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Por que esse horário</Text>
           <View style={estilos.razoes}>
             {razoes.map((r) => (
               <View key={r} style={estilos.razao}>
@@ -405,7 +377,7 @@ export function AlunoProposta() {
       </View>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <RotuloDoCartao>Seu saldo hoje</RotuloDoCartao>
+        <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo hoje</Text>
         <View style={estilos.numeroDoSaldo}>
           <Text style={[TIPO_VIDRO.saldoCartao, { color: cores.tinta }]}>
             {String(saldo(aluno))}
@@ -469,16 +441,11 @@ export function AlunoDisponibilidade() {
     >
       <FaixaPrevia texto={assinatura} />
 
-      <Titulo>Quando você pode repor?</Titulo>
-      <Text
-        style={[
-          comEspaco(texto(13.5, 500, { altura: 1.45 }), { topo: 6 }),
-          estilos.recuo,
-          { color: cores.tinta2 },
-        ]}
-      >
-        Marque os blocos possíveis. Nada é agendado agora.
-      </Text>
+      <TituloDeConteudo
+        titulo="Quando você pode repor?"
+        abaixo="Marque os blocos possíveis. Nada é agendado agora."
+        estilo={estilos.titulo}
+      />
 
       <CartaoVidro estilo={estilos.cartaoGrande}>
         <GradeSemanalVidro
@@ -507,8 +474,7 @@ export function AlunoDisponibilidade() {
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
-  recuo: { paddingHorizontal: 6 },
-  titulo: { marginTop: 22, paddingHorizontal: 6 },
+  titulo: { marginTop: 22 },
   tituloGrupo: { marginTop: 26 },
   lista: { marginTop: 9 },
   cartao: { marginTop: 14 },

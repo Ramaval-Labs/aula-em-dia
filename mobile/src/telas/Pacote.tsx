@@ -142,14 +142,7 @@ export function Pacote() {
       <CartaoVidro estilo={estilos.cartao}>
         <View style={estilos.linhaSaldo}>
           <View>
-            <Text
-              style={[
-                texto(12, 600, { tracking: 0.04, maiuscula: true }),
-                { color: cores.tinta3 },
-              ]}
-            >
-              Resumo
-            </Text>
+            <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Resumo</Text>
             <View
               accessible
               accessibilityLabel={`${calculado.saldoFinal} aulas no pacote`}
