@@ -8,19 +8,18 @@ antes de mexer no código. A especificação de design é **`handoff-ios-glass/R
 foi aposentada e está só como histórico em `docs/design/historico/tinta-chapada/`.
 `README.md` na raiz é a apresentação do projeto, e `PROXIMOS-PASSOS.md` traz o backlog priorizado.
 
-## Redesign iOS Glass em andamento
+## Direção iOS Glass
 
-A troca do design system acontece na branch `redesign/ios-glass`, em ondas executadas por
-agentes. O plano está em `docs/design/redesign-ios-glass/PLANO.md` e o contrato de cada tela
-(raiz, empilhada, sheet; componentes; o que é derivado) em
-`docs/design/redesign-ios-glass/MAPA-DE-TELAS.md`. Enquanto a Onda 4 não terminar, **o sistema
-antigo convive com o novo**: tokens e componentes antigos continuam no código só para as telas
-ainda não migradas. Não crie código novo em cima deles.
+As 35 telas foram migradas para a direção iOS Glass (plano e registro em
+`docs/design/redesign-ios-glass/`). O contrato de cada tela — raiz, empilhada ou sheet, e se é
+desenhada pelo handoff ou derivada — está em `docs/design/redesign-ios-glass/MAPA-DE-TELAS.md`.
+Das 35, só 9 são desenhadas pelo handoff; as outras 26 foram derivadas do mesmo sistema.
 
-- Tela migrada usa **só** os tokens e componentes novos, nunca os dois misturados.
-- Agentes: `construtor-vidro`, `migrador-telas`, `integrador-redesign` (em `.claude/agents/`).
 - Os `.dc.html` do histórico continuam sendo a referência de **conteúdo e comportamento** das 26
-  telas que o handoff novo não desenha (Fluxos A, C, D, E, F) — só o visual deles foi aposentado.
+  telas derivadas (Fluxos A, C, D, E, F) — só o visual deles foi aposentado.
+- O catálogo vivo de componentes é `mobile/src/componentes/__catalogo__/` (abre no Expo Web pelo
+  gancho, ou no aparelho com `EXPO_PUBLIC_CATALOGO=1`). Peça nova entra nele antes de entrar numa tela.
+- `src/tema/__tests__/legado.test.ts` impede a direção aposentada (amarelo, curvas) de voltar.
 
 ## Como rodar e verificar
 
@@ -29,7 +28,7 @@ cd mobile
 npm install
 npx expo login        # obrigatório desde o SDK 57 (conta gratuita)
 npx expo start        # QR Code para o Expo Go
-npm test              # 218 testes: regras, navegação e montagem das 28 telas
+npm test              # 294 testes: regras, navegação, tokens e montagem das 35 telas
 npm run typecheck     # tsc --noEmit
 ```
 
@@ -110,8 +109,10 @@ em `docs/design/revisoes/`. A pessoa aprova, aprova parte ou descarta. O roteiro
   login, 4 passos de onboarding) e `estado/navegacao.ts` cuida do app, com o contrato
   de `spec/navegacao.md`: `ir` empilha, `voltar` desempilha, `trocarTab` zera a pilha,
   `concluir` substitui a pilha ao terminar um fluxo. `App.tsx` escolhe entre elas.
-  Toda tela nova entra em três lugares: a união `Tela`, o mapa `ABA_DA_TELA` e o
-  `telas/registro.ts` — há teste que cobra os três.
+  Toda tela nova entra em quatro lugares: a união `Tela`, os mapas `ABA_DA_TELA` e
+  `TIPO_DA_TELA` (raiz, empilhada ou sheet) e o `telas/registro.ts` — há teste que cobra os
+  quatro. Sheet não empilha: `ir` de um sheet para outro troca o conteúdo do painel, e
+  `fecharSheet()` volta para a última tela que não é sheet.
 - **Formulário não usa `useState` quando o valor atravessa telas.** O chassi desmonta
   a tela ao navegar, então rascunho de assistente mora em `estado/formularios.ts`
   (`useRascunho`). `useState` só para o que morre com a tela.
@@ -149,14 +150,13 @@ docs/design/revisoes/          relatórios das rodadas do /designer (capturas fi
 .claude/                       skill /designer, revisor-design e os agentes do redesign
 PROXIMOS-PASSOS.md             backlog priorizado do que vem depois
 IMPLEMENTACAO.md               plano em 6 fases — as seis estão concluídas
-tokens/                        tokens em JSON, CSS, SCSS e Tailwind (fonte dos tokens)
+tokens/                        tokens em JSON (fonte dos tokens, espelhada em tokens.ts)
 spec/politica.ts               regras de negócio como módulo puro (referência do porte)
 spec/casos-de-teste.md         casos de teste tabelados das regras
 spec/componentes.md            inventário de componentes com props
 spec/navegacao.md              máquina de navegação (telas, transições, pilha)
 spec/acessibilidade.md         contraste, alvos de toque, leitores de tela
 data/seed.json                 dados-semente (alunos, extratos, políticas)
-assets/                        SVGs legados (curvas e ícones da navbar antiga) — saem na Onda 4
 Envio01-AulaEmDia (1).pdf      proposta do projeto: problema, concorrência, escopo do MVP
 ```
 

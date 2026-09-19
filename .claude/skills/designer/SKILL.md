@@ -151,9 +151,8 @@ Estas regras vencem o Impeccable quando os dois conflitam ("the brief wins").
   `TIPO.*` e espaço vertical por `comEspaco()`; cor de texto sempre explícita; dinheiro por
   `dinheiro()`; datas por `dominio/datas.ts`; seletor de store estável; rascunho que atravessa
   telas em `useRascunho`. Nada de curva, cabeçalho escuro ou amarelo — são da direção aposentada.
-- **Redesign em andamento:** enquanto `docs/design/redesign-ios-glass/PLANO.md` não estiver
-  concluído, não rode `/designer` sobre uma tela ainda não migrada (consulte
-  `MAPA-DE-TELAS.md`); pare e diga isso.
+- **Tela derivada:** 26 das 35 telas não têm desenho no handoff (ver `MAPA-DE-TELAS.md`). Nelas,
+  o padrão é a tela desenhada indicada como "Modelo" no mapa; não invente um terceiro padrão.
 - **Copy em pt-BR.** Só `clarify` reescreve texto, e sem inventar fato — por exemplo, não
   prometer envio automático de WhatsApp, que ainda não existe.
 - **Tokens novos (permitido nesta branch):** prefira sempre um token existente. Se nenhum servir,
