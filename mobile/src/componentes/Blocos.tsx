@@ -466,34 +466,46 @@ export function Avatar({
 /* ── Medidores ────────────────────────────────────────────────────────── */
 
 /**
- * Uma barra por aula do pacote: usadas em `preenchimento2`, restantes em
- * tint — âmbar quando o saldo está baixo. Decorativo: a informação está no
- * número do saldo e na linha "N de M usadas".
+ * Uma barra por unidade, 7px, raio 4, vão 4 (medidor de pacote de H§2).
+ *
+ * - `saldo` (padrão): as `usadas` primeiro, em `preenchimento2`; as restantes
+ *   em tint — âmbar quando `baixo`. É o medidor do pacote.
+ * - `progresso`: as `usadas` primeiro, em tint (âmbar quando `baixo`); o
+ *   resto em `preenchimento2`. Serve os passos do onboarding e as vagas do
+ *   plano gratuito.
+ *
+ * Decorativo: a informação está no número ao lado ("N de M usadas", "Passo N
+ * de 4").
  */
 export function MedidorPacote({
   total,
   usadas,
   baixo = false,
+  variante = 'saldo',
   estilo,
 }: {
   total: number;
+  /** quantas barras, a partir da esquerda, estão no primeiro estado */
   usadas: number;
   baixo?: boolean;
+  variante?: 'saldo' | 'progresso';
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useVidro();
+  const cheia = baixo ? cores.ambar : cores.tint;
+  const [primeiras, resto] =
+    variante === 'saldo' ? [cores.preenchimento2, cheia] : [cheia, cores.preenchimento2];
   return (
-    <View aria-hidden style={[estilos.medidor, estilo]}>
+    <View
+      aria-hidden
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[estilos.medidor, estilo]}
+    >
       {Array.from({ length: Math.max(0, total) }, (_, i) => (
         <View
           key={i}
-          style={[
-            estilos.barraMedidor,
-            {
-              backgroundColor:
-                i < usadas ? cores.preenchimento2 : baixo ? cores.ambar : cores.tint,
-            },
-          ]}
+          style={[estilos.barraMedidor, { backgroundColor: i < usadas ? primeiras : resto }]}
         />
       ))}
     </View>

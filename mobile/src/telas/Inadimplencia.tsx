@@ -17,7 +17,6 @@ import { BotaoPrimario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
 import { dinheiro, primeiroNome } from '../dominio/formato';
 import { valorPacote } from '../dominio/politica';
-import type { Aluno } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
 import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';

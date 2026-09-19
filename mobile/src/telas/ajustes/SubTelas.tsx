@@ -557,13 +557,11 @@ export function Conta() {
         {!pago ? (
           <>
             {/* Uma barra por vaga do plano, as ocupadas em cor (âmbar no
-                limite). O medidor do pacote pinta as "restantes" e as põe
-                no fim; por isso as vagas ocupadas entram como restantes e
-                a linha é espelhada, para a cor começar da esquerda.
-                Decorativo: o número vem logo abaixo, em texto. */}
+                limite). Decorativo: o número vem logo abaixo, em texto. */}
             <MedidorPacote
+              variante="progresso"
               total={LIMITE_GRATUITO}
-              usadas={LIMITE_GRATUITO - ocupadas}
+              usadas={ocupadas}
               baixo={ativos >= LIMITE_GRATUITO}
               estilo={estilos.medidor}
             />
@@ -647,7 +645,7 @@ const estilos = StyleSheet.create({
     borderRadius: RAIO_VIDRO.cartao,
     borderWidth: TAMANHO_VIDRO.bordaVidro,
   },
-  medidor: { marginTop: 14, transform: [{ scaleX: -1 }] },
+  medidor: { marginTop: 14 },
   beneficios: { marginTop: 10, gap: 6 },
   segundaAcao: { marginTop: 10 },
 });
