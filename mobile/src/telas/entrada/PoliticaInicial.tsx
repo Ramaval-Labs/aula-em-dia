@@ -10,7 +10,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 
-import { BlocoStatus } from '../../componentes/Blocos';
+import { BlocoStatus, CartaoDeAjuste } from '../../componentes/Blocos';
 import { Segmentado, Stepper, Switch } from '../../componentes/Controles';
 import { comoOAlunoVaiLer } from '../../dominio/mensagens';
 import { POLITICAS_PADRAO } from '../../dominio/politica';
@@ -18,7 +18,6 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
-import { CartaoDeAjuste } from './PecasDeEntrada';
 
 const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
 const VALIDADES = [

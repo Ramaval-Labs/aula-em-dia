@@ -7,7 +7,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BlocoStatus, CartaoVidro } from '../componentes/Blocos';
+import { BlocoStatus, CartaoDeAjuste } from '../componentes/Blocos';
 import { TelaVidro } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoTexto, Segmentado, Stepper, Switch } from '../componentes/Controles';
 import { temPacote } from '../dominio/politica';
@@ -17,7 +17,7 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { TIPO_VIDRO } from '../tema/tipografia';
 
 const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
 const VALIDADES = [
@@ -62,16 +62,6 @@ function diff(
     };
   }
   return null;
-}
-
-/** Título de cartão do handoff §9: 14.5/700, −.01em. */
-function TituloDoCartao({ children }: { children: string }) {
-  const { cores } = useVidro();
-  return (
-    <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
-      {children}
-    </Text>
-  );
 }
 
 export function Politica() {
@@ -123,8 +113,7 @@ export function Politica() {
         </Text>
       </View>
 
-      <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
-        <TituloDoCartao>Prazo mínimo de aviso</TituloDoCartao>
+      <CartaoDeAjuste titulo="Prazo mínimo de aviso" estilo={estilos.primeiro}>
         <Segmentado
           opcoes={PRAZOS}
           valor={atual.avisoHoras}
@@ -133,57 +122,46 @@ export function Politica() {
           rotuloDoGrupo="Prazo mínimo de aviso"
           estilo={estilos.controleLargo}
         />
-      </CartaoVidro>
+      </CartaoDeAjuste>
 
-      <CartaoVidro estilo={[estilos.cartao, estilos.linha]}>
-        <View style={estilos.flexivel}>
-          <TituloDoCartao>Falta avisada devolve a aula</TituloDoCartao>
-          <Text
-            style={[
-              comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
-              { color: cores.tinta2 },
-            ]}
-          >
-            {atual.avisadaDevolve
-              ? 'Dentro do prazo, o saldo não é debitado'
-              : 'A aula é debitada mesmo com aviso'}
-          </Text>
-        </View>
-        <Switch
-          ligado={atual.avisadaDevolve}
-          aoAlternar={(avisadaDevolve) => atualizar({ avisadaDevolve })}
-          rotulo="Falta avisada devolve a aula"
-        />
-      </CartaoVidro>
+      <CartaoDeAjuste
+        titulo="Falta avisada devolve a aula"
+        subtitulo={
+          atual.avisadaDevolve
+            ? 'Dentro do prazo, o saldo não é debitado'
+            : 'A aula é debitada mesmo com aviso'
+        }
+        direita={
+          <Switch
+            ligado={atual.avisadaDevolve}
+            aoAlternar={(avisadaDevolve) => atualizar({ avisadaDevolve })}
+            rotulo="Falta avisada devolve a aula"
+          />
+        }
+        estilo={estilos.cartao}
+      />
 
-      <CartaoVidro estilo={[estilos.cartao, estilos.linha]}>
-        <View style={estilos.flexivel}>
-          <TituloDoCartao>Reposições por pacote</TituloDoCartao>
-          <Text
-            style={[
-              comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
-              { color: cores.tinta2 },
-            ]}
-          >
-            Depois do limite, a falta debita
-          </Text>
-        </View>
-        <Stepper
-          valor={atual.limiteReposicoes}
-          minimo={0}
-          maximo={LIMITE_MAXIMO}
-          aoTrocar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
-          formatar={(v) => (v === 0 ? '—' : String(v))}
-          rotulo={
-            atual.limiteReposicoes === 0
-              ? 'sem limite de reposições'
-              : `${atual.limiteReposicoes} reposições por pacote`
-          }
-        />
-      </CartaoVidro>
+      <CartaoDeAjuste
+        titulo="Reposições por pacote"
+        subtitulo="Depois do limite, a falta debita"
+        estilo={estilos.cartao}
+        direita={
+          <Stepper
+            valor={atual.limiteReposicoes}
+            minimo={0}
+            maximo={LIMITE_MAXIMO}
+            aoTrocar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
+            formatar={(v) => (v === 0 ? '—' : String(v))}
+            rotulo={
+              atual.limiteReposicoes === 0
+                ? 'sem limite de reposições'
+                : `${atual.limiteReposicoes} reposições por pacote`
+            }
+          />
+        }
+      />
 
-      <CartaoVidro estilo={estilos.cartao}>
-        <TituloDoCartao>Validade do pacote</TituloDoCartao>
+      <CartaoDeAjuste titulo="Validade do pacote" estilo={estilos.cartao}>
         <Segmentado
           opcoes={VALIDADES}
           valor={atual.validadeDias}
@@ -192,14 +170,14 @@ export function Politica() {
           rotuloDoGrupo="Validade do pacote"
           estilo={estilos.controleLargo}
         />
-      </CartaoVidro>
+      </CartaoDeAjuste>
 
       {mudanca ? (
         <BlocoStatus
           tom="ambar"
           titulo={mudanca.titulo}
           texto={mudanca.texto}
-          estilo={estilos.cartao}
+          estilo={estilos.aviso}
         />
       ) : null}
     </TelaVidro>
@@ -207,11 +185,10 @@ export function Politica() {
 }
 
 const estilos = StyleSheet.create({
-  flexivel: { flex: 1, minWidth: 0 },
   titulo: { paddingHorizontal: 6 },
-  cartao: { marginTop: 12, paddingVertical: 16, paddingHorizontal: 17 },
+  cartao: { marginTop: 12 },
+  aviso: { marginTop: 12 },
   primeiro: { marginTop: 18 },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  controleLargo: { marginTop: 12, alignSelf: 'stretch' },
+  controleLargo: { alignSelf: 'stretch' },
   descartar: { marginTop: 8 },
 });

@@ -12,7 +12,13 @@ import * as Clipboard from 'expo-clipboard';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { Avatar, CartaoVidro, EstadoVazio, MedidorPacote } from '../../componentes/Blocos';
+import {
+  Avatar,
+  CartaoDeAjuste,
+  CartaoVidro,
+  EstadoVazio,
+  MedidorPacote,
+} from '../../componentes/Blocos';
 import { CampoDeTexto } from '../../componentes/Campos';
 import { TelaVidro } from '../../componentes/Chassi';
 import {
@@ -80,16 +86,6 @@ function TelaDeAjuste({
   );
 }
 
-/** Título de cartão de controle (§9): 14.5/700. */
-function TituloDoCartao({ children }: { children: string }) {
-  const { cores } = useVidro();
-  return (
-    <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
-      {children}
-    </Text>
-  );
-}
-
 /** Cartão de §9 com título, sub-linha e switch à direita. */
 function CartaoComSwitch({
   titulo,
@@ -104,19 +100,13 @@ function CartaoComSwitch({
   aoAlternar: (v: boolean) => void;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
   return (
-    <CartaoVidro estilo={[estilos.cartao, estilos.linha, estilo]}>
-      <View style={estilos.flexivel}>
-        <TituloDoCartao>{titulo}</TituloDoCartao>
-        <Text
-          style={[comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }), { color: cores.tinta2 }]}
-        >
-          {sub}
-        </Text>
-      </View>
-      <Switch ligado={ligado} aoAlternar={aoAlternar} rotulo={titulo} />
-    </CartaoVidro>
+    <CartaoDeAjuste
+      titulo={titulo}
+      subtitulo={sub}
+      direita={<Switch ligado={ligado} aoAlternar={aoAlternar} rotulo={titulo} />}
+      estilo={[estilos.espacoCartao, estilo]}
+    />
   );
 }
 
@@ -362,8 +352,7 @@ export function PacotesPadrao() {
         />
       }
     >
-      <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
-        <TituloDoCartao>Quantidade padrão</TituloDoCartao>
+      <CartaoDeAjuste titulo="Quantidade padrão" estilo={estilos.primeiro}>
         <Segmentado
           opcoes={opcoes}
           valor={cfg.aulas}
@@ -372,7 +361,7 @@ export function PacotesPadrao() {
           rotuloDoGrupo="Quantidade padrão de aulas"
           estilo={estilos.controleLargo}
         />
-      </CartaoVidro>
+      </CartaoDeAjuste>
 
       <CartaoVidro estilo={estilos.cartao}>
         <CampoDeTexto
@@ -685,8 +674,8 @@ const estilos = StyleSheet.create({
     gap: 13,
   },
   campos: { gap: 16 },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  controleLargo: { marginTop: 12, alignSelf: 'stretch' },
+  controleLargo: { alignSelf: 'stretch' },
+  espacoCartao: { marginTop: 12 },
   grupo: { marginTop: 24, marginBottom: 9 },
   bloco: { marginTop: 12 },
   nota: {

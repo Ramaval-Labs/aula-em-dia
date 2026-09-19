@@ -11,7 +11,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CartaoVidro } from '../../componentes/Blocos';
+import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
 import { CampoDeTexto } from '../../componentes/Campos';
 import { Segmentado } from '../../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../../componentes/Listas';
@@ -28,7 +28,6 @@ import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 import { RAIO_VIDRO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
-import { CartaoDeAjuste } from './PecasDeEntrada';
 
 const OPCOES_DE_AULAS = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 

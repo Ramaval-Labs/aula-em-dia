@@ -16,7 +16,7 @@ import * as Clipboard from 'expo-clipboard';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CartaoVidro, EstadoVazio } from '../componentes/Blocos';
+import { CartaoDeAjuste, CartaoVidro, EstadoVazio } from '../componentes/Blocos';
 import { BotaoInline, BotaoPrimario, Segmentado } from '../componentes/Controles';
 import { LinhaLista, ListaAgrupada } from '../componentes/Listas';
 import { Sheet } from '../componentes/Sheet';
@@ -88,19 +88,16 @@ export function Pagamento() {
         {`${aluno.name} · pacote de ${aluno.total} aulas`}
       </Text>
 
-      <CartaoVidro estilo={estilos.espaco16}>
-        <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
-          Como você recebeu
-        </Text>
+      <CartaoDeAjuste titulo="Como você recebeu" estilo={estilos.espaco16}>
         <Segmentado
           porte="cartao"
           opcoes={MEIOS}
           valor={form.meio}
           aoTrocar={(meio) => atualizar({ meio })}
           rotuloDoGrupo="Meio de pagamento"
-          estilo={estilos.espaco12}
+          estilo={estilos.largo}
         />
-      </CartaoVidro>
+      </CartaoDeAjuste>
 
       {form.meio === 'Pix' ? (
         perfil.chavePix ? (
@@ -187,7 +184,7 @@ const estilos = StyleSheet.create({
   direita: { alignItems: 'flex-end' },
   subLinha: { paddingTop: 4, paddingHorizontal: 6 },
   nota: { paddingHorizontal: 6 },
-  espaco12: { marginTop: 12, alignSelf: 'stretch' },
+  largo: { alignSelf: 'stretch' },
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
   linhaChave: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },

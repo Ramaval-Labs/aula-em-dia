@@ -50,6 +50,57 @@ export function CartaoVidro({
   );
 }
 
+/* ── Cartão de ajuste ─────────────────────────────────────────────────── */
+
+/**
+ * O cartão de controle da Política (H§9): título 14.5/700, sub-linha
+ * opcional em `tinta2` e o controle à direita (`direita`: switch, stepper) ou
+ * embaixo (`children`: segmentado, fichas, grade). Padding `16 17`.
+ *
+ * É o molde de toda configuração do app — Política, onboarding, sub-telas de
+ * Ajustes, pacote, pagamento e lembrete.
+ */
+export function CartaoDeAjuste({
+  titulo,
+  subtitulo,
+  direita,
+  children,
+  estilo,
+}: {
+  titulo: string;
+  subtitulo?: string;
+  /** controle na mesma linha do título (switch, stepper) */
+  direita?: React.ReactNode;
+  /** controle abaixo do título (segmentado, fichas), 12px abaixo */
+  children?: React.ReactNode;
+  estilo?: StyleProp<ViewStyle>;
+}) {
+  const { cores } = useVidro();
+  return (
+    <CartaoVidro estilo={[estilos.padAjuste, estilo]}>
+      <View style={estilos.linhaAjuste}>
+        <View style={estilos.flexivel}>
+          <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
+            {titulo}
+          </Text>
+          {subtitulo ? (
+            <Text
+              style={[
+                comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
+                { color: cores.tinta2 },
+              ]}
+            >
+              {subtitulo}
+            </Text>
+          ) : null}
+        </View>
+        {direita}
+      </View>
+      {children ? <View style={estilos.corpoAjuste}>{children}</View> : null}
+    </CartaoVidro>
+  );
+}
+
 /* ── Cor de status ────────────────────────────────────────────────────── */
 
 export type TomDeStatus = 'neutro' | 'tint' | 'vermelho' | 'ambar' | 'verde';
@@ -460,6 +511,9 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
   padCartao: { paddingVertical: 17, paddingHorizontal: 18 },
+  padAjuste: { paddingVertical: 16, paddingHorizontal: 17 },
+  linhaAjuste: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  corpoAjuste: { marginTop: 12 },
   padResumo: { flex: 1, paddingVertical: 14, paddingHorizontal: 13 },
   bloco: {
     borderRadius: RAIO_VIDRO.bloco,

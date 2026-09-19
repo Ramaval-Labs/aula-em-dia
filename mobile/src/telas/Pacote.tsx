@@ -9,7 +9,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CartaoVidro } from '../componentes/Blocos';
+import { CartaoDeAjuste, CartaoVidro } from '../componentes/Blocos';
 import { CampoDeTexto } from '../componentes/Campos';
 import { BotaoPrimario, CartaoEscolha, Segmentado, Switch } from '../componentes/Controles';
 import { CabecalhoGrupo } from '../componentes/Listas';
@@ -24,7 +24,7 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { texto, TIPO_VIDRO } from '../tema/tipografia';
 import { TAMANHO_VIDRO } from '../tema/tokens';
 
 const VALIDADES = [
@@ -113,12 +113,7 @@ export function Pacote() {
         />
       </CartaoVidro>
 
-      <CartaoVidro estilo={estilos.cartao}>
-        <Text
-          style={[texto(11.5, 600, { tracking: 0.04, maiuscula: true }), { color: cores.tinta3 }]}
-        >
-          Validade
-        </Text>
+      <CartaoDeAjuste titulo="Validade" estilo={estilos.cartao}>
         <Segmentado
           opcoes={VALIDADES}
           valor={cfg.validadeDias}
@@ -127,29 +122,21 @@ export function Pacote() {
           rotuloDoGrupo="Validade do pacote"
           estilo={estilos.segmentado}
         />
-      </CartaoVidro>
+      </CartaoDeAjuste>
 
       {renovacao && sobrando > 0 ? (
-        <CartaoVidro estilo={[estilos.cartao, estilos.linhaSwitch]}>
-          <View style={estilos.flexivel}>
-            <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
-              {rotuloDeSomar}
-            </Text>
-            <Text
-              style={[
-                comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
-                { color: cores.tinta2 },
-              ]}
-            >
-              Sem isso, o saldo antigo é descartado
-            </Text>
-          </View>
-          <Switch
-            ligado={cfg.somarSaldo}
-            aoAlternar={(somarSaldo) => atualizar({ somarSaldo })}
-            rotulo={rotuloDeSomar}
-          />
-        </CartaoVidro>
+        <CartaoDeAjuste
+          titulo={rotuloDeSomar}
+          subtitulo="Sem isso, o saldo antigo é descartado"
+          estilo={estilos.cartao}
+          direita={
+            <Switch
+              ligado={cfg.somarSaldo}
+              aoAlternar={(somarSaldo) => atualizar({ somarSaldo })}
+              rotulo={rotuloDeSomar}
+            />
+          }
+        />
       ) : null}
 
       <CartaoVidro estilo={estilos.cartao}>
@@ -196,13 +183,11 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
 }
 
 const estilos = StyleSheet.create({
-  flexivel: { flex: 1, minWidth: 0 },
   subLinha: { textAlign: 'center' },
   tituloGrupo: { marginTop: 18 },
   escolhas: { marginTop: 9, gap: 10 },
   cartao: { marginTop: 14 },
-  segmentado: { marginTop: 10, alignSelf: 'stretch' },
-  linhaSwitch: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  segmentado: { alignSelf: 'stretch' },
   linhaSaldo: { flexDirection: 'row', alignItems: 'flex-end' },
   numeroDoSaldo: { marginTop: 9, flexDirection: 'row', alignItems: 'baseline', gap: 7 },
   linhas: { marginTop: 14, paddingTop: 12, borderTopWidth: TAMANHO_VIDRO.bordaVidro, gap: 8 },

@@ -8,7 +8,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BlocoStatus, CartaoVidro, EstadoVazio } from '../componentes/Blocos';
+import { BlocoStatus, CartaoDeAjuste, EstadoVazio } from '../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Controles';
 import { PreviaDeMensagemVidro } from '../componentes/PreviaVidro';
 import { Sheet } from '../componentes/Sheet';
@@ -88,10 +88,7 @@ export function Lembrete() {
         {`Para ${primeiroNome(aluno.name)}`}
       </Text>
 
-      <CartaoVidro estilo={estilos.espaco16}>
-        <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
-          Tom da mensagem
-        </Text>
+      <CartaoDeAjuste titulo="Tom da mensagem" estilo={estilos.espaco16}>
         <Segmentado
           porte="cartao"
           opcoes={TONS}
@@ -100,7 +97,7 @@ export function Lembrete() {
           rotuloDoGrupo="Tom da mensagem"
           estilo={estilos.segmentado}
         />
-      </CartaoVidro>
+      </CartaoDeAjuste>
 
       <View style={estilos.espaco14}>
         <PreviaDeMensagemVidro
@@ -129,6 +126,6 @@ const estilos = StyleSheet.create({
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
   // O trilho do catálogo se encolhe ao conteúdo; aqui ele ocupa o cartão.
-  segmentado: { marginTop: 12, alignSelf: 'stretch' },
+  segmentado: { alignSelf: 'stretch' },
   rodape: { gap: 4 },
 });

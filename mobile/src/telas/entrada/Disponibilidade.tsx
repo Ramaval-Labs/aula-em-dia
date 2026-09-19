@@ -3,7 +3,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 
-import { CartaoVidro } from '../../componentes/Blocos';
+import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
 import { Switch } from '../../componentes/Controles';
 import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
 import { alternarBloco, resumo } from '../../dominio/disponibilidade';
@@ -11,7 +11,6 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
-import { CartaoDeAjuste } from './PecasDeEntrada';
 
 export function Disponibilidade() {
   const avancar = useSessao((s) => s.avancar);
