@@ -3,28 +3,33 @@
  *
  * Só é alcançável quando o motor de agenda devolve lista vazia de verdade —
  * as razões e as saídas saem do estado real, não de texto fixo.
+ *
+ * Derivada: modelo §5 — o bloco âmbar do limite atingido carrega o "por quê",
+ * e as saídas são uma lista agrupada. "Deixar pendente" fica no rodapé do
+ * sheet como secundário: é a saída de não fazer nada, e não merece o peso de
+ * primário (mesmo desenho do "Fechar" do sheet de resultado).
  */
 
 import React, { useMemo } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
-import { Caixa, Cartao, LinhaLista, Lista } from '../../componentes/Base';
-import { BotaoContorno } from '../../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../../componentes/Cabecalho';
-import { Tela } from '../../componentes/Tela';
+import { BlocoStatus } from '../../componentes/Blocos';
+import { BotaoSecundario } from '../../componentes/Controles';
+import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
+import { Sheet } from '../../componentes/Sheet';
 import { motivosDaFalta } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { primeiroNome } from '../../dominio/formato';
 import { avisos, useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../../tema/tipografia';
-import { TAMANHO } from '../../tema/tokens';
+import { useVidro } from '../../tema/TemaProvider';
+import { comEspaco, texto } from '../../tema/tipografia';
+import { SubLinhaSheet } from './pecas';
 
 export function SemHorario() {
-  const cores = useCores();
-  const { alunoId, ir, concluir, voltar } = useNavegacao();
+  const { cores } = useVidro();
+  const { alunoId, ir, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const alunos = useDados((s) => s.alunos);
   const disponibilidade = useDados((s) => s.disponibilidade);
@@ -73,81 +78,62 @@ export function SemHorario() {
       aoTocar: () => {
         if (!aluno) return;
         atualizarAluno(aluno.id, { pendencia: null });
-        avisar(
-          `A aula de ${primeiroNome(aluno.name)} voltou ao saldo, sem reposição marcada.`,
-        );
+        avisar(`A aula de ${primeiroNome(aluno.name)} voltou ao saldo, sem reposição marcada.`);
         concluir('aluno', aluno.id);
       },
     },
   ];
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>Nenhum horário cabe</TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-            {aluno
-              ? `Não achei janela para repor a aula do ${primeiroNome(aluno.name)}.`
-              : ''}
-          </Text>
-        </CabecalhoEscuro>
+    <Sheet
+      titulo="Nenhum horário cabe"
+      rodape={
+        <BotaoSecundario
+          rotulo="Deixar pendente"
+          aoTocar={() => concluir('aluno', aluno?.id ?? null)}
+        />
       }
-      conteudoEstilo={{ gap: 12 }}
     >
-      <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
-          Por quê
-        </Text>
-        <View style={{ marginTop: 12, gap: 11 }}>
-          {razoes.map((r) => (
-            <View key={r} style={{ flexDirection: 'row', gap: 12 }}>
-              <View
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 3,
-                  marginTop: 7,
-                  backgroundColor: cores.vermelho,
-                }}
-              />
-              <Text style={[texto(13.5, 400, { altura: 1.5 }), { flex: 1, color: cores.textoMedio }]}>
-                {r}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </Cartao>
+      <SubLinhaSheet
+        texto={
+          aluno ? `Não achei janela para repor a aula do ${primeiroNome(aluno.name)}.` : undefined
+        }
+      />
 
-      <Lista rotulo="Saídas">
-        {saidas.map((s, i) => (
-          <LinhaLista
-            key={s.titulo}
-            titulo={s.titulo}
-            sub={s.sub}
-            chevron
-            aoTocar={s.aoTocar}
-            ultima={i === saidas.length - 1}
-          />
+      {razoes.length > 0 ? (
+        <BlocoStatus
+          tom="ambar"
+          icone="alerta"
+          titulo="Por quê"
+          texto={razoes.join(' ')}
+          estilo={estilos.bloco}
+        />
+      ) : null}
+
+      <CabecalhoGrupo titulo="Saídas" estilo={estilos.cabecalho} />
+      <ListaAgrupada estilo={estilos.lista}>
+        {saidas.map((s) => (
+          <LinhaLista key={s.titulo} titulo={s.titulo} subtitulo={s.sub} chevron aoTocar={s.aoTocar} />
         ))}
-      </Lista>
+      </ListaAgrupada>
 
-      <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
-          Deixar pendente também é uma escolha: a reposição continua na lista de alunos
-          até você resolver.
-        </Text>
-        <View style={{ marginTop: 11 }}>
-          <BotaoContorno
-            rotulo="Deixar pendente"
-            altura={44}
-            aoTocar={() => concluir('aluno', aluno?.id ?? null)}
-          />
-        </View>
-      </Caixa>
-    </Tela>
+      <Text
+        style={[
+          comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 14 }),
+          estilos.recuo,
+          { color: cores.tinta2 },
+        ]}
+      >
+        Deixar pendente também é uma escolha: a reposição continua na lista de alunos até
+        você resolver.
+      </Text>
+    </Sheet>
   );
 }
+
+const estilos = StyleSheet.create({
+  bloco: { marginTop: 16 },
+  cabecalho: { marginTop: 24 },
+  lista: { marginTop: 9 },
+  recuo: { paddingHorizontal: 6 },
+});
