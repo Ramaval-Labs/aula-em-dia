@@ -9,7 +9,7 @@
  * tocando na tela certa, no aparelho.
  */
 
-import { render, screen } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -184,13 +184,15 @@ describe('app com um sheet aberto', () => {
   });
 
   it('desenha a tela de fundo e o painel, sem a tab bar', async () => {
-    await montarComponente(App);
+    // As consultas vão no resultado do render, não no `screen` global: as
+    // montagens síncronas acima podem terminar depois e trocar o `screen`.
+    const app = await montarComponente(App);
     // O tema carrega do AsyncStorage antes da primeira pintura.
-    expect(await screen.findByText('Qual aluno')).toBeTruthy();
-    expect(screen.getByRole('header', { name: 'Registrar aula' })).toBeTruthy();
+    expect(await app.findByText('Qual aluno')).toBeTruthy();
+    expect(app.getByRole('header', { name: 'Registrar aula' })).toBeTruthy();
     // A tela de baixo continua desenhada atrás do painel.
-    expect(screen.getAllByText('Alunos').length).toBeGreaterThan(0);
+    expect(app.getAllByText('Alunos').length).toBeGreaterThan(0);
     // A tab bar some com o sheet aberto.
-    expect(screen.queryByRole('tab')).toBeNull();
+    expect(app.queryByRole('tab')).toBeNull();
   });
 });

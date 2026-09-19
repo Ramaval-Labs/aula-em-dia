@@ -13,7 +13,7 @@ import { create } from 'zustand';
 
 import { useDados } from './dados';
 import { useFormularios } from './formularios';
-import { useNavegacao } from './navegacao';
+import { TIPO_DA_TELA, useNavegacao } from './navegacao';
 import { useSessao } from './sessao';
 
 type Catalogo = {
@@ -44,5 +44,8 @@ export function exporParaDepuracao() {
     formularios: useFormularios,
     navegacao: useNavegacao,
     sessao: useSessao,
+    // O script de capturas decide raiz × empilhada × sheet por aqui, sem
+    // manter uma lista própria que desatualiza.
+    tipoDaTela: TIPO_DA_TELA,
   };
 }

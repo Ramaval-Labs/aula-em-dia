@@ -8,6 +8,26 @@
  * que o detector do Impeccable consegue ler: ele não entende o código React
  * Native, mas entende o DOM que o react-native-web produz.
  *
+ * Opções:
+ *   --tela <chave>       tela do app (união `Tela` de estado/navegacao.ts); padrão home
+ *   --aluno <id>         aluno do contexto (raf, val, bea… da semente)
+ *   --tema claro|escuro  padrão claro
+ *   --entrada <qual>     máquina de entrada: splash, boasVindas, acesso, onboarding:1..4
+ *   --catalogo           catálogo de componentes (src/componentes/__catalogo__)
+ *   --clicar <texto>     toca no primeiro elemento com esse texto (repetível)
+ *   --rolar <px|fim>     rola a maior área rolável
+ *   --nome <arquivo>     nome do PNG/HTML sem extensão; padrão tela-aluno-tema
+ *   --saida <pasta>      padrão docs/design/revisoes/capturas
+ *   --porta <n>          porta do Expo Web; padrão 8099 (reaproveita se já no ar)
+ *   --largura/--altura   viewport; padrão 390 × 844
+ *
+ * Como cada tela é aberta sai do próprio app, pelo gancho `__aulaEmDia`
+ * (src/estado/depuracao.ts), que expõe `TIPO_DA_TELA`:
+ *   - raiz → `trocarTab(tela)`;
+ *   - empilhada → `ir(tela)`, empilhada sobre a raiz da aba;
+ *   - sheet → com `--aluno`, abre a ficha do aluno e sobe o painel sobre ela
+ *     (sem aluno, sobre a Home), como o professor chega lá.
+ *
  * Exemplos:
  *   node scripts/capturar.mjs --tela home
  *   node scripts/capturar.mjs --tela reposicao --aluno raf --nome antes-reposicao
@@ -36,7 +56,6 @@ import { chromium } from 'playwright-core';
 
 const RAIZ_MOBILE = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SAIDA_PADRAO = resolve(RAIZ_MOBILE, '..', 'docs', 'design', 'revisoes', 'capturas');
-const RAIZES = ['home', 'financeiro', 'ajustes'];
 
 // As chaves de storage vêm do próprio app, para o script não divergir dele.
 const fonteDasChaves = readFileSync(join(RAIZ_MOBILE, 'src', 'dados', 'armazenamento.ts'), 'utf8');
@@ -152,8 +171,8 @@ try {
   await pagina.evaluate(() => document.fonts.ready);
 
   await pagina.evaluate(
-    ({ tela, aluno, entrada, raizes, catalogo }) => {
-      const { navegacao, sessao } = globalThis.__aulaEmDia;
+    ({ tela, aluno, entrada, catalogo }) => {
+      const { navegacao, sessao, tipoDaTela } = globalThis.__aulaEmDia;
       if (catalogo) {
         globalThis.__aulaEmDia.catalogo.getState().abrir();
         return;
@@ -171,17 +190,27 @@ try {
         } else sessao.setState({ fase: 'entrada', tela: qual });
         return;
       }
-      if (raizes.includes(tela)) navegacao.getState().trocarTab(tela);
-      else navegacao.getState().ir(tela, aluno ? { alunoId: aluno } : undefined);
+      const tipo = tipoDaTela[tela];
+      if (!tipo) throw new Error(`Tela desconhecida: ${tela}`);
+      const nav = navegacao.getState();
+      if (tipo === 'raiz') {
+        nav.trocarTab(tela);
+      } else if (tipo === 'sheet' && aluno) {
+        // O painel sobe sobre a ficha, como no app; o sheet guarda o aluno.
+        nav.ir('aluno', { alunoId: aluno });
+        navegacao.getState().ir(tela, { alunoId: aluno });
+      } else {
+        nav.ir(tela, aluno ? { alunoId: aluno } : undefined);
+      }
     },
     {
       tela: op.tela,
       aluno: op.aluno ?? null,
       entrada: op.entrada ?? null,
-      raizes: RAIZES,
       catalogo: op.catalogo,
     },
   );
+  // O sheet sobe em 340ms; a barra e o toast, em 200ms.
   await pagina.waitForTimeout(500);
 
   for (const alvo of op.clicar) {
