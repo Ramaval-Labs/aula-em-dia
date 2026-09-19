@@ -1,8 +1,11 @@
 /**
  * Toast do iOS Glass (handoff-ios-glass/README.md, "Toast").
  *
- * Faixa de vidro a 106px da base — acima da tab bar —, com ícone de check em
- * tint e uma frase que **confirma o que foi feito**. Nunca pede ação, e por
+ * Faixa de vidro 14px acima da tab bar (os 106px do handoff = base 26 + barra
+ * 66 + 14), acompanhando a tab bar quando a área segura a empurra para cima.
+ * Com um sheet aberto, os mesmos 14px acima do rodapé fixo do painel — o
+ * toast nunca cobre a ação primária. Ícone de check em tint e uma frase que
+ * **confirma o que foi feito**. Nunca pede ação, e por
  * isso é `live region` educada: anuncia sem interromper o leitor de tela.
  *
  * A loja (`estado/toast.ts`) guarda a mensagem pelos 3600ms do handoff.
@@ -18,10 +21,18 @@ import { texto } from '../tema/tipografia';
 import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 import { Icone } from './Icone';
+import { useBaseDaTabBar } from './TabBar';
 import { SuperficieVidro } from './Vidro';
+
+/** Folga entre o toast e o que está abaixo dele (tab bar ou rodapé do sheet). */
+const FOLGA = TAMANHO.toastBase - TAMANHO.baseTabBar - TAMANHO.tabBar;
 
 export function Toast() {
   const mensagem = useToast((s) => s.mensagem);
+  const reservaDoSheet = useToast((s) => s.reservaDoSheet);
+  const baseDaTabBar = useBaseDaTabBar();
+  const base =
+    reservaDoSheet !== null ? reservaDoSheet + FOLGA : baseDaTabBar + TAMANHO.tabBar + FOLGA;
   const { cores, material } = useCores();
   const semMovimento = useReduzirMovimento();
   const fade = useRef(new Animated.Value(0)).current;
@@ -55,7 +66,7 @@ export function Toast() {
         position: 'absolute',
         left: TAMANHO.padLateral,
         right: TAMANHO.padLateral,
-        bottom: TAMANHO.toastBase,
+        bottom: base,
         opacity: fade,
       }}
     >

@@ -19,7 +19,7 @@
  */
 
 import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -109,10 +109,10 @@ export function TelaDeEntrada({
   return (
     <View style={estilos.cheio}>
       {comTeclado ? (
-        <KeyboardAvoidingView
-          style={estilos.cheio}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        // `padding` nos dois sistemas: o edge-to-edge do SDK 57 não garante o
+        // adjustResize no Android. Onde a janela encolher mesmo assim, o
+        // KeyboardAvoidingView mede a sobreposição real e não soma de novo.
+        <KeyboardAvoidingView style={estilos.cheio} behavior="padding">
           {corpo}
         </KeyboardAvoidingView>
       ) : (

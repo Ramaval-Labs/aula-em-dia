@@ -31,10 +31,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavegacao } from '../estado/navegacao';
+import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { useAlturaDoTeclado } from './teclado';
 import { SuperficieVidro } from './Vidro';
 
 /** 88% para sheet de tarefa, 74% para o de resultado. */
@@ -56,9 +58,10 @@ export type PropsSheet = {
   rodape?: React.ReactNode;
   /**
    * Sheet com campo de texto: tocar num botão com o teclado aberto aciona o
-   * botão (em vez de só fechar o teclado), arrastar recolhe o teclado e, no
-   * iOS, o corpo ganha o inset do teclado para o campo focado não ficar
-   * embaixo dele. O painel tem altura fixa, então ele não sobe inteiro.
+   * botão (em vez de só fechar o teclado) e arrastar recolhe o teclado. Com o
+   * teclado aberto o painel inteiro sobe acima dele e encolhe para caber
+   * (`min(fração · H, H − teclado − topo seguro − 44)`): o rodapé com a ação
+   * primária fica sempre à vista, e o corpo rola no que sobrou.
    */
   comTeclado?: boolean;
   children: React.ReactNode;
@@ -80,12 +83,19 @@ export function Sheet({
   const fecharSheet = useNavegacao((s) => s.fecharSheet);
   const fechar = aoFechar ?? fecharSheet;
 
-  const alturaPainel = Math.round(
+  const teclado = useAlturaDoTeclado(comTeclado);
+  const alturaCheia = Math.round(
     alturaTela *
       (altura === 'resultado' ? TAMANHO.alturaResultado : TAMANHO.alturaSheet),
   );
+  // Com o teclado, o painel fica entre o teclado e a faixa de toque de 44
+  // abaixo da área segura do topo.
+  const alturaPainel =
+    teclado > 0
+      ? Math.min(alturaCheia, alturaTela - teclado - insets.top - TOQUE_ACIMA)
+      : alturaCheia;
 
-  const subida = useRef(new Animated.Value(semMovimento ? 0 : alturaPainel)).current;
+  const subida = useRef(new Animated.Value(semMovimento ? 0 : alturaCheia)).current;
   const fade = useRef(new Animated.Value(semMovimento ? 1 : 0)).current;
 
   useEffect(() => {
@@ -131,6 +141,16 @@ export function Sheet({
     return () => clearTimeout(t);
   }, [semMovimento]);
 
+  // O toast sobe acima do rodapé fixo (e do teclado) enquanto o painel está
+  // aberto. `alturaDoRodape` vem do onLayout.
+  const reservarSheet = useToast((s) => s.reservarSheet);
+  const [alturaDoRodape, setAlturaDoRodape] = React.useState(0);
+  const temRodape = !!rodape;
+  useEffect(() => {
+    reservarSheet((temRodape ? alturaDoRodape : insets.bottom) + teclado);
+  }, [temRodape, alturaDoRodape, insets.bottom, teclado, reservarSheet]);
+  useEffect(() => () => reservarSheet(null), [reservarSheet]);
+
   // O voltar do Android fecha o painel antes de mexer na pilha da tela.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -146,7 +166,6 @@ export function Sheet({
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps={comTeclado ? 'handled' : undefined}
       keyboardDismissMode={comTeclado ? 'interactive' : undefined}
-      automaticallyAdjustKeyboardInsets={comTeclado}
       contentContainerStyle={{ paddingTop: 6, paddingHorizontal: 16, paddingBottom: 16 }}
     >
       {children}
@@ -231,10 +250,12 @@ export function Sheet({
 
           {rodape ? (
             <View
+              onLayout={(e) => setAlturaDoRodape(e.nativeEvent.layout.height)}
               style={{
                 paddingTop: 10,
                 paddingHorizontal: 16,
-                paddingBottom: Math.max(30, insets.bottom),
+                // Sobre o teclado não há indicador de home a respeitar.
+                paddingBottom: teclado > 0 ? 10 : Math.max(30, insets.bottom),
                 borderTopWidth: TAMANHO.bordaVidro,
                 borderTopColor: cores.fio,
               }}
@@ -244,6 +265,8 @@ export function Sheet({
           ) : null}
         </SuperficieVidro>
       </Animated.View>
+      {/* O espaço do teclado: o painel fica apoiado em cima dele. */}
+      {teclado > 0 ? <View style={{ height: teclado }} /> : null}
     </View>
   );
 }

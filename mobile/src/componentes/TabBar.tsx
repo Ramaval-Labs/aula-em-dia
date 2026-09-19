@@ -36,6 +36,12 @@ const ABAS: { chave: Aba; rotulo: string; icone: NomeDeIcone }[] = [
  */
 const RECUO_NA_AREA_SEGURA = 8;
 
+/** Distância da tab bar à base da tela, com a área segura. */
+export function useBaseDaTabBar(): number {
+  const insets = useSafeAreaInsets();
+  return Math.max(TAMANHO.baseTabBar, insets.bottom - RECUO_NA_AREA_SEGURA);
+}
+
 function ItemDeAba({
   icone,
   rotulo,
@@ -126,8 +132,7 @@ export function TabBar({
   aoTrocar: (aba: Aba) => void;
 }) {
   const { material } = useCores();
-  const insets = useSafeAreaInsets();
-  const base = Math.max(TAMANHO.baseTabBar, insets.bottom - RECUO_NA_AREA_SEGURA);
+  const base = useBaseDaTabBar();
 
   return (
     <View

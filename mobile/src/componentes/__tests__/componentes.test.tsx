@@ -167,3 +167,26 @@ describe('avatar', () => {
     expect(iniciais('')).toBe('');
   });
 });
+
+describe('sheet e toast', () => {
+  it('o sheet aberto reserva a base para o toast e devolve ao fechar', async () => {
+    const { Sheet } = require('../Sheet');
+    const { useToast } = require('../../estado/toast');
+    const { Text } = require('react-native');
+    const { SafeAreaProvider } = require('react-native-safe-area-context');
+    const metrica = {
+      frame: { x: 0, y: 0, width: 390, height: 844 },
+      insets: { top: 47, left: 0, right: 0, bottom: 34 },
+    };
+    const r = await comTema(
+      <SafeAreaProvider initialMetrics={metrica}>
+        <Sheet titulo="Registrar aula" rodape={<Text>Confirmar</Text>}>
+          <Text>corpo</Text>
+        </Sheet>
+      </SafeAreaProvider>,
+    );
+    expect(useToast.getState().reservaDoSheet).not.toBeNull();
+    await r.unmount();
+    expect(useToast.getState().reservaDoSheet).toBeNull();
+  });
+});

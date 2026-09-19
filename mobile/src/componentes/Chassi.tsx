@@ -22,7 +22,6 @@ import {
   Animated,
   Easing,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -333,12 +332,11 @@ export function TelaVidro({
   return (
     <View style={styles.cheio}>
       {comTeclado ? (
-        // O iOS não encolhe a janela com o teclado; o Android (adjustResize)
-        // já encolhe, e o padding somaria duas vezes.
-        <KeyboardAvoidingView
-          style={styles.cheio}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        // `padding` nos dois sistemas: o iOS não encolhe a janela com o
+        // teclado, e o edge-to-edge do SDK 57 não garante o adjustResize no
+        // Android. Onde a janela encolher mesmo assim, o KeyboardAvoidingView
+        // mede a sobreposição real (quadro × topo do teclado) e não soma de novo.
+        <KeyboardAvoidingView style={styles.cheio} behavior="padding">
           {rolagem}
         </KeyboardAvoidingView>
       ) : (
