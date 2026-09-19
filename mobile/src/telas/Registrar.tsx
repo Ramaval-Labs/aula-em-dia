@@ -16,7 +16,14 @@ import { EstadoVazio } from '../componentes/Blocos';
 import { BotaoPrimario, CartaoEscolha, Segmentado } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { Sheet } from '../componentes/Sheet';
-import { efeito, podeRegistrar, saldo, saldoBaixo, temPacote } from '../dominio/politica';
+import {
+  efeito,
+  geraReposicao,
+  podeRegistrar,
+  saldo,
+  saldoBaixo,
+  temPacote,
+} from '../dominio/politica';
 import type { Aluno, Desfecho, Politicas } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
@@ -77,18 +84,26 @@ export function Registrar() {
 
   const confirmar = () => {
     if (!aluno || !desfecho) return;
-    registrarAula(aluno.id, desfecho, avisoH);
+    const ef = registrarAula(aluno.id, desfecho, avisoH);
+    // O Resultado precisa saber se a reposição nasceu **agora**: a pendência
+    // do aluno pode ser de um registro anterior.
+    atualizarRegistro({
+      reposicaoCriada: ef ? geraReposicao(aluno, ef, politicas) : false,
+    });
     ir('resultado');
   };
 
   const semNinguem = !aluno && selecionaveis.length === 0;
 
-  const rodape = aluno ? (
-    <BotaoPrimario rotulo="Confirmar" desabilitado={!pronto} aoTocar={confirmar} />
-  ) : semNinguem && !temAlunoAtivo ? (
-    // Sem esta porta o sheet abriria só com um aviso e nenhuma saída.
-    <BotaoPrimario rotulo="Cadastrar aluno" aoTocar={abrirCadastro} />
-  ) : undefined;
+  // H§3: o rodapé está sempre lá, desabilitado até haver aluno e desfecho —
+  // o painel nunca abre sem mostrar qual é a ação que o fecha.
+  const rodape =
+    semNinguem && !temAlunoAtivo ? (
+      // Sem esta porta o sheet abriria só com um aviso e nenhuma saída.
+      <BotaoPrimario rotulo="Cadastrar aluno" aoTocar={abrirCadastro} />
+    ) : (
+      <BotaoPrimario rotulo="Confirmar" desabilitado={!pronto} aoTocar={confirmar} />
+    );
 
   return (
     <Sheet titulo={aluno ? aluno.name : 'Registrar aula'} rodape={rodape}>

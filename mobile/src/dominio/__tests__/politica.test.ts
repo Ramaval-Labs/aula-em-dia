@@ -14,6 +14,7 @@ import {
   ordenar,
   podeRepor,
   POLITICAS_PADRAO,
+  geraReposicao,
   registrarAula,
   registrarPagamento,
   saldo,
@@ -182,6 +183,19 @@ describe('registrarAula', () => {
     const copia = JSON.parse(JSON.stringify(entrada));
     registrarAula(entrada, 'realizada', 0, padrao, HOJE);
     expect(entrada).toEqual(copia);
+  });
+
+  it('geraReposicao diz se a pendência nasce neste registro', () => {
+    const val = alunoPor('val');
+    // Falta avisada no prazo cria; aula realizada não; no limite, não cria.
+    expect(geraReposicao(val, efeito('avisada', 26, padrao), padrao)).toBe(true);
+    expect(geraReposicao(val, efeito('realizada', 0, padrao), padrao)).toBe(false);
+    expect(
+      geraReposicao(alunoBase({ reposicoes: 3 }), efeito('avisada', 26, padrao), padrao),
+    ).toBe(false);
+    // O que `registrarAula` grava é exatamente isso.
+    const { aluno } = registrarAula(val, 'avisada', 26, padrao, HOJE);
+    expect(!!aluno.pendencia).toBe(geraReposicao(val, efeito('avisada', 26, padrao), padrao));
   });
 
   it('23 — o lançamento entra no topo do extrato', () => {

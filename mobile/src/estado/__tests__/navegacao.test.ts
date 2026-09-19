@@ -97,13 +97,16 @@ describe('voltar', () => {
   });
 
   it('não apaga o rascunho — o assistente sobrevive ao voltar', () => {
-    useFormularios.getState().abrir('registro', { desfecho: 'avisada', avisoH: 48 });
+    useFormularios
+      .getState()
+      .abrir('registro', { desfecho: 'avisada', avisoH: 48, reposicaoCriada: null });
     const { ir } = useNavegacao.getState();
     ir('registrar');
     useNavegacao.getState().voltar();
     expect(useFormularios.getState().rascunhos.registro).toEqual({
       desfecho: 'avisada',
       avisoH: 48,
+      reposicaoCriada: null,
     });
   });
 });

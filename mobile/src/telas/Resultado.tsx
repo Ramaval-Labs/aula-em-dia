@@ -4,6 +4,10 @@
  * Sheet de resultado (74%), sem "Cancelar", título "Registrado". Confirma o
  * que foi lançado e oferece o próximo passo, quando houver.
  *
+ * "Escolher horário" só aparece quando **este** registro criou a reposição —
+ * `Registrar` guarda isso no rascunho (`reposicaoCriada`), porque a pendência
+ * do aluno pode ser de antes e a ficha já cuida dela.
+ *
  * O saldo mostrado é o **já gravado** pelo registro — o protótipo aplica o
  * delta uma segunda vez aqui, e essa divergência é conhecida (MAPA-DE-TELAS,
  * "Divergências handoff × domínio").
@@ -17,7 +21,7 @@ import { BotaoPrimario, BotaoSecundario } from '../componentes/Controles';
 import { Icone } from '../componentes/Icone';
 import { ListaAgrupada } from '../componentes/Listas';
 import { Sheet } from '../componentes/Sheet';
-import { primeiroNome } from '../dominio/formato';
+import { plural, primeiroNome } from '../dominio/formato';
 import { efeito, saldo, saldoBaixo } from '../dominio/politica';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
@@ -29,7 +33,7 @@ import { RAIO, TAMANHO } from '../tema/tokens';
 export function Resultado() {
   const { cores, material } = useCores();
   const { alunoId, ir, fecharSheet } = useNavegacao();
-  const [{ desfecho, avisoH }] = useRascunho('registro', REGISTRO_INICIAL);
+  const [{ desfecho, avisoH, reposicaoCriada }] = useRascunho('registro', REGISTRO_INICIAL);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const politicas = useDados((s) => s.politicas);
 
@@ -51,7 +55,11 @@ export function Resultado() {
   const ef = efeito(desfecho, avisoH, politicas);
   // O saldo já foi aplicado pelo registro: aqui só mostramos o valor atual.
   const restam = saldo(aluno);
-  const geradaReposicao = !!aluno.pendencia;
+  const geradaReposicao = reposicaoCriada === true;
+  // Pendência que já existia antes deste registro: a ficha do aluno continua
+  // sendo o lugar dela, e o primário daqui não é sobre ela.
+  const pendenciaAntiga = !!aluno.pendencia && !geradaReposicao;
+  // A regra pedia reposição e o pacote não tinha mais direito (H§4: dizer).
   const bateuNoLimite = ef.reposicao && !geradaReposicao;
   const debitou = ef.delta < 0;
   const corDaMedalha = debitou ? cores.tint : cores.verde;
@@ -105,7 +113,7 @@ export function Resultado() {
 
         <View
           accessible
-          accessibilityLabel={`${restam} aulas restam de ${aluno.total}`}
+          accessibilityLabel={`${plural(restam, 'aula resta', 'aulas restam')} de ${aluno.total}`}
           style={estilos.linhaDoSaldo}
         >
           <Text
@@ -116,7 +124,9 @@ export function Resultado() {
           >
             {restam}
           </Text>
-          <Text style={[texto(15, 600), { color: cores.tinta2 }]}>aulas restam</Text>
+          <Text style={[texto(15, 600), { color: cores.tinta2 }]}>
+            {restam === 1 ? 'aula resta' : 'aulas restam'}
+          </Text>
         </View>
 
         <Text
@@ -126,7 +136,9 @@ export function Resultado() {
             { color: cores.tinta3 },
           ]}
         >
-          {ef.delta === 0 ? 'sem debitar' : `${String(ef.delta).replace('-', '−')} aula`}
+          {ef.delta === 0
+            ? 'sem debitar'
+            : `${String(ef.delta).replace('-', '−')} ${Math.abs(ef.delta) === 1 ? 'aula' : 'aulas'}`}
         </Text>
 
         <Text
@@ -137,14 +149,24 @@ export function Resultado() {
             { color: cores.tinta2 },
           ]}
         >
-          {`${ef.nota}. O lançamento já está no extrato de ${primeiroNome(aluno.name)}.`}
+          {`${ef.nota}. O lançamento já está no extrato de ${primeiroNome(aluno.name)}.${
+            pendenciaAntiga
+              ? ` ${primeiroNome(aluno.name)} ainda tem uma reposição pendente de ${
+                  aluno.pendencia?.origem
+                }, na ficha.`
+              : ''
+          }`}
         </Text>
       </View>
 
       {bateuNoLimite ? (
         <BlocoStatus
           titulo="Sem reposição"
-          texto={`${aluno.reposicoes} de ${politicas.limiteReposicoes} reposições já usadas neste pacote. Sua política não permite outra.`}
+          texto={`${aluno.reposicoes} de ${plural(
+            politicas.limiteReposicoes,
+            'reposição',
+            'reposições',
+          )} já usadas neste pacote. Sua política não permite outra.`}
           estilo={estilos.blocoLimite}
         />
       ) : null}
