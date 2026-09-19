@@ -1,14 +1,19 @@
-/** C6 — Confirmação com a mensagem pronta (passo 3 de 3). */
+/**
+ * C6 — Confirmação com a mensagem pronta (passo 3 de 3).
+ *
+ * Derivada: sheet de tarefa com o resumo "O que muda" em cartão de vidro, a
+ * prévia da mensagem e o switch de pedir confirmação. O efeito aparece antes
+ * da ação (PRODUCT.md, princípio 2), como em §3.
+ */
 
 import React, { useMemo } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { BarraDePassos, Cartao, RotuloSecao } from '../../componentes/Base';
-import { BotaoPrimario, BotaoTexto } from '../../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../../componentes/Cabecalho';
-import { Interruptor } from '../../componentes/Formulario';
-import { PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
-import { Tela } from '../../componentes/Tela';
+import { CartaoVidro } from '../../componentes/Blocos';
+import { BotaoPrimario, BotaoTexto, Switch } from '../../componentes/Controles';
+import { CabecalhoGrupo } from '../../componentes/Listas';
+import { PreviaDeMensagemVidro } from '../../componentes/PreviaVidro';
+import { Sheet } from '../../componentes/Sheet';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { mascararTelefone, mensagemDeReposicao } from '../../dominio/mensagens';
@@ -16,13 +21,13 @@ import { avisos, useDados } from '../../estado/dados';
 import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../../tema/tipografia';
-import { TAMANHO } from '../../tema/tokens';
+import { useVidro } from '../../tema/TemaProvider';
+import { comEspaco, texto } from '../../tema/tipografia';
+import { SubLinhaSheet } from './pecas';
 
 export function ConfirmarReposicao() {
-  const cores = useCores();
-  const { alunoId, concluir, voltar } = useNavegacao();
+  const { cores } = useVidro();
+  const { alunoId, concluir, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const alunos = useDados((s) => s.alunos);
   const disponibilidade = useDados((s) => s.disponibilidade);
@@ -50,8 +55,7 @@ export function ConfirmarReposicao() {
     form.janela !== null ? todas.find((c) => mesmaJanela(form.janela, c)) : lista[0];
   const alternativas = lista.filter((c) => !janela || !mesmaJanela(janela, c)).slice(0, 2);
 
-  const texto_ =
-    aluno && janela ? mensagemDeReposicao(aluno, janela, politicas) : '';
+  const texto_ = aluno && janela ? mensagemDeReposicao(aluno, janela, politicas) : '';
 
   const [pedirConfirmacao, setPedir] = React.useState(true);
 
@@ -73,38 +77,30 @@ export function ConfirmarReposicao() {
   };
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 12 }}>
-            <BarraDePassos total={3} atual={3} rotulo="Passo 3 de 3" />
-          </View>
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>Confirmar reposição</TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-            {janela ? `${janela.dia}, às ${janela.hora}` : 'Escolha um horário antes'}
-          </Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 12 }}
+    <Sheet
+      titulo="Confirmar reposição"
       rodape={
         <>
           <BotaoPrimario
-            rotulo={pedirConfirmacao ? 'Enviar e aguardar' : 'Agendar sem avisar'}
+            rotulo={pedirConfirmacao ? 'Confirmar e avisar o aluno' : 'Agendar sem avisar'}
             desabilitado={!janela}
             aoTocar={confirmar}
           />
-          <BotaoTexto rotulo="Trocar o horário" aoTocar={voltar} />
+          {/* Sheet → sheet troca o conteúdo do painel: `voltar()` aqui fecharia
+              o painel inteiro, então a troca de horário volta às sugestões. */}
+          <BotaoTexto rotulo="Trocar o horário" aoTocar={() => ir('reposicao')} />
         </>
       }
     >
-      {/* O efeito aparece antes da ação (PRODUCT.md, princípio 2). */}
+      <SubLinhaSheet
+        passo="Passo 3 de 3"
+        texto={janela ? `${janela.dia}, às ${janela.hora}` : 'Escolha um horário antes'}
+      />
+
       {aluno && janela ? (
-        <Cartao estilo={{ paddingVertical: 14, paddingHorizontal: 16 }}>
-          <RotuloSecao>O que muda</RotuloSecao>
-          <View style={{ marginTop: 11, gap: 7 }}>
+        <>
+          <CabecalhoGrupo titulo="O que muda" estilo={estilos.cabecalho} />
+          <CartaoVidro estilo={estilos.resumo}>
             <LinhaDeResumo rotulo="Reposição" valor={`${janela.dia} · ${janela.hora}`} />
             {aluno.pendencia ? (
               <LinhaDeResumo rotulo="Aula reposta" valor={`falta de ${aluno.pendencia.origem}`} />
@@ -118,61 +114,63 @@ export function ConfirmarReposicao() {
               }
             />
             <LinhaDeResumo rotulo="Efeito no saldo" valor="sem alteração" />
-          </View>
-        </Cartao>
+          </CartaoVidro>
+        </>
       ) : null}
 
-      <PreviaDeMensagem
-        texto={texto_ || 'Escolha um horário para montar a mensagem.'}
-        destino={mascararTelefone(aluno?.telefone)}
-        aoCopiar={() => avisar(avisos.mensagemCopiada)}
-      />
-
-      <Cartao
-        estilo={{
-          paddingVertical: 13,
-          paddingHorizontal: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-        }}
-      >
-        <Interruptor
-          ligado={pedirConfirmacao}
-          aoTrocar={setPedir}
-          rotuloAcessivel="Pedir confirmação dele"
+      <View style={estilos.bloco}>
+        <PreviaDeMensagemVidro
+          texto={texto_ || 'Escolha um horário para montar a mensagem.'}
+          destino={mascararTelefone(aluno?.telefone)}
+          aoCopiar={() => avisar(avisos.mensagemCopiada)}
         />
-        <View style={{ flex: 1 }}>
-          <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
+      </View>
+
+      <CartaoVidro estilo={[estilos.bloco, estilos.linhaSwitch]}>
+        <View style={estilos.flexivel}>
+          <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
             Pedir confirmação dele
           </Text>
-          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
+          <Text
+            style={[
+              comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
+              { color: cores.tinta2 },
+            ]}
+          >
             {pedirConfirmacao
               ? 'A reposição fica aguardando o aceite'
               : 'A reposição já entra marcada na agenda'}
           </Text>
         </View>
-      </Cartao>
+        <Switch ligado={pedirConfirmacao} aoAlternar={setPedir} rotulo="Pedir confirmação dele" />
+      </CartaoVidro>
 
       {msg.editado ? (
-        <Text style={[TIPO.nota, { color: cores.textoMedio }]}>
+        <Text
+          style={[
+            comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 10 }),
+            estilos.recuo,
+            { color: cores.tinta2 },
+          ]}
+        >
           Mensagem editada por você.
         </Text>
       ) : null}
-    </Tela>
+    </Sheet>
   );
 }
 
-/** Rótulo à esquerda, valor à direita — o mesmo desenho do resumo de Pacote. */
+/** Rótulo à esquerda, valor à direita — o par rótulo/valor do cartão de débito de §7. */
 function LinhaDeResumo({ rotulo, valor }: { rotulo: string; valor: string }) {
-  const cores = useCores();
+  const { cores } = useVidro();
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-      <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>{rotulo}</Text>
+    <View style={estilos.linhaResumo}>
+      <Text style={[texto(13, 500, { altura: 1.4 }), { color: cores.tinta2 }]}>{rotulo}</Text>
       <Text
         style={[
-          texto(12.5, 600, { altura: 1.4 }),
-          { flexShrink: 1, textAlign: 'right', color: cores.texto },
+          texto(13, 700, { altura: 1.4 }),
+          estilos.valorResumo,
+          { color: cores.tinta },
         ]}
       >
         {valor}
@@ -180,3 +178,14 @@ function LinhaDeResumo({ rotulo, valor }: { rotulo: string; valor: string }) {
     </View>
   );
 }
+
+const estilos = StyleSheet.create({
+  cabecalho: { marginTop: 16 },
+  resumo: { marginTop: 9, gap: 8 },
+  bloco: { marginTop: 14 },
+  linhaSwitch: { flexDirection: 'row', alignItems: 'center', gap: 13 },
+  flexivel: { flex: 1, minWidth: 0 },
+  recuo: { paddingHorizontal: 6 },
+  linhaResumo: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  valorResumo: { flexShrink: 1, textAlign: 'right' },
+});
