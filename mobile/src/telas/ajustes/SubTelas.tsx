@@ -59,14 +59,22 @@ function TelaDeAjuste({
   subtitulo,
   children,
   rodape,
+  comTeclado = false,
 }: {
   titulo: string;
   subtitulo?: string;
   children: React.ReactNode;
   rodape?: React.ReactNode;
+  comTeclado?: boolean;
 }) {
   return (
-    <TelaVidro tipo="empilhada" titulo={titulo} voltarPara="Ajustes" rodape={rodape}>
+    <TelaVidro
+      tipo="empilhada"
+      titulo={titulo}
+      voltarPara="Ajustes"
+      rodape={rodape}
+      comTeclado={comTeclado}
+    >
       <TituloDeConteudo titulo={titulo} abaixo={subtitulo} />
       {children}
     </TelaVidro>
@@ -150,6 +158,7 @@ export function PerfilProfessor() {
 
   return (
     <TelaDeAjuste
+      comTeclado
       titulo="Meu perfil"
       rodape={<BotaoPrimario rotulo="Salvar" desabilitado={!podeSalvar} aoTocar={salvar} />}
     >
@@ -302,6 +311,7 @@ export function PacotesPadrao() {
 
   return (
     <TelaDeAjuste
+      comTeclado
       titulo="Pacotes e valores padrão"
       subtitulo="O que já vem preenchido ao criar um pacote novo."
       rodape={
@@ -425,6 +435,7 @@ export function ChavePix() {
 
   return (
     <TelaDeAjuste
+      comTeclado
       titulo="Chave Pix e cobrança"
       subtitulo="Entra automaticamente na mensagem de cobrança."
       rodape={

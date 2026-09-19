@@ -70,6 +70,7 @@ export function Pacote() {
 
   return (
     <Sheet
+      comTeclado
       titulo={renovacao ? 'Renovar pacote' : 'Novo pacote'}
       rodape={
         <BotaoPrimario

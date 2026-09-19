@@ -2,7 +2,7 @@
  * A1 — Splash. Abertura de marca, sem interação.
  *
  * No iOS Glass a marca é só tipográfica: "Aula em Dia" em Satoshi 800 sobre o
- * fundo de refração. As quatro barras amarelas da direção anterior saíram do
+ * fundo de refração (desenhado pelo `Portao`, sob todas as fases). As quatro barras amarelas da direção anterior saíram do
  * sistema junto com o amarelo.
  *
  * Esta tela também é o que o `App.tsx` mostra enquanto as fontes carregam,
@@ -12,7 +12,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { FundoRefracao } from '../../componentes/Vidro';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
 
@@ -21,7 +20,6 @@ export function Splash() {
 
   return (
     <View style={estilos.cheio}>
-      <FundoRefracao />
       <View accessible accessibilityRole="header" style={estilos.centro}>
         <Text style={[TIPO_VIDRO.tituloGrande, estilos.aoCentro, { color: cores.tint }]}>
           Aula em Dia

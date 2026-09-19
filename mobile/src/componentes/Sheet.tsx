@@ -54,6 +54,13 @@ export type PropsSheet = {
   aoFechar?: () => void;
   /** ação primária, na faixa fixa do rodapé */
   rodape?: React.ReactNode;
+  /**
+   * Sheet com campo de texto: tocar num botão com o teclado aberto aciona o
+   * botão (em vez de só fechar o teclado), arrastar recolhe o teclado e, no
+   * iOS, o corpo ganha o inset do teclado para o campo focado não ficar
+   * embaixo dele. O painel tem altura fixa, então ele não sobe inteiro.
+   */
+  comTeclado?: boolean;
   children: React.ReactNode;
 };
 
@@ -63,6 +70,7 @@ export function Sheet({
   semCancelar = false,
   aoFechar,
   rodape,
+  comTeclado = false,
   children,
 }: PropsSheet) {
   const { cores, material } = useVidro();
@@ -115,6 +123,9 @@ export function Sheet({
     <ScrollView
       style={{ flex: 1 }}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps={comTeclado ? 'handled' : undefined}
+      keyboardDismissMode={comTeclado ? 'interactive' : undefined}
+      automaticallyAdjustKeyboardInsets={comTeclado}
       contentContainerStyle={{ paddingTop: 6, paddingHorizontal: 16, paddingBottom: 16 }}
     >
       {children}

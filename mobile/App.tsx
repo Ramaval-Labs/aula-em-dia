@@ -31,7 +31,7 @@ import {
 import { useSessao } from './src/estado/sessao';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
 import { telaDe } from './src/telas/registro';
-import { TemaProvider, useTema, useVidro } from './src/tema/TemaProvider';
+import { TemaProvider, useTema } from './src/tema/TemaProvider';
 import { ARQUIVOS_DE_FONTE } from './src/tema/tipografia';
 
 // Só no Expo Web em desenvolvimento: deixa o script de screenshots navegar.
@@ -39,8 +39,6 @@ exporParaDepuracao();
 
 function App() {
   const { carregado: temaCarregado } = useTema();
-  const { cores } = useVidro();
-
   const tela = useNavegacao((s) => s.tela);
   const fundo = useNavegacao(telaDeFundo);
   const voltar = useNavegacao((s) => s.voltar);
@@ -63,7 +61,7 @@ function App() {
   // Espera o estado salvo antes de pintar, para a lista não piscar da semente
   // para os dados reais do professor.
   if (!temaCarregado || !dadosCarregados) {
-    return <View style={{ flex: 1, backgroundColor: cores.tela }} />;
+    return <FundoRefracao />;
   }
 
   const emSheet = ehSheet(tela);
@@ -99,7 +97,9 @@ export default function Raiz() {
 
   return (
     <SafeAreaProvider>
-      <TemaProvider>{fontesProntas ? <Portao /> : <Splash />}</TemaProvider>
+      <TemaProvider>
+        <Portao fontesProntas={fontesProntas} />
+      </TemaProvider>
     </SafeAreaProvider>
   );
 }
@@ -107,8 +107,13 @@ export default function Raiz() {
 /**
  * Decide qual das três máquinas está no ar. O Toast vive aqui, e não dentro
  * do `App`, porque as telas de entrada também avisam coisas.
+ *
+ * O fundo de refração também: ele fica sob **todas** as fases. Na entrada é
+ * este, desenhado aqui; o `App` desenha o seu dentro do alvo de desfoque,
+ * porque no Android o vidro das barras e do sheet só desfoca o que está no
+ * alvo — por isso aqui ele não é desenhado com o app no ar (seriam dois).
  */
-function Portao() {
+function Portao({ fontesProntas }: { fontesProntas: boolean }) {
   const { tema, carregado: temaCarregado } = useTema();
   const fase = useSessao((s) => s.fase);
   const carregarSessao = useSessao((s) => s.carregar);
@@ -119,8 +124,10 @@ function Portao() {
     carregarSessao();
   }, [carregarSessao]);
 
+  const noApp = fontesProntas && temaCarregado && fase === 'app';
+
   const conteudo = () => {
-    if (!temaCarregado || fase === 'carregando') return <Splash />;
+    if (!fontesProntas || !temaCarregado || fase === 'carregando') return <Splash />;
     if (fase === 'entrada') return <Entrada />;
     if (fase === 'onboarding') return <Onboarding />;
     return <App />;
@@ -130,6 +137,7 @@ function Portao() {
     <View style={styles.cheio}>
       {/* Glifos do sistema escuros sobre o tema claro, e vice-versa. */}
       <StatusBar style={tema === 'escuro' ? 'light' : 'dark'} />
+      {noApp ? null : <FundoRefracao />}
       {conteudo()}
       <ToastVidro />
       {catalogoAberto ? <Catalogo /> : null}

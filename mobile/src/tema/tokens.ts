@@ -516,6 +516,8 @@ export const TAMANHO_VIDRO = {
   /** glifo dentro do ícone de bloco */
   glifoBloco: 17,
   chevron: 14,
+  /** chevron do botão voltar ("Chrome comum") */
+  chevronVoltar: 19,
   /** ícone de mais dentro do botão primário */
   iconeMais: 19,
   /** marca redonda do cartão de escolha */

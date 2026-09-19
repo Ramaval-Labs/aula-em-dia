@@ -98,6 +98,7 @@ export function AlunoForm() {
 
   return (
     <Sheet
+      comTeclado
       titulo={emEdicao ? 'Editar aluno' : 'Novo aluno'}
       rodape={
         <View style={estilos.rodape}>
