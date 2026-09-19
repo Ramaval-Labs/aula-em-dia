@@ -187,7 +187,7 @@ const estilos = StyleSheet.create({
   direita: { alignItems: 'flex-end' },
   subLinha: { paddingTop: 4, paddingHorizontal: 6 },
   nota: { paddingHorizontal: 6 },
-  espaco12: { marginTop: 12 },
+  espaco12: { marginTop: 12, alignSelf: 'stretch' },
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
   linhaChave: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
