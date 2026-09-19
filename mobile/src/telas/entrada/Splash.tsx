@@ -12,16 +12,16 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useVidro } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
+import { useCores } from '../../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 
 export function Splash() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
 
   return (
     <View style={estilos.cheio}>
       <View accessible accessibilityRole="header" style={estilos.centro}>
-        <Text style={[TIPO_VIDRO.tituloGrande, estilos.aoCentro, { color: cores.tint }]}>
+        <Text style={[TIPO.tituloGrande, estilos.aoCentro, { color: cores.tint }]}>
           Aula em Dia
         </Text>
         <Text

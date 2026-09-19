@@ -32,9 +32,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useVidro } from '../tema/TemaProvider';
+import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { RAIO, TAMANHO } from '../tema/tokens';
 
 export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'telefone';
 
@@ -82,7 +82,7 @@ export function CampoDeTexto({
   aoEnviar?: () => void;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const [focado, setFocado] = useState(false);
   const corDaBorda = erro ? cores.vermelho : focado ? cores.tint : 'transparent';
 
@@ -104,7 +104,7 @@ export function CampoDeTexto({
             marginTop: 8,
             backgroundColor: cores.preenchimento,
             borderColor: corDaBorda,
-            minHeight: multilinha ? ALTURA_MULTILINHA : TAMANHO_VIDRO.campo,
+            minHeight: multilinha ? ALTURA_MULTILINHA : TAMANHO.campo,
             alignItems: multilinha ? 'flex-start' : 'center',
             paddingVertical: multilinha ? 13 : 0,
           },
@@ -185,7 +185,7 @@ export function AcaoDoCampo({
   /** o que o leitor de tela diz ("Mostrar senha"), quando o rótulo é curto */
   rotuloAcessivel?: string;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <Pressable
       accessibilityRole="button"
@@ -200,9 +200,9 @@ export function AcaoDoCampo({
 }
 
 const estilos = StyleSheet.create({
-  acao: { height: TAMANHO_VIDRO.alvoMinimo, justifyContent: 'center' },
+  acao: { height: TAMANHO.alvoMinimo, justifyContent: 'center' },
   trilho: {
-    borderRadius: RAIO_VIDRO.botaoInline,
+    borderRadius: RAIO.botaoInline,
     borderWidth: 1,
     paddingHorizontal: 14,
     flexDirection: 'row',

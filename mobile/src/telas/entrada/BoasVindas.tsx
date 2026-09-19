@@ -7,7 +7,7 @@ import { Avatar } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoSecundario } from '../../componentes/Controles';
 import { ListaAgrupada } from '../../componentes/Listas';
 import { useSessao } from '../../estado/sessao';
-import { useVidro } from '../../tema/TemaProvider';
+import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 import { definirModoDeAcesso, type ModoDeAcesso } from './modoDeAcesso';
 import { TelaDeEntrada } from './TelaDeEntrada';
@@ -77,7 +77,7 @@ function LinhaDePasso({
   titulo: string;
   apoio: string;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View accessible accessibilityLabel={`Passo ${numero}. ${titulo} ${apoio}`} style={estilos.linha}>
       <Avatar texto={numero} tamanho={38} />

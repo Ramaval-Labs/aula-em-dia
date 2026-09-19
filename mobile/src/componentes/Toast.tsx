@@ -1,50 +1,89 @@
-/** Toast: 3600ms, barra amarela de 4px à esquerda, fundo elevado. */
+/**
+ * Toast do iOS Glass (handoff-ios-glass/README.md, "Toast").
+ *
+ * Faixa de vidro a 106px da base — acima da tab bar —, com ícone de check em
+ * tint e uma frase que **confirma o que foi feito**. Nunca pede ação, e por
+ * isso é `live region` educada: anuncia sem interromper o leitor de tela.
+ *
+ * A loja (`estado/toast.ts`) guarda a mensagem pelos 3600ms do handoff.
+ */
 
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, Text, View } from 'react-native';
 
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
+import { useReduzirMovimento } from '../tema/movimento';
 import { texto } from '../tema/tipografia';
-import { MARCA, RAIO } from '../tema/tokens';
+import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { Icone } from './Icone';
+import { SuperficieVidro } from './Vidro';
 
 export function Toast() {
   const mensagem = useToast((s) => s.mensagem);
-  const cores = useCores();
+  const { cores, material } = useCores();
+  const semMovimento = useReduzirMovimento();
+  const fade = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!mensagem) {
+      fade.setValue(0);
+      return;
+    }
+    if (semMovimento) {
+      fade.setValue(1);
+      return;
+    }
+    Animated.timing(fade, {
+      toValue: 1,
+      duration: MOVIMENTO.toastMs,
+      easing: Easing.ease,
+      useNativeDriver: false,
+    }).start();
+  }, [mensagem, semMovimento, fade]);
 
   if (!mensagem) return null;
 
   return (
-    <View
-      // Região viva educada (spec/acessibilidade.md). O papel "alert" virava
-      // anúncio assertivo na web e interrompia o leitor de tela.
+    <Animated.View
       accessibilityLiveRegion="polite"
       pointerEvents="none"
       style={{
         position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: 88,
-        backgroundColor: cores.elevado,
-        borderRadius: RAIO.cartao,
-        paddingVertical: 13,
-        paddingHorizontal: 15,
-        flexDirection: 'row',
-        gap: 11,
-        alignItems: 'center',
+        left: TAMANHO.padLateral,
+        right: TAMANHO.padLateral,
+        bottom: TAMANHO.toastBase,
+        opacity: fade,
       }}
     >
-      <View
+      <SuperficieVidro
+        nivel="vidro"
+        raio={RAIO.toast}
+        sombraExterna={material.sombraToast}
         style={{
-          width: 4,
-          alignSelf: 'stretch',
-          backgroundColor: MARCA.amarelo,
-          borderRadius: 2,
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 11,
         }}
-      />
-      <Text style={[texto(13, 500, { altura: 1.4 }), { flex: 1, color: cores.topoTexto }]}>
-        {mensagem}
-      </Text>
-    </View>
+      >
+        <View
+          style={{
+            width: TAMANHO.iconeToast,
+            height: TAMANHO.iconeToast,
+            borderRadius: RAIO.iconeToast,
+            backgroundColor: cores.tint,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icone nome="check" tamanho={TAMANHO.checkEscolha} cor={cores.sobreTint} />
+        </View>
+        <Text style={[texto(13, 600, { altura: 1.4 }), { flex: 1, color: cores.tinta }]}>
+          {mensagem}
+        </Text>
+      </SuperficieVidro>
+    </Animated.View>
   );
 }

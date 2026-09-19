@@ -20,13 +20,13 @@ import { valorPacote } from '../dominio/politica';
 import { avisos, useDados } from '../estado/dados';
 import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
+import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
-import { RAIO_VIDRO } from '../tema/tokens';
+import { RAIO } from '../tema/tokens';
 import { linhaDeHorario } from './comum/aluno';
 
 export function Inadimplencia() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, ir } = useNavegacao();
   const pilha = useNavegacao((s) => s.pilha);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
@@ -129,7 +129,7 @@ export function Inadimplencia() {
       </View>
 
       {/* Cartão de contexto de H§7: raio 20, não o 22 do cartão base. */}
-      <CartaoVidro raio={RAIO_VIDRO.bloco} estilo={estilos.espaco14}>
+      <CartaoVidro raio={RAIO.bloco} estilo={estilos.espaco14}>
         <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
           {proximaAula}
         </Text>

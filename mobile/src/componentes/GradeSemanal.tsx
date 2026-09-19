@@ -1,17 +1,20 @@
 /**
- * Grade de disponibilidade semanal.
+ * Grade de disponibilidade semanal no idioma iOS Glass — **derivada**: o
+ * handoff não desenha a tela de disponibilidade, mas quatro telas do app
+ * dependem dela (onboarding do professor, disponibilidade do aluno, ajustes
+ * e prévia do aluno).
  *
- * O componente de maior alavancagem da expansão: serve quatro telas do
- * handoff — A5 (onboarding do professor), C2 (disponibilidade do aluno),
- * E3 (ajustes) e F3 (prévia do aluno). Por isso os dias e o estilo de rótulo
- * das faixas vêm de fora: o professor lê "8–12", o aluno lê "manhã".
+ * Mesma API da grade da direção anterior; o que mudou foi o visual:
+ * - célula livre em `preenchimento` (o trilho do sistema), marcada em tint —
+ *   a mesma dupla do segmentado e do switch;
+ * - raio 9, o do segmento;
+ * - rótulos em `tinta3`/`tinta2`, nunca texto pequeno sobre o material.
  *
- * Só toque, sem arrastar. O arraste do mock brigaria com o gesto de rolagem
- * do ScrollView e vale como melhoria separada.
+ * Só toque, sem arrastar: o arraste brigaria com a rolagem do ScrollView.
  */
 
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   diaCurto,
@@ -27,12 +30,7 @@ import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
-/**
- * Largura da coluna de rótulos, à esquerda da grade — 38 como no protótipo
- * (Fluxo E). Com o vão de 4, as células passam de 44px de largura a 390pt;
- * com 44 + 5 ficavam em ~42. O rótulo quebra em duas linhas ("fim da /
- * tarde") em vez de ser cortado.
- */
+/** Coluna de rótulos à esquerda; com o vão de 4 as células passam de 44px. */
 const COLUNA_DE_ROTULOS = 38;
 const VAO = 4;
 
@@ -54,23 +52,19 @@ export function GradeSemanal({
   alturaDaCelula?: number;
   somenteLeitura?: boolean;
 }) {
-  const cores = useCores();
+  const { cores } = useCores();
   const legenda = (f: FaixaHoraria) =>
     rotuloDaFaixa === 'nome' ? nomeDaFaixa(f) : horarioDaFaixa(f);
 
+  const corDaCelula = (ligado: boolean) => (ligado ? cores.tint : cores.preenchimento);
+
   return (
-    <View style={{ gap: VAO }}>
-      {/* cabeçalho de colunas */}
-      <View style={{ flexDirection: 'row', gap: VAO }}>
-        <View style={{ width: COLUNA_DE_ROTULOS }} />
+    <View style={estilos.grade}>
+      <View style={estilos.linha}>
+        <View style={estilos.colunaDeRotulos} />
         {dias.map((d) => (
-          <View key={d} style={{ flex: 1, alignItems: 'center' }}>
-            <Text
-              style={[
-                texto(10, 600, { altura: 1, tracking: 0.06 }),
-                { color: cores.textoMedio },
-              ]}
-            >
+          <View key={d} style={estilos.cabecalhoDoDia}>
+            <Text style={[texto(10, 600, { tracking: 0.06 }), { color: cores.tinta3 }]}>
               {diaCurto(d)}
             </Text>
           </View>
@@ -78,10 +72,10 @@ export function GradeSemanal({
       </View>
 
       {faixas.map((f) => (
-        <View key={f} style={{ flexDirection: 'row', gap: VAO, alignItems: 'center' }}>
-          <View style={{ width: COLUNA_DE_ROTULOS }}>
+        <View key={f} style={estilos.linhaDeCelulas}>
+          <View style={estilos.colunaDeRotulos}>
             <Text
-              style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.textoMedio }]}
+              style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.tinta2 }]}
               numberOfLines={2}
             >
               {legenda(f)}
@@ -91,24 +85,16 @@ export function GradeSemanal({
           {dias.map((d) => {
             const bloco: BlocoSemanal = { dia: d, faixa: f };
             const ligado = temBloco(marcados, bloco);
-            const rotulo = `${nomeDoDia(d)}, ${legenda(f)}, ${
-              ligado ? 'marcado' : 'livre'
-            }`;
+            const rotulo = `${nomeDoDia(d)}, ${legenda(f)}, ${ligado ? 'marcado' : 'livre'}`;
+            const caixa = {
+              flex: 1,
+              height: alturaDaCelula,
+              borderRadius: RAIO.segmento,
+              backgroundColor: corDaCelula(ligado),
+            };
 
             if (somenteLeitura || !aoAlternar) {
-              return (
-                <View
-                  key={d}
-                  accessible
-                  accessibilityLabel={rotulo}
-                  style={{
-                    flex: 1,
-                    height: alturaDaCelula,
-                    borderRadius: RAIO.contador,
-                    backgroundColor: ligado ? cores.texto : cores.caixa,
-                  }}
-                />
-              );
+              return <View key={d} accessible accessibilityLabel={rotulo} style={caixa} />;
             }
 
             return (
@@ -118,13 +104,7 @@ export function GradeSemanal({
                 accessibilityState={{ checked: ligado }}
                 accessibilityLabel={rotulo}
                 onPress={() => aoAlternar(bloco)}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  height: alturaDaCelula,
-                  borderRadius: RAIO.contador,
-                  opacity: pressed ? 0.7 : 1,
-                  backgroundColor: ligado ? cores.texto : cores.caixa,
-                })}
+                style={({ pressed }) => [caixa, pressed ? { opacity: 0.7 } : null]}
               />
             );
           })}
@@ -134,7 +114,7 @@ export function GradeSemanal({
   );
 }
 
-/** Rodapé da grade: resumo à esquerda, nota à direita. */
+/** Rodapé da grade: resumo à esquerda, nota à direita, separados por um fio. */
 export function RodapeDaGrade({
   esquerda,
   direita,
@@ -142,28 +122,13 @@ export function RodapeDaGrade({
   esquerda: string;
   direita?: string;
 }) {
-  const cores = useCores();
+  const { cores } = useCores();
   return (
-    <View
-      style={{
-        marginTop: 13,
-        paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: cores.linha,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 12,
-      }}
-    >
-      <Text style={[texto(11.5, 400, { altura: 1.4 }), { color: cores.textoMedio }]}>
-        {esquerda}
-      </Text>
+    <View style={[estilos.rodape, { borderTopColor: cores.fio }]}>
+      <Text style={[texto(11.5, 500, { altura: 1.4 }), { color: cores.tinta2 }]}>{esquerda}</Text>
       {direita ? (
         <Text
-          style={[
-            texto(11.5, 400, { altura: 1.4 }),
-            { color: cores.textoMedio, textAlign: 'right' },
-          ]}
+          style={[texto(11.5, 500, { altura: 1.4 }), estilos.direita, { color: cores.tinta2 }]}
         >
           {direita}
         </Text>
@@ -171,3 +136,20 @@ export function RodapeDaGrade({
     </View>
   );
 }
+
+const estilos = StyleSheet.create({
+  grade: { gap: VAO },
+  linha: { flexDirection: 'row', gap: VAO },
+  linhaDeCelulas: { flexDirection: 'row', gap: VAO, alignItems: 'center' },
+  colunaDeRotulos: { width: COLUNA_DE_ROTULOS },
+  cabecalhoDoDia: { flex: 1, alignItems: 'center' },
+  direita: { textAlign: 'right' },
+  rodape: {
+    marginTop: 13,
+    paddingTop: 12,
+    borderTopWidth: 0.5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+});

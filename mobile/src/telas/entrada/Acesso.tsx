@@ -25,9 +25,9 @@ import { ERRO, emailValido, senhaValida, validarAcesso } from '../../dominio/val
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
-import { useVidro } from '../../tema/TemaProvider';
+import { useCores } from '../../tema/TemaProvider';
 import { texto } from '../../tema/tipografia';
-import { TAMANHO_VIDRO } from '../../tema/tokens';
+import { TAMANHO } from '../../tema/tokens';
 import { modoDeAcessoInicial, type ModoDeAcesso } from './modoDeAcesso';
 import { TelaDeEntrada } from './TelaDeEntrada';
 
@@ -42,7 +42,7 @@ const MODOS: readonly OpcaoSegmentada<ModoDeAcesso>[] = [
 ];
 
 export function Acesso() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const entrar = useSessao((s) => s.entrar);
   const criarConta = useSessao((s) => s.criarConta);
   const voltarEntrada = useSessao((s) => s.voltarEntrada);
@@ -163,5 +163,5 @@ const estilos = StyleSheet.create({
   campos: { gap: 16 },
   link: { alignSelf: 'flex-start', paddingHorizontal: 2 },
   ou: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  fio: { flex: 1, height: TAMANHO_VIDRO.bordaVidro },
+  fio: { flex: 1, height: TAMANHO.bordaVidro },
 });

@@ -9,14 +9,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { MOVIMENTO_VIDRO } from '../tema/tokens';
+import { MOVIMENTO } from '../tema/tokens';
 
 export function useDoisToques(acao: () => void): { armado: boolean; tocar: () => void } {
   const [armado, setArmado] = useState(false);
 
   useEffect(() => {
     if (!armado) return;
-    const t = setTimeout(() => setArmado(false), MOVIMENTO_VIDRO.toastDuracaoMs);
+    const t = setTimeout(() => setArmado(false), MOVIMENTO.toastDuracaoMs);
     return () => clearTimeout(t);
   }, [armado]);
 

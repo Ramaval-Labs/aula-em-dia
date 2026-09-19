@@ -11,7 +11,7 @@ import { StyleSheet, Text } from 'react-native';
 
 import { CartaoVidro } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto } from '../../componentes/Controles';
-import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
+import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
 import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
 import { primeiroNome } from '../../dominio/formato';
@@ -19,11 +19,11 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useVidro } from '../../tema/TemaProvider';
+import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 
 export function DispAluno() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const salvar = useDados((s) => s.salvarDisponibilidadeDoAluno);
@@ -73,13 +73,13 @@ export function DispAluno() {
       </Text>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <GradeSemanalVidro
+        <GradeSemanal
           marcados={blocos}
           dias={DIAS_UTEIS}
           rotuloDaFaixa="nome"
           aoAlternar={(b) => substituir(alternarBloco(blocos, b))}
         />
-        <RodapeDaGradeVidro esquerda={resumoMarcados(blocos)} direita="Sábado indisponível" />
+        <RodapeDaGrade esquerda={resumoMarcados(blocos)} direita="Sábado indisponível" />
       </CartaoVidro>
     </Sheet>
   );

@@ -1,7 +1,7 @@
 /**
  * Sheet modal do iOS Glass (handoff-ios-glass/README.md, "Sheet modal").
  *
- * Véu `veuSheet` (`rgba(6,10,20,.4)`) com fade de 200ms — a área acima do painel fecha ao
+ * Véu `veuSheet` com fade de 200ms — a área acima do painel fecha ao
  * toque — e painel de vidro com raio 40 só no topo, subindo em 340ms com
  * `cubic-bezier(.32,.72,0,1)`.
  *
@@ -28,10 +28,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavegacao } from '../estado/navegacao';
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { MOVIMENTO_VIDRO, RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
-import { useMovimentoReduzido } from './Chassi';
+import { useCores } from '../tema/TemaProvider';
+import { useReduzirMovimento } from '../tema/movimento';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
 import { SuperficieVidro } from './Vidro';
 
 /** 88% para sheet de tarefa, 74% para o de resultado. */
@@ -70,16 +70,16 @@ export function Sheet({
   comTeclado = false,
   children,
 }: PropsSheet) {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
   const insets = useSafeAreaInsets();
   const { height: alturaTela } = useWindowDimensions();
-  const semMovimento = useMovimentoReduzido();
+  const semMovimento = useReduzirMovimento();
   const fecharSheet = useNavegacao((s) => s.fecharSheet);
   const fechar = aoFechar ?? fecharSheet;
 
   const alturaPainel = Math.round(
     alturaTela *
-      (altura === 'resultado' ? TAMANHO_VIDRO.alturaResultado : TAMANHO_VIDRO.alturaSheet),
+      (altura === 'resultado' ? TAMANHO.alturaResultado : TAMANHO.alturaSheet),
   );
 
   const subida = useRef(new Animated.Value(semMovimento ? 0 : alturaPainel)).current;
@@ -94,13 +94,13 @@ export function Sheet({
     Animated.parallel([
       Animated.timing(subida, {
         toValue: 0,
-        duration: MOVIMENTO_VIDRO.sheetMs,
-        easing: Easing.bezier(...MOVIMENTO_VIDRO.sheetCurva),
+        duration: MOVIMENTO.sheetMs,
+        easing: Easing.bezier(...MOVIMENTO.sheetCurva),
         useNativeDriver: false,
       }),
       Animated.timing(fade, {
         toValue: 1,
-        duration: MOVIMENTO_VIDRO.fundoSheetMs,
+        duration: MOVIMENTO.fundoSheetMs,
         easing: Easing.ease,
         useNativeDriver: false,
       }),
@@ -153,7 +153,7 @@ export function Sheet({
       >
         <SuperficieVidro
           nivel="sheet"
-          raio={RAIO_VIDRO.sheet}
+          raio={RAIO.sheet}
           soTopo
           sombraExterna={material.sombraSheet}
           style={{ flex: 1 }}
@@ -163,7 +163,7 @@ export function Sheet({
               style={{
                 width: 38,
                 height: 5,
-                borderRadius: RAIO_VIDRO.puxador,
+                borderRadius: RAIO.puxador,
                 backgroundColor: cores.tinta3,
               }}
             />
@@ -171,7 +171,7 @@ export function Sheet({
 
           <View
             style={{
-              height: TAMANHO_VIDRO.cabecalhoSheet,
+              height: TAMANHO.cabecalhoSheet,
               paddingHorizontal: 18,
               flexDirection: 'row',
               alignItems: 'center',
@@ -183,7 +183,7 @@ export function Sheet({
               <Pressable
                 accessibilityRole="button"
                 onPress={fechar}
-                style={{ width: 72, height: TAMANHO_VIDRO.cabecalhoSheet, justifyContent: 'center' }}
+                style={{ width: 72, height: TAMANHO.cabecalhoSheet, justifyContent: 'center' }}
               >
                 <Text style={[texto(15.5, 600), { color: cores.tint }]}>Cancelar</Text>
               </Pressable>
@@ -192,7 +192,7 @@ export function Sheet({
               accessibilityRole="header"
               numberOfLines={1}
               style={[
-                TIPO_VIDRO.tituloSheet,
+                TIPO.tituloSheet,
                 { flex: 1, textAlign: 'center', color: cores.tinta },
               ]}
             >
@@ -210,7 +210,7 @@ export function Sheet({
                 paddingTop: 10,
                 paddingHorizontal: 16,
                 paddingBottom: Math.max(30, insets.bottom),
-                borderTopWidth: TAMANHO_VIDRO.bordaVidro,
+                borderTopWidth: TAMANHO.bordaVidro,
                 borderTopColor: cores.fio,
               }}
             >
@@ -232,7 +232,7 @@ export function Sheet({
  * no fluxo sem virar título.
  */
 export function SubLinhaSheet({ passo, texto: linha }: { passo?: string; texto?: string }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   if (!passo && !linha) return null;
 
   return (

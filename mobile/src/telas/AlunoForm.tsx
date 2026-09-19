@@ -21,11 +21,11 @@ import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
+import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
 
 export function AlunoForm() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const emEdicao = useDados((s) => s.alunos.find((a) => a.id === alunoId));

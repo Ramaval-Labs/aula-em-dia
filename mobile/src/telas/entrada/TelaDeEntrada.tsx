@@ -29,7 +29,7 @@ import {
   useBarraComRolagem,
   usePadTopo,
 } from '../../componentes/Chassi';
-import { TAMANHO_VIDRO } from '../../tema/tokens';
+import { TAMANHO } from '../../tema/tokens';
 
 /** Respiro entre o cabeçalho de texto e o primeiro cartão. */
 const ESPACO_APOS_TITULO = 18;
@@ -82,7 +82,7 @@ export function TelaDeEntrada({
         keyboardDismissMode={comTeclado ? 'on-drag' : 'none'}
         contentContainerStyle={{
           paddingTop: padTopo,
-          paddingHorizontal: TAMANHO_VIDRO.padLateral,
+          paddingHorizontal: TAMANHO.padLateral,
           paddingBottom: ESPACO_APOS_TITULO,
         }}
       >
@@ -129,7 +129,7 @@ const estilos = StyleSheet.create({
   acima: { marginBottom: 16 },
   rodape: {
     paddingTop: 12,
-    paddingHorizontal: TAMANHO_VIDRO.padLateral,
+    paddingHorizontal: TAMANHO.padLateral,
     gap: 8,
   },
 });

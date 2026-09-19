@@ -21,7 +21,7 @@ export const useToast = create<Toast>((set) => ({
     temporizador = setTimeout(() => {
       set({ mensagem: null });
       temporizador = null;
-    }, MOVIMENTO.toastMs);
+    }, MOVIMENTO.toastDuracaoMs);
   },
 
   limpar() {

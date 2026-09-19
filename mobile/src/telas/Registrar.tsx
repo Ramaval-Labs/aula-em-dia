@@ -21,7 +21,7 @@ import type { Aluno, Desfecho, Politicas } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
-import { useVidro } from '../tema/TemaProvider';
+import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
 import { linhaDeHorario } from './comum/aluno';
 
@@ -48,7 +48,7 @@ function notaDoAviso(avisoH: number, p: Politicas): string {
 }
 
 export function Registrar() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, definirAluno, ir } = useNavegacao();
   const [{ desfecho, avisoH }, atualizarRegistro] = useRascunho('registro', REGISTRO_INICIAL);
 
@@ -197,7 +197,7 @@ function CartaoDesfecho({
   aoTocar: () => void;
   children?: React.ReactNode;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const ef = efeito(chave, avisoH, politicas);
   const antes = saldo(aluno);
   const depois = Math.max(0, antes + ef.delta);

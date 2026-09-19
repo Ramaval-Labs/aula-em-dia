@@ -1,28 +1,28 @@
 /**
- * Os tokens do iOS Glass em `tokens.ts` são espelho da seção `iosGlass` de
- * `tokens/tokens.json`. Este teste pega o descuido de mudar um lado só.
+ * Os tokens em `tokens.ts` são espelho de `tokens/tokens.json`. Este teste
+ * pega o descuido de mudar um lado só.
  */
 
-import { TIPO_VIDRO } from '../tipografia';
+import { TIPO } from '../tipografia';
 import {
-  CORES_VIDRO,
+  CORES,
   MATERIAL,
-  MOVIMENTO_VIDRO,
+  MOVIMENTO,
   PILULA_ABA,
-  RAIO_VIDRO,
-  TAMANHO_VIDRO,
+  RAIO,
+  TAMANHO,
   TRACO_ICONE,
 } from '../tokens';
 
-const json = require('../../../../tokens/tokens.json').iosGlass;
+const json = require('../../../../tokens/tokens.json');
 
-describe('tokens iOS Glass', () => {
+describe('tokens', () => {
   it.each(['claro', 'escuro'] as const)('cores do tema %s batem com o JSON', (tema) => {
-    expect(CORES_VIDRO[tema]).toEqual(json.color[tema]);
+    expect(CORES[tema]).toEqual(json.color[tema]);
   });
 
   it('os dois temas têm os mesmos nomes de cor', () => {
-    expect(Object.keys(CORES_VIDRO.escuro).sort()).toEqual(Object.keys(CORES_VIDRO.claro).sort());
+    expect(Object.keys(CORES.escuro).sort()).toEqual(Object.keys(CORES.claro).sort());
   });
 
   it.each(['claro', 'escuro'] as const)('material do tema %s bate com o JSON', (tema) => {
@@ -40,9 +40,9 @@ describe('tokens iOS Glass', () => {
   });
 
   it('raios, tamanhos e movimento batem com o JSON', () => {
-    expect(RAIO_VIDRO).toEqual(json.radius);
-    expect(TAMANHO_VIDRO).toEqual(json.size);
-    expect(MOVIMENTO_VIDRO).toEqual(json.motion);
+    expect(RAIO).toEqual(json.radius);
+    expect(TAMANHO).toEqual(json.size);
+    expect(MOVIMENTO).toEqual(json.motion);
     expect(TRACO_ICONE).toEqual(json.stroke);
   });
 
@@ -58,8 +58,15 @@ describe('tokens iOS Glass', () => {
     expect(json.material[tema].sombraBotaoSwitch).toMatch(/2px 6px/);
   });
 
+  it('o JSON só tem a direção iOS Glass (a seção antiga saiu)', () => {
+    expect(json.brand).toBeUndefined();
+    expect(json.iosGlass).toBeUndefined();
+    expect(json.vidro).toBeUndefined();
+    expect(json.space).toBeUndefined();
+  });
+
   it('papéis tipográficos existem no JSON com o mesmo tamanho', () => {
-    for (const [papel, estilo] of Object.entries(TIPO_VIDRO)) {
+    for (const [papel, estilo] of Object.entries(TIPO)) {
       expect(json.type[papel]?.size).toBe(estilo.fontSize);
     }
   });

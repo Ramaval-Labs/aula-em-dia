@@ -30,8 +30,8 @@ import React, { createContext, useContext, useMemo, useRef, type RefObject } fro
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
-import { useVidro } from '../tema/TemaProvider';
-import { FUNDO_REFRACAO, TAMANHO_VIDRO, type Material } from '../tema/tokens';
+import { useCores } from '../tema/TemaProvider';
+import { FUNDO_REFRACAO, TAMANHO, type Material } from '../tema/tokens';
 
 /* ── Modo do material ─────────────────────────────────────────────────── */
 
@@ -114,7 +114,7 @@ export function AlvoDeDesfoque({
  * exatamente o `radial-gradient(raioX raioY at centroX centroY)` do CSS.
  */
 export function FundoRefracao({ style }: { style?: StyleProp<ViewStyle> }) {
-  const { tema, cores, material } = useVidro();
+  const { tema, cores, material } = useCores();
   return (
     <View
       pointerEvents="none"
@@ -200,7 +200,7 @@ export function SuperficieVidro({
   style,
   children,
 }: PropsSuperficie) {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
   const { alvo, dentroDoAlvo } = useContext(ContextoDeDesfoque);
 
   const comBlur =
@@ -221,7 +221,7 @@ export function SuperficieVidro({
             canto,
             {
               backgroundColor: miolo,
-              borderWidth: TAMANHO_VIDRO.bordaVidro,
+              borderWidth: TAMANHO.bordaVidro,
               borderColor: cores.borda,
             },
           ]}

@@ -18,9 +18,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useVidro, type Vidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { useCores, type CoresDoTema } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { RAIO, TAMANHO } from '../tema/tokens';
 import { BotaoInline } from './Controles';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
@@ -34,7 +34,7 @@ import { SuperficieVidro } from './Vidro';
 export function CartaoVidro({
   children,
   semPadding = false,
-  raio = RAIO_VIDRO.cartao,
+  raio = RAIO.cartao,
   estilo,
 }: {
   children: React.ReactNode;
@@ -80,7 +80,7 @@ export function CartaoDeAjuste({
   children?: React.ReactNode;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <CartaoVidro estilo={[estilos.padAjuste, estilo]}>
       <View style={estilos.linhaAjuste}>
@@ -111,7 +111,7 @@ export function CartaoDeAjuste({
 export type TomDeStatus = 'neutro' | 'tint' | 'vermelho' | 'ambar' | 'verde';
 
 /** Par (fundo suave, cor cheia) de cada tom. `neutro` não tem cor cheia. */
-export function coresDoTom(cores: Vidro['cores'], tom: TomDeStatus) {
+export function coresDoTom(cores: CoresDoTema['cores'], tom: TomDeStatus) {
   switch (tom) {
     case 'tint':
       return { suave: cores.tintSuave, cheia: cores.tint };
@@ -156,7 +156,7 @@ export function BlocoStatus({
   chevron?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { suave, cheia } = coresDoTom(cores, tom);
   const comIcone = !!icone;
 
@@ -167,7 +167,7 @@ export function BlocoStatus({
           <View style={[estilos.iconeBloco, { backgroundColor: cheia }]}>
             <Icone
               nome={icone}
-              tamanho={TAMANHO_VIDRO.glifoBloco}
+              tamanho={TAMANHO.glifoBloco}
               cor={tom === 'neutro' ? cores.sobreTint : cores.sobreCor}
             />
           </View>
@@ -198,7 +198,7 @@ export function BlocoStatus({
           ) : null}
         </View>
         {chevron ? (
-          <Icone nome="chevron" tamanho={TAMANHO_VIDRO.chevron} cor={cores.tinta3} />
+          <Icone nome="chevron" tamanho={TAMANHO.chevron} cor={cores.tinta3} />
         ) : null}
       </View>
       {acao ? (
@@ -269,7 +269,7 @@ export function CartaoDeDebito({
   children?: React.ReactNode;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
   const { suave, cheia } = coresDoTom(cores, tom);
   const neutro = tom === 'neutro';
 
@@ -277,7 +277,7 @@ export function CartaoDeDebito({
     <>
       <View style={estilos.linhaDebito}>
         <View style={estilos.flexivel}>
-          <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>{rotulo}</Text>
+          <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>{rotulo}</Text>
           <Text
             style={[
               comEspaco(texto(32, 800, { tracking: -0.045 }), { topo: 9 }),
@@ -319,7 +319,7 @@ export function CartaoDeDebito({
     return (
       <SuperficieVidro
         nivel="cartao"
-        raio={RAIO_VIDRO.cartao}
+        raio={RAIO.cartao}
         sombra
         style={[estilos.padDebito, estilo]}
       >
@@ -342,10 +342,10 @@ export function CartaoDeDebito({
 
 /* ── Faixa de status ──────────────────────────────────────────────────── */
 
-export type TipoDeFaixaVidro = 'pausado' | 'atraso' | 'pendente' | 'marcada';
+export type TipoDeFaixa = 'pausado' | 'atraso' | 'pendente' | 'marcada';
 
 /** Tom de cada faixa, na ordem de prioridade do handoff. */
-const TOM_DA_FAIXA: Record<TipoDeFaixaVidro, TomDeStatus> = {
+const TOM_DA_FAIXA: Record<TipoDeFaixa, TomDeStatus> = {
   pausado: 'neutro',
   atraso: 'vermelho',
   pendente: 'ambar',
@@ -353,7 +353,7 @@ const TOM_DA_FAIXA: Record<TipoDeFaixaVidro, TomDeStatus> = {
 };
 
 /** Prioridade do handoff: só uma faixa por linha, a primeira que existir. */
-export const PRIORIDADE_DA_FAIXA: readonly TipoDeFaixaVidro[] = [
+export const PRIORIDADE_DA_FAIXA: readonly TipoDeFaixa[] = [
   'pausado',
   'atraso',
   'pendente',
@@ -366,17 +366,17 @@ export function FaixaStatus({
   texto: rotulo,
   estilo,
 }: {
-  tipo: TipoDeFaixaVidro;
+  tipo: TipoDeFaixa;
   texto: string;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { suave, cheia } = coresDoTom(cores, TOM_DA_FAIXA[tipo]);
   // No tom neutro a cor cheia é a tinta de leitura; o handoff pede `ink2`.
   const tinta = tipo === 'pausado' ? cores.tinta2 : cheia;
   return (
     <View style={[estilos.faixa, { backgroundColor: suave }, estilo]}>
-      <Text style={[TIPO_VIDRO.faixa, { color: tinta }]} numberOfLines={1}>
+      <Text style={[TIPO.faixa, { color: tinta }]} numberOfLines={1}>
         {rotulo}
       </Text>
     </View>
@@ -395,11 +395,11 @@ export type TamanhoDeAvatar = 62 | 48 | 44 | 40 | 38;
 export type EstadoDoAvatar = 'normal' | 'baixo' | 'sem' | 'atraso' | 'pago' | 'perfil';
 
 const RAIO_DO_AVATAR: Record<TamanhoDeAvatar, number> = {
-  62: RAIO_VIDRO.avatarFicha,
-  48: RAIO_VIDRO.avatarPerfil,
-  44: RAIO_VIDRO.avatar44,
-  40: RAIO_VIDRO.avatar40,
-  38: RAIO_VIDRO.avatar38,
+  62: RAIO.avatarFicha,
+  48: RAIO.avatarPerfil,
+  44: RAIO.avatar44,
+  40: RAIO.avatar40,
+  38: RAIO.avatar38,
 };
 
 /** Tamanho das iniciais por diâmetro, como no protótipo. */
@@ -435,7 +435,7 @@ export function Avatar({
   tamanho?: TamanhoDeAvatar;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const par = {
     normal: { fundo: cores.tintSuave, tinta: cores.tint },
     baixo: { fundo: cores.ambarSuave, tinta: cores.ambar },
@@ -496,7 +496,7 @@ export function MedidorPacote({
   variante?: 'saldo' | 'progresso';
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const cheia = baixo ? cores.ambar : cores.tint;
   const [primeiras, resto] =
     variante === 'saldo' ? [cores.preenchimento2, cheia] : [cheia, cores.preenchimento2];
@@ -530,7 +530,7 @@ export function BarraProporcional({
   segmentos: readonly SegmentoProporcional[];
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View
       accessible
@@ -571,12 +571,12 @@ export function CartaoResumo({
   zerado?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const cor = zerado ? cores.tinta3 : tom === 'neutro' ? cores.tinta : coresDoTom(cores, tom).cheia;
   return (
     <SuperficieVidro
       nivel="cartao"
-      raio={RAIO_VIDRO.resumo}
+      raio={RAIO.resumo}
       sombra
       style={[estilos.padResumo, estilo]}
     >
@@ -588,7 +588,7 @@ export function CartaoResumo({
           aparelho (`adjustsFontSizeToFit`); no web ele corta, porque o
           react-native-web não implementa o encolhimento. */}
       <Text
-        style={[comEspaco(TIPO_VIDRO.resumo, { topo: 10 }), { color: cor }]}
+        style={[comEspaco(TIPO.resumo, { topo: 10 }), { color: cor }]}
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.7}
@@ -611,7 +611,7 @@ export function EstadoVazio({
   nota?: string;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={[estilos.vazio, estilo]}>
       <Text style={[texto(13.5, 500, { altura: 1.5 }), estilos.centro, { color: cores.tinta2 }]}>
@@ -640,8 +640,8 @@ const estilos = StyleSheet.create({
   aDireita: { textAlign: 'right' },
   padDebito: { padding: 18 },
   debito: {
-    borderRadius: RAIO_VIDRO.cartao,
-    borderWidth: TAMANHO_VIDRO.bordaVidro,
+    borderRadius: RAIO.cartao,
+    borderWidth: TAMANHO.bordaVidro,
     padding: 18,
   },
   linhaDebito: {
@@ -653,7 +653,7 @@ const estilos = StyleSheet.create({
   separadorDebito: {
     marginTop: 14,
     paddingTop: 13,
-    borderTopWidth: TAMANHO_VIDRO.bordaVidro,
+    borderTopWidth: TAMANHO.bordaVidro,
     gap: 8,
   },
   parDebito: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
@@ -661,29 +661,29 @@ const estilos = StyleSheet.create({
   corpoAjuste: { marginTop: 12 },
   padResumo: { flex: 1, paddingVertical: 14, paddingHorizontal: 13 },
   bloco: {
-    borderRadius: RAIO_VIDRO.bloco,
-    borderWidth: TAMANHO_VIDRO.bordaVidro,
+    borderRadius: RAIO.bloco,
+    borderWidth: TAMANHO.bordaVidro,
   },
   padBlocoIcone: { paddingVertical: 15, paddingHorizontal: 16 },
   padBlocoTexto: { paddingVertical: 16, paddingHorizontal: 17 },
   linhaBloco: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconeBloco: {
-    width: TAMANHO_VIDRO.iconeBloco,
-    height: TAMANHO_VIDRO.iconeBloco,
-    borderRadius: RAIO_VIDRO.iconeBloco,
+    width: TAMANHO.iconeBloco,
+    height: TAMANHO.iconeBloco,
+    borderRadius: RAIO.iconeBloco,
     alignItems: 'center',
     justifyContent: 'center',
   },
   acaoBloco: { marginTop: 13 },
   faixa: {
-    height: TAMANHO_VIDRO.faixaStatus,
+    height: TAMANHO.faixaStatus,
     paddingHorizontal: 8,
-    borderRadius: RAIO_VIDRO.faixa,
+    borderRadius: RAIO.faixa,
     alignSelf: 'flex-start',
     alignItems: 'center',
     justifyContent: 'center',
   },
   medidor: { flexDirection: 'row', gap: 4 },
-  barraMedidor: { flex: 1, height: TAMANHO_VIDRO.medidor, borderRadius: RAIO_VIDRO.medidor },
+  barraMedidor: { flex: 1, height: TAMANHO.medidor, borderRadius: RAIO.medidor },
   vazio: { paddingVertical: 30, paddingHorizontal: 20, alignItems: 'center' },
 });

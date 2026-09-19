@@ -28,8 +28,8 @@ import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { useCores } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 
 const MEIOS: { valor: MeioDePagamento; rotulo: string }[] = [
   { valor: 'Pix', rotulo: 'Pix' },
@@ -40,7 +40,7 @@ const MEIOS: { valor: MeioDePagamento; rotulo: string }[] = [
 const TITULO = 'Registrar pagamento';
 
 export function Pagamento() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, concluir, ir } = useNavegacao();
   const pilha = useNavegacao((s) => s.pilha);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
@@ -98,7 +98,7 @@ export function Pagamento() {
       {form.meio === 'Pix' ? (
         perfil.chavePix ? (
           <CartaoVidro estilo={estilos.espaco14}>
-            <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>
+            <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>
               Sua chave Pix
             </Text>
             <View style={estilos.linhaChave}>
@@ -136,7 +136,7 @@ export function Pagamento() {
         estilo={estilos.espaco14}
         direita={
           <View style={estilos.direita}>
-            <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>Data</Text>
+            <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>Data</Text>
             <Text
               style={[comEspaco(texto(15, 700, { altura: 1.3 }), { topo: 9 }), { color: cores.tinta }]}
             >

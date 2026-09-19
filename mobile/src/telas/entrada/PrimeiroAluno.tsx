@@ -24,9 +24,9 @@ import { ERRO, nomeValido } from '../../dominio/validacao';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
-import { useVidro } from '../../tema/TemaProvider';
+import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
-import { RAIO_VIDRO } from '../../tema/tokens';
+import { RAIO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 import { faixaDaLinha, linhaDeHorario } from '../comum/aluno';
 
@@ -183,7 +183,7 @@ export function PrimeiroAluno() {
  * número em 800 tabular sobre o trilho `preenchimento`.
  */
 function CaixaDeValor({ rotulo, valor }: { rotulo: string; valor: string }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={[estilos.caixa, { backgroundColor: cores.preenchimento }]}>
       <Text style={[texto(11.5, 600, { altura: 1.2 }), { color: cores.tinta2 }]}>{rotulo}</Text>
@@ -203,7 +203,7 @@ const estilos = StyleSheet.create({
   caixas: { marginTop: 10, flexDirection: 'row', gap: 10 },
   caixa: {
     flex: 1,
-    borderRadius: RAIO_VIDRO.caixaValor,
+    borderRadius: RAIO.caixaValor,
     paddingVertical: 11,
     paddingHorizontal: 13,
   },

@@ -17,9 +17,8 @@
  * nunca cubra conteúdo.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   KeyboardAvoidingView,
@@ -37,9 +36,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavegacao } from '../estado/navegacao';
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { MOVIMENTO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { useCores } from '../tema/TemaProvider';
+import { useReduzirMovimento } from '../tema/movimento';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { MOVIMENTO, TAMANHO } from '../tema/tokens';
 import { Icone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -57,30 +57,13 @@ const ALTURA_STATUS_HANDOFF = 52;
 const ROLAGEM_INICIO = 16;
 const ROLAGEM_CURSO = 34;
 
-/** Reduzir movimento: mesma leitura que a tab bar antiga já fazia. */
-export function useMovimentoReduzido(): boolean {
-  const [reduzido, setReduzido] = useState(false);
-  useEffect(() => {
-    let vivo = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((v) => vivo && setReduzido(v))
-      .catch(() => {});
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduzido);
-    return () => {
-      vivo = false;
-      sub.remove();
-    };
-  }, []);
-  return reduzido;
-}
-
 /**
  * Padding de topo do conteúdo (54 na raiz, 100 na empilhada) somado ao que o
  * recorte do aparelho tiver a mais que a status bar do handoff.
  */
 export function usePadTopo(tipo: TipoDeChassi): number {
   const insets = useSafeAreaInsets();
-  const base = tipo === 'raiz' ? TAMANHO_VIDRO.padTopoRaiz : TAMANHO_VIDRO.padTopoEmpilhada;
+  const base = tipo === 'raiz' ? TAMANHO.padTopoRaiz : TAMANHO.padTopoEmpilhada;
   return Math.max(base, insets.top + base - ALTURA_STATUS_HANDOFF);
 }
 
@@ -90,7 +73,7 @@ export function usePadTopo(tipo: TipoDeChassi): number {
  * Devolve o valor animado e o `onScroll` para o ScrollView.
  */
 export function useBarraComRolagem() {
-  const semMovimento = useMovimentoReduzido();
+  const semMovimento = useReduzirMovimento();
   const opacidade = useRef(new Animated.Value(0)).current;
   const degrau = useRef(0);
 
@@ -109,7 +92,7 @@ export function useBarraComRolagem() {
       }
       Animated.timing(opacidade, {
         toValue: alvo,
-        duration: MOVIMENTO_VIDRO.barraNavMs,
+        duration: MOVIMENTO.barraNavMs,
         easing: Easing.linear,
         // O driver nativo não roda no web, e a barra é uma view só.
         useNativeDriver: false,
@@ -134,11 +117,11 @@ export function BarraNavegacao({
   titulo: string;
   opacidade: Animated.Value;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const insets = useSafeAreaInsets();
   const altura = Math.max(
-    TAMANHO_VIDRO.barraNav,
-    insets.top + TAMANHO_VIDRO.barraNav - ALTURA_STATUS_HANDOFF,
+    TAMANHO.barraNav,
+    insets.top + TAMANHO.barraNav - ALTURA_STATUS_HANDOFF,
   );
 
   return (
@@ -149,14 +132,14 @@ export function BarraNavegacao({
       <SuperficieVidro nivel="vidro" raio={0} style={{ height: altura, justifyContent: 'flex-end' }}>
         <View
           style={{
-            height: TAMANHO_VIDRO.tituloNav,
+            height: TAMANHO.tituloNav,
             justifyContent: 'center',
             paddingHorizontal: 60,
           }}
         >
           <Text
             numberOfLines={1}
-            style={[TIPO_VIDRO.tituloNav, { color: cores.tinta, textAlign: 'center' }]}
+            style={[TIPO.tituloNav, { color: cores.tinta, textAlign: 'center' }]}
           >
             {titulo}
           </Text>
@@ -167,7 +150,7 @@ export function BarraNavegacao({
             left: 0,
             right: 0,
             bottom: 0,
-            height: TAMANHO_VIDRO.bordaVidro,
+            height: TAMANHO.bordaVidro,
             backgroundColor: cores.fio,
           }}
         />
@@ -191,7 +174,7 @@ export function BotaoVoltar({
   aoVoltar?: () => void;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const insets = useSafeAreaInsets();
   const voltar = useNavegacao((s) => s.voltar);
   const topo = Math.max(50, insets.top + 3);
@@ -206,7 +189,7 @@ export function BotaoVoltar({
           position: 'absolute',
           top: topo,
           left: 12,
-          height: TAMANHO_VIDRO.alvoMinimo,
+          height: TAMANHO.alvoMinimo,
           paddingHorizontal: 10,
           flexDirection: 'row',
           alignItems: 'center',
@@ -215,7 +198,7 @@ export function BotaoVoltar({
         style,
       ]}
     >
-      <Icone nome="chevron" girar={180} tamanho={TAMANHO_VIDRO.chevronVoltar} cor={cores.tint} />
+      <Icone nome="chevron" girar={180} tamanho={TAMANHO.chevronVoltar} cor={cores.tint} />
       <Text numberOfLines={1} style={[texto(16, 600), { color: cores.tint }]}>
         {rotulo}
       </Text>
@@ -251,9 +234,9 @@ export function TituloDeConteudo({
   direita?: React.ReactNode;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const grande = porte === 'grande';
-  const papel = grande ? TIPO_VIDRO.tituloGrande : TIPO_VIDRO.tituloEmpilhada;
+  const papel = grande ? TIPO.tituloGrande : TIPO.tituloEmpilhada;
 
   const textos = (
     <View style={direita ? styles.flexivel : null}>
@@ -338,8 +321,8 @@ export function TelaVidro({
       keyboardDismissMode={comTeclado ? 'on-drag' : undefined}
       contentContainerStyle={{
         paddingTop: padTopo,
-        paddingHorizontal: TAMANHO_VIDRO.padLateral,
-        paddingBottom: TAMANHO_VIDRO.padBaixoConteudo,
+        paddingHorizontal: TAMANHO.padLateral,
+        paddingBottom: TAMANHO.padBaixoConteudo,
       }}
     >
       {children}

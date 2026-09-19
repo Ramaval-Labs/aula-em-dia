@@ -16,9 +16,9 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Aba } from '../estado/navegacao';
-import { useVidro } from '../tema/TemaProvider';
-import { TIPO_VIDRO } from '../tema/tipografia';
-import { PILULA_ABA, RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { useCores } from '../tema/TemaProvider';
+import { TIPO } from '../tema/tipografia';
+import { PILULA_ABA, RAIO, TAMANHO } from '../tema/tokens';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -47,7 +47,7 @@ function ItemDeAba({
   ativa: boolean;
   aoTocar: () => void;
 }) {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
   const cor = ativa ? cores.tint : cores.tinta3;
 
   return (
@@ -59,8 +59,8 @@ function ItemDeAba({
       style={{
         flex: 1,
         // 56px de altura: acima dos 48px de alvo de aba (spec/acessibilidade.md).
-        height: TAMANHO_VIDRO.itemAba,
-        borderRadius: RAIO_VIDRO.pilulaAba,
+        height: TAMANHO.itemAba,
+        borderRadius: RAIO.pilulaAba,
         alignItems: 'center',
         justifyContent: 'center',
         gap: 4,
@@ -76,9 +76,9 @@ function ItemDeAba({
               right: 0,
               top: 0,
               bottom: 0,
-              borderRadius: RAIO_VIDRO.pilulaAba,
+              borderRadius: RAIO.pilulaAba,
               overflow: 'hidden',
-              borderWidth: TAMANHO_VIDRO.bordaVidro,
+              borderWidth: TAMANHO.bordaVidro,
               borderColor: cores.bordaTopo,
               boxShadow: `${material.gin}, 0px 4px 12px ${cores.sombra}`,
             }}
@@ -97,21 +97,21 @@ function ItemDeAba({
               right: '8%',
               top: '-52%',
               height: '86%',
-              borderRadius: RAIO_VIDRO.circulo,
+              borderRadius: RAIO.circulo,
               filter: 'blur(6px)',
             }}
           >
             <LinearGradient
               colors={[...PILULA_ABA.brilho]}
               locations={[...PILULA_ABA.brilhoParadas]}
-              style={{ flex: 1, borderRadius: RAIO_VIDRO.circulo }}
+              style={{ flex: 1, borderRadius: RAIO.circulo }}
             />
           </View>
         </>
       ) : null}
 
-      <Icone nome={icone} tamanho={TAMANHO_VIDRO.iconeAba} cor={cor} />
-      <Text numberOfLines={1} style={[TIPO_VIDRO.rotuloAba, { color: cor }]}>
+      <Icone nome={icone} tamanho={TAMANHO.iconeAba} cor={cor} />
+      <Text numberOfLines={1} style={[TIPO.rotuloAba, { color: cor }]}>
         {rotulo}
       </Text>
     </Pressable>
@@ -125,27 +125,27 @@ export function TabBar({
   abaAtiva: Aba;
   aoTrocar: (aba: Aba) => void;
 }) {
-  const { material } = useVidro();
+  const { material } = useCores();
   const insets = useSafeAreaInsets();
-  const base = Math.max(TAMANHO_VIDRO.baseTabBar, insets.bottom - RECUO_NA_AREA_SEGURA);
+  const base = Math.max(TAMANHO.baseTabBar, insets.bottom - RECUO_NA_AREA_SEGURA);
 
   return (
     <View
       accessibilityRole="tablist"
       style={{
         position: 'absolute',
-        left: TAMANHO_VIDRO.margemTabBar,
-        right: TAMANHO_VIDRO.margemTabBar,
+        left: TAMANHO.margemTabBar,
+        right: TAMANHO.margemTabBar,
         bottom: base,
       }}
     >
       <SuperficieVidro
         nivel="vidro"
-        raio={RAIO_VIDRO.tabBar}
+        raio={RAIO.tabBar}
         anel
         sombraExterna={material.sombraTabBar}
         style={{
-          height: TAMANHO_VIDRO.tabBar,
+          height: TAMANHO.tabBar,
           flexDirection: 'row',
           alignItems: 'center',
           padding: 5,

@@ -5,7 +5,7 @@ import { StyleSheet } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
 import { Switch } from '../../componentes/Controles';
-import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
+import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
 import { alternarBloco, resumo } from '../../dominio/disponibilidade';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
@@ -39,11 +39,11 @@ export function Disponibilidade() {
     >
       {/* A grade pede mais largura que o padding de 17 dos cartões de ajuste. */}
       <CartaoVidro estilo={estilos.grade}>
-        <GradeSemanalVidro
+        <GradeSemanal
           marcados={form.blocos}
           aoAlternar={(b) => atualizar({ blocos: alternarBloco(form.blocos, b) })}
         />
-        <RodapeDaGradeVidro esquerda={resumo(form.blocos)} direita="Domingo fechado" />
+        <RodapeDaGrade esquerda={resumo(form.blocos)} direita="Domingo fechado" />
       </CartaoVidro>
 
       <CartaoDeAjuste

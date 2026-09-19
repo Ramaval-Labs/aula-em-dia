@@ -12,7 +12,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { CartaoVidro } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto, Switch } from '../../componentes/Controles';
 import { CabecalhoGrupo } from '../../componentes/Listas';
-import { PreviaDeMensagemVidro } from '../../componentes/PreviaVidro';
+import { PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
 import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
@@ -21,11 +21,11 @@ import { avisos, useDados } from '../../estado/dados';
 import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useVidro } from '../../tema/TemaProvider';
+import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 
 export function ConfirmarReposicao() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, concluir, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const alunos = useDados((s) => s.alunos);
@@ -118,7 +118,7 @@ export function ConfirmarReposicao() {
       ) : null}
 
       <View style={estilos.bloco}>
-        <PreviaDeMensagemVidro
+        <PreviaDeMensagem
           texto={texto_ || 'Escolha um horário para montar a mensagem.'}
           destino={mascararTelefone(aluno?.telefone)}
           aoCopiar={() => avisar(avisos.mensagemCopiada)}
@@ -161,7 +161,7 @@ export function ConfirmarReposicao() {
 
 /** Rótulo à esquerda, valor à direita — o par rótulo/valor do cartão de débito de §7. */
 function LinhaDeResumo({ rotulo, valor }: { rotulo: string; valor: string }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={estilos.linhaResumo}>
       <Text style={[texto(13, 500, { altura: 1.4 }), { color: cores.tinta2 }]}>{rotulo}</Text>

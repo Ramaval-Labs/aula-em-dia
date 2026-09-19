@@ -18,14 +18,14 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { useCores } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { RAIO, TAMANHO } from '../tema/tokens';
 import {
   Avatar,
   FaixaStatus,
   type EstadoDoAvatar,
-  type TipoDeFaixaVidro,
+  type TipoDeFaixa,
 } from './Blocos';
 import { Icone } from './Icone';
 import { SuperficieVidro } from './Vidro';
@@ -40,17 +40,17 @@ export function ListaAgrupada({
   children: React.ReactNode;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const filhos = React.Children.toArray(children).filter(Boolean);
 
   return (
-    <SuperficieVidro nivel="cartao" raio={RAIO_VIDRO.cartao} sombra style={estilo}>
+    <SuperficieVidro nivel="cartao" raio={RAIO.cartao} sombra style={estilo}>
       {filhos.map((filho, i) => (
         <View
           key={i}
           style={
             i < filhos.length - 1
-              ? { borderBottomWidth: TAMANHO_VIDRO.bordaVidro, borderBottomColor: cores.fio }
+              ? { borderBottomWidth: TAMANHO.bordaVidro, borderBottomColor: cores.fio }
               : null
           }
         >
@@ -77,10 +77,10 @@ export function CabecalhoGrupo({
   tom?: 'neutro' | 'atraso';
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={[estilos.cabecalhoGrupo, estilo]}>
-      <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>{titulo}</Text>
+      <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>{titulo}</Text>
       {contagem ? (
         <Text
           style={[texto(12, 700), { color: tom === 'atraso' ? cores.vermelho : cores.tinta3 }]}
@@ -108,7 +108,7 @@ function Linha({
   padHorizontal: number;
   children: React.ReactNode;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const base: ViewStyle = {
     minHeight: minAltura,
     paddingVertical: 12,
@@ -164,7 +164,7 @@ export function LinhaLista({
   porte?: PorteDaLinha;
   rotuloAcessivel?: string;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const grande = porte !== 'padrao';
   const mostraChevron = chevron ?? (!!aoTocar && !direita);
 
@@ -174,10 +174,10 @@ export function LinhaLista({
       rotuloAcessivel={rotuloAcessivel ?? [titulo, subtitulo].filter(Boolean).join('. ')}
       minAltura={
         porte === 'app'
-          ? TAMANHO_VIDRO.linhaApp
+          ? TAMANHO.linhaApp
           : grande
-            ? TAMANHO_VIDRO.linhaAjustes
-            : TAMANHO_VIDRO.linhaLista
+            ? TAMANHO.linhaAjustes
+            : TAMANHO.linhaLista
       }
       padHorizontal={15}
     >
@@ -205,7 +205,7 @@ export function LinhaLista({
       </View>
       {direita}
       {mostraChevron ? (
-        <Icone nome="chevron" tamanho={TAMANHO_VIDRO.chevron} cor={cores.tinta3} />
+        <Icone nome="chevron" tamanho={TAMANHO.chevron} cor={cores.tinta3} />
       ) : null}
     </Linha>
   );
@@ -243,7 +243,7 @@ export function LinhaAluno({
   /** iniciais prontas; sem isso saem do `nome` */
   iniciais?: string;
   estadoDoAvatar?: EstadoDoAvatar;
-  faixa?: { tipo: TipoDeFaixaVidro; texto: string };
+  faixa?: { tipo: TipoDeFaixa; texto: string };
   /** saldo, valor em reais, o que a tela mostrar à direita */
   valor?: string;
   /** legenda sob o valor ("aulas") */
@@ -256,10 +256,10 @@ export function LinhaAluno({
   chevron?: boolean;
   rotuloAcessivel?: string;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const p = {
     lista: {
-      altura: TAMANHO_VIDRO.linhaAluno,
+      altura: TAMANHO.linhaAluno,
       avatar: 44,
       pad: 14,
       nome: texto(16, 700, { altura: 1.2, tracking: -0.015 }),
@@ -267,7 +267,7 @@ export function LinhaAluno({
       valor: texto(17, 800, { tracking: -0.03 }),
     },
     sheet: {
-      altura: TAMANHO_VIDRO.linhaEscolhaAluno,
+      altura: TAMANHO.linhaEscolhaAluno,
       avatar: 40,
       pad: 15,
       nome: texto(15.5, 700, { altura: 1.2, tracking: -0.012 }),
@@ -275,7 +275,7 @@ export function LinhaAluno({
       valor: texto(14, 800),
     },
     cobranca: {
-      altura: TAMANHO_VIDRO.linhaCobranca,
+      altura: TAMANHO.linhaCobranca,
       avatar: 38,
       pad: 15,
       nome: texto(15, 700, { altura: 1.2, tracking: -0.012 }),
@@ -344,7 +344,7 @@ export function LinhaAluno({
       </View>
       {blocoValor}
       {mostraChevron ? (
-        <Icone nome="chevron" tamanho={TAMANHO_VIDRO.chevron} cor={cores.tinta3} />
+        <Icone nome="chevron" tamanho={TAMANHO.chevron} cor={cores.tinta3} />
       ) : null}
     </Linha>
   );
@@ -380,7 +380,7 @@ export function LinhaExtrato({
   rodape: string;
   tom: TomDoDelta;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const cor = {
     debito: cores.vermelho,
     credito: cores.tint,
@@ -393,7 +393,7 @@ export function LinhaExtrato({
       rotuloAcessivel={[data, titulo, subtitulo, deltaEmPalavras, rodape]
         .filter(Boolean)
         .join('. ')}
-      minAltura={TAMANHO_VIDRO.linhaLista}
+      minAltura={TAMANHO.linhaLista}
       padHorizontal={15}
     >
       <Text
@@ -434,13 +434,13 @@ const estilos = StyleSheet.create({
     gap: 10,
   },
   faixaNaLinha: { marginTop: 7 },
-  colunaData: { width: TAMANHO_VIDRO.colunaData },
+  colunaData: { width: TAMANHO.colunaData },
   caixaValor: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    borderRadius: RAIO_VIDRO.saldoLinha,
+    borderRadius: RAIO.saldoLinha,
   },
 });

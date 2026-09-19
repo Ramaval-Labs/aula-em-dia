@@ -23,11 +23,11 @@ import { primeiroNome } from '../../dominio/formato';
 import { avisos, useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useVidro } from '../../tema/TemaProvider';
+import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 
 export function SemHorario() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, ir, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const alunos = useDados((s) => s.alunos);

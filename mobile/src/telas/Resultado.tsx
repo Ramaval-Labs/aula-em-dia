@@ -22,12 +22,12 @@ import { efeito, saldo, saldoBaixo } from '../dominio/politica';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { useCores } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { RAIO, TAMANHO } from '../tema/tokens';
 
 export function Resultado() {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
   const { alunoId, ir, fecharSheet } = useNavegacao();
   const [{ desfecho, avisoH }] = useRascunho('registro', REGISTRO_INICIAL);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
@@ -87,7 +87,7 @@ export function Resultado() {
         >
           <Icone
             nome="checkBloco"
-            tamanho={TAMANHO_VIDRO.glifoMedalha}
+            tamanho={TAMANHO.glifoMedalha}
             cor={debitou ? cores.sobreTint : cores.sobreCor}
           />
         </View>
@@ -110,7 +110,7 @@ export function Resultado() {
         >
           <Text
             style={[
-              TIPO_VIDRO.saldoResultado,
+              TIPO.saldoResultado,
               { color: saldoBaixo(aluno) ? cores.ambar : cores.tint },
             ]}
           >
@@ -157,11 +157,11 @@ const estilos = StyleSheet.create({
   centro: { alignItems: 'center', paddingTop: 10, paddingHorizontal: 4 },
   texto: { textAlign: 'center' },
   // A explicação não estica até a borda: o handoff a segura em 300px.
-  explicacao: { maxWidth: TAMANHO_VIDRO.larguraExplicacao },
+  explicacao: { maxWidth: TAMANHO.larguraExplicacao },
   medalha: {
-    width: TAMANHO_VIDRO.medalhaResultado,
-    height: TAMANHO_VIDRO.medalhaResultado,
-    borderRadius: RAIO_VIDRO.iconeResultado,
+    width: TAMANHO.medalhaResultado,
+    height: TAMANHO.medalhaResultado,
+    borderRadius: RAIO.iconeResultado,
     alignItems: 'center',
     justifyContent: 'center',
   },

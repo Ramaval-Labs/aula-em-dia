@@ -22,7 +22,7 @@ import type { Filtro } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
-import { useVidro } from '../tema/TemaProvider';
+import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
 import { faixaDaLinha, linhaDeHorario } from './comum/aluno';
 
@@ -33,7 +33,7 @@ const FILTROS: { valor: Filtro; rotulo: Filtro }[] = [
 ];
 
 export function Home() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const alunos = useDados((s) => s.alunos);
   const { filtro, definirFiltro, ir } = useNavegacao();
   const reiniciarRascunho = useFormularios((s) => s.substituir);

@@ -2,7 +2,7 @@
  * D5 — Lembrete de cobrança, nos três tons (sheet 88%, derivada).
  *
  * Tom em segmentado dentro de cartão (padrão dos cartões de H§9), mensagem na
- * `PreviaDeMensagemVidro` e o aviso de lembrete repetido como bloco âmbar.
+ * `PreviaDeMensagem` e o aviso de lembrete repetido como bloco âmbar.
  */
 
 import React from 'react';
@@ -10,7 +10,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { BlocoStatus, CartaoDeAjuste, EstadoVazio } from '../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Controles';
-import { PreviaDeMensagemVidro } from '../componentes/PreviaVidro';
+import { PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
 import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { primeiroNome } from '../dominio/formato';
 import { mascararTelefone, mensagemDeCobranca } from '../dominio/mensagens';
@@ -94,7 +94,7 @@ export function Lembrete() {
       </CartaoDeAjuste>
 
       <View style={estilos.espaco14}>
-        <PreviaDeMensagemVidro
+        <PreviaDeMensagem
           texto={mensagem}
           destino={mascararTelefone(aluno.telefone)}
           aoCopiar={() => avisar(avisos.mensagemCopiada)}

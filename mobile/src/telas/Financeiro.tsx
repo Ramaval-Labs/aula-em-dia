@@ -29,8 +29,8 @@ import type { Aluno } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { useCores } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 
 /** Situação de pagamento em uma linha. */
 function detalheDoPagamento(a: Aluno): string {
@@ -45,7 +45,7 @@ function detalheDoPagamento(a: Aluno): string {
 const semCentavos = (n: number) => `R$ ${milhar(n)}`;
 
 export function Financeiro() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const alunos = useDados((s) => s.alunos);
   const extratos = useDados((s) => s.extratos);
   const cobrarTodos = useDados((s) => s.cobrarTodosEmAtraso);
@@ -205,7 +205,7 @@ export function Financeiro() {
       ) : null}
 
       <CartaoVidro estilo={estilos.grupo}>
-        <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>
+        <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>
           {`Aulas dadas em ${mesPorExtenso().split(' de ')[0].toLowerCase()}`}
         </Text>
         <View style={estilos.linhaNumero}>

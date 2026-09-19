@@ -30,8 +30,8 @@ import { avisos, useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { useCores } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { LinhaDoExtrato } from './comum/Extrato';
 import { linhaDeHorario } from './comum/aluno';
 
@@ -39,7 +39,7 @@ import { linhaDeHorario } from './comum/aluno';
 const SEM_LANCAMENTOS: Lancamento[] = [];
 
 export function AlunoDetalhe() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, ir } = useNavegacao();
   const reiniciarRascunho = useFormularios((s) => s.substituir);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
@@ -119,7 +119,7 @@ export function AlunoDetalhe() {
         <CartaoVidro estilo={estilos.cartaoSaldo}>
           <View style={estilos.linhaSaldo}>
             <View style={estilos.flexivel}>
-              <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>
+              <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>
                 Saldo do pacote
               </Text>
               <View
@@ -129,7 +129,7 @@ export function AlunoDetalhe() {
               >
                 <Text
                   style={[
-                    TIPO_VIDRO.saldoCartao,
+                    TIPO.saldoCartao,
                     { color: baixo ? cores.ambar : cores.tint },
                   ]}
                 >
@@ -276,7 +276,7 @@ function AcoesDoAluno({
   aoCriarPacote: () => void;
   aoRenovar: () => void;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const com = temPacote(aluno);
 
   return (

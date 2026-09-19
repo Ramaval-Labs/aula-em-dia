@@ -1,186 +1,12 @@
 /**
- * Tokens do "Aula em Dia" — espelho tipado de tokens/tokens.json.
- * Não inventar valores aqui: todo número/cor vem do handoff.
+ * Tokens do "Aula em Dia" — direção iOS Glass (handoff-ios-glass/README.md,
+ * seção "Design Tokens"). Espelho tipado de tokens/tokens.json; o teste
+ * `tema/__tests__/tokens.test.ts` pega o descuido de mudar um lado só.
+ * Não inventar valores aqui: todo número e toda cor vêm do handoff, e o que
+ * é derivado diz isso no comentário.
  */
 
-export const MARCA = {
-  amarelo: '#FFD032',
-  tintaSobreAmarelo: '#0E1626',
-} as const;
-
 export type NomeDeCor =
-  | 'tela'
-  | 'caixa'
-  | 'cartao'
-  | 'linha'
-  | 'texto'
-  | 'textoMedio'
-  | 'suave'
-  | 'fraco'
-  | 'inativo'
-  | 'topo'
-  | 'topoTexto'
-  | 'topoFraco'
-  | 'topoCartao'
-  | 'elevado'
-  | 'elevadoSuave'
-  | 'botao'
-  | 'botaoTexto'
-  | 'botaoHover'
-  | 'desabFg'
-  | 'hover'
-  | 'amareloFraco'
-  | 'vermelho'
-  | 'vermelhoFraco'
-  | 'verde'
-  /**
-   * Criados pelo /designer (branch designer/2026-09-11-tudo) para contraste:
-   * tinta da faixa "Pagamento em atraso" (branco sobre #FF4D5E dava 3.2:1 no
-   * noturno) e o vermelho de número grande dentro do cabeçalho escuro
-   * (#E3001A sobre topoCartao dava 2.4:1).
-   */
-  | 'tintaSobreVermelho'
-  | 'vermelhoSobreTopo';
-
-export type Paleta = Record<NomeDeCor, string>;
-
-export const CORES: { claro: Paleta; escuro: Paleta } = {
-  claro: {
-    tela: '#F0F3F7',
-    caixa: '#F0F3F7',
-    cartao: '#FFFFFF',
-    linha: '#E2E8F0',
-    texto: '#141E30',
-    textoMedio: '#35577D',
-    suave: '#6E819B',
-    fraco: '#B7C0CE',
-    inativo: '#D3DAE4',
-    topo: '#141E30',
-    topoTexto: '#FFFFFF',
-    topoFraco: '#8FA8C4',
-    topoCartao: '#24395B',
-    elevado: '#141E30',
-    elevadoSuave: '#A6B6CE',
-    botao: '#141E30',
-    botaoTexto: '#FFFFFF',
-    botaoHover: '#24395B',
-    desabFg: '#9AA6B8',
-    hover: '#F7FAFD',
-    amareloFraco: '#FFF6D9',
-    vermelho: '#E3001A',
-    vermelhoFraco: '#FFF0F2',
-    verde: '#1E7A55',
-    tintaSobreVermelho: '#FFFFFF',
-    vermelhoSobreTopo: '#FF4D5E',
-  },
-  escuro: {
-    tela: '#141E30',
-    caixa: '#22304C',
-    cartao: '#1B2740',
-    linha: '#2C3E5C',
-    texto: '#E9EDF4',
-    textoMedio: '#C2CCDD',
-    suave: '#93A2BC',
-    fraco: '#46587A',
-    inativo: '#33456A',
-    topo: '#0E1626',
-    topoTexto: '#FFFFFF',
-    topoFraco: '#8299B8',
-    topoCartao: '#24365A',
-    elevado: '#24365A',
-    elevadoSuave: '#A6B6CE',
-    botao: '#E9EDF4',
-    botaoTexto: '#0E1626',
-    botaoHover: '#FFFFFF',
-    desabFg: '#5D6E8C',
-    hover: '#22304C',
-    amareloFraco: '#33301C',
-    vermelho: '#FF4D5E',
-    vermelhoFraco: '#3A1A20',
-    verde: '#35B37E',
-    tintaSobreVermelho: '#0E1626',
-    vermelhoSobreTopo: '#FF4D5E',
-  },
-};
-
-export const RAIO = {
-  micro: 5,
-  contador: 6,
-  cartao: 8,
-  pastilha: 13,
-  aparelho: 14,
-  pilula: 99,
-} as const;
-
-/** Grade de 4 — só os passos efetivamente usados no handoff. */
-export const ESPACO = [4, 6, 7, 9, 10, 12, 14, 16, 20, 22, 32] as const;
-
-export const TAMANHO = {
-  botaoPrimario: 52,
-  botaoSecundario: 44,
-  aba: 42,
-  /** área tocável da aba (spec/acessibilidade.md) mantendo o visual de 42px */
-  abaToque: 48,
-  /**
-   * Faixa da curva acima da navbar — o valor do handoff.
-   *
-   * A curva é redimensionada para caber nesta altura (não recortada), então
-   * baixar o número achata o desenho em vez de cortá-lo. Abaixo de ~44px a
-   * curva perde a inclinação característica e encosta reta na navbar.
-   */
-  faixaCurva: 58,
-  padCabecalho: 64,
-  padCabecalhoCompacto: 62,
-  padCabecalhoResultado: 70,
-} as const;
-
-export const MOVIMENTO = {
-  abaAtivaMs: 220,
-  toastMs: 3600,
-} as const;
-
-/** Vidro da pílula da aba ativa — sem backdrop-filter, por decisão de projeto. */
-export const VIDRO = {
-  gradiente: [
-    'rgba(255,255,255,0.11)',
-    'rgba(255,255,255,0.015)',
-    'rgba(255,255,255,0.015)',
-    'rgba(255,255,255,0.10)',
-  ] as const,
-  paradas: [0, 0.26, 0.72, 1] as const,
-  borda: 'rgba(255,255,255,0.5)',
-  sombra:
-    'inset 0px 1.5px 1.5px rgba(255,255,255,0.7), ' +
-    'inset 0px -1.5px 1.5px rgba(255,255,255,0.34), ' +
-    'inset 1.5px 0px 1.5px rgba(255,255,255,0.2), ' +
-    'inset -1.5px 0px 1.5px rgba(255,255,255,0.2), ' +
-    '0px 3px 10px rgba(0,0,0,0.32)',
-  brilho: ['rgba(255,255,255,0)', 'rgba(255,255,255,0.5)'] as const,
-  brilhoParadas: [0.6, 1] as const,
-} as const;
-
-/** Paths das duas curvas assinatura (assets/curva-*.svg). Mesma direção sempre. */
-export const CURVAS = {
-  cabecalho: {
-    viewBox: '0 0 390 80',
-    altura: 80,
-    d: 'M0,80 L0,74 C10,62 34,48 80,46 L316,46 C356,44 378,30 390,12 L390,80 Z',
-  },
-  navbar: {
-    viewBox: '0 0 390 60',
-    altura: 60,
-    d: 'M0,55 C10,46 34,36 80,34 L316,34 C356,33 378,22 390,9 L390,61 L0,61 Z',
-  },
-} as const;
-
-/* ─────────────────────────────────────────────────────────────────────────
- * iOS Glass — tokens da direção nova (handoff-ios-glass/README.md, seção
- * "Design Tokens"). Convivem com os antigos acima até a Onda 4, quando os
- * antigos saem e estes perdem o sufixo _VIDRO. Espelho da seção "iosGlass"
- * de tokens/tokens.json.
- * ───────────────────────────────────────────────────────────────────────── */
-
-export type NomeDeCorVidro =
   /** fundo do aparelho (--tela) */
   | 'tela'
   /** títulos e texto de leitura (--ink) */
@@ -237,14 +63,14 @@ export type NomeDeCorVidro =
   | 'mancha3'
   | 'mancha4';
 
-export type PaletaVidro = Record<NomeDeCorVidro, string>;
+export type Paleta = Record<NomeDeCor, string>;
 
 /**
  * Cor do iOS Glass. `--glassA` (.62) já está multiplicado: `--card` é
  * .62 × .9 = .558, `--glass` é .62 × .82 = .5084 no claro e .62 × .8 = .496
  * no escuro.
  */
-export const CORES_VIDRO: { claro: PaletaVidro; escuro: PaletaVidro } = {
+export const CORES: { claro: Paleta; escuro: Paleta } = {
   claro: {
     tela: '#E9EEF7',
     tinta: '#0B1220',
@@ -436,7 +262,7 @@ export const FUNDO_REFRACAO = [
   { mancha: 'mancha3', raioX: 0.64, raioY: 0.46, centroX: 0.82, centroY: 0.92, fim: 0.72 },
   { mancha: 'mancha4', raioX: 0.5, raioY: 0.34, centroX: 0.08, centroY: 0.74, fim: 0.7 },
 ] as const satisfies readonly {
-  mancha: NomeDeCorVidro;
+  mancha: NomeDeCor;
   raioX: number;
   raioY: number;
   centroX: number;
@@ -445,7 +271,7 @@ export const FUNDO_REFRACAO = [
 }[];
 
 /** Raios do sistema, por papel (handoff, "Raios do sistema" e Componentes). */
-export const RAIO_VIDRO = {
+export const RAIO = {
   aparelho: 48,
   sheet: 40,
   tabBar: 26,
@@ -484,7 +310,7 @@ export const RAIO_VIDRO = {
   circulo: 999,
 } as const;
 
-export const TAMANHO_VIDRO = {
+export const TAMANHO = {
   barraNav: 94,
   tituloNav: 44,
   tabBar: 66,
@@ -555,6 +381,8 @@ export const TAMANHO_VIDRO = {
   checkEscolha: 14,
   /** ícone da tab bar */
   iconeAba: 23,
+  /** quadrado do check do toast */
+  iconeToast: 26,
 
   /* controles */
   segmentoFiltro: 34,
@@ -610,7 +438,7 @@ export const TRACO_ICONE = {
   checkBloco: 2.6,
 } as const;
 
-export const MOVIMENTO_VIDRO = {
+export const MOVIMENTO = {
   sheetMs: 340,
   sheetCurva: [0.32, 0.72, 0, 1] as const,
   fundoSheetMs: 200,
@@ -618,13 +446,4 @@ export const MOVIMENTO_VIDRO = {
   toastDuracaoMs: 3600,
   barraNavMs: 180,
   switchMs: 200,
-} as const;
-
-/** Ícones da navbar (viewBox 24×24, stroke 1.8, round). */
-export const ICONES_ABA = {
-  alunos:
-    'M12 10.9a3.35 3.35 0 100-6.7 3.35 3.35 0 000 6.7M5.6 19.8c0-3.55 2.86-5.5 6.4-5.5s6.4 1.95 6.4 5.5',
-  financeiro:
-    'M4.2 9.2h13.3a2.5 2.5 0 012.5 2.5v4.9a2.5 2.5 0 01-2.5 2.5H6.7a2.5 2.5 0 01-2.5-2.5zM4.2 9.2V7.3a2 2 0 012-2h8.6M16 14.1h1.4',
-  ajustes: 'M4.6 8.2h8.2M16.6 8.2H19.4M4.6 15.8h2.8M11.4 15.8h8M14.7 6.1v4.2M8.5 13.7v4.2',
 } as const;

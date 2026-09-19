@@ -29,9 +29,9 @@ import {
   Segmentado,
   Switch,
 } from '../../componentes/Controles';
-import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
+import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
-import { PreviaDeMensagemVidro } from '../../componentes/PreviaVidro';
+import { PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
 import { useDoisToques } from '../../componentes/useDoisToques';
 import { alternarBloco, periodoDaFolga, resumo } from '../../dominio/disponibilidade';
 import { dinheiro } from '../../dominio/formato';
@@ -44,9 +44,9 @@ import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
-import { useVidro } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../../tema/tokens';
+import { useCores } from '../../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
+import { RAIO, TAMANHO } from '../../tema/tokens';
 
 /* ── Peças locais (candidatas a promoção para src/componentes) ─────────── */
 
@@ -108,7 +108,7 @@ function CartaoComSwitch({
 // --- Perfil do professor --------------------------------------------------
 
 export function PerfilProfessor() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
@@ -236,11 +236,11 @@ export function MinhaDisponibilidade() {
       rodape={<BotaoPrimario rotulo="Salvar" desabilitado={!mudou} aoTocar={salvar} />}
     >
       <CartaoVidro estilo={[estilos.cartaoGrade, estilos.primeiro]}>
-        <GradeSemanalVidro
+        <GradeSemanal
           marcados={d.blocos}
           aoAlternar={(b) => atualizar({ blocos: alternarBloco(d.blocos, b) })}
         />
-        <RodapeDaGradeVidro esquerda={resumo(d.blocos)} direita="Domingo fechado" />
+        <RodapeDaGrade esquerda={resumo(d.blocos)} direita="Domingo fechado" />
       </CartaoVidro>
 
       <CartaoComSwitch
@@ -289,7 +289,7 @@ export function MinhaDisponibilidade() {
 // --- Pacotes e valores padrão --------------------------------------------
 
 export function PacotesPadrao() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { concluir } = useNavegacao();
   const politicas = useDados((s) => s.politicas);
   const alunos = useDados((s) => s.alunos);
@@ -474,7 +474,7 @@ export function ChavePix() {
 
       {previa ? (
         <View style={estilos.bloco}>
-          <PreviaDeMensagemVidro
+          <PreviaDeMensagem
             texto={previa}
             aoCopiar={() => avisar(avisos.mensagemCopiada)}
           />
@@ -494,7 +494,7 @@ const BENEFICIOS = [
 ];
 
 export function Conta() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const alunos = useDados((s) => s.alunos);
@@ -555,7 +555,7 @@ export function Conta() {
       }
     >
       <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
-        <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>Plano atual</Text>
+        <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>Plano atual</Text>
         <Text
           style={[
             comEspaco(texto(22, 800, { altura: 1.15, tracking: -0.03 }), { topo: 8 }),
@@ -651,8 +651,8 @@ const estilos = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 16,
     paddingHorizontal: 17,
-    borderRadius: RAIO_VIDRO.cartao,
-    borderWidth: TAMANHO_VIDRO.bordaVidro,
+    borderRadius: RAIO.cartao,
+    borderWidth: TAMANHO.bordaVidro,
   },
   medidor: { marginTop: 14 },
   beneficios: { marginTop: 10, gap: 6 },

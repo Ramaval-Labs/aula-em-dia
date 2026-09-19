@@ -23,9 +23,9 @@ import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
-import { texto, TIPO_VIDRO } from '../tema/tipografia';
-import { TAMANHO_VIDRO } from '../tema/tokens';
+import { useCores } from '../tema/TemaProvider';
+import { texto, TIPO } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
 
 const VALIDADES = [
   { valor: 30, rotulo: '30 dias' },
@@ -34,7 +34,7 @@ const VALIDADES = [
 ];
 
 export function Pacote() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const politicas = useDados((s) => s.politicas);
@@ -138,13 +138,13 @@ export function Pacote() {
       <CartaoVidro estilo={estilos.cartao}>
         <View style={estilos.linhaSaldo}>
           <View>
-            <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Resumo</Text>
+            <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Resumo</Text>
             <View
               accessible
               accessibilityLabel={`${calculado.saldoFinal} aulas no pacote`}
               style={estilos.numeroDoSaldo}
             >
-              <Text style={[TIPO_VIDRO.saldoCartao, { color: cores.tint }]}>
+              <Text style={[TIPO.saldoCartao, { color: cores.tint }]}>
                 {String(calculado.saldoFinal)}
               </Text>
               <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas no pacote</Text>
@@ -162,7 +162,7 @@ export function Pacote() {
 }
 
 function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={estilos.linha}>
       <Text style={[texto(13, 500, { altura: 1.4 }), { color: cores.tinta2 }]}>{rotulo}</Text>
@@ -177,6 +177,6 @@ const estilos = StyleSheet.create({
   cartao: { marginTop: 14 },
   linhaSaldo: { flexDirection: 'row', alignItems: 'flex-end' },
   numeroDoSaldo: { marginTop: 9, flexDirection: 'row', alignItems: 'baseline', gap: 7 },
-  linhas: { marginTop: 14, paddingTop: 12, borderTopWidth: TAMANHO_VIDRO.bordaVidro, gap: 8 },
+  linhas: { marginTop: 14, paddingTop: 12, borderTopWidth: TAMANHO.bordaVidro, gap: 8 },
   linha: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
 });

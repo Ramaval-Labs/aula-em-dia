@@ -13,9 +13,9 @@ import { dinheiro } from '../dominio/formato';
 import { temPacote, VALOR_AULA } from '../dominio/politica';
 import { useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
-import { useTema, useVidro } from '../tema/TemaProvider';
+import { useTema, useCores } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
-import { TAMANHO_VIDRO } from '../tema/tokens';
+import { TAMANHO } from '../tema/tokens';
 
 /** Rodapé do handoff §8, sem o "protótipo acadêmico" (mapa de telas). */
 const VERSAO = 'Versão 0.5';
@@ -26,7 +26,7 @@ const APARENCIAS = [
 ];
 
 export function Ajustes() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   // `useTema` é o provider, não o token: é ele que troca claro/escuro.
   const { tema, trocarTema } = useTema();
   const alunos = useDados((s) => s.alunos);
@@ -84,7 +84,7 @@ export function Ajustes() {
               {`${comPacote} alunos com pacote · ${alunos.length} cadastrados`}
             </Text>
           </View>
-          <Icone nome="chevron" tamanho={TAMANHO_VIDRO.chevron} cor={cores.tinta3} />
+          <Icone nome="chevron" tamanho={TAMANHO.chevron} cor={cores.tinta3} />
         </CartaoVidro>
       </Pressable>
 

@@ -1,19 +1,19 @@
 /**
  * Catálogo de componentes do iOS Glass — uma seção por família, cada peça em
- * todos os estados que a Onda 3 vai usar (normal, desabilitado, selecionado,
+ * todos os estados que as telas usam (normal, desabilitado, selecionado,
  * vazio, texto longo, número grande).
  *
  * Tela só de desenvolvimento: nada aqui entra no app. É a prova visual do
- * trabalho da Onda 2B, e o que os migradores leem antes de escolher uma peça.
+ * catálogo, e o que se lê antes de escolher uma peça para uma tela nova.
  */
 
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { BlocoSemanal } from '../../dominio/tipos';
-import { useVidro } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
-import { TAMANHO_VIDRO } from '../../tema/tokens';
+import { useCores } from '../../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
+import { TAMANHO } from '../../tema/tokens';
 import {
   Avatar,
   BarraProporcional,
@@ -38,7 +38,7 @@ import {
   Stepper,
   Switch,
 } from '../Controles';
-import { GradeSemanalVidro, RodapeDaGradeVidro } from '../GradeVidro';
+import { GradeSemanal, RodapeDaGrade } from '../GradeSemanal';
 import { Icone, ICONES, type NomeDeIcone } from '../Icone';
 import {
   CabecalhoGrupo,
@@ -47,7 +47,7 @@ import {
   LinhaLista,
   ListaAgrupada,
 } from '../Listas';
-import { PreviaDeMensagemVidro } from '../PreviaVidro';
+import { PreviaDeMensagem } from '../PreviaDeMensagem';
 
 const LONGO =
   'Nome muito comprido de aluno para testar a elipse na linha da lista agrupada';
@@ -58,20 +58,20 @@ const MENSAGEM =
 /* ── Casca ────────────────────────────────────────────────────────────── */
 
 function Secao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={estilos.secao}>
-      <Text style={[TIPO_VIDRO.tituloEmpilhada, { color: cores.tinta }]}>{titulo}</Text>
+      <Text style={[TIPO.tituloEmpilhada, { color: cores.tinta }]}>{titulo}</Text>
       {children}
     </View>
   );
 }
 
 function Amostra({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={estilos.amostra}>
-      <Text style={[comEspaco(TIPO_VIDRO.cabecalhoGrupo, { base: 9 }), { color: cores.tinta3 }]}>
+      <Text style={[comEspaco(TIPO.cabecalhoGrupo, { base: 9 }), { color: cores.tinta3 }]}>
         {rotulo}
       </Text>
       {children}
@@ -95,7 +95,7 @@ export function SecoesDoCatalogo() {
 }
 
 function SecaoIcones() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const nomes = Object.keys(ICONES) as NomeDeIcone[];
   return (
     <Secao titulo="Ícones">
@@ -172,7 +172,7 @@ const PRAZOS = [
 ] as const;
 
 function SecaoControles() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const [filtro, setFiltro] = useState<(typeof FILTROS)[number]['valor']>('urgencia');
   const [prazo, setPrazo] = useState<(typeof PRAZOS)[number]['valor']>(24);
   const [ligado, setLigado] = useState(true);
@@ -221,11 +221,11 @@ function SecaoControles() {
         <CartaoVidro>
           <View style={estilos.linhaControle}>
             <View style={estilos.flexivel}>
-              <Text style={[TIPO_VIDRO.tituloBloco, { color: cores.tinta }]}>
+              <Text style={[TIPO.tituloBloco, { color: cores.tinta }]}>
                 Falta avisada devolve a aula
               </Text>
               <Text
-                style={[comEspaco(TIPO_VIDRO.textoBloco, { topo: 3 }), { color: cores.tinta2 }]}
+                style={[comEspaco(TIPO.textoBloco, { topo: 3 }), { color: cores.tinta2 }]}
               >
                 {ligado
                   ? 'Dentro do prazo, o saldo não é debitado'
@@ -236,11 +236,11 @@ function SecaoControles() {
           </View>
           <View style={[estilos.linhaControle, estilos.separada, { borderTopColor: cores.fio }]}>
             <View style={estilos.flexivel}>
-              <Text style={[TIPO_VIDRO.tituloBloco, { color: cores.tinta }]}>
+              <Text style={[TIPO.tituloBloco, { color: cores.tinta }]}>
                 Reposições por pacote
               </Text>
               <Text
-                style={[comEspaco(TIPO_VIDRO.textoBloco, { topo: 3 }), { color: cores.tinta2 }]}
+                style={[comEspaco(TIPO.textoBloco, { topo: 3 }), { color: cores.tinta2 }]}
               >
                 Depois do limite, a falta debita
               </Text>
@@ -255,7 +255,7 @@ function SecaoControles() {
             />
           </View>
           <View style={[estilos.linhaControle, estilos.separada, { borderTopColor: cores.fio }]}>
-            <Text style={[TIPO_VIDRO.tituloBloco, estilos.flexivel, { color: cores.tinta }]}>
+            <Text style={[TIPO.tituloBloco, estilos.flexivel, { color: cores.tinta }]}>
               Switch desligado e desabilitado
             </Text>
             <Switch ligado={false} aoAlternar={() => {}} rotulo="Exemplo desabilitado" desabilitado />
@@ -301,7 +301,7 @@ function SecaoControles() {
               rotuloDoGrupo="Antecedência do aviso"
             />
             <Text
-              style={[comEspaco(TIPO_VIDRO.textoBloco, { topo: 11 }), { color: cores.tinta2 }]}
+              style={[comEspaco(TIPO.textoBloco, { topo: 11 }), { color: cores.tinta2 }]}
             >
               {aviso >= 24
                 ? 'Dentro do prazo: a aula volta para o saldo.'
@@ -330,7 +330,7 @@ function SecaoControles() {
 }
 
 function SecaoListas() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <Secao titulo="Listas">
       <Amostra rotulo="linha de aluno · 76px, faixa e saldo">
@@ -506,18 +506,18 @@ const AVATARES: { tamanho: TamanhoDeAvatar; estado: EstadoDoAvatar }[] = [
 ];
 
 function SecaoBlocos() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <Secao titulo="Blocos">
       <Amostra rotulo="cartão de saldo · medidor de pacote">
         <CartaoVidro>
           <View style={estilos.topoSaldo}>
             <View>
-              <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>
+              <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>
                 Saldo do pacote
               </Text>
               <View style={estilos.linhaSaldo}>
-                <Text style={[TIPO_VIDRO.saldoCartao, { color: cores.ambar }]}>2</Text>
+                <Text style={[TIPO.saldoCartao, { color: cores.ambar }]}>2</Text>
                 <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
               </View>
             </View>
@@ -589,7 +589,7 @@ function SecaoBlocos() {
         </View>
         <View style={estilos.espaco9} />
         <CartaoVidro>
-          <Text style={[TIPO_VIDRO.cabecalhoGrupo, { color: cores.tinta3 }]}>
+          <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>
             Aulas dadas em agosto
           </Text>
           <View style={estilos.topoSaldo}>
@@ -667,8 +667,8 @@ function SecaoDerivados() {
 
       <Amostra rotulo="grade semanal · sem handoff">
         <CartaoVidro>
-          <GradeSemanalVidro marcados={marcados} aoAlternar={alternar} />
-          <RodapeDaGradeVidro
+          <GradeSemanal marcados={marcados} aoAlternar={alternar} />
+          <RodapeDaGrade
             esquerda={`${marcados.length} blocos marcados`}
             direita="Toque para alternar"
           />
@@ -676,7 +676,7 @@ function SecaoDerivados() {
       </Amostra>
 
       <Amostra rotulo="prévia de mensagem · sem handoff">
-        <PreviaDeMensagemVidro texto={MENSAGEM} destino="+55 51 9•••• 4182" />
+        <PreviaDeMensagem texto={MENSAGEM} destino="+55 51 9•••• 4182" />
       </Amostra>
     </Secao>
   );
@@ -695,7 +695,7 @@ const estilos = StyleSheet.create({
   grelha: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 14 },
   celulaIcone: { width: '25%', alignItems: 'center' },
   linhaControle: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  separada: { marginTop: 14, paddingTop: 14, borderTopWidth: TAMANHO_VIDRO.bordaVidro },
+  separada: { marginTop: 14, paddingTop: 14, borderTopWidth: TAMANHO.bordaVidro },
   topoSaldo: {
     flexDirection: 'row',
     alignItems: 'flex-end',

@@ -18,7 +18,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Catalogo } from './src/componentes/__catalogo__/Catalogo';
 import { TabBar } from './src/componentes/TabBar';
-import { ToastVidro } from './src/componentes/ToastVidro';
+import { Toast } from './src/componentes/Toast';
 import { AlvoDeDesfoque, FundoRefracao, ProvedorDeDesfoque } from './src/componentes/Vidro';
 import { useDados } from './src/estado/dados';
 import { exporParaDepuracao, useCatalogo } from './src/estado/depuracao';
@@ -139,7 +139,7 @@ function Portao({ fontesProntas }: { fontesProntas: boolean }) {
       <StatusBar style={tema === 'escuro' ? 'light' : 'dark'} />
       {noApp ? null : <FundoRefracao />}
       {conteudo()}
-      <ToastVidro />
+      <Toast />
       {catalogoAberto ? <Catalogo /> : null}
     </View>
   );

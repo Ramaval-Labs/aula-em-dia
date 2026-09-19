@@ -23,7 +23,7 @@ import {
   BotaoTexto,
   CartaoEscolha,
 } from '../../componentes/Controles';
-import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
+import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
@@ -36,9 +36,9 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useVidro } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
-import { RAIO_VIDRO, TAMANHO_VIDRO } from '../../tema/tokens';
+import { useCores } from '../../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../../tema/tipografia';
+import { RAIO, TAMANHO } from '../../tema/tokens';
 import { LinhaDoExtrato } from '../comum/Extrato';
 
 /** Referencia estavel para aluno sem lancamentos. */
@@ -107,7 +107,7 @@ export function VerComoAluno() {
 // --- F1, meu saldo --------------------------------------------------------
 
 export function AlunoSaldo() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const alunoId = useNavegacao((s) => s.alunoId);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   // O `?? []` NAO pode ficar dentro do seletor: devolveria um array novo a cada
@@ -154,7 +154,7 @@ export function AlunoSaldo() {
       <FaixaPrevia texto={assinatura} />
 
       <CartaoVidro estilo={estilos.cartaoGrande}>
-        <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo</Text>
+        <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo</Text>
         <View
           accessible
           // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
@@ -163,7 +163,7 @@ export function AlunoSaldo() {
         >
           <Text
             style={[
-              TIPO_VIDRO.saldoCartao,
+              TIPO.saldoCartao,
               { color: !com ? cores.tinta3 : restam <= 2 ? cores.ambar : cores.tint },
             ]}
           >
@@ -195,7 +195,7 @@ export function AlunoSaldo() {
       </ListaAgrupada>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>A regra combinada</Text>
+        <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>A regra combinada</Text>
         <Text
           style={[
             comEspaco(texto(14, 500, { altura: 1.55 }), { topo: 10 }),
@@ -231,7 +231,7 @@ export function AlunoSaldo() {
 // --- F2, proposta de reposição -------------------------------------------
 
 export function AlunoProposta() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const alunos = useDados((s) => s.alunos);
@@ -338,7 +338,7 @@ export function AlunoProposta() {
 
       {razoes?.length ? (
         <CartaoVidro estilo={estilos.cartao}>
-          <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Por que esse horário</Text>
+          <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Por que esse horário</Text>
           <View style={estilos.razoes}>
             {razoes.map((r) => (
               <View key={r} style={estilos.razao}>
@@ -377,9 +377,9 @@ export function AlunoProposta() {
       </View>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <Text style={[TIPO_VIDRO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo hoje</Text>
+        <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo hoje</Text>
         <View style={estilos.numeroDoSaldo}>
-          <Text style={[TIPO_VIDRO.saldoCartao, { color: cores.tinta }]}>
+          <Text style={[TIPO.saldoCartao, { color: cores.tinta }]}>
             {String(saldo(aluno))}
           </Text>
           <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
@@ -406,7 +406,7 @@ export function AlunoProposta() {
 // --- F3, informar disponibilidade ----------------------------------------
 
 export function AlunoDisponibilidade() {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const { alunoId, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const perfil = useDados((s) => s.perfil);
@@ -448,14 +448,14 @@ export function AlunoDisponibilidade() {
       />
 
       <CartaoVidro estilo={estilos.cartaoGrande}>
-        <GradeSemanalVidro
+        <GradeSemanal
           marcados={blocos}
           dias={DIAS_UTEIS}
           rotuloDaFaixa="nome"
           alturaDaCelula={52}
           aoAlternar={(b) => substituir(alternarBloco(blocos, b))}
         />
-        <RodapeDaGradeVidro esquerda={resumoMarcados(blocos)} direita="Toque para marcar" />
+        <RodapeDaGrade esquerda={resumoMarcados(blocos)} direita="Toque para marcar" />
       </CartaoVidro>
 
       <Text
@@ -485,9 +485,9 @@ const estilos = StyleSheet.create({
   razao: { flexDirection: 'row', gap: 12 },
   // Marcador decorativo da lista de motivos; o texto ao lado carrega tudo.
   ponto: {
-    width: TAMANHO_VIDRO.pontoLista,
-    height: TAMANHO_VIDRO.pontoLista,
-    borderRadius: RAIO_VIDRO.circulo,
+    width: TAMANHO.pontoLista,
+    height: TAMANHO.pontoLista,
+    borderRadius: RAIO.circulo,
     marginTop: 8,
   },
   escolhas: { marginTop: 9, gap: 10 },

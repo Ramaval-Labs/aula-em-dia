@@ -3,8 +3,7 @@
  *
  * Toda animação do iOS Glass (switch, sheet, barra de navegação) passa por
  * aqui: com a preferência ligada, a mudança acontece sem transição em vez de
- * ficar mais lenta. Mesmo padrão que o `Navbar.tsx` antigo já usava, extraído
- * para o tema porque agora são vários componentes.
+ * ficar mais lenta. Mora no tema porque são vários componentes.
  */
 
 import { useEffect, useState } from 'react';

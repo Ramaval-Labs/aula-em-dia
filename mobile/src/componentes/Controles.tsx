@@ -3,7 +3,7 @@
  * escolha (handoff-ios-glass/README.md, seções "Botões", "Controle
  * segmentado", "Cartão de escolha (radio)", "Switch" e "Stepper").
  *
- * Toda medida sai de `RAIO_VIDRO`/`TAMANHO_VIDRO`; toda cor, de `useVidro()`.
+ * Toda medida sai de `RAIO`/`TAMANHO`; toda cor, de `useCores()`.
  * Vidro só por `SuperficieVidro`.
  *
  * **Pressionado.** O handoff descreve *hover* de mouse (`brightness(1.07)`),
@@ -27,10 +27,10 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
+import { useCores } from '../tema/TemaProvider';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { duracao, useReduzirMovimento } from '../tema/movimento';
-import { MOVIMENTO_VIDRO, RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
+import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -39,7 +39,7 @@ const OPACIDADE_PRESSIONADO = 0.86;
 
 /** Fecha os 44px do alvo de toque em peças mais baixas. */
 function folgaDeToque(altura: number) {
-  const falta = Math.max(0, TAMANHO_VIDRO.alvoMinimo - altura) / 2;
+  const falta = Math.max(0, TAMANHO.alvoMinimo - altura) / 2;
   return { top: falta, bottom: falta, left: 0, right: 0 };
 }
 
@@ -67,7 +67,7 @@ export function BotaoPrimario({
   rotuloAcessivel,
   estilo,
 }: Comum & { icone?: NomeDeIcone }) {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
   const tinta = desabilitado ? cores.tinta3 : cores.sobreTint;
 
   return (
@@ -89,8 +89,8 @@ export function BotaoPrimario({
         estilo,
       ]}
     >
-      {icone ? <Icone nome={icone} tamanho={TAMANHO_VIDRO.iconeMais} cor={tinta} /> : null}
-      <Text style={[TIPO_VIDRO.botao, { color: tinta }]} numberOfLines={1}>
+      {icone ? <Icone nome={icone} tamanho={TAMANHO.iconeMais} cor={tinta} /> : null}
+      <Text style={[TIPO.botao, { color: tinta }]} numberOfLines={1}>
         {rotulo}
       </Text>
     </Pressable>
@@ -114,8 +114,8 @@ export function BotaoSecundario({
       icone={icone}
       rotuloAcessivel={rotuloAcessivel}
       estilo={estilo}
-      altura={TAMANHO_VIDRO.botaoSecundario}
-      raio={RAIO_VIDRO.botao}
+      altura={TAMANHO.botaoSecundario}
+      raio={RAIO.botao}
       tipografia={texto(16, 700, { tracking: -0.015 })}
     />
   );
@@ -138,8 +138,8 @@ export function BotaoCompacto({
       icone={icone}
       rotuloAcessivel={rotuloAcessivel}
       estilo={estilo}
-      altura={TAMANHO_VIDRO.botaoCompacto}
-      raio={RAIO_VIDRO.botaoCompacto}
+      altura={TAMANHO.botaoCompacto}
+      raio={RAIO.botaoCompacto}
       tipografia={texto(14.5, 600)}
     />
   );
@@ -162,7 +162,7 @@ function BotaoDeVidro({
   raio: number;
   tipografia: TextStyle;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const tinta = desabilitado ? cores.tinta3 : cores.tint;
 
   return (
@@ -179,7 +179,7 @@ function BotaoDeVidro({
         raio={raio}
         style={[estilos.linhaCentral, { height: altura }]}
       >
-        {icone ? <Icone nome={icone} tamanho={TAMANHO_VIDRO.iconeMais} cor={tinta} /> : null}
+        {icone ? <Icone nome={icone} tamanho={TAMANHO.iconeMais} cor={tinta} /> : null}
         <Text style={[tipografia, { color: tinta }]} numberOfLines={1}>
           {rotulo}
         </Text>
@@ -200,7 +200,7 @@ export function BotaoInline({
   rotuloAcessivel,
   estilo,
 }: Comum & { variante?: 'tint' | 'vidro' }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const emVidro = variante === 'vidro';
   const tinta = desabilitado ? cores.tinta3 : emVidro ? cores.tint : cores.sobreTint;
   const conteudo = (
@@ -216,7 +216,7 @@ export function BotaoInline({
       accessibilityState={{ disabled: desabilitado }}
       disabled={desabilitado}
       onPress={aoTocar}
-      hitSlop={folgaDeToque(TAMANHO_VIDRO.botaoInline)}
+      hitSlop={folgaDeToque(TAMANHO.botaoInline)}
       style={({ pressed }) => [
         estilos.inline,
         { opacity: pressed ? OPACIDADE_PRESSIONADO : 1 },
@@ -226,7 +226,7 @@ export function BotaoInline({
       {emVidro ? (
         <SuperficieVidro
           nivel="vidro2"
-          raio={RAIO_VIDRO.botaoInline}
+          raio={RAIO.botaoInline}
           style={[estilos.linhaCentral, estilos.inlineCaixa]}
         >
           {conteudo}
@@ -237,7 +237,7 @@ export function BotaoInline({
             estilos.linhaCentral,
             estilos.inlineCaixa,
             {
-              borderRadius: RAIO_VIDRO.botaoInline,
+              borderRadius: RAIO.botaoInline,
               backgroundColor: desabilitado ? cores.preenchimento2 : cores.tint,
             },
           ]}
@@ -258,7 +258,7 @@ export function BotaoTexto({
   rotuloAcessivel,
   estilo,
 }: Comum & { tom?: 'neutro' | 'destrutivo' }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const cor = desabilitado
     ? cores.tinta3
     : tom === 'destrutivo'
@@ -299,7 +299,7 @@ export function BotaoTexto({
  * formulário fica válido — o botão apagado nunca fica mudo.
  */
 export function NotaDoBotao({ texto: nota }: { texto: string }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <Text
       accessibilityLiveRegion="polite"
@@ -317,27 +317,27 @@ export type PorteDoSegmentado = 'filtro' | 'cartao' | 'linha';
 const PORTES = {
   /** filtros de tela (Urgência / A–Z / Hoje) */
   filtro: {
-    altura: TAMANHO_VIDRO.segmentoFiltro,
-    trilho: RAIO_VIDRO.trilho,
-    segmento: RAIO_VIDRO.segmento,
+    altura: TAMANHO.segmentoFiltro,
+    trilho: RAIO.trilho,
+    segmento: RAIO.segmento,
     pad: 3,
     tipo: texto(13.5, 600, { tracking: -0.01 }),
     espalha: true,
   },
   /** dentro de um cartão (prazo de aviso, validade) */
   cartao: {
-    altura: TAMANHO_VIDRO.segmentoCartao,
-    trilho: RAIO_VIDRO.trilho,
-    segmento: RAIO_VIDRO.segmento,
+    altura: TAMANHO.segmentoCartao,
+    trilho: RAIO.trilho,
+    segmento: RAIO.segmento,
     pad: 3,
     tipo: texto(13.5, 600, { tracking: -0.01 }),
     espalha: true,
   },
   /** embutido numa linha de lista (Aparência, em Ajustes) */
   linha: {
-    altura: TAMANHO_VIDRO.segmentoLinha,
-    trilho: RAIO_VIDRO.trilhoLinha,
-    segmento: RAIO_VIDRO.segmentoLinha,
+    altura: TAMANHO.segmentoLinha,
+    trilho: RAIO.trilhoLinha,
+    segmento: RAIO.segmentoLinha,
     pad: 2.5,
     tipo: texto(12.5, 600),
     espalha: false,
@@ -367,7 +367,7 @@ export function Segmentado<T extends string | number>({
   desabilitado?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const p = PORTES[porte];
 
   return (
@@ -447,14 +447,14 @@ export function FichaDeEscolha({
   marcada: boolean;
   aoTocar: () => void;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <Pressable
       accessibilityRole="checkbox"
       accessibilityLabel={rotulo}
       accessibilityState={{ checked: marcada }}
       onPress={aoTocar}
-      hitSlop={folgaDeToque(TAMANHO_VIDRO.ficha)}
+      hitSlop={folgaDeToque(TAMANHO.ficha)}
       style={({ pressed }) => [
         estilos.ficha,
         {
@@ -474,7 +474,7 @@ export function FichaDeEscolha({
 
 const PAD_SWITCH = 2.5;
 const CURSO_SWITCH =
-  TAMANHO_VIDRO.switchLargura - PAD_SWITCH * 2 - TAMANHO_VIDRO.switchBotao;
+  TAMANHO.switchLargura - PAD_SWITCH * 2 - TAMANHO.switchBotao;
 
 /** 52 × 32, botão branco de 27. Muda de fundo em 200ms. */
 export function Switch({
@@ -491,14 +491,14 @@ export function Switch({
   desabilitado?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
   const reduzido = useReduzirMovimento();
   const anim = useRef(new Animated.Value(ligado ? 1 : 0)).current;
 
   useEffect(() => {
     Animated.timing(anim, {
       toValue: ligado ? 1 : 0,
-      duration: duracao(MOVIMENTO_VIDRO.switchMs, reduzido),
+      duration: duracao(MOVIMENTO.switchMs, reduzido),
       useNativeDriver: false,
     }).start();
   }, [ligado, reduzido, anim]);
@@ -516,7 +516,7 @@ export function Switch({
       accessibilityState={{ checked: ligado, disabled: desabilitado }}
       disabled={desabilitado}
       onPress={() => aoAlternar(!ligado)}
-      hitSlop={folgaDeToque(TAMANHO_VIDRO.switchAltura)}
+      hitSlop={folgaDeToque(TAMANHO.switchAltura)}
       style={[{ opacity: desabilitado ? 0.5 : 1 }, estilo]}
     >
       <Animated.View style={[estilos.switchTrilho, { backgroundColor: fundo }]}>
@@ -564,7 +564,7 @@ export function Stepper({
   rotuloDoValor?: (v: number) => string;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   const noMinimo = valor <= minimo;
   const noMaximo = valor >= maximo;
 
@@ -604,7 +604,7 @@ function BotaoDoStepper({
   desabilitado: boolean;
   aoTocar: () => void;
 }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <Pressable
       accessibilityRole="button"
@@ -612,12 +612,12 @@ function BotaoDoStepper({
       accessibilityState={{ disabled: desabilitado }}
       disabled={desabilitado}
       onPress={aoTocar}
-      hitSlop={folgaDeToque(TAMANHO_VIDRO.stepperBotaoAltura)}
+      hitSlop={folgaDeToque(TAMANHO.stepperBotaoAltura)}
       style={({ pressed }) => ({ opacity: pressed ? OPACIDADE_PRESSIONADO : 1 })}
     >
       <SuperficieVidro
         nivel="vidro2"
-        raio={RAIO_VIDRO.segmento}
+        raio={RAIO.segmento}
         style={[estilos.linhaCentral, estilos.botaoStepper]}
       >
         <Text style={[texto(19, 700), { color: desabilitado ? cores.tinta3 : cores.tint }]}>
@@ -669,7 +669,7 @@ export function CartaoEscolha({
   children?: React.ReactNode;
   estilo?: StyleProp<ViewStyle>;
 }) {
-  const { cores, material } = useVidro();
+  const { cores, material } = useCores();
 
   const miolo = (
     <>
@@ -731,7 +731,7 @@ export function CartaoEscolha({
           {miolo}
         </View>
       ) : (
-        <SuperficieVidro nivel="cartao" raio={RAIO_VIDRO.escolha} style={estilos.padEscolha}>
+        <SuperficieVidro nivel="cartao" raio={RAIO.escolha} style={estilos.padEscolha}>
           {miolo}
         </SuperficieVidro>
       )}
@@ -740,7 +740,7 @@ export function CartaoEscolha({
 }
 
 function Marca({ selecionada }: { selecionada: boolean }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View
       style={[
@@ -751,7 +751,7 @@ function Marca({ selecionada }: { selecionada: boolean }) {
       ]}
     >
       {selecionada ? (
-        <Icone nome="check" tamanho={TAMANHO_VIDRO.checkEscolha} cor={cores.sobreTint} />
+        <Icone nome="check" tamanho={TAMANHO.checkEscolha} cor={cores.sobreTint} />
       ) : null}
     </View>
   );
@@ -759,7 +759,7 @@ function Marca({ selecionada }: { selecionada: boolean }) {
 
 /** Selo "MELHOR" do primeiro horário sugerido. */
 export function Selo({ texto: rotulo }: { texto: string }) {
-  const { cores } = useVidro();
+  const { cores } = useCores();
   return (
     <View style={[estilos.selo, { backgroundColor: cores.tintSuave }]}>
       <Text
@@ -775,9 +775,9 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
   ficha: {
-    height: TAMANHO_VIDRO.ficha,
+    height: TAMANHO.ficha,
     paddingHorizontal: 14,
-    borderRadius: RAIO_VIDRO.ficha,
+    borderRadius: RAIO.ficha,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -788,8 +788,8 @@ const estilos = StyleSheet.create({
     gap: 9,
   },
   botaoPrimario: {
-    height: TAMANHO_VIDRO.botaoPrimario,
-    borderRadius: RAIO_VIDRO.botao,
+    height: TAMANHO.botaoPrimario,
+    borderRadius: RAIO.botao,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -797,9 +797,9 @@ const estilos = StyleSheet.create({
     paddingHorizontal: 18,
   },
   inline: { alignSelf: 'flex-start' },
-  inlineCaixa: { height: TAMANHO_VIDRO.botaoInline, paddingHorizontal: 18 },
+  inlineCaixa: { height: TAMANHO.botaoInline, paddingHorizontal: 18 },
   botaoTexto: {
-    height: TAMANHO_VIDRO.botaoTexto,
+    height: TAMANHO.botaoTexto,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -807,36 +807,36 @@ const estilos = StyleSheet.create({
   segmento: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: TAMANHO_VIDRO.bordaVidro,
+    borderWidth: TAMANHO.bordaVidro,
   },
   switchTrilho: {
-    width: TAMANHO_VIDRO.switchLargura,
-    height: TAMANHO_VIDRO.switchAltura,
-    borderRadius: TAMANHO_VIDRO.switchAltura / 2,
+    width: TAMANHO.switchLargura,
+    height: TAMANHO.switchAltura,
+    borderRadius: TAMANHO.switchAltura / 2,
     padding: PAD_SWITCH,
     justifyContent: 'center',
   },
   switchBotao: {
-    width: TAMANHO_VIDRO.switchBotao,
-    height: TAMANHO_VIDRO.switchBotao,
-    borderRadius: TAMANHO_VIDRO.switchBotao / 2,
+    width: TAMANHO.switchBotao,
+    height: TAMANHO.switchBotao,
+    borderRadius: TAMANHO.switchBotao / 2,
   },
   trilhoStepper: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     padding: 3,
-    borderRadius: RAIO_VIDRO.trilho,
+    borderRadius: RAIO.trilho,
     alignSelf: 'flex-start',
   },
   botaoStepper: {
-    width: TAMANHO_VIDRO.stepperBotaoLargura,
-    height: TAMANHO_VIDRO.stepperBotaoAltura,
+    width: TAMANHO.stepperBotaoLargura,
+    height: TAMANHO.stepperBotaoAltura,
   },
   valorStepper: { minWidth: 26, textAlign: 'center' },
   caixaEscolha: {
-    borderRadius: RAIO_VIDRO.escolha,
-    borderWidth: TAMANHO_VIDRO.bordaVidro,
+    borderRadius: RAIO.escolha,
+    borderWidth: TAMANHO.bordaVidro,
     paddingVertical: 14,
     paddingHorizontal: 15,
   },
@@ -851,19 +851,19 @@ const estilos = StyleSheet.create({
   corpoEscolha: {
     marginTop: 13,
     paddingTop: 13,
-    borderTopWidth: TAMANHO_VIDRO.bordaVidro,
+    borderTopWidth: TAMANHO.bordaVidro,
   },
   marca: {
-    width: TAMANHO_VIDRO.marcaEscolha,
-    height: TAMANHO_VIDRO.marcaEscolha,
-    borderRadius: TAMANHO_VIDRO.marcaEscolha / 2,
+    width: TAMANHO.marcaEscolha,
+    height: TAMANHO.marcaEscolha,
+    borderRadius: TAMANHO.marcaEscolha / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   selo: {
-    height: TAMANHO_VIDRO.selo,
+    height: TAMANHO.selo,
     paddingHorizontal: 7,
-    borderRadius: RAIO_VIDRO.selo,
+    borderRadius: RAIO.selo,
     alignItems: 'center',
     justifyContent: 'center',
   },
