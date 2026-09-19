@@ -1,39 +1,33 @@
 /**
- * Fluxo F — a visão do aluno, como pré-visualização dentro do app.
+ * Fluxo F — a visão do aluno, como pré-visualização dentro do app, no iOS
+ * Glass (derivadas: o handoff novo não desenha estas telas).
  *
- * O handoff desenha isto como página web pública. Aqui são telas nativas,
- * alcançáveis por "Ver como o aluno vê" na ficha — o professor confere o que
- * o aluno recebe sem precisar publicar nada.
+ * O handoff antigo desenha isto como página web pública. Aqui são telas
+ * nativas empilhadas, alcançáveis por "Ver como o aluno vê" na ficha — o
+ * professor confere o que o aluno recebe sem precisar publicar nada. Toda
+ * tela abre com a faixa "Prévia do que o aluno vê", para não haver dúvida de
+ * que é o professor quem está olhando.
  *
  * A frase da regra combinada vem da MESMA função que alimenta o cartão-espelho
  * do onboarding: o que o professor declarou é o que o aluno lê.
  */
 
-import React, { useMemo } from 'react';
-import { Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { LinhaExtrato } from '../../componentes/Aluno';
+import { BlocoStatus, CartaoVidro, EstadoVazio } from '../../componentes/Blocos';
+import { TelaVidro } from '../../componentes/Chassi';
 import {
-  Caixa,
-  Cartao,
-  CartaoContexto,
-  EstadoVazio,
-  LinhaLista,
-  Lista,
-  RotuloSecao,
-} from '../../componentes/Base';
-import { BotaoContorno, BotaoPrimario, BotaoTexto } from '../../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, Eyebrow, Heroi } from '../../componentes/Cabecalho';
-import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
-import { Wordmark } from '../../componentes/Marca';
-import { Tela } from '../../componentes/Tela';
+  BotaoPrimario,
+  BotaoSecundario,
+  BotaoTexto,
+  CartaoEscolha,
+} from '../../componentes/Controles';
+import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
+import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
-import {
-  alternarBloco,
-  DIAS_UTEIS,
-  resumoMarcados,
-} from '../../dominio/disponibilidade';
+import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
 import { primeiroNome } from '../../dominio/formato';
 import { comoOAlunoVaiLer } from '../../dominio/mensagens';
 import { saldo, temPacote } from '../../dominio/politica';
@@ -42,104 +36,108 @@ import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../../tema/tipografia';
-import { MARCA, TAMANHO } from '../../tema/tokens';
+import { useVidro } from '../../tema/TemaProvider';
+import { comEspaco, texto, TIPO_VIDRO } from '../../tema/tipografia';
+import { RAIO_VIDRO } from '../../tema/tokens';
+import { LinhaDoExtrato } from './ExtratoVidro';
 
 /** Referencia estavel para aluno sem lancamentos. */
 const SEM_LANCAMENTOS: Lancamento[] = [];
 
-/** Menu de entrada: qual das três páginas o professor quer ver. */
+/** Rótulo do voltar nas três páginas: a tela anterior é o menu da prévia. */
+const VOLTAR_PARA_PREVIA = 'Prévia';
+
+/* ── Peças locais ─────────────────────────────────────────────────────── */
+
+/**
+ * Faixa do topo de toda tela da prévia. Bloco de status no tom tint: é
+ * informação do sistema, não alerta. O texto de apoio muda por tela.
+ */
+function FaixaPrevia({ texto: apoio }: { texto?: string }) {
+  return <BlocoStatus tom="tint" titulo="Prévia do que o aluno vê" texto={apoio} />;
+}
+
+/** "Ana · Inglês" — o que o cabeçalho da página do aluno mostraria. */
+function useAssinatura(): string {
+  const perfil = useDados((s) => s.perfil);
+  return `Página de ${primeiroNome(perfil.nome)} · ${perfil.disciplinas[0] ?? ''}`;
+}
+
+/** Título de tela empilhada, com sub-linha opcional acima. */
+function Titulo({ acima, children }: { acima?: string; children: string }) {
+  const { cores } = useVidro();
+  return (
+    <View style={estilos.titulo}>
+      {acima ? (
+        <Text style={[texto(13, 600, { tracking: -0.01 }), { color: cores.tinta2 }]}>{acima}</Text>
+      ) : null}
+      <Text
+        accessibilityRole="header"
+        style={[
+          comEspaco(TIPO_VIDRO.tituloEmpilhada, { topo: acima ? 7 : 0 }),
+          { color: cores.tinta },
+        ]}
+      >
+        {children}
+      </Text>
+    </View>
+  );
+}
+
+/** Rótulo de cartão: 12/600 caixa alta em `tinta3`, como "SALDO DO PACOTE". */
+function RotuloDoCartao({ children }: { children: string }) {
+  const { cores } = useVidro();
+  return (
+    <Text style={[texto(12, 600, { tracking: 0.04, maiuscula: true }), { color: cores.tinta3 }]}>
+      {children}
+    </Text>
+  );
+}
+
+/* ── Menu: qual das três páginas ──────────────────────────────────────── */
+
 export function VerComoAluno() {
-  const cores = useCores();
-  const { alunoId, ir, voltar } = useNavegacao();
+  const { alunoId, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <Eyebrow>Pré-visualização</Eyebrow>
-          </View>
-          <Text
-            accessibilityRole="header"
-            style={[
-              comEspaco(texto(22, 600, { altura: 1.2, tracking: -0.02 }), { topo: 10 }),
-              { color: cores.topoTexto },
-            ]}
-          >
-            {aluno ? `O que ${primeiroNome(aluno.name)} vê` : 'O que o aluno vê'}
-          </Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 12 }}
+    <TelaVidro
+      tipo="empilhada"
+      titulo="Prévia"
+      voltarPara={aluno ? primeiroNome(aluno.name) : 'Alunos'}
     >
-      <Caixa>
-        <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
-          O aluno abre estas páginas por um link, sem instalar nada e sem login. Aqui elas
-          aparecem como pré-visualização.
-        </Text>
-      </Caixa>
+      <FaixaPrevia texto="O aluno abre estas páginas por um link, sem instalar nada e sem login. Aqui elas aparecem como pré-visualização." />
 
-      <Lista rotulo="Páginas do aluno">
+      <Titulo>
+        {aluno ? `O que ${primeiroNome(aluno.name)} vê` : 'O que o aluno vê'}
+      </Titulo>
+
+      <CabecalhoGrupo titulo="Páginas do aluno" estilo={estilos.tituloGrupo} />
+      <ListaAgrupada estilo={estilos.lista}>
         <LinhaLista
           titulo="Meu saldo"
-          sub="Saldo, próximas aulas, regra combinada e extrato"
-          chevron
+          subtitulo="Saldo, próximas aulas, regra combinada e extrato"
           aoTocar={() => ir('alunoSaldo')}
         />
         <LinhaLista
           titulo="Proposta de reposição"
-          sub="Aceitar, ver outras opções ou recusar"
-          chevron
+          subtitulo="Aceitar, ver outras opções ou recusar"
           aoTocar={() => ir('alunoProposta')}
         />
         <LinhaLista
           titulo="Informar disponibilidade"
-          sub="A grade que ele devolve quando nenhum horário serve"
-          chevron
-          ultima
+          subtitulo="A grade que ele devolve quando nenhum horário serve"
           aoTocar={() => ir('alunoDisponibilidade')}
         />
-      </Lista>
-    </Tela>
-  );
-}
-
-/** Cabeçalho comum das três páginas: a marca e o nome do professor. */
-function TopoDoAluno({ children }: { children: React.ReactNode }) {
-  const cores = useCores();
-  const perfil = useDados((s) => s.perfil);
-  const voltar = useNavegacao((s) => s.voltar);
-
-  return (
-    <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-      <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-      <View
-        style={{
-          marginTop: 16,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-        }}
-      >
-        <Wordmark cor={cores.topoTexto} tamanho={14} alturaDasBarras={15} />
-        <Text style={[texto(11.5, 400, { altura: 1 }), { color: cores.topoFraco }]}>
-          {`${primeiroNome(perfil.nome)} · ${perfil.disciplinas[0] ?? ''}`}
-        </Text>
-      </View>
-      {children}
-    </CabecalhoEscuro>
+      </ListaAgrupada>
+    </TelaVidro>
   );
 }
 
 // --- F1, meu saldo --------------------------------------------------------
 
 export function AlunoSaldo() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const alunoId = useNavegacao((s) => s.alunoId);
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   // O `?? []` NAO pode ficar dentro do seletor: devolveria um array novo a cada
@@ -149,12 +147,16 @@ export function AlunoSaldo() {
   const politicas = useDados((s) => s.politicas);
   const nomeDoProfessor = useDados((s) => s.perfil.nome);
   const avisar = useToast((s) => s.avisar);
+  const assinatura = useAssinatura();
 
   if (!aluno) {
     return (
-      <Tela cabecalho={<TopoDoAluno>{null}</TopoDoAluno>}>
-        <EstadoVazio titulo="Aluno não encontrado." />
-      </Tela>
+      <TelaVidro tipo="empilhada" titulo="Meu saldo" voltarPara={VOLTAR_PARA_PREVIA}>
+        <FaixaPrevia texto={assinatura} />
+        <CartaoVidro semPadding estilo={estilos.cartao}>
+          <EstadoVazio titulo="Aluno não encontrado." />
+        </CartaoVidro>
+      </TelaVidro>
     );
   }
 
@@ -162,104 +164,104 @@ export function AlunoSaldo() {
   const com = temPacote(aluno);
 
   return (
-    <Tela
-      cabecalho={
-        <TopoDoAluno>
-          <View style={{ marginTop: 22 }}>
-            <Eyebrow>Seu saldo</Eyebrow>
-          </View>
-          <View style={{ marginTop: 12 }}>
-            <Heroi
-              numero={com ? String(restam) : '—'}
-              rotulo="aulas"
-              tamanho={52}
-              alinhar="esquerda"
-              cor={restam <= 2 ? MARCA.amarelo : cores.topoTexto}
-              // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
-              rotuloAcessivel={com ? `${restam} aulas restantes de ${aluno.total}` : 'sem pacote'}
-            />
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 12 }), { color: cores.topoFraco }]}>
-            {com
-              ? `Pacote de ${aluno.total} aulas, ${aluno.usadas} já usadas. Válido até ${aluno.validade}.`
-              : 'Sem pacote ativo no momento.'}
-          </Text>
-        </TopoDoAluno>
-      }
-      conteudoEstilo={{ gap: 12 }}
+    <TelaVidro
+      tipo="empilhada"
+      titulo="Meu saldo"
+      voltarPara={VOLTAR_PARA_PREVIA}
       rodape={
-        <>
+        <View style={estilos.acoes}>
           <BotaoPrimario
             rotulo="Avisar que não posso ir"
             aoTocar={() => avisar('O professor recebeu o aviso da falta.')}
           />
-          <BotaoContorno
+          <BotaoSecundario
             rotulo={`Falar com ${primeiroNome(nomeDoProfessor)}`}
-            altura={44}
             aoTocar={() => avisar('Conversa aberta com o professor.')}
           />
-        </>
+        </View>
       }
     >
-      <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <RotuloSecao>Próximas aulas</RotuloSecao>
-        <View style={{ marginTop: 11, gap: 10 }}>
-          <Text style={[texto(16, 600, { altura: 1.3 }), { color: cores.texto }]}>
-            {aluno.hora ? `${aluno.dia}, ${aluno.hora}` : 'Sem horário fixo'}
-          </Text>
-          <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>Aula fixa</Text>
-          {aluno.agendada ? (
-            <>
-              <View style={{ height: 1, backgroundColor: cores.linha }} />
-              <Text style={[texto(16, 600, { altura: 1.3 }), { color: cores.texto }]}>
-                {`${aluno.agendada.dia} · ${aluno.agendada.hora}`}
-              </Text>
-              <Text style={[TIPO.legenda, { color: cores.textoMedio }]}>Reposição marcada</Text>
-            </>
-          ) : null}
-        </View>
-      </Cartao>
+      <FaixaPrevia texto={assinatura} />
 
-      <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <RotuloSecao>A regra combinada</RotuloSecao>
+      <CartaoVidro estilo={estilos.cartaoGrande}>
+        <RotuloDoCartao>Seu saldo</RotuloDoCartao>
+        <View
+          accessible
+          // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
+          accessibilityLabel={com ? `${restam} aulas restantes de ${aluno.total}` : 'sem pacote'}
+          style={estilos.numeroDoSaldo}
+        >
+          <Text
+            style={[
+              TIPO_VIDRO.saldoCartao,
+              { color: !com ? cores.tinta3 : restam <= 2 ? cores.ambar : cores.tint },
+            ]}
+          >
+            {com ? String(restam) : '—'}
+          </Text>
+          <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
+        </View>
+        <Text
+          style={[comEspaco(texto(13, 500, { altura: 1.45 }), { topo: 10 }), { color: cores.tinta2 }]}
+        >
+          {com
+            ? `Pacote de ${aluno.total} aulas, ${aluno.usadas} já usadas. Válido até ${aluno.validade}.`
+            : 'Sem pacote ativo no momento.'}
+        </Text>
+      </CartaoVidro>
+
+      <CabecalhoGrupo titulo="Próximas aulas" estilo={estilos.tituloGrupo} />
+      <ListaAgrupada estilo={estilos.lista}>
+        <LinhaLista
+          titulo={aluno.hora ? `${aluno.dia}, ${aluno.hora}` : 'Sem horário fixo'}
+          subtitulo="Aula fixa"
+        />
+        {aluno.agendada ? (
+          <LinhaLista
+            titulo={`${aluno.agendada.dia} · ${aluno.agendada.hora}`}
+            subtitulo="Reposição marcada"
+          />
+        ) : null}
+      </ListaAgrupada>
+
+      <CartaoVidro estilo={estilos.cartao}>
+        <RotuloDoCartao>A regra combinada</RotuloDoCartao>
         <Text
           style={[
-            comEspaco(texto(14.5, 400, { altura: 1.6 }), { topo: 11 }),
-            { color: cores.textoMedio },
+            comEspaco(texto(14, 500, { altura: 1.55 }), { topo: 10 }),
+            { color: cores.tinta2 },
           ]}
         >
           {comoOAlunoVaiLer(politicas, false)}
         </Text>
-      </Cartao>
+      </CartaoVidro>
 
-      <View>
-        <RotuloSecao estilo={{ marginBottom: 9 }}>Extrato do pacote</RotuloSecao>
-        <Cartao estilo={{ overflow: 'hidden' }}>
-          {extrato.length === 0 ? (
-            <EstadoVazio titulo="Nenhum lançamento ainda." />
-          ) : (
-            extrato.map((l, i) => (
-              <LinhaExtrato
-                key={`${l.d}-${l.t}-${i}`}
-                lancamento={l}
-                ultima={i === extrato.length - 1}
-              />
-            ))
-          )}
-        </Cartao>
-      </View>
+      <CabecalhoGrupo titulo="Extrato do pacote" estilo={estilos.tituloGrupo} />
+      <ListaAgrupada estilo={estilos.lista}>
+        {extrato.length === 0 ? (
+          <EstadoVazio titulo="Nenhum lançamento ainda." />
+        ) : (
+          extrato.map((l, i) => <LinhaDoExtrato key={`${l.d}-${l.t}-${i}`} lancamento={l} />)
+        )}
+      </ListaAgrupada>
 
-      <Text style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center' }]}>
+      <Text
+        style={[
+          comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 16 }),
+          estilos.centro,
+          { color: cores.tinta2 },
+        ]}
+      >
         Esta página é atualizada pelo professor. Não precisa instalar nada.
       </Text>
-    </Tela>
+    </TelaVidro>
   );
 }
 
 // --- F2, proposta de reposição -------------------------------------------
 
 export function AlunoProposta() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const { alunoId, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const alunos = useDados((s) => s.alunos);
@@ -267,6 +269,10 @@ export function AlunoProposta() {
   const perfil = useDados((s) => s.perfil);
   const responderProposta = useDados((s) => s.responderProposta);
   const avisar = useToast((s) => s.avisar);
+  const assinatura = useAssinatura();
+
+  // Qual janela o aluno marcou: morre com a tela, então é useState.
+  const [escolhida, setEscolhida] = useState(0);
 
   const todas = useMemo(
     () => (aluno ? candidatos(aluno, alunos, disponibilidade, hoje()) : []),
@@ -282,12 +288,15 @@ export function AlunoProposta() {
 
   if (!aluno || !principal) {
     return (
-      <Tela cabecalho={<TopoDoAluno>{null}</TopoDoAluno>}>
-        <EstadoVazio
-          titulo="Nenhuma proposta em aberto."
-          nota="Quando o professor sugerir um horário, ele aparece aqui."
-        />
-      </Tela>
+      <TelaVidro tipo="empilhada" titulo="Proposta" voltarPara={VOLTAR_PARA_PREVIA}>
+        <FaixaPrevia texto={assinatura} />
+        <CartaoVidro semPadding estilo={estilos.cartao}>
+          <EstadoVazio
+            titulo="Nenhuma proposta em aberto."
+            nota="Quando o professor sugerir um horário, ele aparece aqui."
+          />
+        </CartaoVidro>
+      </TelaVidro>
     );
   }
 
@@ -301,6 +310,14 @@ export function AlunoProposta() {
       : sugeridas[0]
   )?.razoes;
 
+  // A proposta e as alternativas viram cartões de escolha (modelo H§5); o
+  // primário aceita a que estiver marcada.
+  const janelas: { dia: string; hora: string; motivo?: string }[] = [
+    { dia: principal.dia, hora: principal.hora },
+    ...alternativas,
+  ];
+  const marcada = janelas[Math.min(escolhida, janelas.length - 1)];
+
   const aceitar = (j: { dia: string; hora: string }) => {
     responderProposta(aluno.id, 'aceita', { dia: j.dia, hora: j.hora });
     avisar(`Reposição confirmada em ${j.dia}, ${j.hora}. O professor foi avisado.`);
@@ -308,30 +325,16 @@ export function AlunoProposta() {
   };
 
   return (
-    <Tela
-      cabecalho={
-        <TopoDoAluno>
-          <View style={{ marginTop: 22 }}>
-            <Eyebrow>{`${primeiroNome(perfil.nome)} propôs uma reposição`}</Eyebrow>
-          </View>
-          <Text
-            accessibilityRole="header"
-            style={[
-              comEspaco(texto(26, 600, { altura: 1.2, tracking: -0.03 }), { topo: 12 }),
-              { color: cores.topoTexto },
-            ]}
-          >
-            {`${principal.dia}\nàs ${principal.hora}`}
-          </Text>
-        </TopoDoAluno>
-      }
-      conteudoEstilo={{ gap: 12 }}
+    <TelaVidro
+      tipo="empilhada"
+      titulo="Proposta"
+      voltarPara={VOLTAR_PARA_PREVIA}
       rodape={
-        <>
+        <View style={estilos.acoes}>
           <BotaoPrimario
-            rotulo={`Aceitar ${principal.dia}, ${principal.hora}`}
+            rotulo={`Aceitar ${marcada.dia}, ${marcada.hora}`}
             desabilitado={emPrevia}
-            aoTocar={() => aceitar(principal)}
+            aoTocar={() => aceitar(marcada)}
           />
           <BotaoTexto
             rotulo="Recusar"
@@ -342,96 +345,102 @@ export function AlunoProposta() {
               ir('alunoDisponibilidade');
             }}
           />
-        </>
+        </View>
       }
     >
+      <FaixaPrevia texto={assinatura} />
+
+      <Titulo acima={`${primeiroNome(perfil.nome)} propôs uma reposição`}>
+        {`${principal.dia}\nàs ${principal.hora}`}
+      </Titulo>
+
       {emPrevia ? (
-        <Caixa>
-          <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
-            {`Pré-visualização: ainda não há proposta enviada para ${primeiroNome(
-              aluno.name,
-            )}. Os botões funcionam quando você enviar um horário.`}
-          </Text>
-        </Caixa>
+        <BlocoStatus
+          estilo={estilos.cartao}
+          titulo="Pré-visualização"
+          texto={`Ainda não há proposta enviada para ${primeiroNome(
+            aluno.name,
+          )}. Os botões funcionam quando você enviar um horário.`}
+        />
       ) : null}
 
       {razoes?.length ? (
-      <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <RotuloSecao>Por que esse horário</RotuloSecao>
-        <View style={{ marginTop: 12, gap: 11 }}>
-          {razoes.map((r) => (
-            <View key={r} style={{ flexDirection: 'row', gap: 12 }}>
-              <View
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 3,
-                  marginTop: 7,
-                  backgroundColor: cores.verde,
-                }}
-              />
-              <Text
-                style={[texto(14, 400, { altura: 1.5 }), { flex: 1, color: cores.textoMedio }]}
-              >
-                {r}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </Cartao>
+        <CartaoVidro estilo={estilos.cartao}>
+          <RotuloDoCartao>Por que esse horário</RotuloDoCartao>
+          <View style={estilos.razoes}>
+            {razoes.map((r) => (
+              <View key={r} style={estilos.razao}>
+                <View style={[estilos.ponto, { backgroundColor: cores.verde }]} />
+                <Text
+                  style={[texto(14, 500, { altura: 1.5 }), estilos.flexivel, { color: cores.tinta2 }]}
+                >
+                  {r}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </CartaoVidro>
       ) : null}
 
-      <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-        <RotuloSecao>Seu saldo hoje</RotuloSecao>
-        <View
-          style={{ marginTop: 9, flexDirection: 'row', alignItems: 'baseline', gap: 8 }}
-        >
-          <Text
-            style={[texto(36, 800, { altura: 1, tracking: -0.04 }), { color: cores.texto }]}
-          >
-            {saldo(aluno)}
+      <CabecalhoGrupo titulo="Horários" estilo={estilos.tituloGrupo} />
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel="Horários sugeridos"
+        style={estilos.escolhas}
+      >
+        {janelas.map((j, i) => (
+          <CartaoEscolha
+            key={`${j.dia}-${j.hora}`}
+            titulo={j.dia}
+            aoLado={j.hora}
+            subtitulo={i === 0 ? 'Horário proposto' : j.motivo}
+            selecionado={marcada === j}
+            desabilitado={emPrevia}
+            rotuloAcessivel={[`${j.dia}, ${j.hora}`, i === 0 ? 'Horário proposto' : j.motivo]
+              .filter(Boolean)
+              .join('. ')}
+            aoTocar={() => setEscolhida(i)}
+          />
+        ))}
+      </View>
+
+      <CartaoVidro estilo={estilos.cartao}>
+        <RotuloDoCartao>Seu saldo hoje</RotuloDoCartao>
+        <View style={estilos.numeroDoSaldo}>
+          <Text style={[TIPO_VIDRO.saldoCartao, { color: cores.tinta }]}>
+            {String(saldo(aluno))}
           </Text>
-          <Text style={[texto(15, 600, { altura: 1 }), { color: cores.textoMedio }]}>aulas</Text>
+          <Text style={[texto(14, 600), { color: cores.tinta2 }]}>aulas</Text>
         </View>
-        <Text style={[comEspaco(TIPO.nota, { topo: 9 }), { color: cores.textoMedio }]}>
+        <Text
+          style={[comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 9 }), { color: cores.tinta2 }]}
+        >
           Aceitar não muda o saldo.
         </Text>
-      </Cartao>
+      </CartaoVidro>
 
-      <CartaoContexto
-        cor={MARCA.amarelo}
+      <BlocoStatus
+        estilo={estilos.cartao}
+        tom="ambar"
         titulo="Se nenhum horário servir"
-        detalhe={`Você pode recusar e marcar de novo quando puder. ${primeiroNome(
+        texto={`Você pode recusar e marcar de novo quando puder. ${primeiroNome(
           perfil.nome,
         )} recebe o aviso.`}
       />
-
-      {alternativas.length > 0 ? (
-        <Lista rotulo="Outras opções sugeridas">
-          {alternativas.map((j, i) => (
-            <LinhaLista
-              key={`${j.dia}-${j.hora}`}
-              titulo={`${j.dia} · ${j.hora}`}
-              sub={j.motivo}
-              ultima={i === alternativas.length - 1}
-              aoTocar={emPrevia ? undefined : () => aceitar(j)}
-            />
-          ))}
-        </Lista>
-      ) : null}
-    </Tela>
+    </TelaVidro>
   );
 }
 
 // --- F3, informar disponibilidade ----------------------------------------
 
 export function AlunoDisponibilidade() {
-  const cores = useCores();
+  const { cores } = useVidro();
   const { alunoId, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const perfil = useDados((s) => s.perfil);
   const salvar = useDados((s) => s.salvarDisponibilidadeDoAluno);
   const avisar = useToast((s) => s.avisar);
+  const assinatura = useAssinatura();
 
   const [blocos, , substituir] = useRascunho(
     'disponibilidadeAluno',
@@ -439,24 +448,10 @@ export function AlunoDisponibilidade() {
   );
 
   return (
-    <Tela
-      cabecalho={
-        <TopoDoAluno>
-          <Text
-            accessibilityRole="header"
-            style={[
-              comEspaco(texto(22, 600, { altura: 1.25, tracking: -0.02 }), { topo: 20 }),
-              { color: cores.topoTexto },
-            ]}
-          >
-            Quando você pode repor?
-          </Text>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 9 }), { color: cores.topoFraco }]}>
-            Marque os blocos possíveis. Nada é agendado agora.
-          </Text>
-        </TopoDoAluno>
-      }
-      conteudoEstilo={{ gap: 12 }}
+    <TelaVidro
+      tipo="empilhada"
+      titulo="Disponibilidade"
+      voltarPara={VOLTAR_PARA_PREVIA}
       rodape={
         <BotaoPrimario
           rotulo="Enviar disponibilidade"
@@ -472,23 +467,57 @@ export function AlunoDisponibilidade() {
         />
       }
     >
-      <Cartao estilo={{ paddingVertical: 16, paddingHorizontal: 14 }}>
-        <GradeSemanal
+      <FaixaPrevia texto={assinatura} />
+
+      <Titulo>Quando você pode repor?</Titulo>
+      <Text
+        style={[
+          comEspaco(texto(13.5, 500, { altura: 1.45 }), { topo: 6 }),
+          estilos.recuo,
+          { color: cores.tinta2 },
+        ]}
+      >
+        Marque os blocos possíveis. Nada é agendado agora.
+      </Text>
+
+      <CartaoVidro estilo={estilos.cartaoGrande}>
+        <GradeSemanalVidro
           marcados={blocos}
           dias={DIAS_UTEIS}
           rotuloDaFaixa="nome"
           alturaDaCelula={52}
           aoAlternar={(b) => substituir(alternarBloco(blocos, b))}
         />
-        <RodapeDaGrade
-          esquerda={resumoMarcados(blocos)}
-          direita="Toque para marcar"
-        />
-      </Cartao>
+        <RodapeDaGradeVidro esquerda={resumoMarcados(blocos)} direita="Toque para marcar" />
+      </CartaoVidro>
 
-      <Text style={[TIPO.nota, { color: cores.textoMedio, textAlign: 'center' }]}>
+      <Text
+        style={[
+          comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 16 }),
+          estilos.centro,
+          { color: cores.tinta2 },
+        ]}
+      >
         {`${primeiroNome(perfil.nome)} recebe o aviso e propõe até três horários.`}
       </Text>
-    </Tela>
+    </TelaVidro>
   );
 }
+
+const estilos = StyleSheet.create({
+  flexivel: { flex: 1, minWidth: 0 },
+  centro: { textAlign: 'center' },
+  recuo: { paddingHorizontal: 6 },
+  titulo: { marginTop: 22, paddingHorizontal: 6 },
+  tituloGrupo: { marginTop: 26 },
+  lista: { marginTop: 9 },
+  cartao: { marginTop: 14 },
+  cartaoGrande: { marginTop: 18 },
+  numeroDoSaldo: { marginTop: 9, flexDirection: 'row', alignItems: 'baseline', gap: 7 },
+  acoes: { gap: 10 },
+  razoes: { marginTop: 12, gap: 11 },
+  razao: { flexDirection: 'row', gap: 12 },
+  // Marcador decorativo da lista de motivos; o texto ao lado carrega tudo.
+  ponto: { width: 6, height: 6, borderRadius: RAIO_VIDRO.circulo, marginTop: 8 },
+  escolhas: { marginTop: 9, gap: 10 },
+});
