@@ -57,7 +57,6 @@ const SHEETS_NAO_MIGRADOS: Partial<Record<Tela, { titulo: string; altura?: Altur
   confirmarReposicao: { titulo: 'Confirmar reposição' },
   alunoForm: { titulo: 'Aluno' },
   pacote: { titulo: 'Pacote' },
-  pagamento: { titulo: 'Registrar pagamento' },
   lembrete: { titulo: 'Lembrete de cobrança' },
 };
 
