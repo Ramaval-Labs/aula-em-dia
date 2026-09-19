@@ -82,12 +82,8 @@ export function PoliticaInicial() {
             maximo={LIMITE_MAXIMO}
             aoTrocar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
             formatar={(v) => (v === 0 ? '—' : String(v))}
-            // O valor 0 aparece como "—": o rótulo diz o que ele significa.
-            rotulo={
-              p.limiteReposicoes === 0
-                ? 'reposições por pacote (sem limite)'
-                : 'reposições por pacote'
-            }
+            rotuloDoValor={(v) => (v === 0 ? 'sem limite' : String(v))}
+            rotulo="reposições por pacote"
           />
         }
       />

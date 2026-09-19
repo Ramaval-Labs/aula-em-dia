@@ -66,10 +66,15 @@ describe('controles', () => {
         aoTrocar={aoTrocar}
         rotulo="Reposições por pacote"
         formatar={(v) => (v === 0 ? '—' : String(v))}
+        rotuloDoValor={(v) => (v === 0 ? 'sem limite' : String(v))}
       />,
     );
 
     expect(screen.getByText('—')).toBeTruthy();
+    // O travessão não se lê: o valor falado é o que ele significa.
+    expect(screen.getByLabelText('Reposições por pacote').props.accessibilityValue).toEqual({
+      text: 'sem limite',
+    });
     fireEvent.press(screen.getByRole('button', { name: 'Diminuir Reposições por pacote' }));
     expect(aoTrocar).not.toHaveBeenCalled();
     fireEvent.press(screen.getByRole('button', { name: 'Aumentar Reposições por pacote' }));

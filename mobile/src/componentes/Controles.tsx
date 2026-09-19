@@ -531,8 +531,10 @@ export function Switch({
 /* ── Stepper ──────────────────────────────────────────────────────────── */
 
 /**
- * Menos / valor / mais dentro do trilho `preenchimento`. O rótulo do valor é
- * derivado por quem chama (`formatar`), porque 0 vira "—" na política.
+ * Menos / valor / mais dentro do trilho `preenchimento`. O texto do valor é
+ * derivado por quem chama (`formatar`), porque 0 vira "—" na política; como o
+ * travessão não se lê, `rotuloDoValor` diz ao leitor de tela o que ele
+ * significa ("sem limite").
  */
 export function Stepper({
   valor,
@@ -541,15 +543,18 @@ export function Stepper({
   aoTrocar,
   rotulo,
   formatar = String,
+  rotuloDoValor,
   estilo,
 }: {
   valor: number;
   minimo: number;
   maximo: number;
   aoTrocar: (v: number) => void;
-  /** rótulo do leitor de tela para o grupo */
+  /** rótulo do leitor de tela para o grupo e os botões ("Aumentar …") */
   rotulo: string;
   formatar?: (v: number) => string;
+  /** valor falado; o padrão é o mesmo texto de `formatar` */
+  rotuloDoValor?: (v: number) => string;
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useVidro();
@@ -559,7 +564,7 @@ export function Stepper({
   return (
     <View
       accessibilityLabel={rotulo}
-      accessibilityValue={{ text: formatar(valor) }}
+      accessibilityValue={{ text: (rotuloDoValor ?? formatar)(valor) }}
       style={[estilos.trilhoStepper, { backgroundColor: cores.preenchimento }, estilo]}
     >
       <BotaoDoStepper
