@@ -16,7 +16,7 @@ import { StyleSheet, Text } from 'react-native';
 import { BlocoStatus } from '../../componentes/Blocos';
 import { BotaoSecundario } from '../../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
-import { Sheet } from '../../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { motivosDaFalta } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { primeiroNome } from '../../dominio/formato';
@@ -25,7 +25,6 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
-import { SubLinhaSheet } from './pecas';
 
 export function SemHorario() {
   const { cores } = useVidro();

@@ -13,7 +13,7 @@ import { CartaoVidro } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto, Switch } from '../../componentes/Controles';
 import { CabecalhoGrupo } from '../../componentes/Listas';
 import { PreviaDeMensagemVidro } from '../../componentes/PreviaVidro';
-import { Sheet } from '../../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { mascararTelefone, mensagemDeReposicao } from '../../dominio/mensagens';
@@ -23,7 +23,6 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
-import { SubLinhaSheet } from './pecas';
 
 export function ConfirmarReposicao() {
   const { cores } = useVidro();

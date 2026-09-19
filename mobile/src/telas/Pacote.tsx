@@ -13,7 +13,7 @@ import { CartaoDeAjuste, CartaoVidro } from '../componentes/Blocos';
 import { CampoDeTexto } from '../componentes/Campos';
 import { BotaoPrimario, CartaoEscolha, Segmentado, Switch } from '../componentes/Controles';
 import { CabecalhoGrupo } from '../componentes/Listas';
-import { Sheet } from '../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { hoje } from '../dominio/datas';
 import { dinheiro } from '../dominio/formato';
 import { AULAS_OFERECIDAS, calcularPacote } from '../dominio/pacote';
@@ -79,11 +79,7 @@ export function Pacote() {
         />
       }
     >
-      {aluno ? (
-        <Text style={[texto(13, 500, { altura: 1.35 }), estilos.subLinha, { color: cores.tinta2 }]}>
-          {aluno.name}
-        </Text>
-      ) : null}
+      <SubLinhaSheet texto={aluno?.name} />
 
       <CabecalhoGrupo titulo="Quantas aulas" estilo={estilos.tituloGrupo} />
       <View
@@ -176,7 +172,6 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
 }
 
 const estilos = StyleSheet.create({
-  subLinha: { textAlign: 'center' },
   tituloGrupo: { marginTop: 18 },
   escolhas: { marginTop: 9, gap: 10 },
   cartao: { marginTop: 14 },

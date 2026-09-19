@@ -12,7 +12,7 @@ import { StyleSheet, Text } from 'react-native';
 import { CartaoVidro } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto } from '../../componentes/Controles';
 import { GradeSemanalVidro, RodapeDaGradeVidro } from '../../componentes/GradeVidro';
-import { Sheet } from '../../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
 import { primeiroNome } from '../../dominio/formato';
 import { useDados } from '../../estado/dados';
@@ -21,7 +21,6 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useVidro } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
-import { SubLinhaSheet } from './pecas';
 
 export function DispAluno() {
   const { cores } = useVidro();

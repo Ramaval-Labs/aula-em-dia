@@ -11,14 +11,13 @@ import { StyleSheet, View } from 'react-native';
 import { EstadoVazio } from '../../componentes/Blocos';
 import { BotaoPrimario, CartaoEscolha, Segmentado } from '../../componentes/Controles';
 import { CabecalhoGrupo, ListaAgrupada } from '../../componentes/Listas';
-import { Sheet } from '../../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { candidatos, filtrar, porSemana } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import type { FiltroDeAgenda } from '../../dominio/tipos';
 import { useDados } from '../../estado/dados';
 import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
-import { SubLinhaSheet } from './pecas';
 
 /** A lista mostra os mais próximos; o resto do horizonte fica de fora. */
 const MAXIMO_NA_LISTA = 24;

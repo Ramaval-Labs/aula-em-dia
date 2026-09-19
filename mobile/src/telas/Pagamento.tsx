@@ -19,7 +19,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { CartaoDeAjuste, CartaoVidro, EstadoVazio } from '../componentes/Blocos';
 import { BotaoInline, BotaoPrimario, Segmentado } from '../componentes/Controles';
 import { LinhaLista, ListaAgrupada } from '../componentes/Listas';
-import { Sheet } from '../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { hoje } from '../dominio/datas';
 import { dinheiro } from '../dominio/formato';
 import { valorPacote } from '../dominio/politica';
@@ -84,9 +84,7 @@ export function Pagamento() {
       titulo={TITULO}
       rodape={<BotaoPrimario rotulo="Confirmar recebimento" aoTocar={confirmar} />}
     >
-      <Text style={[texto(13, 500, { altura: 1.4 }), estilos.subLinha, { color: cores.tinta2 }]}>
-        {`${aluno.name} · pacote de ${aluno.total} aulas`}
-      </Text>
+      <SubLinhaSheet texto={`${aluno.name} · pacote de ${aluno.total} aulas`} />
 
       <CartaoDeAjuste titulo="Como você recebeu" estilo={estilos.espaco16}>
         <Segmentado
@@ -182,7 +180,6 @@ export function Pagamento() {
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   direita: { alignItems: 'flex-end' },
-  subLinha: { paddingTop: 4, paddingHorizontal: 6 },
   nota: { paddingHorizontal: 6 },
   largo: { alignSelf: 'stretch' },
   espaco14: { marginTop: 14 },

@@ -19,7 +19,7 @@ import {
   CartaoEscolha,
 } from '../componentes/Controles';
 import { CabecalhoGrupo } from '../componentes/Listas';
-import { Sheet } from '../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { candidatos, melhores, type Candidata } from '../dominio/agenda';
 import { hoje } from '../dominio/datas';
 import { podeRepor } from '../dominio/politica';
@@ -27,7 +27,6 @@ import { avisos, useDados } from '../estado/dados';
 import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { SubLinhaSheet } from './reposicao/pecas';
 
 /** "Sexta, 29/08" → "sexta, 29/08", para caber no meio da frase do botão. */
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);

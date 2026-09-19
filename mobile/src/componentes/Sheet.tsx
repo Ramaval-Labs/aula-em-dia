@@ -29,7 +29,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavegacao } from '../estado/navegacao';
 import { useVidro } from '../tema/TemaProvider';
-import { texto, TIPO_VIDRO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO_VIDRO } from '../tema/tipografia';
 import { MOVIMENTO_VIDRO, RAIO_VIDRO, TAMANHO_VIDRO } from '../tema/tokens';
 import { useMovimentoReduzido } from './Chassi';
 import { SuperficieVidro } from './Vidro';
@@ -211,6 +211,37 @@ export function Sheet({
           ) : null}
         </SuperficieVidro>
       </Animated.View>
+    </View>
+  );
+}
+
+/**
+ * A linha de contexto logo abaixo do cabeçalho do painel (H§5: "Nome ·
+ * validade · N de M reposições usadas"): padding `4 6 0`, 13/500 em `tinta2`.
+ *
+ * `passo` é o "Passo N de 3" do assistente de reposição, que o handoff não
+ * desenha: mesma família, um degrau menor e em `tinta3`, para dar a posição
+ * no fluxo sem virar título.
+ */
+export function SubLinhaSheet({ passo, texto: linha }: { passo?: string; texto?: string }) {
+  const { cores } = useVidro();
+  if (!passo && !linha) return null;
+
+  return (
+    <View style={{ paddingTop: 4, paddingHorizontal: 6 }}>
+      {passo ? (
+        <Text style={[texto(11.5, 600, { altura: 1.3 }), { color: cores.tinta3 }]}>{passo}</Text>
+      ) : null}
+      {linha ? (
+        <Text
+          style={[
+            comEspaco(texto(13, 500, { altura: 1.4 }), { topo: passo ? 2 : 0 }),
+            { color: cores.tinta2 },
+          ]}
+        >
+          {linha}
+        </Text>
+      ) : null}
     </View>
   );
 }

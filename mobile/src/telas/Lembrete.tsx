@@ -6,12 +6,12 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { BlocoStatus, CartaoDeAjuste, EstadoVazio } from '../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Controles';
 import { PreviaDeMensagemVidro } from '../componentes/PreviaVidro';
-import { Sheet } from '../componentes/Sheet';
+import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { primeiroNome } from '../dominio/formato';
 import { mascararTelefone, mensagemDeCobranca } from '../dominio/mensagens';
 import type { TomDeMensagem } from '../dominio/tipos';
@@ -19,8 +19,6 @@ import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useVidro } from '../tema/TemaProvider';
-import { texto } from '../tema/tipografia';
 
 const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
   { valor: 'cordial', rotulo: 'Cordial' },
@@ -31,7 +29,6 @@ const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
 const TITULO = 'Lembrete de cobrança';
 
 export function Lembrete() {
-  const { cores } = useVidro();
   const { alunoId, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const perfil = useDados((s) => s.perfil);
@@ -52,7 +49,7 @@ export function Lembrete() {
     );
   }
 
-  const texto_ = mensagemDeCobranca(aluno, msg.tom, perfil.chavePix);
+  const mensagem = mensagemDeCobranca(aluno, msg.tom, perfil.chavePix);
   const segundoLembrete = (aluno.lembretes ?? 0) > 0;
 
   const registrar = () => {
@@ -84,9 +81,7 @@ export function Lembrete() {
         </View>
       }
     >
-      <Text style={[texto(13, 500, { altura: 1.4 }), estilos.subLinha, { color: cores.tinta2 }]}>
-        {`Para ${primeiroNome(aluno.name)}`}
-      </Text>
+      <SubLinhaSheet texto={`Para ${primeiroNome(aluno.name)}`} />
 
       <CartaoDeAjuste titulo="Tom da mensagem" estilo={estilos.espaco16}>
         <Segmentado
@@ -101,7 +96,7 @@ export function Lembrete() {
 
       <View style={estilos.espaco14}>
         <PreviaDeMensagemVidro
-          texto={texto_}
+          texto={mensagem}
           destino={mascararTelefone(aluno.telefone)}
           aoCopiar={() => avisar(avisos.mensagemCopiada)}
         />
@@ -122,7 +117,6 @@ export function Lembrete() {
 }
 
 const estilos = StyleSheet.create({
-  subLinha: { paddingTop: 4, paddingHorizontal: 6 },
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
   // O trilho do catálogo se encolhe ao conteúdo; aqui ele ocupa o cartão.
