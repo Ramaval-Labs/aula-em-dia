@@ -132,7 +132,8 @@ conteúdo e comportamento é o histórico em `../docs/design/historico/tinta-cha
 6. **Prévia da proposta do aluno: tocar numa alternativa seleciona; o primário confirma.**
    Antes o toque na alternativa já aceitava.
 7. **Ajustes: o bloco "Zerar dados de demonstração" saiu**, e o rodapé mostra só a versão — o
-   handoff classifica os dois como andaime de protótipo.
+   handoff classifica os dois como andaime de protótipo. No Lembrete, saiu também o botão
+   "Agendar para amanhã, 9h": o app não tem agendamento, e o botão prometia uma função inexistente.
 8. **Pagamento aberto da Cobrança conclui voltando para a Cobrança** (antes ia sempre para o
    Financeiro), como no fluxo do handoff.
 9. **Registrar: o efeito da "Falta avisada" só aparece depois de escolhida**, porque depende

@@ -28,7 +28,7 @@ cd mobile
 npm install
 npx expo login        # obrigatório desde o SDK 57 (conta gratuita)
 npx expo start        # QR Code para o Expo Go
-npm test              # 294 testes: regras, navegação, tokens e montagem das 35 telas
+npm test              # 303 testes: regras, navegação, tokens e montagem das 35 telas
 npm run typecheck     # tsc --noEmit
 ```
 
@@ -80,8 +80,11 @@ em `docs/design/revisoes/`. A pessoa aprova, aprova parte ou descarta. O roteiro
    não se sustenta (recorte ou desempenho), a própria primitiva cai no fallback sem blur.
 5. **Cor com papel fixo.** O destaque é o tint (`#35577D` no claro, `#9FBEDF` no escuro — muda
    de valor, nunca de identidade), com `onTint` para o texto sobre ele. Status sempre como
-   fundo suave (12–16% de alfa) com o texto na cor cheia; cor cheia no fundo só em avatar
-   pequeno e ícone. **Um primário por tela.** O amarelo `#FFD032` e as curvas saíram do sistema.
+   fundo suave (12–16% de alfa) com o texto no token de **texto** do status (`ambarTexto`,
+   `verdeTexto`, `vermelhoTexto` — mais escuros que a cor cheia no claro, para passar 4.5:1 sobre
+   as manchas); a cor cheia (`ambar`, `verde`, `vermelho`) fica para barras, medidores, avatar
+   pequeno e ícone, com `sobreCor` no glifo. **Um primário por tela.** O amarelo `#FFD032` e as
+   curvas saíram do sistema.
 6. **Números sempre tabulares** e moeda em pt-BR — use `texto()`/`TIPO` de
    `mobile/src/tema/tipografia.ts` e `dinheiro()` de `mobile/src/dominio/formato.ts`.
    Não chame `toLocaleString` direto: o Hermes nem sempre traz ICU completo.
