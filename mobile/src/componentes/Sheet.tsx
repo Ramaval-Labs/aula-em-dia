@@ -54,11 +54,6 @@ export type PropsSheet = {
   aoFechar?: () => void;
   /** ação primária, na faixa fixa do rodapé */
   rodape?: React.ReactNode;
-  /**
-   * O conteúdo já rola por conta própria (tela ainda não migrada). Sem isto o
-   * corpo é um ScrollView com o padding `6 16 16` do handoff.
-   */
-  corpoProprio?: boolean;
   children: React.ReactNode;
 };
 
@@ -68,7 +63,6 @@ export function Sheet({
   semCancelar = false,
   aoFechar,
   rodape,
-  corpoProprio = false,
   children,
 }: PropsSheet) {
   const { cores, material } = useVidro();
@@ -117,9 +111,7 @@ export function Sheet({
     return () => sub.remove();
   }, [fechar]);
 
-  const corpo = corpoProprio ? (
-    <View style={{ flex: 1 }}>{children}</View>
-  ) : (
+  const corpo = (
     <ScrollView
       style={{ flex: 1 }}
       showsVerticalScrollIndicator={false}

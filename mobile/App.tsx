@@ -17,7 +17,6 @@ import { BackHandler, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Catalogo } from './src/componentes/__catalogo__/Catalogo';
-import { Sheet, type AlturaSheet } from './src/componentes/Sheet';
 import { TabBar } from './src/componentes/TabBar';
 import { ToastVidro } from './src/componentes/ToastVidro';
 import { AlvoDeDesfoque, FundoRefracao, ProvedorDeDesfoque } from './src/componentes/Vidro';
@@ -28,7 +27,6 @@ import {
   ehSheet,
   telaDeFundo,
   useNavegacao,
-  type Tela,
 } from './src/estado/navegacao';
 import { useSessao } from './src/estado/sessao';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
@@ -38,24 +36,6 @@ import { ARQUIVOS_DE_FONTE } from './src/tema/tipografia';
 
 // Só no Expo Web em desenvolvimento: deixa o script de screenshots navegar.
 exporParaDepuracao();
-
-/**
- * **Temporário (Onda 2A → Onda 3).** As telas de sheet ainda são as antigas:
- * desenham o próprio cabeçalho e rolam por conta própria, então o `App` as
- * embrulha no painel novo com um título genérico e `corpoProprio`.
- *
- * Quando a tela migrar, ela passa a renderizar o seu próprio `<Sheet>` com o
- * título e o rodapé de verdade — e a chave sai deste mapa.
- */
-const SHEETS_NAO_MIGRADOS: Partial<Record<Tela, { titulo: string; altura?: AlturaSheet }>> = {
-  registrar: { titulo: 'Registrar aula' },
-  resultado: { titulo: 'Resultado', altura: 'resultado' },
-  reposicao: { titulo: 'Escolher horário' },
-  dispAluno: { titulo: 'Disponibilidade do aluno' },
-  outroHorario: { titulo: 'Escolher outro horário' },
-  semHorario: { titulo: 'Sem horário disponível' },
-  confirmarReposicao: { titulo: 'Confirmar reposição' },
-};
 
 function App() {
   const { carregado: temaCarregado } = useTema();
@@ -89,7 +69,6 @@ function App() {
   const emSheet = ehSheet(tela);
   const TelaDeFundo = telaDe(fundo);
   const TelaDoSheet = telaDe(tela);
-  const painel = SHEETS_NAO_MIGRADOS[tela];
 
   return (
     <View style={styles.cheio}>
@@ -103,16 +82,10 @@ function App() {
         </AlvoDeDesfoque>
 
         {emSheet ? (
-          painel ? (
-            <Sheet titulo={painel.titulo} altura={painel.altura} corpoProprio>
-              <TelaDoSheet />
-            </Sheet>
-          ) : (
-            // Tela migrada: o painel é dela, com título e rodapé de verdade.
-            <View style={StyleSheet.absoluteFill}>
-              <TelaDoSheet />
-            </View>
-          )
+          // O painel é da própria tela, com título e rodapé de verdade.
+          <View style={StyleSheet.absoluteFill}>
+            <TelaDoSheet />
+          </View>
         ) : (
           <TabBar abaAtiva={ABA_DA_TELA[tela]} aoTrocar={trocarTab} />
         )}
