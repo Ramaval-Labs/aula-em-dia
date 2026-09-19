@@ -575,10 +575,17 @@ literal do handoff (`blur(16px) saturate(190%) brightness(1.08)` no claro, `blur
 saturate(175%) brightness(1.12)` no escuro); no iOS, `BlurView` nativo com o material
 `systemUltraThin` (intensidade 80 no claro, 90 no escuro); no Android, `BlurView` com alvo de
 desfoque a partir do Android 12 (API 31), com intensidade e redução baixas (32 ou 36, ÷ 1,6) para
-não somar um segundo véu. Abaixo da API 31, e para vidro que está dentro do próprio alvo desfocado
-(cartões na rolagem do Android), a superfície cai no **fallback sem blur**: o miolo engrossa
-(+0,22 de alfa no claro, +0,28 no escuro) para o texto continuar legível sobre o fundo nítido.
-Tela nenhuma decide isso; a decisão mora na primitiva.
+não somar um segundo véu — e lá só desfocam a tab bar e o painel do sheet, as superfícies fora
+do alvo. Abaixo da API 31, e para vidro que está dentro do próprio alvo desfocado (barra de
+navegação e cartões na rolagem do Android) ou fora do provedor (toast, telas de entrada), a
+superfície cai no **fallback sem blur**: o miolo engrossa (+0,22 de alfa no claro, +0,28 no
+escuro) para o texto continuar legível sobre o fundo nítido. Tela nenhuma decide isso; a decisão
+mora na primitiva.
+
+**Um nível de desfoque por camada:** vidro dentro de vidro (cartão no sheet, botão no cartão)
+nunca desfoca — a primitiva avisa os filhos por contexto e o aninhado vira miolo + `gin` + borda.
+A opção `semDesfoque` faz o mesmo onde o handoff não põe `--bf`: secundário compacto, inline em
+vidro e botões do stepper.
 
 ### Shadow Vocabulary
 - **Contato e difusa** (`gsh`): sob cartões (`CartaoVidro`, com `sombra`).
@@ -624,7 +631,7 @@ Cada família mora num arquivo de `mobile/src/componentes/` e está no catálogo
 
 ### Material (`Vidro.tsx`)
 `FundoRefracao`, `SuperficieVidro` (níveis `cartao`, `vidro`, `vidro2`, `sheet`; opções `anel`,
-`sombra`, `sombraExterna`, `soTopo`, `modo`), `blurLigado`, `MODO_VIDRO` e o par
+`sombra`, `sombraExterna`, `soTopo`, `modo`, `semDesfoque`), `blurLigado`, `MODO_VIDRO` e o par
 `ProvedorDeDesfoque` / `AlvoDeDesfoque` que dá ao Android o alvo do desfoque. Todo vidro do app
 passa por aqui.
 
@@ -669,6 +676,8 @@ servem também a entrada.
 - **`FichaDeEscolha`** (derivada): escolha múltipla de 36px e raio 13; desligada em
   `preenchimento`/`tinta2`, marcada em `tint`/`sobreTint`.
 - **`Switch`**: 52 × 32, `tint` ligado e `preenchimento2` desligado, botão branco de 27px.
+- **Desabilitado é cor, não opacidade:** nada apaga o vidro. Cartão de escolha desabilitado leva
+  título, apoio e marca para `tinta3`; switch desabilitado ligado troca o `tint` por `tinta3`.
 - **`Stepper`**: trilho `preenchimento`, botões 38 × 34 em `vidro2` com glifo `tint` (`tinta3` no
   limite), valor 18/800 tabular no meio.
 - **`CartaoEscolha`**: o rádio de cartão, raio 20. Selecionado em `tintSuave` com borda `tint` e

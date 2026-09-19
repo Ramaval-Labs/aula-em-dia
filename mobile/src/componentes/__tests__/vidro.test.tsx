@@ -54,6 +54,31 @@ describe('Vidro', () => {
     expect(screen.getByText('sheet')).toBeTruthy();
   });
 
+  it('um nível de desfoque por camada: aninhado e semDesfoque não desfocam', async () => {
+    const r = await render(
+      <TemaProvider>
+        <SuperficieVidro nivel="sheet" raio={40} soTopo>
+          <SuperficieVidro nivel="cartao" raio={22}>
+            <SuperficieVidro nivel="vidro2" raio={17}>
+              <Text>botão no cartão no sheet</Text>
+            </SuperficieVidro>
+          </SuperficieVidro>
+        </SuperficieVidro>
+        <SuperficieVidro nivel="vidro2" raio={13} semDesfoque>
+          <Text>inline</Text>
+        </SuperficieVidro>
+      </TemaProvider>,
+    );
+    // Só o painel de fora desfoca (o jest roda como iOS).
+    type No = { type: string; children: (No | string)[] | null };
+    const contar = (n: No | No[] | string | null): number => {
+      if (!n || typeof n === 'string') return 0;
+      if (Array.isArray(n)) return n.reduce((t, f) => t + contar(f), 0);
+      return (/ExpoBlur/.test(n.type) ? 1 : 0) + contar(n.children as No[] | null);
+    };
+    expect(contar(r.toJSON() as No | No[] | null)).toBe(1);
+  });
+
   it('o catálogo monta', async () => {
     await render(
       <TemaProvider>

@@ -13,16 +13,28 @@
  * Tela nenhuma remonta isto: vidro é sempre `SuperficieVidro`, e a decisão de
  * blur × fallback mora aqui.
  *
+ * **Um nível de desfoque por camada.** Toda superfície avisa aos filhos que
+ * eles estão dentro de vidro (`ContextoDeVidro`), e o vidro aninhado — cartão
+ * dentro de sheet, botão dentro de cartão — nunca desfoca: é miolo + reflexo +
+ * borda sobre o que o pai já desfocou. `semDesfoque` faz o mesmo em qualquer
+ * lugar, para as peças que o handoff define sem `--bf` (secundário compacto,
+ * inline em vidro, botões do stepper).
+ *
  * Por plataforma:
  * - web: `backdropFilter` com o `--bf` literal do handoff. O BlurView do
  *   expo-blur no web soma uma cor de fundo própria do `tint` ao miolo, então
  *   ele não é usado lá.
- * - iOS: `BlurView` nativo (UIVisualEffectView).
+ * - iOS: `BlurView` nativo (UIVisualEffectView) em toda superfície de
+ *   primeiro nível.
  * - Android: `BlurView` com `blurTarget` apontando para o `AlvoDeDesfoque`
- *   (a API estável do expo-blur). A superfície precisa estar FORA do alvo que
- *   desfoca — uma BlurView não desfoca o próprio ancestral —, então vidro
- *   dentro do alvo (cartões na rolagem) cai no fallback. Sob esses cartões só
- *   há o fundo de refração, que já é liso: a perda é pequena.
+ *   (a API estável do expo-blur), e só a partir do Android 12. Uma BlurView
+ *   não desfoca o próprio ancestral, então **só desfoca o que está fora do
+ *   alvo e dentro do `ProvedorDeDesfoque`: a tab bar e o painel do sheet**.
+ *   Caem no fallback (miolo mais denso, sem desfoque): a barra de navegação
+ *   do topo e os cartões da rolagem, que moram dentro do alvo; o toast, que
+ *   fica fora do provedor (no `Portao` do App.tsx); e as telas de entrada, que
+ *   não têm provedor. Sob eles só há o fundo de refração, que já é liso: a
+ *   perda é pequena.
  */
 
 import { BlurView, BlurTargetView } from 'expo-blur';
@@ -106,6 +118,11 @@ export function AlvoDeDesfoque({
   );
 }
 
+/* ── Vidro aninhado ───────────────────────────────────────────────────── */
+
+/** true para quem está dentro de uma `SuperficieVidro`. */
+const ContextoDeVidro = createContext(false);
+
 /* ── Fundo de refração ────────────────────────────────────────────────── */
 
 /**
@@ -177,6 +194,11 @@ type PropsSuperficie = {
   sombraExterna?: string;
   /** força um modo só nesta superfície (catálogo, diagnóstico) */
   modo?: ModoVidro;
+  /**
+   * Nunca desfoca: miolo + `gin` + borda. Para o que o handoff define sem
+   * `--bf` (secundário compacto, inline em vidro, botões do stepper).
+   */
+  semDesfoque?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 };
@@ -197,15 +219,23 @@ export function SuperficieVidro({
   sombra = false,
   sombraExterna,
   modo,
+  semDesfoque = false,
   style,
   children,
 }: PropsSuperficie) {
   const { cores, material } = useCores();
   const { alvo, dentroDoAlvo } = useContext(ContextoDeDesfoque);
+  const dentroDeVidro = useContext(ContextoDeVidro);
 
+  // Aninhado ou sem `--bf` no handoff: o miolo é o do nível, sem o reforço
+  // do fallback — o que está atrás já é vidro (ou é uma peça pequena).
+  const semCamada = semDesfoque || dentroDeVidro;
   const comBlur =
-    blurLigado(modo) && (Platform.OS !== 'android' || (alvo !== null && !dentroDoAlvo));
-  const miolo = comBlur ? cores[nivel] : somarAlfa(cores[nivel], material.alfaExtraFallback);
+    !semCamada &&
+    blurLigado(modo) &&
+    (Platform.OS !== 'android' || (alvo !== null && !dentroDoAlvo));
+  const miolo =
+    comBlur || semCamada ? cores[nivel] : somarAlfa(cores[nivel], material.alfaExtraFallback);
   const externa = sombraExterna ?? (sombra ? material.gsh : undefined);
   const canto: ViewStyle = soTopo
     ? { borderTopLeftRadius: raio, borderTopRightRadius: raio }
@@ -231,7 +261,7 @@ export function SuperficieVidro({
         ) : null}
         <View style={[StyleSheet.absoluteFill, canto, { boxShadow: material.gin }]} />
       </View>
-      {children}
+      <ContextoDeVidro.Provider value>{children}</ContextoDeVidro.Provider>
     </View>
   );
 }

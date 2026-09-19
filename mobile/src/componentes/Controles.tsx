@@ -146,6 +146,7 @@ export function BotaoCompacto({
       altura={TAMANHO.botaoCompacto}
       raio={RAIO.botaoCompacto}
       tipografia={texto(14.5, 600)}
+      semDesfoque
     />
   );
 }
@@ -160,12 +161,15 @@ function BotaoDeVidro({
   altura,
   raio,
   tipografia,
+  semDesfoque = false,
 }: Comum & {
   icone?: NomeDeIcone;
   desabilitado: boolean;
   altura: number;
   raio: number;
   tipografia: TextStyle;
+  /** o compacto é `--glass2` sem `--bf` no handoff */
+  semDesfoque?: boolean;
 }) {
   const { cores } = useCores();
   const tinta = desabilitado ? cores.tinta3 : cores.tint;
@@ -182,6 +186,7 @@ function BotaoDeVidro({
       <SuperficieVidro
         nivel="vidro2"
         raio={raio}
+        semDesfoque={semDesfoque}
         style={[estilos.linhaCentral, { height: altura }]}
       >
         {icone ? <Icone nome={icone} tamanho={TAMANHO.iconeMais} cor={tinta} /> : null}
@@ -232,6 +237,7 @@ export function BotaoInline({
         <SuperficieVidro
           nivel="vidro2"
           raio={RAIO.botaoInline}
+          semDesfoque
           style={[estilos.linhaCentral, estilos.inlineCaixa]}
         >
           {conteudo}
@@ -510,9 +516,11 @@ export function Switch({
     }).start();
   }, [ligado, reduzido, anim]);
 
+  // Desabilitado por cor, não por opacidade: ligado vira `tinta3` no lugar
+  // do tint (desligado já é o trilho neutro).
   const fundo = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [cores.preenchimento2, cores.tint],
+    outputRange: [cores.preenchimento2, desabilitado ? cores.tinta3 : cores.tint],
   });
   const desloca = anim.interpolate({ inputRange: [0, 1], outputRange: [0, CURSO_SWITCH] });
 
@@ -524,7 +532,7 @@ export function Switch({
       disabled={desabilitado}
       onPress={() => aoAlternar(!ligado)}
       hitSlop={folgaDeToque(TAMANHO.switchAltura)}
-      style={[{ opacity: desabilitado ? 0.5 : 1 }, estilo]}
+      style={estilo}
     >
       <Animated.View style={[estilos.switchTrilho, { backgroundColor: fundo }]}>
         <Animated.View
@@ -636,6 +644,7 @@ function BotaoDoStepper({
       <SuperficieVidro
         nivel="vidro2"
         raio={RAIO.segmento}
+        semDesfoque
         style={[estilos.linhaCentral, estilos.botaoStepper]}
       >
         <Text style={[texto(19, 700), { color: desabilitado ? cores.tinta3 : cores.tint }]}>
