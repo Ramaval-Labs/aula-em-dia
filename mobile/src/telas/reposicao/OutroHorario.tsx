@@ -104,7 +104,7 @@ export function OutroHorario() {
 }
 
 const estilos = StyleSheet.create({
-  filtro: { marginTop: 14, alignSelf: 'stretch' },
+  filtro: { marginTop: 14 },
   vazio: { marginTop: 16 },
   grupo: { marginTop: 22 },
   cartoes: { marginTop: 9, gap: 9 },

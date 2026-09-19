@@ -113,7 +113,6 @@ export function Politica() {
           aoTrocar={(avisoHoras) => atualizar({ avisoHoras })}
           porte="cartao"
           rotuloDoGrupo="Prazo mínimo de aviso"
-          estilo={estilos.controleLargo}
         />
       </CartaoDeAjuste>
 
@@ -161,7 +160,6 @@ export function Politica() {
           aoTrocar={(validadeDias) => atualizar({ validadeDias })}
           porte="cartao"
           rotuloDoGrupo="Validade do pacote"
-          estilo={estilos.controleLargo}
         />
       </CartaoDeAjuste>
 
@@ -181,6 +179,5 @@ const estilos = StyleSheet.create({
   cartao: { marginTop: 12 },
   aviso: { marginTop: 12 },
   primeiro: { marginTop: 18 },
-  controleLargo: { alignSelf: 'stretch' },
   descartar: { marginTop: 8 },
 });

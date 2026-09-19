@@ -157,10 +157,7 @@ export function Home() {
 
 const estilos = StyleSheet.create({
   contagem: { alignItems: 'flex-end', paddingBottom: 4 },
-  // O trilho do segmentado hoje se encolhe ao conteúdo (`alignSelf:
-  // 'flex-start'`, que o porte "linha" precisa); como filtro de tela ele é de
-  // largura cheia, como no handoff §1.
-  filtros: { marginTop: 18, alignSelf: 'stretch' },
+  filtros: { marginTop: 18 },
   lista: { marginTop: 16 },
   acoes: { gap: 10 },
 });

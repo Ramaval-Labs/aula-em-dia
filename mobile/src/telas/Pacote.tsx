@@ -116,7 +116,6 @@ export function Pacote() {
           aoTrocar={(validadeDias) => atualizar({ validadeDias })}
           porte="cartao"
           rotuloDoGrupo="Validade do pacote"
-          estilo={estilos.segmentado}
         />
       </CartaoDeAjuste>
 
@@ -175,7 +174,6 @@ const estilos = StyleSheet.create({
   tituloGrupo: { marginTop: 18 },
   escolhas: { marginTop: 9, gap: 10 },
   cartao: { marginTop: 14 },
-  segmentado: { alignSelf: 'stretch' },
   linhaSaldo: { flexDirection: 'row', alignItems: 'flex-end' },
   numeroDoSaldo: { marginTop: 9, flexDirection: 'row', alignItems: 'baseline', gap: 7 },
   linhas: { marginTop: 14, paddingTop: 12, borderTopWidth: TAMANHO_VIDRO.bordaVidro, gap: 8 },

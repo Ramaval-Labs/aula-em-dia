@@ -227,5 +227,5 @@ const estilos = StyleSheet.create({
   listaDoGrupo: { marginTop: 9 },
   cartoes: { marginTop: 9, gap: 9 },
   rotuloSub: texto(11.5, 600, { altura: 1.2, tracking: 0.04, maiuscula: true }),
-  segmentado: { marginTop: 9, alignSelf: 'stretch' },
+  segmentado: { marginTop: 9 },
 });

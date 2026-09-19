@@ -90,7 +90,6 @@ export function Acesso() {
         valor={modo}
         aoTrocar={trocarModo}
         rotuloDoGrupo="Entrar ou criar conta"
-        estilo={estilos.largo}
       />
 
       <CartaoVidro estilo={estilos.campos}>
@@ -161,7 +160,6 @@ export function Acesso() {
 }
 
 const estilos = StyleSheet.create({
-  largo: { alignSelf: 'stretch' },
   campos: { gap: 16 },
   link: { alignSelf: 'flex-start', paddingHorizontal: 2 },
   ou: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 12 },

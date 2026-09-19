@@ -90,7 +90,6 @@ export function Lembrete() {
           valor={msg.tom}
           aoTrocar={(tom) => atualizar({ tom, editado: false })}
           rotuloDoGrupo="Tom da mensagem"
-          estilo={estilos.segmentado}
         />
       </CartaoDeAjuste>
 
@@ -119,7 +118,5 @@ export function Lembrete() {
 const estilos = StyleSheet.create({
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
-  // O trilho do catálogo se encolhe ao conteúdo; aqui ele ocupa o cartão.
-  segmentado: { alignSelf: 'stretch' },
   rodape: { gap: 4 },
 });

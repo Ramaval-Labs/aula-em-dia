@@ -153,7 +153,6 @@ export function PrimeiroAluno() {
           porte="cartao"
           aoTrocar={(aulas) => atualizarPacote({ aulas })}
           rotuloDoGrupo="Quantidade de aulas do pacote"
-          estilo={estilos.largo}
         />
         <View style={estilos.caixas}>
           <CaixaDeValor rotulo="Valor" valor={dinheiro(calculado.valorTotal)} />
@@ -201,7 +200,6 @@ const estilos = StyleSheet.create({
   campos: { gap: 16 },
   dupla: { flexDirection: 'row', gap: 10 },
   flexivel: { flex: 1, minWidth: 0 },
-  largo: { alignSelf: 'stretch' },
   caixas: { marginTop: 10, flexDirection: 'row', gap: 10 },
   caixa: {
     flex: 1,

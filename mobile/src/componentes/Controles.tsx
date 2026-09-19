@@ -376,7 +376,13 @@ export function Segmentado<T extends string | number>({
       accessibilityLabel={rotuloDoGrupo}
       style={[
         estilos.trilho,
-        { backgroundColor: cores.preenchimento, borderRadius: p.trilho, padding: p.pad },
+        {
+          backgroundColor: cores.preenchimento,
+          borderRadius: p.trilho,
+          padding: p.pad,
+          // Filtro e cartão ocupam a largura; o embutido em linha encolhe.
+          alignSelf: p.espalha ? 'stretch' : 'flex-start',
+        },
         estilo,
       ]}
     >
@@ -785,7 +791,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  trilho: { flexDirection: 'row', gap: 2, alignSelf: 'flex-start' },
+  trilho: { flexDirection: 'row', gap: 2 },
   segmento: {
     alignItems: 'center',
     justifyContent: 'center',

@@ -189,7 +189,6 @@ function SecaoControles() {
             valor={filtro}
             aoTrocar={setFiltro}
             rotuloDoGrupo="Ordenar alunos"
-            estilo={estilos.cheio}
           />
           <Segmentado
             opcoes={PRAZOS}
@@ -197,7 +196,6 @@ function SecaoControles() {
             aoTrocar={setPrazo}
             porte="cartao"
             rotuloDoGrupo="Prazo mínimo de aviso"
-            estilo={estilos.cheio}
           />
           <Segmentado
             opcoes={[
@@ -215,7 +213,6 @@ function SecaoControles() {
             aoTrocar={setFiltro}
             desabilitado
             rotuloDoGrupo="Desabilitado"
-            estilo={estilos.cheio}
           />
         </View>
       </Amostra>
@@ -302,7 +299,6 @@ function SecaoControles() {
               aoTrocar={setAviso}
               porte="cartao"
               rotuloDoGrupo="Antecedência do aviso"
-              estilo={estilos.cheio}
             />
             <Text
               style={[comEspaco(TIPO_VIDRO.textoBloco, { topo: 11 }), { color: cores.tinta2 }]}
@@ -687,7 +683,6 @@ function SecaoDerivados() {
 }
 
 const estilos = StyleSheet.create({
-  cheio: { alignSelf: 'stretch' },
   flexivel: { flex: 1, minWidth: 0 },
   direita: { textAlign: 'right' },
   secao: { marginTop: 30 },

@@ -108,7 +108,6 @@ export function Perfil() {
           porte="cartao"
           aoTrocar={(faixaDeAlunos) => atualizar({ faixaDeAlunos })}
           rotuloDoGrupo="Quantos alunos hoje"
-          estilo={estilos.largo}
         />
       </CartaoDeAjuste>
     </PassoDoOnboarding>
@@ -117,5 +116,4 @@ export function Perfil() {
 
 const estilos = StyleSheet.create({
   fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  largo: { alignSelf: 'stretch' },
 });

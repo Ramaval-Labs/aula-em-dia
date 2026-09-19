@@ -322,7 +322,6 @@ export function PacotesPadrao() {
           aoTrocar={(aulas) => atualizar({ aulas })}
           porte="cartao"
           rotuloDoGrupo="Quantidade padrão de aulas"
-          estilo={estilos.controleLargo}
         />
       </CartaoDeAjuste>
 
@@ -634,7 +633,6 @@ const estilos = StyleSheet.create({
     gap: 13,
   },
   campos: { gap: 16 },
-  controleLargo: { alignSelf: 'stretch' },
   espacoCartao: { marginTop: 12 },
   grupo: { marginTop: 24, marginBottom: 9 },
   bloco: { marginTop: 12 },

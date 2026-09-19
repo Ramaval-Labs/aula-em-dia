@@ -92,7 +92,6 @@ export function Pagamento() {
           valor={form.meio}
           aoTrocar={(meio) => atualizar({ meio })}
           rotuloDoGrupo="Meio de pagamento"
-          estilo={estilos.largo}
         />
       </CartaoDeAjuste>
 
@@ -169,7 +168,6 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   direita: { alignItems: 'flex-end' },
   nota: { paddingHorizontal: 6 },
-  largo: { alignSelf: 'stretch' },
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
   linhaChave: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
