@@ -224,22 +224,6 @@ export function TelaDeEntrada({
   );
 }
 
-/**
- * O que falta para o primário acender, dito logo acima dele. Live region:
- * o texto aparece e some conforme o formulário fica válido.
- */
-export function MotivoDoBotao({ texto: motivo }: { texto: string }) {
-  const { cores } = useVidro();
-  return (
-    <Text
-      accessibilityLiveRegion="polite"
-      style={[texto(12.5, 500, { altura: 1.4 }), estilos.centro, { color: cores.tinta2 }]}
-    >
-      {motivo}
-    </Text>
-  );
-}
-
 const estilos = StyleSheet.create({
   cheio: { flex: 1 },
   centro: { textAlign: 'center' },

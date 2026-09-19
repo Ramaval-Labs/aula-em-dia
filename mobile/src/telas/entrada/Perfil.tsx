@@ -5,14 +5,13 @@ import { StyleSheet, View } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
 import { CampoDeTexto } from '../../componentes/Campos';
-import { Segmentado } from '../../componentes/Controles';
+import { FichaDeEscolha, Segmentado } from '../../componentes/Controles';
 import type { FaixaDeAlunos } from '../../dominio/tipos';
 import { ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
-import { FichaDeEscolha } from './PecasDeEntrada';
 
 /** Catálogo sugerido; "+ outra" acrescenta o que o professor escrever. */
 const DISCIPLINAS = ['Inglês', 'Violão', 'Matemática', 'Música', 'Reforço escolar'];

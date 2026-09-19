@@ -293,6 +293,23 @@ export function BotaoTexto({
   );
 }
 
+/**
+ * O que falta para o primário acender, dito logo acima dele (12.5/500,
+ * centralizado, `tinta2`). Live region: o texto aparece e some conforme o
+ * formulário fica válido — o botão apagado nunca fica mudo.
+ */
+export function NotaDoBotao({ texto: nota }: { texto: string }) {
+  const { cores } = useVidro();
+  return (
+    <Text
+      accessibilityLiveRegion="polite"
+      style={[texto(12.5, 500, { altura: 1.4 }), estilos.centro, { color: cores.tinta2 }]}
+    >
+      {nota}
+    </Text>
+  );
+}
+
 /* ── Controle segmentado ──────────────────────────────────────────────── */
 
 export type PorteDoSegmentado = 'filtro' | 'cartao' | 'linha';
@@ -404,6 +421,46 @@ export function Segmentado<T extends string | number>({
         );
       })}
     </View>
+  );
+}
+
+/* ── Ficha de escolha ─────────────────────────────────────────────────── */
+
+/**
+ * Ficha de escolha **múltipla** (as disciplinas do perfil) — derivada: o
+ * `Segmentado` é de escolha única. Mesma dupla de cor do segmentado e do
+ * switch: desligada no trilho `preenchimento` com `tinta2`, ligada em tint
+ * com `sobreTint`. Para o leitor de tela é uma caixa de seleção.
+ */
+export function FichaDeEscolha({
+  rotulo,
+  marcada,
+  aoTocar,
+}: {
+  rotulo: string;
+  marcada: boolean;
+  aoTocar: () => void;
+}) {
+  const { cores } = useVidro();
+  return (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityLabel={rotulo}
+      accessibilityState={{ checked: marcada }}
+      onPress={aoTocar}
+      hitSlop={folgaDeToque(TAMANHO_VIDRO.segmentoCartao)}
+      style={({ pressed }) => [
+        estilos.ficha,
+        {
+          backgroundColor: marcada ? cores.tint : cores.preenchimento,
+          opacity: pressed ? OPACIDADE_PRESSIONADO : 1,
+        },
+      ]}
+    >
+      <Text style={[texto(13.5, 600), { color: marcada ? cores.sobreTint : cores.tinta2 }]}>
+        {rotulo}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -698,6 +755,14 @@ export function Selo({ texto: rotulo }: { texto: string }) {
 
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
+  centro: { textAlign: 'center' },
+  ficha: {
+    height: TAMANHO_VIDRO.segmentoCartao,
+    paddingHorizontal: 14,
+    borderRadius: RAIO_VIDRO.botaoInline,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   linhaCentral: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -10,9 +10,9 @@
 import React from 'react';
 
 import { MedidorPacote } from '../../componentes/Blocos';
-import { BotaoPrimario, BotaoTexto } from '../../componentes/Controles';
+import { BotaoPrimario, BotaoTexto, NotaDoBotao } from '../../componentes/Controles';
 import { TOTAL_DE_PASSOS, useSessao } from '../../estado/sessao';
-import { MotivoDoBotao, TelaDeEntrada } from './TelaDeEntrada';
+import { TelaDeEntrada } from './TelaDeEntrada';
 
 export function PassoDoOnboarding({
   passo,
@@ -51,7 +51,7 @@ export function PassoDoOnboarding({
       rodape={
         <>
           {!podeAvancar && motivoDesabilitado ? (
-            <MotivoDoBotao texto={motivoDesabilitado} />
+            <NotaDoBotao texto={motivoDesabilitado} />
           ) : null}
           <BotaoPrimario
             rotulo={rotuloDoBotao}

@@ -12,7 +12,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro } from '../componentes/Blocos';
 import { CampoDeTexto } from '../componentes/Campos';
-import { BotaoPrimario, BotaoTexto } from '../componentes/Controles';
+import { BotaoPrimario, BotaoTexto, NotaDoBotao } from '../componentes/Controles';
 import { Sheet } from '../componentes/Sheet';
 import { useDoisToques } from '../componentes/useDoisToques';
 import { primeiroNome } from '../dominio/formato';
@@ -22,7 +22,7 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useVidro } from '../tema/TemaProvider';
-import { comEspaco, texto } from '../tema/tipografia';
+import { texto } from '../tema/tipografia';
 
 export function AlunoForm() {
   const { cores } = useVidro();
@@ -100,18 +100,8 @@ export function AlunoForm() {
     <Sheet
       titulo={emEdicao ? 'Editar aluno' : 'Novo aluno'}
       rodape={
-        <View>
-          {notaDoQueFalta ? (
-            <Text
-              style={[
-                comEspaco(texto(12.5, 500, { altura: 1.4 }), { base: 10 }),
-                estilos.centro,
-                { color: cores.tinta2 },
-              ]}
-            >
-              {notaDoQueFalta}
-            </Text>
-          ) : null}
+        <View style={estilos.rodape}>
+          {notaDoQueFalta ? <NotaDoBotao texto={notaDoQueFalta} /> : null}
           <BotaoPrimario
             rotulo={emEdicao ? 'Salvar alterações' : 'Criar aluno'}
             desabilitado={!pronto}
@@ -194,4 +184,5 @@ const estilos = StyleSheet.create({
   campos: { gap: 16 },
   linha: { flexDirection: 'row', gap: 10 },
   arquivar: { marginTop: 18, alignItems: 'center', gap: 4 },
+  rodape: { gap: 10 },
 });
