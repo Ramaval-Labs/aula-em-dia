@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Aba } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
 import { TIPO } from '../tema/tipografia';
-import { PILULA_ABA, RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, PILULA_ABA, RAIO, TAMANHO } from '../tema/tokens';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -117,7 +117,11 @@ function ItemDeAba({
       ) : null}
 
       <Icone nome={icone} tamanho={TAMANHO.iconeAba} cor={cor} />
-      <Text numberOfLines={1} style={[TIPO.rotuloAba, { color: cor }]}>
+      <Text
+        numberOfLines={1}
+        maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+        style={[TIPO.rotuloAba, { color: cor }]}
+      >
         {rotulo}
       </Text>
     </Pressable>

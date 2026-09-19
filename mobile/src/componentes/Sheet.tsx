@@ -35,7 +35,7 @@ import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
 import { useAlturaDoTeclado } from './teclado';
 import { SuperficieVidro } from './Vidro';
 
@@ -228,13 +228,19 @@ export function Sheet({
                 onPress={fechar}
                 style={{ width: 72, height: TAMANHO.cabecalhoSheet, justifyContent: 'center' }}
               >
-                <Text style={[texto(15.5, 600), { color: cores.tint }]}>Cancelar</Text>
+                <Text
+                  maxFontSizeMultiplier={ESCALA_FONTE.controle}
+                  style={[texto(15.5, 600), { color: cores.tint }]}
+                >
+                  Cancelar
+                </Text>
               </Pressable>
             )}
             <Text
               ref={refTitulo}
               accessibilityRole="header"
               numberOfLines={1}
+              maxFontSizeMultiplier={ESCALA_FONTE.controle}
               style={[
                 TIPO.tituloSheet,
                 { flex: 1, textAlign: 'center', color: cores.tinta },

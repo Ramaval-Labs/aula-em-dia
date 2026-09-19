@@ -30,7 +30,7 @@ import {
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { duracao, useReduzirMovimento } from '../tema/movimento';
-import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
@@ -63,6 +63,9 @@ type Comum = {
  * Ação principal da tela — **uma por tela**. 54px, raio 18, fundo tint com a
  * sombra colorida (`tintSombra`). Desabilitado troca para `preenchimento2` e
  * `tinta3`, sem sombra.
+ *
+ * 54 é a altura **mínima**: rótulo dinâmico comprido ("Propor quinta, 04/09
+ * às 17h") ou fonte grande quebra em até duas linhas e o botão cresce.
  */
 export function BotaoPrimario({
   rotulo,
@@ -95,7 +98,11 @@ export function BotaoPrimario({
       ]}
     >
       {icone ? <Icone nome={icone} tamanho={TAMANHO.iconeMais} cor={tinta} /> : null}
-      <Text style={[TIPO.botao, { color: tinta }]} numberOfLines={1}>
+      <Text
+        style={[TIPO.botao, estilos.rotuloCentral, { color: tinta }]}
+        numberOfLines={2}
+        maxFontSizeMultiplier={ESCALA_FONTE.controle}
+      >
         {rotulo}
       </Text>
     </Pressable>
@@ -190,7 +197,11 @@ function BotaoDeVidro({
         style={[estilos.linhaCentral, { height: altura }]}
       >
         {icone ? <Icone nome={icone} tamanho={TAMANHO.iconeMais} cor={tinta} /> : null}
-        <Text style={[tipografia, { color: tinta }]} numberOfLines={1}>
+        <Text
+          style={[tipografia, { color: tinta }]}
+          numberOfLines={1}
+          maxFontSizeMultiplier={ESCALA_FONTE.controle}
+        >
           {rotulo}
         </Text>
       </SuperficieVidro>
@@ -214,7 +225,11 @@ export function BotaoInline({
   const emVidro = variante === 'vidro';
   const tinta = desabilitado ? cores.tinta3 : emVidro ? cores.tint : cores.sobreTint;
   const conteudo = (
-    <Text style={[texto(14, 700), { color: tinta }]} numberOfLines={1}>
+    <Text
+      style={[texto(14, 700), { color: tinta }]}
+      numberOfLines={1}
+      maxFontSizeMultiplier={ESCALA_FONTE.controle}
+    >
       {rotulo}
     </Text>
   );
@@ -296,6 +311,7 @@ export function BotaoTexto({
             { color: pressed && !desabilitado && tom === 'neutro' ? cores.tinta : cor },
           ]}
           numberOfLines={1}
+          maxFontSizeMultiplier={ESCALA_FONTE.controle}
         >
           {rotulo}
         </Text>
@@ -433,6 +449,7 @@ export function Segmentado<T extends string | number>({
                 { color: desabilitado ? cores.tinta3 : ativo ? cores.tinta : cores.tinta2 },
               ]}
               numberOfLines={1}
+              maxFontSizeMultiplier={ESCALA_FONTE.controle}
             >
               {o.rotulo}
             </Text>
@@ -806,6 +823,7 @@ export function Selo({ texto: rotulo }: { texto: string }) {
   return (
     <View style={[estilos.selo, { backgroundColor: cores.tintSuave }]}>
       <Text
+        maxFontSizeMultiplier={ESCALA_FONTE.compacta}
         style={[texto(10, 700, { tracking: 0.04, maiuscula: true }), { color: cores.tint }]}
       >
         {rotulo}
@@ -830,8 +848,10 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
     gap: 9,
   },
+  rotuloCentral: { textAlign: 'center', flexShrink: 1 },
   botaoPrimario: {
-    height: TAMANHO.botaoPrimario,
+    minHeight: TAMANHO.botaoPrimario,
+    paddingVertical: 8,
     borderRadius: RAIO.botao,
     flexDirection: 'row',
     alignItems: 'center',
@@ -906,7 +926,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   selo: {
-    height: TAMANHO.selo,
+    minHeight: TAMANHO.selo,
     paddingHorizontal: 7,
     borderRadius: RAIO.selo,
     alignItems: 'center',

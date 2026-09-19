@@ -20,7 +20,7 @@ import {
 
 import { useCores, type CoresDoTema } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 import { BotaoInline } from './Controles';
 import { Icone, type NomeDeIcone } from './Icone';
@@ -394,7 +394,11 @@ export function FaixaStatus({
   const tinta = tipo === 'pausado' ? cores.tinta2 : corDoTexto;
   return (
     <View style={[estilos.faixa, { backgroundColor: suave }, estilo]}>
-      <Text style={[TIPO.faixa, { color: tinta }]} numberOfLines={1}>
+      <Text
+        style={[TIPO.faixa, { color: tinta }]}
+        numberOfLines={1}
+        maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+      >
         {rotulo}
       </Text>
     </View>
@@ -695,7 +699,7 @@ const estilos = StyleSheet.create({
   },
   acaoBloco: { marginTop: 13 },
   faixa: {
-    height: TAMANHO.faixaStatus,
+    minHeight: TAMANHO.faixaStatus,
     paddingHorizontal: 8,
     borderRadius: RAIO.faixa,
     alignSelf: 'flex-start',

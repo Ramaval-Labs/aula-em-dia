@@ -6,6 +6,7 @@
 import { TIPO } from '../tipografia';
 import {
   CORES,
+  ESCALA_FONTE,
   MATERIAL,
   MOVIMENTO,
   PILULA_ABA,
@@ -44,6 +45,7 @@ describe('tokens', () => {
     expect(TAMANHO).toEqual(json.size);
     expect(MOVIMENTO).toEqual(json.motion);
     expect(TRACO_ICONE).toEqual(json.stroke);
+    expect(ESCALA_FONTE).toEqual(json.fontScale);
   });
 
   it('pílula da aba ativa bate com o JSON', () => {

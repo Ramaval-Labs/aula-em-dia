@@ -78,6 +78,10 @@ Leitura:
 - Segmentado: grupo de rádios; ficha de escolha: caixa de seleção; switch: `switch` com estado.
 
 ## Preferências do sistema
+- Texto dinâmico: o app escala com a preferência do sistema. Só têm teto (`ESCALA_FONTE`) o
+  rótulo de aba, a faixa de status e o selo (1,3) e os rótulos de controle — segmento, botões,
+  "Cancelar" e título do sheet (1,6). Faixa, selo e botão primário crescem em altura em vez de
+  cortar, e o primário aceita duas linhas.
 - `prefers-color-scheme` na primeira carga; a escolha manual em Ajustes vence depois.
 - Reduzir movimento (`tema/movimento.ts`): sheet, barra de navegação, switch e toast mudam sem
   transição.

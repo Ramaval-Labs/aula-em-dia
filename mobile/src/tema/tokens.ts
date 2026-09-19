@@ -477,6 +477,18 @@ export const TRACO_ICONE = {
   checkBloco: 2.6,
 } as const;
 
+/**
+ * Teto do texto dinâmico (`maxFontSizeMultiplier`) — sem handoff, que é de
+ * tamanho fixo. `compacta` nas peças de altura justa que não podem quebrar
+ * (rótulo de aba, faixa de status, selo); `controle` nos rótulos de controle
+ * (segmento, botões, título do sheet), que crescem mas não estouram a linha.
+ * O resto do texto escala sem teto.
+ */
+export const ESCALA_FONTE = {
+  compacta: 1.3,
+  controle: 1.6,
+} as const;
+
 export const MOVIMENTO = {
   sheetMs: 340,
   sheetCurva: [0.32, 0.72, 0, 1] as const,

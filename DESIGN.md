@@ -668,6 +668,11 @@ servem também a entrada.
   ação que continua o fluxo, `vidro` para a alternativa.
 - **`BotaoTexto`**: 46px, sem caixa, 15/600 em `tinta2` (`tinta` ao pressionar); tom `destrutivo`
   em `vermelhoTexto`.
+- **Texto dinâmico com teto** (`ESCALA_FONTE`): 1,3 no rótulo de aba, na faixa de status e no
+  selo (peças de altura justa); 1,6 no segmento, nos botões, no "Cancelar" e no título do sheet.
+  Faixa, selo e botão primário têm altura **mínima**, não fixa, e o primário aceita duas linhas —
+  os rótulos dinâmicos ("Propor quinta, 04/09 às 17h") não podem cortar. O resto do texto escala
+  sem teto.
 - Pressionar escurece por opacidade (0,86) no lugar do hover de mouse do protótipo. Peças abaixo de
   44px ganham `hitSlop` até fechar o alvo.
 - **`Segmentado`**: trilho `preenchimento`, segmento ativo em `vidro2` com borda e sombra leve,
