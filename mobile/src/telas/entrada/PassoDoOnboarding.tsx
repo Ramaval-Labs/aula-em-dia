@@ -1,27 +1,20 @@
 /**
- * Chassi dos quatro passos do onboarding: cabeçalho escuro com o voltar, a
- * barra de progresso, eyebrow "Passo N de 4", título e o botão de avançar.
+ * Chassi dos quatro passos do onboarding no iOS Glass: voltar em tint, o
+ * medidor de 4 barras, a sub-linha "Passo N de 4", o título e o rodapé com
+ * o botão de avançar.
  *
  * O voltar na tela existe porque o iOS não tem botão físico: sem ele o
  * `voltarEntrada` só seria alcançável no Android (BackHandler do `Portao`).
  */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { BarraDePassos } from '../../componentes/Base';
-import { BotaoPrimario, BotaoTexto } from '../../componentes/Botoes';
-import {
-  BotaoVoltar,
-  CabecalhoEscuro,
-  Eyebrow,
-  TituloTela,
-} from '../../componentes/Cabecalho';
-import { Tela } from '../../componentes/Tela';
+import { BotaoPrimario, BotaoTexto } from '../../componentes/Controles';
 import { TOTAL_DE_PASSOS, useSessao } from '../../estado/sessao';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, TIPO } from '../../tema/tipografia';
-import { TAMANHO } from '../../tema/tokens';
+import { useVidro } from '../../tema/TemaProvider';
+import { RAIO_VIDRO, TAMANHO_VIDRO } from '../../tema/tokens';
+import { MotivoDoBotao, TelaDeEntrada } from './TelaDeEntrada';
 
 export function PassoDoOnboarding({
   passo,
@@ -47,38 +40,20 @@ export function PassoDoOnboarding({
   acaoSecundaria?: { rotulo: string; aoTocar: () => void };
   comTeclado?: boolean;
 }) {
-  const cores = useCores();
   const voltarEntrada = useSessao((s) => s.voltarEntrada);
 
   return (
-    <Tela
+    <TelaDeEntrada
       comTeclado={comTeclado}
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={() => voltarEntrada()} />
-          <View style={{ marginTop: 14 }}>
-            <BarraDePassos total={TOTAL_DE_PASSOS} atual={passo} />
-          </View>
-          <View style={{ marginTop: 16 }}>
-            <Eyebrow>{`Passo ${passo} de ${TOTAL_DE_PASSOS}`}</Eyebrow>
-          </View>
-          <View style={{ marginTop: 10 }}>
-            <TituloTela tamanho={22}>{titulo}</TituloTela>
-          </View>
-          {subtitulo ? (
-            <Text style={[comEspaco(TIPO.corpo, { topo: 9 }), { color: cores.topoFraco }]}>
-              {subtitulo}
-            </Text>
-          ) : null}
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 10 }}
+      voltar={{ rotulo: 'Voltar', aoTocar: () => voltarEntrada() }}
+      acima={<MedidorDePassos total={TOTAL_DE_PASSOS} atual={passo} />}
+      sobrelinha={`Passo ${passo} de ${TOTAL_DE_PASSOS}`}
+      titulo={titulo}
+      subtitulo={subtitulo}
       rodape={
         <>
           {!podeAvancar && motivoDesabilitado ? (
-            <Text style={[TIPO.nota, { textAlign: 'center', color: cores.textoMedio }]}>
-              {motivoDesabilitado}
-            </Text>
+            <MotivoDoBotao texto={motivoDesabilitado} />
           ) : null}
           <BotaoPrimario
             rotulo={rotuloDoBotao}
@@ -92,6 +67,41 @@ export function PassoDoOnboarding({
       }
     >
       {children}
-    </Tela>
+    </TelaDeEntrada>
   );
 }
+
+/**
+ * Progresso do onboarding no desenho do medidor de pacote (barras de 7px,
+ * raio 4, vão 4). O `MedidorPacote` do catálogo pinta as *usadas* de
+ * `preenchimento2` e as restantes de tint — aqui é o contrário: passo atual e
+ * anteriores em tint, futuros em `preenchimento2`.
+ *
+ * Decorativo: quem anuncia o progresso é a sub-linha "Passo N de 4".
+ */
+function MedidorDePassos({ total, atual }: { total: number; atual: number }) {
+  const { cores } = useVidro();
+  return (
+    <View
+      aria-hidden
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={estilos.medidor}
+    >
+      {Array.from({ length: total }, (_, i) => (
+        <View
+          key={i}
+          style={[
+            estilos.barra,
+            { backgroundColor: i < atual ? cores.tint : cores.preenchimento2 },
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  medidor: { flexDirection: 'row', gap: 4 },
+  barra: { flex: 1, height: TAMANHO_VIDRO.medidor, borderRadius: RAIO_VIDRO.medidor },
+});
