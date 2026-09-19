@@ -74,7 +74,15 @@ export function App() {
         {/* O que o vidro desfoca: o fundo de refração e a tela de baixo. */}
         <AlvoDeDesfoque>
           <FundoRefracao />
-          <View style={styles.cheio}>
+          <View
+            // Com o sheet aberto a tela de baixo sai do leitor de tela nos
+            // dois sistemas: `accessibilityViewIsModal` do painel só vale no
+            // iOS, e só entre irmãos.
+            accessibilityElementsHidden={emSheet}
+            importantForAccessibility={emSheet ? 'no-hide-descendants' : 'auto'}
+            aria-hidden={emSheet || undefined}
+            style={styles.cheio}
+          >
             <TelaDeFundo />
           </View>
         </AlvoDeDesfoque>

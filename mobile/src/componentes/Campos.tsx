@@ -35,6 +35,7 @@ import {
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
 import { RAIO, TAMANHO } from '../tema/tokens';
+import { useAnuncio } from './anunciar';
 
 export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'telefone';
 
@@ -84,6 +85,8 @@ export function CampoDeTexto({
 }) {
   const { cores } = useCores();
   const [focado, setFocado] = useState(false);
+  // A live region não existe no iOS: lá o erro novo é anunciado.
+  useAnuncio(erro ? `${rotulo}: ${erro}` : undefined);
   const corDaBorda = erro ? cores.vermelho : focado ? cores.tint : 'transparent';
 
   return (

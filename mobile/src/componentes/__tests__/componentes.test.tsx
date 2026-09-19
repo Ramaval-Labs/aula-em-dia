@@ -9,7 +9,7 @@ import React from 'react';
 
 import { TemaProvider } from '../../tema/TemaProvider';
 import { iniciais } from '../Blocos';
-import { BotaoPrimario, Segmentado, Stepper, Switch } from '../Controles';
+import { BotaoPrimario, CartaoEscolha, Segmentado, Stepper, Switch } from '../Controles';
 import { LinhaAluno, LinhaExtrato, ListaAgrupada } from '../Listas';
 
 const comTema = (no: React.ReactElement) => render(<TemaProvider>{no}</TemaProvider>);
@@ -71,14 +71,48 @@ describe('controles', () => {
     );
 
     expect(screen.getByText('—')).toBeTruthy();
-    // O travessão não se lê: o valor falado é o que ele significa.
-    expect(screen.getByLabelText('Reposições por pacote').props.accessibilityValue).toEqual({
+    // Um controle ajustável só; o travessão não se lê: o valor falado é o
+    // que ele significa.
+    const controle = screen.getByRole('adjustable', { name: 'Reposições por pacote' });
+    expect(controle.props.accessibilityValue).toEqual({
+      min: 0,
+      max: 5,
+      now: 0,
       text: 'sem limite',
     });
-    fireEvent.press(screen.getByRole('button', { name: 'Diminuir Reposições por pacote' }));
+    await fireEvent(controle, 'accessibilityAction', { nativeEvent: { actionName: 'decrement' } });
+    await fireEvent.press(screen.getByText('−'));
     expect(aoTrocar).not.toHaveBeenCalled();
-    fireEvent.press(screen.getByRole('button', { name: 'Aumentar Reposições por pacote' }));
+    await fireEvent(controle, 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
     expect(aoTrocar).toHaveBeenCalledWith(1);
+    await fireEvent.press(screen.getByText('+'));
+    expect(aoTrocar).toHaveBeenCalledTimes(2);
+  });
+
+  it('cartão de escolha deixa o sub-controle fora do rádio', async () => {
+    const aoTocar = jest.fn();
+    const aoTrocar = jest.fn();
+    await comTema(
+      <CartaoEscolha titulo="Falta avisada" selecionado aoTocar={aoTocar}>
+        <Segmentado
+          opcoes={[
+            { valor: 48, rotulo: '48h' },
+            { valor: 10, rotulo: '10h' },
+          ]}
+          valor={48}
+          aoTrocar={aoTrocar}
+          rotuloDoGrupo="Antecedência do aviso"
+        />
+      </CartaoEscolha>,
+    );
+
+    const radio = screen.getByRole('radio', { name: 'Falta avisada' });
+    // O segmentado não é descendente do rádio: o leitor de tela alcança os dois.
+    expect(screen.queryAllByRole('radio', { name: '10h' })).toHaveLength(1);
+    expect(radio).not.toContainElement(screen.getByRole('radio', { name: '10h' }));
+    await fireEvent.press(screen.getByRole('radio', { name: '10h' }));
+    expect(aoTrocar).toHaveBeenCalledWith(10);
+    expect(aoTocar).not.toHaveBeenCalled();
   });
 });
 

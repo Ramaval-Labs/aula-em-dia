@@ -11,7 +11,11 @@ import { StyleSheet, Text } from 'react-native';
 
 import { CartaoVidro } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto } from '../../componentes/Controles';
-import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
+import {
+  GradeSemanal,
+  PAD_CARTAO_DA_GRADE,
+  RodapeDaGrade,
+} from '../../componentes/GradeSemanal';
 import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
 import { primeiroNome } from '../../dominio/formato';
@@ -87,5 +91,5 @@ export function DispAluno() {
 
 const estilos = StyleSheet.create({
   recuo: { paddingHorizontal: 6 },
-  cartao: { marginTop: 14, paddingVertical: 14, paddingHorizontal: 12 },
+  cartao: { marginTop: 14, ...PAD_CARTAO_DA_GRADE },
 });

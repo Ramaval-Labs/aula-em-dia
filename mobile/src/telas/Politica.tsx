@@ -163,6 +163,7 @@ export function Politica() {
       {mudanca ? (
         <BlocoStatus
           tom="ambar"
+          vivo
           titulo={mudanca.titulo}
           texto={mudanca.texto}
           estilo={estilos.aviso}

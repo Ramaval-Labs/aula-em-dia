@@ -16,6 +16,7 @@ import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { texto } from '../tema/tipografia';
 import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { useAnuncio } from './anunciar';
 import { Icone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -24,6 +25,8 @@ export function Toast() {
   const { cores, material } = useCores();
   const semMovimento = useReduzirMovimento();
   const fade = useRef(new Animated.Value(0)).current;
+  // Live region no Android; no iOS a frase é anunciada.
+  useAnuncio(mensagem, true);
 
   useEffect(() => {
     if (!mensagem) {

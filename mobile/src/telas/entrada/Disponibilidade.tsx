@@ -5,7 +5,11 @@ import { StyleSheet } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
 import { Switch } from '../../componentes/Controles';
-import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
+import {
+  GradeSemanal,
+  PAD_CARTAO_DA_GRADE,
+  RodapeDaGrade,
+} from '../../componentes/GradeSemanal';
 import { alternarBloco, resumo } from '../../dominio/disponibilidade';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
@@ -37,7 +41,8 @@ export function Disponibilidade() {
       motivoDesabilitado="Marque pelo menos um bloco para continuar."
       aoAvancar={continuar}
     >
-      {/* A grade pede mais largura que o padding de 17 dos cartões de ajuste. */}
+      {/* A grade pede mais largura que o padding de 17 dos cartões de ajuste
+          (a conta está em GradeSemanal.tsx). */}
       <CartaoVidro estilo={estilos.grade}>
         <GradeSemanal
           marcados={form.blocos}
@@ -62,5 +67,5 @@ export function Disponibilidade() {
 }
 
 const estilos = StyleSheet.create({
-  grade: { paddingVertical: 14, paddingHorizontal: 12 },
+  grade: PAD_CARTAO_DA_GRADE,
 });

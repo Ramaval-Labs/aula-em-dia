@@ -190,8 +190,10 @@ describe('app com um sheet aberto', () => {
     // O tema carrega do AsyncStorage antes da primeira pintura.
     expect(await app.findByText('Qual aluno')).toBeTruthy();
     expect(app.getByRole('header', { name: 'Registrar aula' })).toBeTruthy();
-    // A tela de baixo continua desenhada atrás do painel.
-    expect(app.getAllByText('Alunos').length).toBeGreaterThan(0);
+    // A tela de baixo continua desenhada atrás do painel, mas fora do
+    // leitor de tela: o sheet é modal nos dois sistemas.
+    expect(app.getAllByText('Alunos', { includeHiddenElements: true }).length).toBeGreaterThan(0);
+    expect(app.queryAllByText('Alunos')).toHaveLength(0);
     // A tab bar some com o sheet aberto.
     expect(app.queryByRole('tab')).toBeNull();
   });

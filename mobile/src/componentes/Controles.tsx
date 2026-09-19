@@ -31,16 +31,21 @@ import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { duracao, useReduzirMovimento } from '../tema/movimento';
 import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { useAnuncio } from './anunciar';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
 /** Opacidade do pressionado — substitui o `brightness(1.07)` do hover CSS. */
 const OPACIDADE_PRESSIONADO = 0.86;
 
-/** Fecha os 44px do alvo de toque em peças mais baixas. */
-function folgaDeToque(altura: number) {
+/**
+ * Fecha os 44px do alvo de toque em peças mais baixas — e, com `largura`, nas
+ * mais estreitas também.
+ */
+function folgaDeToque(altura: number, largura?: number) {
   const falta = Math.max(0, TAMANHO.alvoMinimo - altura) / 2;
-  return { top: falta, bottom: falta, left: 0, right: 0 };
+  const lado = largura === undefined ? 0 : Math.max(0, TAMANHO.alvoMinimo - largura) / 2;
+  return { top: falta, bottom: falta, left: lado, right: lado };
 }
 
 type Comum = {
@@ -296,10 +301,12 @@ export function BotaoTexto({
 /**
  * O que falta para o primário acender, dito logo acima dele (12.5/500,
  * centralizado, `tinta2`). Live region: o texto aparece e some conforme o
- * formulário fica válido — o botão apagado nunca fica mudo.
+ * formulário fica válido — o botão apagado nunca fica mudo. No iOS, onde a
+ * live region não existe, a mudança é anunciada (`anunciar.ts`).
  */
 export function NotaDoBotao({ texto: nota }: { texto: string }) {
   const { cores } = useCores();
+  useAnuncio(nota);
   return (
     <Text
       accessibilityLiveRegion="polite"
@@ -542,6 +549,11 @@ export function Switch({
  * derivado por quem chama (`formatar`), porque 0 vira "—" na política; como o
  * travessão não se lê, `rotuloDoValor` diz ao leitor de tela o que ele
  * significa ("sem limite").
+ *
+ * Para o leitor de tela o trilho inteiro é **um** controle ajustável: o
+ * valor é lido junto do rótulo e o gesto de subir/descer (iOS) ou as ações
+ * de aumentar/diminuir (Android) trocam o número. Os botões continuam para o
+ * toque.
  */
 export function Stepper({
   valor,
@@ -557,7 +569,7 @@ export function Stepper({
   minimo: number;
   maximo: number;
   aoTrocar: (v: number) => void;
-  /** rótulo do leitor de tela para o grupo e os botões ("Aumentar …") */
+  /** rótulo do leitor de tela para o controle */
   rotulo: string;
   formatar?: (v: number) => string;
   /** valor falado; o padrão é o mesmo texto de `formatar` */
@@ -567,52 +579,58 @@ export function Stepper({
   const { cores } = useCores();
   const noMinimo = valor <= minimo;
   const noMaximo = valor >= maximo;
+  const diminuir = () => {
+    if (!noMinimo) aoTrocar(valor - 1);
+  };
+  const aumentar = () => {
+    if (!noMaximo) aoTrocar(valor + 1);
+  };
 
   return (
     <View
+      accessible
+      accessibilityRole="adjustable"
       accessibilityLabel={rotulo}
-      accessibilityValue={{ text: (rotuloDoValor ?? formatar)(valor) }}
+      accessibilityValue={{ min: minimo, max: maximo, now: valor, text: (rotuloDoValor ?? formatar)(valor) }}
+      accessibilityActions={[
+        { name: 'increment', label: `Aumentar ${rotulo}` },
+        { name: 'decrement', label: `Diminuir ${rotulo}` },
+      ]}
+      onAccessibilityAction={(e) => {
+        if (e.nativeEvent.actionName === 'increment') aumentar();
+        if (e.nativeEvent.actionName === 'decrement') diminuir();
+      }}
       style={[estilos.trilhoStepper, { backgroundColor: cores.preenchimento }, estilo]}
     >
-      <BotaoDoStepper
-        glifo="−"
-        rotulo={`Diminuir ${rotulo}`}
-        desabilitado={noMinimo}
-        aoTocar={() => aoTrocar(valor - 1)}
-      />
+      <BotaoDoStepper glifo="−" desabilitado={noMinimo} aoTocar={diminuir} />
       <Text style={[estilos.valorStepper, texto(18, 800), { color: cores.tinta }]}>
         {formatar(valor)}
       </Text>
-      <BotaoDoStepper
-        glifo="+"
-        rotulo={`Aumentar ${rotulo}`}
-        desabilitado={noMaximo}
-        aoTocar={() => aoTrocar(valor + 1)}
-      />
+      <BotaoDoStepper glifo="+" desabilitado={noMaximo} aoTocar={aumentar} />
     </View>
   );
 }
 
+/**
+ * 38 × 34: a folga fecha 44 nos dois eixos. Na largura são 3px de cada lado,
+ * que cabem no `padding` de 3 do trilho e no vão de 4 até o valor — sem
+ * sobrepor o botão vizinho.
+ */
 function BotaoDoStepper({
   glifo,
-  rotulo,
   desabilitado,
   aoTocar,
 }: {
   glifo: string;
-  rotulo: string;
   desabilitado: boolean;
   aoTocar: () => void;
 }) {
   const { cores } = useCores();
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={rotulo}
-      accessibilityState={{ disabled: desabilitado }}
       disabled={desabilitado}
       onPress={aoTocar}
-      hitSlop={folgaDeToque(TAMANHO.stepperBotaoAltura)}
+      hitSlop={folgaDeToque(TAMANHO.stepperBotaoAltura, TAMANHO.stepperBotaoLargura)}
       style={({ pressed }) => ({ opacity: pressed ? OPACIDADE_PRESSIONADO : 1 })}
     >
       <SuperficieVidro
@@ -670,42 +688,15 @@ export function CartaoEscolha({
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores, material } = useCores();
+  // Desabilitado por cor, não por opacidade: o vidro fica intacto e só o
+  // texto e a marca descem para `tinta3`.
+  const tintaTitulo = desabilitado ? cores.tinta3 : cores.tinta;
+  const tintaApoio = desabilitado ? cores.tinta3 : cores.tinta2;
 
-  const miolo = (
-    <>
-      <View style={estilos.linhaEscolha}>
-        <Marca selecionada={selecionado} />
-        <View style={estilos.flexivel}>
-          <View style={estilos.tituloEscolha}>
-            <Text style={[texto(15.5, 700, { altura: 1.25, tracking: -0.012 }), { color: cores.tinta }]}>
-              {titulo}
-            </Text>
-            {aoLado ? (
-              <Text style={[texto(15.5, 800, { altura: 1.25 }), { color: cores.tinta }]}>
-                {aoLado}
-              </Text>
-            ) : null}
-            {selo ? <Selo texto={selo} /> : null}
-          </View>
-          {subtitulo ? (
-            <Text
-              style={[comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 4 }), { color: cores.tinta2 }]}
-            >
-              {subtitulo}
-            </Text>
-          ) : null}
-        </View>
-        {valor ? (
-          <Text style={[texto(14, 800), { color: corDoValor ?? cores.tinta }]}>{valor}</Text>
-        ) : null}
-      </View>
-      {children ? (
-        <View style={[estilos.corpoEscolha, { borderTopColor: cores.fio }]}>{children}</View>
-      ) : null}
-    </>
-  );
-
-  return (
+  // O rádio é só a linha de cima. O corpo (`children`) é **irmão** dele dentro
+  // da mesma caixa: aninhado no Pressable, o leitor de tela trataria o cartão
+  // como um elemento só e nunca alcançaria o segmentado de antecedência.
+  const radio = (
     <Pressable
       accessibilityRole="radio"
       accessibilityLabel={rotuloAcessivel ?? titulo}
@@ -713,40 +704,83 @@ export function CartaoEscolha({
       disabled={desabilitado}
       onPress={aoTocar}
       style={({ pressed }) => [
-        { opacity: pressed ? OPACIDADE_PRESSIONADO : desabilitado ? 0.55 : 1 },
-        estilo,
+        estilos.padEscolha,
+        children ? estilos.padEscolhaComCorpo : null,
+        { opacity: pressed ? OPACIDADE_PRESSIONADO : 1 },
       ]}
     >
-      {selecionado ? (
-        <View
-          style={[
-            estilos.caixaEscolha,
-            {
-              backgroundColor: cores.tintSuave,
-              borderColor: cores.tint,
-              boxShadow: `${material.gin}, 0px 8px 22px ${cores.sombra}`,
-            },
-          ]}
-        >
-          {miolo}
+      <View style={estilos.linhaEscolha}>
+        <Marca selecionada={selecionado} desabilitada={desabilitado} />
+        <View style={estilos.flexivel}>
+          <View style={estilos.tituloEscolha}>
+            <Text style={[texto(15.5, 700, { altura: 1.25, tracking: -0.012 }), { color: tintaTitulo }]}>
+              {titulo}
+            </Text>
+            {aoLado ? (
+              <Text style={[texto(15.5, 800, { altura: 1.25 }), { color: tintaTitulo }]}>
+                {aoLado}
+              </Text>
+            ) : null}
+            {selo ? <Selo texto={selo} /> : null}
+          </View>
+          {subtitulo ? (
+            <Text
+              style={[comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 4 }), { color: tintaApoio }]}
+            >
+              {subtitulo}
+            </Text>
+          ) : null}
         </View>
-      ) : (
-        <SuperficieVidro nivel="cartao" raio={RAIO.escolha} style={estilos.padEscolha}>
-          {miolo}
-        </SuperficieVidro>
-      )}
+        {valor ? (
+          <Text
+            style={[texto(14, 800), { color: desabilitado ? cores.tinta3 : (corDoValor ?? cores.tinta) }]}
+          >
+            {valor}
+          </Text>
+        ) : null}
+      </View>
     </Pressable>
+  );
+
+  const corpo = children ? (
+    <View style={[estilos.corpoEscolha, { borderTopColor: cores.fio }]}>{children}</View>
+  ) : null;
+
+  if (selecionado) {
+    return (
+      <View
+        style={[
+          estilos.caixaEscolha,
+          {
+            backgroundColor: cores.tintSuave,
+            borderColor: cores.tint,
+            boxShadow: `${material.gin}, 0px 8px 22px ${cores.sombra}`,
+          },
+          estilo,
+        ]}
+      >
+        {radio}
+        {corpo}
+      </View>
+    );
+  }
+  return (
+    <SuperficieVidro nivel="cartao" raio={RAIO.escolha} style={estilo}>
+      {radio}
+      {corpo}
+    </SuperficieVidro>
   );
 }
 
-function Marca({ selecionada }: { selecionada: boolean }) {
+function Marca({ selecionada, desabilitada }: { selecionada: boolean; desabilitada: boolean }) {
   const { cores } = useCores();
+  const cheia = desabilitada ? cores.tinta3 : cores.tint;
   return (
     <View
       style={[
         estilos.marca,
         selecionada
-          ? { backgroundColor: cores.tint, borderColor: cores.tint, borderWidth: 0.5 }
+          ? { backgroundColor: cheia, borderColor: cheia, borderWidth: 0.5 }
           : { borderColor: cores.tinta3, borderWidth: 1.5 },
       ]}
     >
@@ -837,10 +871,10 @@ const estilos = StyleSheet.create({
   caixaEscolha: {
     borderRadius: RAIO.escolha,
     borderWidth: TAMANHO.bordaVidro,
-    paddingVertical: 14,
-    paddingHorizontal: 15,
   },
+  /** o padding mora no rádio, para a faixa inteira da linha ser tocável */
   padEscolha: { paddingVertical: 14, paddingHorizontal: 15 },
+  padEscolhaComCorpo: { paddingBottom: 0 },
   linhaEscolha: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 42 },
   tituloEscolha: {
     flexDirection: 'row',
@@ -850,6 +884,8 @@ const estilos = StyleSheet.create({
   },
   corpoEscolha: {
     marginTop: 13,
+    marginHorizontal: 15,
+    marginBottom: 14,
     paddingTop: 13,
     borderTopWidth: TAMANHO.bordaVidro,
   },

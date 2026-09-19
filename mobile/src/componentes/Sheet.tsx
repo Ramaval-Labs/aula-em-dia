@@ -15,9 +15,12 @@
 
 import React, { useEffect, useRef } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
   BackHandler,
   Easing,
+  findNodeHandle,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -107,6 +110,27 @@ export function Sheet({
     ]).start();
   }, [semMovimento, subida, fade]);
 
+  // O foco do leitor de tela vai para o título quando o painel abre: sem
+  // isso ele fica no botão que abriu o sheet, agora escondido atrás dele.
+  // Espera a subida; o web não tem o que mover (o react-native-web não
+  // implementa `setAccessibilityFocus`).
+  const refTitulo = useRef<Text>(null);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const t = setTimeout(
+      () => {
+        try {
+          const no = refTitulo.current ? findNodeHandle(refTitulo.current) : null;
+          if (no) AccessibilityInfo.setAccessibilityFocus(no);
+        } catch {
+          // Sem nó nativo (testes): nada a focar.
+        }
+      },
+      semMovimento ? 0 : MOVIMENTO.sheetMs,
+    );
+    return () => clearTimeout(t);
+  }, [semMovimento]);
+
   // O voltar do Android fecha o painel antes de mexer na pilha da tela.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -189,6 +213,7 @@ export function Sheet({
               </Pressable>
             )}
             <Text
+              ref={refTitulo}
               accessibilityRole="header"
               numberOfLines={1}
               style={[

@@ -21,6 +21,7 @@ import {
 import { useCores, type CoresDoTema } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { RAIO, TAMANHO } from '../tema/tokens';
+import { useAnuncio } from './anunciar';
 import { BotaoInline } from './Controles';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
@@ -139,6 +140,9 @@ export function coresDoTom(cores: CoresDoTema['cores'], tom: TomDeStatus) {
  * Com ícone o handoff aperta o bloco (padding 15 × 16, título 14.5); só com
  * texto ele respira (16 × 17, título 15 e texto 13). O `acao` vira botão
  * inline com 13px de folga acima.
+ *
+ * `vivo`: o bloco é uma resposta a um gesto (o aviso de impacto da Política)
+ * e se anuncia — live region no Android, `announceForAccessibility` no iOS.
  */
 export function BlocoStatus({
   tom = 'neutro',
@@ -148,6 +152,7 @@ export function BlocoStatus({
   acao,
   aoTocar,
   chevron = false,
+  vivo = false,
   estilo,
 }: {
   tom?: TomDeStatus;
@@ -158,10 +163,13 @@ export function BlocoStatus({
   /** bloco inteiro clicável (pagamento em atraso → Cobrança) */
   aoTocar?: () => void;
   chevron?: boolean;
+  /** anuncia o bloco quando ele aparece ou muda */
+  vivo?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
   const { suave, cheia, texto: corDoTitulo } = coresDoTom(cores, tom);
+  useAnuncio(vivo ? [titulo, corpo].filter(Boolean).join('. ') : undefined, true);
   const comIcone = !!icone;
 
   const conteudo = (
@@ -223,7 +231,13 @@ export function BlocoStatus({
     estilo,
   ];
 
-  if (!aoTocar) return <View style={caixa}>{conteudo}</View>;
+  if (!aoTocar) {
+    return (
+      <View accessibilityLiveRegion={vivo ? 'polite' : undefined} style={caixa}>
+        {conteudo}
+      </View>
+    );
+  }
   return (
     <Pressable
       accessibilityRole="button"

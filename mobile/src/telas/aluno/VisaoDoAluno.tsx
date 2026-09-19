@@ -23,7 +23,11 @@ import {
   BotaoTexto,
   CartaoEscolha,
 } from '../../componentes/Controles';
-import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
+import {
+  GradeSemanal,
+  PAD_CARTAO_DA_GRADE,
+  RodapeDaGrade,
+} from '../../componentes/GradeSemanal';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
@@ -447,7 +451,7 @@ export function AlunoDisponibilidade() {
         estilo={estilos.titulo}
       />
 
-      <CartaoVidro estilo={estilos.cartaoGrande}>
+      <CartaoVidro estilo={[estilos.cartaoGrande, PAD_CARTAO_DA_GRADE]}>
         <GradeSemanal
           marcados={blocos}
           dias={DIAS_UTEIS}

@@ -29,7 +29,11 @@ import {
   Segmentado,
   Switch,
 } from '../../componentes/Controles';
-import { GradeSemanal, RodapeDaGrade } from '../../componentes/GradeSemanal';
+import {
+  GradeSemanal,
+  PAD_CARTAO_DA_GRADE,
+  RodapeDaGrade,
+} from '../../componentes/GradeSemanal';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
 import { useDoisToques } from '../../componentes/useDoisToques';
@@ -635,7 +639,7 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   primeiro: { marginTop: 18 },
   cartao: { marginTop: 12, paddingVertical: 16, paddingHorizontal: 17 },
-  cartaoGrade: { marginTop: 12, paddingVertical: 15, paddingHorizontal: 13 },
+  cartaoGrade: { marginTop: 12, ...PAD_CARTAO_DA_GRADE },
   perfil: {
     paddingVertical: 15,
     paddingHorizontal: 16,

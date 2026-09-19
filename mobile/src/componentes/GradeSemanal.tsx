@@ -30,9 +30,25 @@ import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
 
-/** Coluna de rótulos à esquerda; com o vão de 4 as células passam de 44px. */
-const COLUNA_DE_ROTULOS = 38;
-const VAO = 4;
+/**
+ * Largura das células ≥ 44px (alvo mínimo) na tela mais estreita que o app
+ * atende, 360dp. A conta, com a lateral de 16 da tela (ou do corpo do sheet)
+ * e o `PAD_CARTAO_DA_GRADE` de 8:
+ *
+ *   interior = 360 − 2 × 16 − 2 × 8 = 312
+ *   horário (8–12), 6 dias: (312 − 30 − 6 × 3) ÷ 6 = 44,0
+ *   nome (fim da tarde), 5 dias: (312 − 38 − 5 × 3) ÷ 5 = 51,8
+ *
+ * Em 375pt a grade de 6 dias dá 46,5; em 390 (o aparelho do handoff), 49.
+ * O rótulo por nome ("fim da tarde") quebra em duas linhas e pede a coluna
+ * mais larga; o de horário cabe em 30.
+ */
+const COLUNA_HORARIO = 30;
+const COLUNA_NOME = 38;
+const VAO = 3;
+
+/** Padding do cartão que envolve a grade — o resto da conta acima. */
+export const PAD_CARTAO_DA_GRADE = { paddingVertical: 14, paddingHorizontal: 8 } as const;
 
 export function GradeSemanal({
   marcados,
@@ -57,11 +73,12 @@ export function GradeSemanal({
     rotuloDaFaixa === 'nome' ? nomeDaFaixa(f) : horarioDaFaixa(f);
 
   const corDaCelula = (ligado: boolean) => (ligado ? cores.tint : cores.preenchimento);
+  const coluna = { width: rotuloDaFaixa === 'nome' ? COLUNA_NOME : COLUNA_HORARIO };
 
   return (
     <View style={estilos.grade}>
       <View style={estilos.linha}>
-        <View style={estilos.colunaDeRotulos} />
+        <View style={coluna} />
         {dias.map((d) => (
           <View key={d} style={estilos.cabecalhoDoDia}>
             <Text style={[texto(10, 600, { tracking: 0.06 }), { color: cores.tinta3 }]}>
@@ -73,7 +90,7 @@ export function GradeSemanal({
 
       {faixas.map((f) => (
         <View key={f} style={estilos.linhaDeCelulas}>
-          <View style={estilos.colunaDeRotulos}>
+          <View style={coluna}>
             <Text
               style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.tinta2 }]}
               numberOfLines={2}
@@ -141,7 +158,6 @@ const estilos = StyleSheet.create({
   grade: { gap: VAO },
   linha: { flexDirection: 'row', gap: VAO },
   linhaDeCelulas: { flexDirection: 'row', gap: VAO, alignItems: 'center' },
-  colunaDeRotulos: { width: COLUNA_DE_ROTULOS },
   cabecalhoDoDia: { flex: 1, alignItems: 'center' },
   direita: { textAlign: 'right' },
   rodape: {

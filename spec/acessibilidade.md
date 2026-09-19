@@ -49,22 +49,32 @@ Leitura:
 
 ## Alvos de toque
 - Botão primário 54px, secundário 52, compacto 50, texto 46. Botão inline (40), segmento
-  (34/36/30), switch (32), stepper (34) e ficha (36) recebem `hitSlop` até 44px.
+  (34/36/30), switch (32), stepper (34) e ficha (36) recebem `hitSlop` até 44px. O botão do
+  stepper (38 de largura) ganha 3px de cada lado, que cabem no padding do trilho e no vão até o
+  valor.
+- Grade semanal: célula ≥ 44px de largura em 360dp (conta em `GradeSemanal.tsx`).
 - Aba da tab bar: item de 56px de altura, acima dos 48 exigidos.
 - Botão voltar: 44px de altura, com o rótulo tocável.
 - Linha de lista inteira é tocável (mínimo 58–76px); `AcaoDoCampo` ocupa 44px do trilho.
 
 ## Leitores de tela
 - Tab bar: `tablist`, cada aba `tab` com `selected`; o rótulo é sempre visível.
-- Sheet: `accessibilityViewIsModal` — o que está atrás não é alcançável; "Cancelar", o toque
-  fora do painel e o voltar do Android fecham.
+- Sheet: `accessibilityViewIsModal` no painel (iOS) e, nos dois sistemas, a tela de fundo
+  com `importantForAccessibility="no-hide-descendants"` e `accessibilityElementsHidden`. Ao
+  abrir, o foco vai para o título do painel. "Cancelar", o toque fora do painel e o voltar do
+  Android fecham.
 - Saldo: anunciado por inteiro ("4 aulas restantes de 6"), não só "4".
 - Medidor do pacote e dos passos, avatares e ícones são **decorativos** (ocultos).
 - Faixa de status: entra no rótulo da linha do aluno ("Valentin Klein, Atraso de 12 dias…").
 - Delta do extrato (`−1`, `+6`, `✓`): `deltaEmPalavras` ("1 aula debitada", "pagamento
   recebido") — cor não é o único sinal.
-- Stepper: o valor falado sai de `rotuloDoValor` ("sem limite" no lugar de "—").
-- Toast, `NotaDoBotao` e erro de campo: live region educada.
+- Stepper: um controle `adjustable` com `accessibilityValue` e as ações `increment`/`decrement`;
+  o valor falado sai de `rotuloDoValor` ("sem limite" no lugar de "—").
+- Toast, `NotaDoBotao`, erro de campo e o aviso de impacto da Política (`BlocoStatus vivo`):
+  live region educada no Android e `announceForAccessibility` no iOS, onde a live region não
+  existe (`componentes/anunciar.ts`).
+- Cartão de escolha: o rádio é só a linha do título; o sub-controle (antecedência do aviso) é
+  irmão dele, alcançável pelo leitor de tela.
 - Segmentado: grupo de rádios; ficha de escolha: caixa de seleção; switch: `switch` com estado.
 
 ## Preferências do sistema
