@@ -10,7 +10,7 @@
 
 import * as Clipboard from 'expo-clipboard';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import {
   Avatar,
@@ -19,7 +19,7 @@ import {
   EstadoVazio,
   MedidorPacote,
 } from '../../componentes/Blocos';
-import { CampoDeTexto } from '../../componentes/Campos';
+import { AcaoDoCampo, CampoDeTexto } from '../../componentes/Campos';
 import { TelaVidro, TituloDeConteudo } from '../../componentes/Chassi';
 import {
   BotaoInline,
@@ -94,30 +94,6 @@ function CartaoComSwitch({
       direita={<Switch ligado={ligado} aoAlternar={aoAlternar} rotulo={titulo} />}
       estilo={[estilos.espacoCartao, estilo]}
     />
-  );
-}
-
-/** Ação de texto dentro do trilho do campo ("copiar"), em tint. */
-function AcaoDoCampo({
-  rotulo,
-  aoTocar,
-  rotuloAcessivel,
-}: {
-  rotulo: string;
-  aoTocar: () => void;
-  rotuloAcessivel?: string;
-}) {
-  const { cores } = useVidro();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={rotuloAcessivel ?? rotulo}
-      onPress={aoTocar}
-      hitSlop={{ top: 16, bottom: 16, left: 10, right: 10 }}
-      style={({ pressed }) => ({ opacity: pressed ? 0.86 : 1 })}
-    >
-      <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
-    </Pressable>
   );
 }
 

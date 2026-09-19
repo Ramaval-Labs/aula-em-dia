@@ -22,6 +22,7 @@
 
 import React, { useState } from 'react';
 import {
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -169,7 +170,37 @@ export function CampoDeTexto({
   );
 }
 
+/**
+ * Ação de texto em tint para o `sufixo` do campo: "mostrar"/"ocultar" da
+ * senha, "copiar" da chave Pix. Ocupa a altura do alvo mínimo, então o toque
+ * pega a faixa inteira do trilho.
+ */
+export function AcaoDoCampo({
+  rotulo,
+  aoTocar,
+  rotuloAcessivel,
+}: {
+  rotulo: string;
+  aoTocar: () => void;
+  /** o que o leitor de tela diz ("Mostrar senha"), quando o rótulo é curto */
+  rotuloAcessivel?: string;
+}) {
+  const { cores } = useVidro();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={rotuloAcessivel ?? rotulo}
+      onPress={aoTocar}
+      hitSlop={{ left: 10, right: 10 }}
+      style={({ pressed }) => [estilos.acao, { opacity: pressed ? 0.6 : 1 }]}
+    >
+      <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
+    </Pressable>
+  );
+}
+
 const estilos = StyleSheet.create({
+  acao: { height: TAMANHO_VIDRO.alvoMinimo, justifyContent: 'center' },
   trilho: {
     borderRadius: RAIO_VIDRO.botaoInline,
     borderWidth: 1,

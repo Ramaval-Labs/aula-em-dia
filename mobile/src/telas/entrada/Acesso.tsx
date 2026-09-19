@@ -14,7 +14,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BlocoStatus, CartaoVidro } from '../../componentes/Blocos';
-import { CampoDeTexto } from '../../componentes/Campos';
+import { AcaoDoCampo, CampoDeTexto } from '../../componentes/Campos';
 import {
   BotaoPrimario,
   BotaoSecundario,
@@ -160,38 +160,10 @@ export function Acesso() {
   );
 }
 
-/**
- * "mostrar"/"ocultar" dentro do trilho do campo. O `CampoDeTexto` do
- * catálogo aceita um `sufixo`, mas não traz a ação pronta.
- */
-function AcaoDoCampo({
-  rotulo,
-  rotuloAcessivel,
-  aoTocar,
-}: {
-  rotulo: string;
-  rotuloAcessivel: string;
-  aoTocar: () => void;
-}) {
-  const { cores } = useVidro();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={rotuloAcessivel}
-      onPress={aoTocar}
-      hitSlop={{ left: 8, right: 8 }}
-      style={({ pressed }) => [estilos.acao, { opacity: pressed ? 0.6 : 1 }]}
-    >
-      <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
-    </Pressable>
-  );
-}
-
 const estilos = StyleSheet.create({
   largo: { alignSelf: 'stretch' },
   campos: { gap: 16 },
   link: { alignSelf: 'flex-start', paddingHorizontal: 2 },
   ou: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 12 },
   fio: { flex: 1, height: TAMANHO_VIDRO.bordaVidro },
-  acao: { height: TAMANHO_VIDRO.alvoMinimo, justifyContent: 'center' },
 });
