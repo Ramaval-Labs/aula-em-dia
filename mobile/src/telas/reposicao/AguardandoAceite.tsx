@@ -1,29 +1,33 @@
-/** C7 — Reposição aguardando aceite do aluno. */
+/**
+ * C7 — Reposição aguardando aceite do aluno.
+ *
+ * Derivada: tela empilhada sob a Ficha (voltar com o primeiro nome). Modelo
+ * §7 no cabeçalho (linha de apoio + nome grande) e na lista "O que fazer";
+ * §2 no bloco de status âmbar da espera.
+ */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { Cartao, CartaoContexto, EstadoVazio, LinhaLista, Lista } from '../../componentes/Base';
-import { BotaoPequeno, BotaoPrimario, useDoisToques } from '../../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, Eyebrow, TituloTela } from '../../componentes/Cabecalho';
-import { Tela } from '../../componentes/Tela';
+import { BlocoStatus, EstadoVazio } from '../../componentes/Blocos';
+import { TelaVidro, TituloDeConteudo } from '../../componentes/Chassi';
+import { BotaoCompacto, BotaoPrimario } from '../../componentes/Controles';
+import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { diasEntre } from '../../dominio/datas';
 import { primeiroNome } from '../../dominio/formato';
 import { avisos, useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../../tema/tipografia';
-import { MARCA, TAMANHO } from '../../tema/tokens';
+import { useDoisToques } from '../../componentes/useDoisToques';
 
 export function AguardandoAceite() {
-  const cores = useCores();
-  const { alunoId, ir, concluir, voltar } = useNavegacao();
+  const { alunoId, ir, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const responderProposta = useDados((s) => s.responderProposta);
   const avisar = useToast((s) => s.avisar);
 
   const proposta = aluno?.proposta;
+  const voltarPara = aluno ? primeiroNome(aluno.name) : 'Alunos';
 
   // Cancelar desfaz a proposta enviada: dois toques.
   const cancelar = useDoisToques(() => {
@@ -35,29 +39,28 @@ export function AguardandoAceite() {
 
   if (!aluno || !proposta) {
     return (
-      <Tela
-        cabecalho={
-          <CabecalhoEscuro corDaCurva={cores.tela}>
-            <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          </CabecalhoEscuro>
+      <TelaVidro
+        tipo="empilhada"
+        titulo="Aguardando resposta"
+        voltarPara={voltarPara}
+        rodape={
+          aluno ? (
+            <BotaoCompacto rotulo="Sugerir horários" aoTocar={() => ir('reposicao')} />
+          ) : undefined
         }
       >
-        <EstadoVazio
-          titulo="Nenhuma proposta em aberto."
-          nota="Quando você enviar um horário ao aluno, a resposta dele é acompanhada aqui."
-        />
-        {aluno ? (
-          <BotaoPequeno
-            rotulo="Sugerir horários"
-            aoTocar={() => ir('reposicao')}
-            estilo={{ alignSelf: 'center' }}
+        <ListaAgrupada>
+          <EstadoVazio
+            titulo="Nenhuma proposta em aberto."
+            nota="Quando você enviar um horário ao aluno, a resposta dele é acompanhada aqui."
           />
-        ) : null}
-      </Tela>
+        </ListaAgrupada>
+      </TelaVidro>
     );
   }
 
   const dias = diasEntre(proposta.enviadaEm) ?? 0;
+  const titulo = `${proposta.janela.dia}, ${proposta.janela.hora}`;
 
   const acoes = [
     {
@@ -78,24 +81,10 @@ export function AguardandoAceite() {
   ];
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <Eyebrow>Aguardando resposta</Eyebrow>
-          </View>
-          <View style={{ marginTop: 10 }}>
-            <TituloTela tamanho={22}>
-              {`${proposta.janela.dia}, ${proposta.janela.hora}`}
-            </TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-            {`Enviada em ${proposta.enviadaEm}${dias > 0 ? `, há ${dias} dias` : ', hoje'}`}
-          </Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 12 }}
+    <TelaVidro
+      tipo="empilhada"
+      titulo={titulo}
+      voltarPara={voltarPara}
       rodape={
         <BotaoPrimario
           rotulo="Confirmar e marcar na agenda"
@@ -109,42 +98,46 @@ export function AguardandoAceite() {
         />
       }
     >
-      <CartaoContexto
-        cor={MARCA.amarelo}
+      <TituloDeConteudo
+        acima="Aguardando resposta"
+        titulo={titulo}
+        abaixo={`Enviada em ${proposta.enviadaEm}${dias > 0 ? `, há ${dias} dias` : ', hoje'}`}
+      />
+
+      <BlocoStatus
+        tom="ambar"
+        icone="alerta"
         titulo={`${primeiroNome(aluno.name)} ainda não respondeu`}
-        detalhe="Enquanto isso o horário fica reservado na sua agenda, mas a reposição não conta como marcada."
+        texto="Enquanto isso o horário fica reservado na sua agenda, mas a reposição não conta como marcada."
+        estilo={estilos.bloco}
       />
 
       {proposta.alternativas.length > 0 ? (
-        <Cartao estilo={{ paddingVertical: 15, paddingHorizontal: 16 }}>
-          <Text style={[TIPO.rotulo, { color: cores.suave }]}>
-            Alternativas que ele também recebeu
-          </Text>
-          <View style={{ marginTop: 11, gap: 8 }}>
+        <>
+          <CabecalhoGrupo
+            titulo="Alternativas que ele também recebeu"
+            estilo={estilos.cabecalho}
+          />
+          <ListaAgrupada estilo={estilos.lista}>
             {proposta.alternativas.map((j) => (
-              <Text
-                key={`${j.dia}-${j.hora}`}
-                style={[texto(13.5, 500, { altura: 1.4 }), { color: cores.textoMedio }]}
-              >
-                {`${j.dia} · ${j.hora}`}
-              </Text>
+              <LinhaLista key={`${j.dia}-${j.hora}`} titulo={`${j.dia} · ${j.hora}`} />
             ))}
-          </View>
-        </Cartao>
+          </ListaAgrupada>
+        </>
       ) : null}
 
-      <Lista rotulo="O que fazer">
-        {acoes.map((a, i) => (
-          <LinhaLista
-            key={a.titulo}
-            titulo={a.titulo}
-            sub={a.sub}
-            chevron
-            aoTocar={a.aoTocar}
-            ultima={i === acoes.length - 1}
-          />
+      <CabecalhoGrupo titulo="O que fazer" estilo={estilos.cabecalho} />
+      <ListaAgrupada estilo={estilos.lista}>
+        {acoes.map((a) => (
+          <LinhaLista key={a.sub} titulo={a.titulo} subtitulo={a.sub} chevron aoTocar={a.aoTocar} />
         ))}
-      </Lista>
-    </Tela>
+      </ListaAgrupada>
+    </TelaVidro>
   );
 }
+
+const estilos = StyleSheet.create({
+  bloco: { marginTop: 18 },
+  cabecalho: { marginTop: 24 },
+  lista: { marginTop: 9 },
+});

@@ -1,41 +1,46 @@
 /**
  * Aula em Dia — app do professor.
  *
- * Composição: tema → área segura → tela atual → curva + navbar → toast.
- * A navbar só aparece nas três raízes; nas telas de tarefa o rodapé é da
- * ação primária (spec/navegacao.md).
+ * Composição do iOS Glass: fundo de refração sob tudo → tela não-sheet dentro
+ * do alvo de desfoque → tab bar flutuante por cima → sheet modal quando a tela
+ * atual é um painel → toast.
+ *
+ * A tab bar aparece em toda tela **não-sheet** e some com o painel aberto; o
+ * sheet sobe sobre a última tela não-sheet da pilha, que continua desenhada
+ * atrás dele (spec/navegacao.md, "Semântica de sheet").
  */
 
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { BackHandler, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { BackHandler, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { FaixaCurvaNavbar } from './src/componentes/Curva';
-import { Navbar } from './src/componentes/Navbar';
+import { Catalogo } from './src/componentes/__catalogo__/Catalogo';
+import { TabBar } from './src/componentes/TabBar';
 import { Toast } from './src/componentes/Toast';
+import { AlvoDeDesfoque, FundoRefracao, ProvedorDeDesfoque } from './src/componentes/Vidro';
 import { useDados } from './src/estado/dados';
-import { exporParaDepuracao } from './src/estado/depuracao';
-import { ABA_DA_TELA, TELAS_COM_NAVBAR, useNavegacao } from './src/estado/navegacao';
+import { exporParaDepuracao, useCatalogo } from './src/estado/depuracao';
+import {
+  ABA_DA_TELA,
+  ehSheet,
+  telaDeFundo,
+  useNavegacao,
+} from './src/estado/navegacao';
 import { useSessao } from './src/estado/sessao';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
 import { telaDe } from './src/telas/registro';
 import { TemaProvider, useTema } from './src/tema/TemaProvider';
 import { ARQUIVOS_DE_FONTE } from './src/tema/tipografia';
-import { TAMANHO } from './src/tema/tokens';
 
 // Só no Expo Web em desenvolvimento: deixa o script de screenshots navegar.
 exporParaDepuracao();
 
-function App() {
-  const { cores, carregado: temaCarregado } = useTema();
-  const insets = useSafeAreaInsets();
-
+export function App() {
+  const { carregado: temaCarregado } = useTema();
   const tela = useNavegacao((s) => s.tela);
+  const fundo = useNavegacao(telaDeFundo);
   const voltar = useNavegacao((s) => s.voltar);
   const trocarTab = useNavegacao((s) => s.trocarTab);
 
@@ -46,39 +51,51 @@ function App() {
     carregarDados();
   }, [carregarDados]);
 
-  // Botão voltar do Android segue a mesma pilha da navegação da tela.
+  // Botão voltar do Android segue a mesma pilha da navegação da tela. Com um
+  // sheet aberto, o próprio painel intercepta antes e só fecha.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => voltar());
     return () => sub.remove();
   }, [voltar]);
 
-  const TelaAtual = telaDe(tela);
-  const comNavbar = TELAS_COM_NAVBAR.includes(tela);
-
   // Espera o estado salvo antes de pintar, para a lista não piscar da semente
   // para os dados reais do professor.
   if (!temaCarregado || !dadosCarregados) {
-    return <View style={{ flex: 1, backgroundColor: cores.topo }} />;
+    return <FundoRefracao />;
   }
 
+  const emSheet = ehSheet(tela);
+  const TelaDeFundo = telaDe(fundo);
+  const TelaDoSheet = telaDe(tela);
+
   return (
-    <View style={{ flex: 1, backgroundColor: cores.tela }}>
-      <StatusBar style="light" />
+    <View style={styles.cheio}>
+      <ProvedorDeDesfoque>
+        {/* O que o vidro desfoca: o fundo de refração e a tela de baixo. */}
+        <AlvoDeDesfoque>
+          <FundoRefracao />
+          <View
+            // Com o sheet aberto a tela de baixo sai do leitor de tela nos
+            // dois sistemas: `accessibilityViewIsModal` do painel só vale no
+            // iOS, e só entre irmãos.
+            accessibilityElementsHidden={emSheet}
+            importantForAccessibility={emSheet ? 'no-hide-descendants' : 'auto'}
+            aria-hidden={emSheet || undefined}
+            style={styles.cheio}
+          >
+            <TelaDeFundo />
+          </View>
+        </AlvoDeDesfoque>
 
-      <View style={{ flex: 1 }}>
-        <TelaAtual />
-      </View>
-
-      {comNavbar ? (
-        <>
-          <FaixaCurvaNavbar cor={cores.topo} altura={TAMANHO.faixaCurva} />
-          <Navbar
-            abaAtiva={ABA_DA_TELA[tela]}
-            aoTrocar={trocarTab}
-            padBaixo={insets.bottom}
-          />
-        </>
-      ) : null}
+        {emSheet ? (
+          // O painel é da própria tela, com título e rodapé de verdade.
+          <View style={StyleSheet.absoluteFill}>
+            <TelaDoSheet />
+          </View>
+        ) : (
+          <TabBar abaAtiva={ABA_DA_TELA[tela]} aoTrocar={trocarTab} />
+        )}
+      </ProvedorDeDesfoque>
     </View>
   );
 }
@@ -88,7 +105,9 @@ export default function Raiz() {
 
   return (
     <SafeAreaProvider>
-      <TemaProvider>{fontesProntas ? <Portao /> : <Splash />}</TemaProvider>
+      <TemaProvider>
+        <Portao fontesProntas={fontesProntas} />
+      </TemaProvider>
     </SafeAreaProvider>
   );
 }
@@ -96,27 +115,44 @@ export default function Raiz() {
 /**
  * Decide qual das três máquinas está no ar. O Toast vive aqui, e não dentro
  * do `App`, porque as telas de entrada também avisam coisas.
+ *
+ * O fundo de refração também: ele fica sob **todas** as fases. Na entrada é
+ * este, desenhado aqui; o `App` desenha o seu dentro do alvo de desfoque,
+ * porque no Android o vidro das barras e do sheet só desfoca o que está no
+ * alvo — por isso aqui ele não é desenhado com o app no ar (seriam dois).
  */
-function Portao() {
-  const { carregado: temaCarregado } = useTema();
+function Portao({ fontesProntas }: { fontesProntas: boolean }) {
+  const { tema, carregado: temaCarregado } = useTema();
   const fase = useSessao((s) => s.fase);
   const carregarSessao = useSessao((s) => s.carregar);
+  // Catálogo do redesign (src/componentes/__catalogo__): só em desenvolvimento.
+  const catalogoAberto = useCatalogo((s) => s.aberto) && __DEV__;
 
   useEffect(() => {
     carregarSessao();
   }, [carregarSessao]);
 
+  const noApp = fontesProntas && temaCarregado && fase === 'app';
+
   const conteudo = () => {
-    if (!temaCarregado || fase === 'carregando') return <Splash />;
+    if (!fontesProntas || !temaCarregado || fase === 'carregando') return <Splash />;
     if (fase === 'entrada') return <Entrada />;
     if (fase === 'onboarding') return <Onboarding />;
     return <App />;
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.cheio}>
+      {/* Glifos do sistema escuros sobre o tema claro, e vice-versa. */}
+      <StatusBar style={tema === 'escuro' ? 'light' : 'dark'} />
+      {noApp ? null : <FundoRefracao />}
       {conteudo()}
       <Toast />
+      {catalogoAberto ? <Catalogo /> : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  cheio: { flex: 1 },
+});

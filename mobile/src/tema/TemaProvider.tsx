@@ -3,13 +3,12 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { useColorScheme } from 'react-native';
 
 import { CHAVE_TEMA } from '../dados/armazenamento';
-import { CORES, type Paleta } from './tokens';
+import { CORES, MATERIAL, type Material, type Paleta } from './tokens';
 
 export type NomeDeTema = 'claro' | 'escuro';
 
 type Contexto = {
   tema: NomeDeTema;
-  cores: Paleta;
   trocarTema: (t: NomeDeTema) => void;
   carregado: boolean;
 };
@@ -48,20 +47,27 @@ export function TemaProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const valor = useMemo<Contexto>(
-    () => ({ tema, cores: CORES[tema], trocarTema, carregado }),
+    () => ({ tema, trocarTema, carregado }),
     [tema, trocarTema, carregado],
   );
 
   return <TemaContexto.Provider value={valor}>{children}</TemaContexto.Provider>;
 }
 
+/** O provider em si: qual tema está no ar, trocar de tema, e se já carregou. */
 export function useTema(): Contexto {
   const ctx = useContext(TemaContexto);
   if (!ctx) throw new Error('useTema precisa estar dentro de <TemaProvider>');
   return ctx;
 }
 
-/** Atalho para o caso comum de só precisar da paleta. */
-export function useCores(): Paleta {
-  return useTema().cores;
+export type CoresDoTema = { tema: NomeDeTema; cores: Paleta; material: Material };
+
+/**
+ * Paleta e material do tema atual — o que toda tela e todo componente lê:
+ * `const { cores } = useCores()`, ou `{ cores, material }` para sombra e vidro.
+ */
+export function useCores(): CoresDoTema {
+  const { tema } = useTema();
+  return useMemo(() => ({ tema, cores: CORES[tema], material: MATERIAL[tema] }), [tema]);
 }

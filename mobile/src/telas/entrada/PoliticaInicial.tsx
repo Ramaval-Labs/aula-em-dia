@@ -1,25 +1,22 @@
 /**
  * A6 — Onboarding, passo 3: a política de faltas. A tela-chave.
  *
- * Os mesmos quatro campos da tela de Ajustes, mais o cartão-espelho "Como o
- * aluno vai ler" — que é a mesma frase que aparece na página pública do
- * aluno, gerada por `comoOAlunoVaiLer`.
+ * Os mesmos quatro cartões da tela de Política (H§9: segmentado, switch,
+ * stepper, segmentado), mais o cartão-espelho "Como o aluno vai ler" — que é
+ * a mesma frase que aparece na página pública do aluno, gerada por
+ * `comoOAlunoVaiLer`.
  */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { Cartao } from '../../componentes/Base';
-import { Segmentado } from '../../componentes/Botoes';
-import { Contador, Interruptor } from '../../componentes/Formulario';
+import { BlocoStatus, CartaoDeAjuste } from '../../componentes/Blocos';
+import { Segmentado, Stepper, Switch } from '../../componentes/Controles';
 import { comoOAlunoVaiLer } from '../../dominio/mensagens';
 import { POLITICAS_PADRAO } from '../../dominio/politica';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
-import { useCores } from '../../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../../tema/tipografia';
-import { RAIO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
 const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
@@ -31,7 +28,6 @@ const VALIDADES = [
 const LIMITE_MAXIMO = 5;
 
 export function PoliticaInicial() {
-  const cores = useCores();
   const avancar = useSessao((s) => s.avancar);
   const salvarPoliticas = useDados((s) => s.salvarPoliticas);
 
@@ -50,118 +46,63 @@ export function PoliticaInicial() {
       rotuloDoBotao="Salvar política"
       aoAvancar={continuar}
     >
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-          Prazo mínimo de aviso
-        </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={PRAZOS}
-            valor={p.avisoHoras}
-            aoTrocar={(avisoHoras) => atualizar({ avisoHoras })}
-            rotuloAcessivel="Prazo mínimo de aviso"
-          />
-        </View>
-      </Cartao>
-
-      <Cartao
-        estilo={{
-          paddingVertical: 13,
-          paddingHorizontal: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-        }}
-      >
-        <Interruptor
-          ligado={p.avisadaDevolve}
-          aoTrocar={(avisadaDevolve) => atualizar({ avisadaDevolve })}
-          rotuloAcessivel="Falta avisada devolve a aula"
+      <CartaoDeAjuste titulo="Prazo mínimo de aviso">
+        <Segmentado
+          opcoes={PRAZOS}
+          valor={p.avisoHoras}
+          porte="cartao"
+          aoTrocar={(avisoHoras) => atualizar({ avisoHoras })}
+          rotuloDoGrupo="Prazo mínimo de aviso"
         />
-        <View style={{ flex: 1 }}>
-          <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-            Falta avisada devolve a aula
-          </Text>
-          <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
-            {p.avisadaDevolve
-              ? 'Dentro do prazo, o saldo não é debitado'
-              : 'A aula é debitada mesmo com aviso'}
-          </Text>
-        </View>
-      </Cartao>
+      </CartaoDeAjuste>
 
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-          }}
-        >
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-              Reposições por pacote
-            </Text>
-            <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.textoMedio }]}>
-              Depois do limite, a falta debita
-            </Text>
-          </View>
-          <Contador
+      <CartaoDeAjuste
+        titulo="Falta avisada devolve a aula"
+        subtitulo={
+          p.avisadaDevolve
+            ? 'Dentro do prazo, o saldo não é debitado'
+            : 'A aula é debitada mesmo com aviso'
+        }
+        direita={
+          <Switch
+            ligado={p.avisadaDevolve}
+            aoAlternar={(avisadaDevolve) => atualizar({ avisadaDevolve })}
+            rotulo="Falta avisada devolve a aula"
+          />
+        }
+      />
+
+      <CartaoDeAjuste
+        titulo="Reposições por pacote"
+        subtitulo="Depois do limite, a falta debita"
+        direita={
+          <Stepper
             valor={p.limiteReposicoes}
             minimo={0}
             maximo={LIMITE_MAXIMO}
-            aoMudar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
+            aoTrocar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
             formatar={(v) => (v === 0 ? '—' : String(v))}
-            rotuloAcessivel={
-              p.limiteReposicoes === 0
-                ? 'sem limite de reposições'
-                : `${p.limiteReposicoes} reposições por pacote`
-            }
+            rotuloDoValor={(v) => (v === 0 ? 'sem limite' : String(v))}
+            rotulo="reposições por pacote"
           />
-        </View>
-      </Cartao>
+        }
+      />
 
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-          Validade do pacote
-        </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={VALIDADES}
-            valor={p.validadeDias}
-            aoTrocar={(validadeDias) => atualizar({ validadeDias })}
-            rotuloAcessivel="Validade do pacote"
-          />
-        </View>
-      </Cartao>
+      <CartaoDeAjuste titulo="Validade do pacote">
+        <Segmentado
+          opcoes={VALIDADES}
+          valor={p.validadeDias}
+          porte="cartao"
+          aoTrocar={(validadeDias) => atualizar({ validadeDias })}
+          rotuloDoGrupo="Validade do pacote"
+        />
+      </CartaoDeAjuste>
 
       {/* O espelho: a mesma frase que o aluno lê na página dele. */}
-      <View
-        style={{
-          backgroundColor: cores.elevado,
-          borderRadius: RAIO.cartao,
-          paddingVertical: 14,
-          paddingHorizontal: 16,
-        }}
-      >
-        <Text
-          style={[
-            TIPO.rotulo,
-            { color: cores.topoFraco },
-          ]}
-        >
-          Como o aluno vai ler
-        </Text>
-        <Text
-          style={[
-            comEspaco(texto(13.5, 400, { altura: 1.5 }), { topo: 9 }),
-            { color: cores.topoTexto },
-          ]}
-        >
-          {comoOAlunoVaiLer(p)}
-        </Text>
-      </View>
+      <BlocoStatus tom="tint" titulo="Como o aluno vai ler" texto={comoOAlunoVaiLer(p)} />
     </PassoDoOnboarding>
   );
 }
+
+const estilos = StyleSheet.create({
+});

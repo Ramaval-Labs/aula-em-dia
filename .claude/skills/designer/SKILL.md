@@ -19,7 +19,8 @@ usá-la neste projeto e o que é inegociável. Leia até o fim antes de começar
   o app e só apresenta o resultado no fim. Não peça aval no meio da rodada. Isso vale como a
   ordem de seguir que o Impeccable exige antes de dispensar entrevistas
   (`AUTONOMY_DIRECTIVE_CHECK`): quando uma referência dele mandar perguntar, decida pelo brief
-  (`PRODUCT.md`, `DESIGN.md`, `HANDOFF.md`, `CLAUDE.md`) e registre a decisão no relatório.
+  (`PRODUCT.md`, `DESIGN.md`, `handoff-ios-glass/README.md`, `CLAUDE.md`) e registre a decisão no
+  relatório.
 - **Todo o seu trabalho fica numa branch.** A `main` só recebe a rodada quando a pessoa aprovar.
 - **Todos os grupos de comando estão liberados**, inclusive os expressivos, e na branch você pode
   criar token novo (§5).
@@ -44,7 +45,7 @@ achados P0 e entregue o resto como backlog priorizado no relatório.
 ### Mapa de alvos
 
 Ids da semente: `val` (Valentin, pagamento em atraso) · `raf` (Rafael, reposição pendente, saldo
-2 — ativa o destaque amarelo) · `mar` (Mateus, em dia) · `bea` (Bernardo, sem pacote).
+2 — ativa o saldo baixo em âmbar) · `mar` (Mateus, em dia) · `bea` (Bernardo, sem pacote).
 
 | Alvo | Arquivos | Captura (`node scripts/capturar.mjs …`) |
 |---|---|---|
@@ -122,8 +123,8 @@ Pasta da rodada: `docs/design/revisoes/capturas/<AAAA-MM-DD>-<alvo>/` — fora d
    cor. Leia cada PNG com Read. O JSON de saída lista erros de console — erro ali é achado P0.
 3. **Detector:** rode o launcher do Impeccable sobre os HTMLs gravados:
    `<pasta da skill do Impeccable>/scripts/impeccable detect --json <html…>`. O detector foi feito
-   para web: achado que o `DESIGN.md` sustenta (Satoshi, amarelo da marca, curva, pílula de vidro)
-   é falso positivo — registre, não corrija.
+   para web: achado que o `DESIGN.md` sustenta (Satoshi, material translúcido com blur, fundo de
+   gradientes radiais, raios grandes) é falso positivo — registre, não corrija.
 4. **Depois:** repita as mesmas capturas com `--nome depois-<tela>` e o detector sobre os HTMLs
    novos. Se o servidor não recarregou a mudança, derrube-o e suba de novo antes.
 5. No fim da rodada, derrube o servidor.
@@ -141,13 +142,17 @@ Estas regras vencem o Impeccable quando os dois conflitam ("the brief wins").
   `git stash push -u -m "designer: <comando> descartado"`, registre no relatório e siga para o
   próximo.
 - **Proibido editar:** `mobile/src/dominio/**`, qualquer `__tests__/**`, `spec/**`,
-  `data/seed.json`, `mobile/src/dados/seed.json`, `HANDOFF.md`, `*.dc.html`, `package.json`.
+  `data/seed.json`, `mobile/src/dados/seed.json`, `HANDOFF.md`, `handoff-ios-glass/**`,
+  `docs/design/historico/**`, `*.dc.html`, `package.json`.
   Nada de dependência nova.
-- **Regras visuais do `CLAUDE.md`, sem exceção:** as duas curvas na mesma direção, redimensionadas
-  e não recortadas; pílula de vidro sem desfoque; amarelo só como ênfase e tinta `#0E1626` sobre
-  ele; texto só por `texto()` / `TIPO.*` e espaço vertical por `comEspaco()`; cor de texto sempre
-  explícita; dinheiro por `dinheiro()`; datas por `dominio/datas.ts`; rodapé de ação flutuando;
-  seletor de store estável; rascunho que atravessa telas em `useRascunho`.
+- **Regras visuais do `CLAUDE.md`, sem exceção:** fundo de refração sob tudo; vidro só pela
+  primitiva `SuperficieVidro`, um nível por camada, anel só na tab bar; tint como único destaque e
+  status em fundo suave com texto na cor cheia; um primário por tela; texto só por `texto()` /
+  `TIPO.*` e espaço vertical por `comEspaco()`; cor de texto sempre explícita; dinheiro por
+  `dinheiro()`; datas por `dominio/datas.ts`; seletor de store estável; rascunho que atravessa
+  telas em `useRascunho`. Nada de curva, cabeçalho escuro ou amarelo — são da direção aposentada.
+- **Tela derivada:** 26 das 35 telas não têm desenho no handoff (ver `MAPA-DE-TELAS.md`). Nelas,
+  o padrão é a tela desenhada indicada como "Modelo" no mapa; não invente um terceiro padrão.
 - **Copy em pt-BR.** Só `clarify` reescreve texto, e sem inventar fato — por exemplo, não
   prometer envio automático de WhatsApp, que ainda não existe.
 - **Tokens novos (permitido nesta branch):** prefira sempre um token existente. Se nenhum servir,
@@ -157,9 +162,11 @@ Estas regras vencem o Impeccable quando os dois conflitam ("the brief wins").
 - **Plataforma:** o `PRODUCT.md` diz `adaptive`, então o Impeccable carrega `ios.md` e
   `android.md`. Aplique deles só as garantias do sistema — área segura, alvos de 44pt / 48dp,
   voltar do sistema, reduzir movimento, escala de fonte, rótulos de leitor de tela. Não troque
-  componente da marca por nativo (SF Pro, Roboto, tab bar ou Material do sistema).
-- **Não "conserte" o que o handoff decidiu:** a navbar some nas telas de tarefa, o Resultado
-  mostra o saldo gravado, a semente tem `pendencia.dias` inconsistente de propósito.
+  componente da marca por nativo (SF Pro, Roboto, tab bar do sistema): a tab bar de vidro, o
+  sheet e a barra de navegação são próprios, desenhados sobre as convenções do iOS.
+- **Não "conserte" o que o handoff decidiu:** a tab bar flutua em toda tela não-sheet e some com
+  sheet aberto, a barra de navegação só aparece com a rolagem, o Resultado mostra o saldo
+  gravado, a semente tem `pendencia.dias` inconsistente de propósito.
 - **Passadas curtas:** verifique uma vez depois de cada lote e corrija no máximo mais uma vez.
 
 ## 6. O subagente revisor

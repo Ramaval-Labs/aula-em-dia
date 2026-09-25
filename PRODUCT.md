@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-> Derivado de `HANDOFF.md`, `README.md`, `PROXIMOS-PASSOS.md`, `spec/acessibilidade.md` e da
+> Derivado de `handoff-ios-glass/README.md`, `README.md`, `PROXIMOS-PASSOS.md`, `spec/acessibilidade.md` e da
 > proposta `Envio01-AulaEmDia (1).pdf`. Fonte da verdade continua sendo esses arquivos; este é o
 > resumo que o Impeccable lê antes de agir.
 
@@ -78,15 +78,20 @@ locação de equipamentos, não pode construir essa regra.
 
 ## Brand Commitments
 
-- **Handoff de alta fidelidade aprovado** (`HANDOFF.md`, `tokens/`). Cores, tipografia,
-  espaçamentos, raios e estados vêm dele; os valores vivem em `mobile/src/tema/tokens.ts`.
-- **As duas curvas assinatura** entre o bloco escuro e o conteúdo claro — baixa à esquerda, reta no
-  meio, subindo à direita, sempre na mesma direção — são obrigatórias.
-- **Navbar com pílula de vidro** na aba ativa, feita de gradiente, borda e sombras internas, sem
-  desfoque.
-- **Amarelo `#FFD032` é só ênfase**, nunca fundo de área grande.
+- **Handoff de alta fidelidade aprovado: direção iOS Glass** (`handoff-ios-glass/README.md`,
+  `tokens/`). Cores, tipografia, espaçamentos, raios, material e estados vêm dele; os valores
+  vivem em `mobile/src/tema/tokens.ts`. As 26 telas que ele não desenha são derivadas do mesmo
+  sistema, nunca de outro.
+- **Material de vidro sobre fundo de refração.** Quatro manchas de cor sob tudo; cartões, barras
+  e sheets translúcidos com blur baixo e saturação alta, reflexo interno e borda fina. Um nível de
+  vidro por camada.
+- **Convenções de plataforma iOS como linguagem, igual nos dois sistemas:** título grande, lista
+  agrupada, controle segmentado, tab bar flutuante de três abas, sheet modal para tarefa, barra
+  de navegação que aparece com a rolagem.
+- **Tint `#35577D`** como único destaque (`#9FBEDF` no escuro); vermelho, âmbar e verde só para
+  status, sempre em fundo suave com o texto na cor cheia.
 - **Satoshi** em todo o app; números sempre tabulares.
-- **Wordmark** tipográfico com quatro barras verticais, a quarta em amarelo.
+- **Temas claro e escuro** de primeira classe, os dois pelos mesmos tokens.
 - **Voz:** direta, concreta e com números, em pt-BR. Ex.: "Reposição de Rafael em Sexta, 17h.
   Mensagem enviada."
 
@@ -110,9 +115,9 @@ locação de equipamentos, não pode construir essa regra.
 
 ## Accessibility & Inclusion
 
-Requisitos em `spec/acessibilidade.md`: contrastes medidos (`--suave` só para legenda não
-essencial, `--texto-medio` para informação), alvo de toque da aba estendido para 48px e chips com
-44px tocáveis, contador de saldo anunciado por inteiro ("4 aulas restantes de 6"), pontos do
+Requisitos em `spec/acessibilidade.md`: contrastes medidos (`ink3` só para legenda, cabeçalho de
+grupo e chevron; `ink2` para informação de apoio), nunca texto pequeno translúcido sobre vidro,
+alvo de toque nunca abaixo de 44px e aba com 48px, contador de saldo anunciado por inteiro ("4 aulas restantes de 6"), pontos do
 pacote decorativos, delta do extrato com texto alternativo (cor nunca é o único sinal), toast como
 região viva, tema do sistema na primeira carga, reduzir movimento e aumento de fonte do sistema
 (nenhuma altura de cartão fixa).

@@ -9,18 +9,43 @@
  */
 
 import { Platform } from 'react-native';
+import { create } from 'zustand';
 
 import { useDados } from './dados';
 import { useFormularios } from './formularios';
-import { useNavegacao } from './navegacao';
+import { TIPO_DA_TELA, useNavegacao } from './navegacao';
 import { useSessao } from './sessao';
+
+type Catalogo = {
+  aberto: boolean;
+  abrir: () => void;
+  fechar: () => void;
+};
+
+/**
+ * Liga o catálogo de componentes do redesign
+ * (`componentes/__catalogo__/Catalogo.tsx`) por cima do app. Só tem efeito em
+ * desenvolvimento: o `App.tsx` ignora a flag fora do `__DEV__`.
+ *
+ * No aparelho não há console para chamar o gancho: suba o Metro com
+ * `EXPO_PUBLIC_CATALOGO=1` e o app abre direto no catálogo ("Fechar" volta).
+ */
+export const useCatalogo = create<Catalogo>((set) => ({
+  aberto: __DEV__ && process.env.EXPO_PUBLIC_CATALOGO === '1',
+  abrir: () => set({ aberto: true }),
+  fechar: () => set({ aberto: false }),
+}));
 
 export function exporParaDepuracao() {
   if (!__DEV__ || Platform.OS !== 'web') return;
   (globalThis as { __aulaEmDia?: unknown }).__aulaEmDia = {
+    catalogo: useCatalogo,
     dados: useDados,
     formularios: useFormularios,
     navegacao: useNavegacao,
     sessao: useSessao,
+    // O script de capturas decide raiz × empilhada × sheet por aqui, sem
+    // manter uma lista própria que desatualiza.
+    tipoDaTela: TIPO_DA_TELA,
   };
 }

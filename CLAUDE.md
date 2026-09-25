@@ -3,9 +3,23 @@
 O app **já está implementado** em `mobile/` (React Native + Expo, TypeScript, roda no Expo Go).
 **35 telas**: 7 na máquina de entrada (login e onboarding) e 28 no app.
 Este repositório é o handoff de design **mais** a implementação. Leia `mobile/README.md`
-antes de mexer no código; `HANDOFF.md` é a especificação de design (era o `README.md` do
-pacote original). `README.md` na raiz agora é a apresentação do projeto, e
-`PROXIMOS-PASSOS.md` traz o backlog priorizado.
+antes de mexer no código. A especificação de design é **`handoff-ios-glass/README.md`**
+(direção *iOS Glass*); a direção anterior (*tinta chapada*: curvas, cabeçalho escuro, amarelo)
+foi aposentada e está só como histórico em `docs/design/historico/tinta-chapada/`.
+`README.md` na raiz é a apresentação do projeto, e `PROXIMOS-PASSOS.md` traz o backlog priorizado.
+
+## Direção iOS Glass
+
+As 35 telas foram migradas para a direção iOS Glass (plano e registro em
+`docs/design/redesign-ios-glass/`). O contrato de cada tela — raiz, empilhada ou sheet, e se é
+desenhada pelo handoff ou derivada — está em `docs/design/redesign-ios-glass/MAPA-DE-TELAS.md`.
+Das 35, só 9 são desenhadas pelo handoff; as outras 26 foram derivadas do mesmo sistema.
+
+- Os `.dc.html` do histórico continuam sendo a referência de **conteúdo e comportamento** das 26
+  telas derivadas (Fluxos A, C, D, E, F) — só o visual deles foi aposentado.
+- O catálogo vivo de componentes é `mobile/src/componentes/__catalogo__/` (abre no Expo Web pelo
+  gancho, ou no aparelho com `EXPO_PUBLIC_CATALOGO=1`). Peça nova entra nele antes de entrar numa tela.
+- `src/tema/__tests__/legado.test.ts` impede a direção aposentada (amarelo, curvas) de voltar.
 
 ## Como rodar e verificar
 
@@ -14,7 +28,7 @@ cd mobile
 npm install
 npx expo login        # obrigatório desde o SDK 57 (conta gratuita)
 npx expo start        # QR Code para o Expo Go
-npm test              # 218 testes: regras, navegação e montagem das 28 telas
+npm test              # 303 testes: regras, navegação, tokens e montagem das 35 telas
 npm run typecheck     # tsc --noEmit
 ```
 
@@ -55,15 +69,22 @@ em `docs/design/revisoes/`. A pessoa aprova, aprova parte ou descarta. O roteiro
    **Exceção:** numa branch `designer/*`, o `/designer` pode criar token sozinho — em
    `tokens.json`, `tokens.ts` e `DESIGN.md` — listando cada um no relatório. A aprovação
    acontece quando a pessoa decide mesclar a branch.
-3. **As duas curvas são obrigatórias** e sempre na mesma direção (baixa à esquerda, reta no
-   meio, subindo à direita). Já implementadas em `mobile/src/componentes/Curva.tsx`.
-   Não substituir por `borderRadius`. A faixa da navbar ocupa espaço no fluxo, não é overlay.
-   O SVG é desenhado **na altura da faixa** — recortar em vez de redimensionar corta o lado
-   esquerdo da curva (a linha começa em y=55) e a navbar fica reta.
-4. **A pílula de vidro da aba ativa não usa `backdrop-filter` nem `BlurView`** — é gradiente,
-   borda e sombras internas. Intencional: o desfoque quebrava o recorte do container.
-5. **Amarelo `#FFD032` é só ênfase.** Nunca como fundo de área grande nem em texto pequeno
-   sobre claro. Tinta sobre amarelo é sempre `#0E1626`.
+3. **O fundo de refração é obrigatório** sob todo o app (quatro gradientes radiais, opacidade
+   0.85 no claro e 0.60 no escuro). Sem ele o vidro não tem o que refratar e vira retângulo
+   cinza. Nada de fundo chapado cobrindo a tela inteira por cima dele.
+4. **Vidro com disciplina.** Material = `BlurView` do `expo-blur` (blur baixo, saturação alta)
+   + miolo translúcido + reflexo interno (`gin`) + borda de 0,5px, pela primitiva
+   `SuperficieVidro`, nunca remontado na tela. Um nível de vidro por camada de profundidade
+   (fundo → cartão → barra → sheet), nunca vidro sobre vidro sobre vidro. Nunca texto pequeno
+   com transparência sobre o material. O anel de refração existe **só na tab bar**. Onde o blur
+   não se sustenta (recorte ou desempenho), a própria primitiva cai no fallback sem blur.
+5. **Cor com papel fixo.** O destaque é o tint (`#35577D` no claro, `#9FBEDF` no escuro — muda
+   de valor, nunca de identidade), com `onTint` para o texto sobre ele. Status sempre como
+   fundo suave (12–16% de alfa) com o texto no token de **texto** do status (`ambarTexto`,
+   `verdeTexto`, `vermelhoTexto` — mais escuros que a cor cheia no claro, para passar 4.5:1 sobre
+   as manchas); a cor cheia (`ambar`, `verde`, `vermelho`) fica para barras, medidores, avatar
+   pequeno e ícone, com `sobreCor` no glifo. **Um primário por tela.** O amarelo `#FFD032` e as
+   curvas saíram do sistema.
 6. **Números sempre tabulares** e moeda em pt-BR — use `texto()`/`TIPO` de
    `mobile/src/tema/tipografia.ts` e `dinheiro()` de `mobile/src/dominio/formato.ts`.
    Não chame `toLocaleString` direto: o Hermes nem sempre traz ICU completo.
@@ -91,20 +112,26 @@ em `docs/design/revisoes/`. A pessoa aprova, aprova parte ou descarta. O roteiro
   login, 4 passos de onboarding) e `estado/navegacao.ts` cuida do app, com o contrato
   de `spec/navegacao.md`: `ir` empilha, `voltar` desempilha, `trocarTab` zera a pilha,
   `concluir` substitui a pilha ao terminar um fluxo. `App.tsx` escolhe entre elas.
-  Toda tela nova entra em três lugares: a união `Tela`, o mapa `ABA_DA_TELA` e o
-  `telas/registro.ts` — há teste que cobra os três.
+  Toda tela nova entra em quatro lugares: a união `Tela`, os mapas `ABA_DA_TELA` e
+  `TIPO_DA_TELA` (raiz, empilhada ou sheet) e o `telas/registro.ts` — há teste que cobra os
+  quatro. Sheet não empilha: `ir` de um sheet para outro troca o conteúdo do painel, e
+  `fecharSheet()` volta para a última tela que não é sheet.
 - **Formulário não usa `useState` quando o valor atravessa telas.** O chassi desmonta
   a tela ao navegar, então rascunho de assistente mora em `estado/formularios.ts`
   (`useRascunho`). `useState` só para o que morre com a tela.
 - **Seletor de store nunca cria objeto novo.** `useDados((s) => s.x ?? [])` devolve um
   array diferente a cada chamada e trava o app em loop de render. Use uma constante
   estável fora do seletor.
-- **O rodapé de ação flutua sobre a lista**, com a máscara em gradiente; ele não ocupa
-  espaço no fluxo. O conteúdo recebe padding inferior do tamanho medido do rodapé.
-- **Estado persistido** em `mobile/src/estado/dados.ts` (chave `aulaemdia.app.v3`).
+- **Três tipos de tela.** Raiz de aba (Alunos, Financeiro, Ajustes), empilhada sob uma raiz
+  (com botão voltar) e sheet modal (tarefa com ação de confirmar, 88% da altura; o de
+  resultado, 74%). A tab bar flutua sobre toda tela que não é sheet e some com sheet aberto; o
+  conteúdo reserva 126px embaixo para ela nunca cobrir nada. A barra de navegação do topo
+  aparece com a rolagem; o botão voltar não. No sheet, a ação primária mora no rodapé fixo.
+- **Estado persistido** em `mobile/src/estado/dados.ts` (chave `aulaemdia.app.v4`).
   A tela nunca escreve no AsyncStorage direto.
-- **Acessibilidade** conforme `spec/acessibilidade.md`: aba com alvo de 48px, pontos do
-  pacote são decorativos, delta do extrato tem texto alternativo, toast é `live region`.
+- **Acessibilidade** conforme `spec/acessibilidade.md`: alvo de toque nunca abaixo de 44px (aba
+  com 48px), pontos e barras do pacote são decorativos, delta do extrato tem texto alternativo,
+  toast é `live region`, sheet é modal para o leitor de tela.
 - `mobile/src/dados/seed.json` é **cópia** de `data/seed.json` (o Metro não resolve fora da
   raiz do projeto). Ao mudar o handoff, copie de novo em vez de editar os dois.
 
@@ -117,29 +144,32 @@ mobile/                        o app (ver mobile/README.md para o mapa interno)
   src/telas/aluno/               a visão do aluno (Fluxo F)
   src/telas/ajustes/             as sub-telas de configuração (Fluxo E)
 README.md                      apresentação do projeto (é a página inicial no GitHub)
-HANDOFF.md                     especificação de design (telas, medidas, tokens, estado)
+handoff-ios-glass/             especificação de design atual: README + protótipos iOS Glass
+HANDOFF.md                     aponta para handoff-ios-glass/README.md
 PRODUCT.md, DESIGN.md          contexto de produto e sistema visual que o Impeccable lê
+docs/design/redesign-ios-glass/ plano e mapa de telas da troca de design system
+docs/design/historico/         direção visual aposentada (tinta chapada) e seus protótipos
 docs/design/revisoes/          relatórios das rodadas do /designer (capturas ficam fora do git)
-.claude/                       skill /designer e subagente revisor-design
+docs/backend/                  plano do backend (Supabase) em 8 partes — nada construído ainda
+.claude/                       skill /designer, revisor-design e os agentes do redesign
 PROXIMOS-PASSOS.md             backlog priorizado do que vem depois
 IMPLEMENTACAO.md               plano em 6 fases — as seis estão concluídas
-tokens/                        tokens em JSON, CSS, SCSS e Tailwind (fonte dos tokens)
+tokens/                        tokens em JSON (fonte dos tokens, espelhada em tokens.ts)
 spec/politica.ts               regras de negócio como módulo puro (referência do porte)
 spec/casos-de-teste.md         casos de teste tabelados das regras
 spec/componentes.md            inventário de componentes com props
 spec/navegacao.md              máquina de navegação (telas, transições, pilha)
 spec/acessibilidade.md         contraste, alvos de toque, leitores de tela
 data/seed.json                 dados-semente (alunos, extratos, políticas)
-assets/                        SVGs das curvas e dos ícones da navbar
-*.dc.html                      protótipos abríveis no navegador
 Envio01-AulaEmDia (1).pdf      proposta do projeto: problema, concorrência, escopo do MVP
 ```
 
 ## Divergências conhecidas entre protótipo e spec
 
-Documentadas em `mobile/README.md`. Em resumo: a navbar segue a spec (some nas telas de
-tarefa), a tela de Resultado corrige um cálculo duplicado do protótipo, e a semente tem
-`pendencia.dias` inconsistente com `pendencia.origem` — mantido como está no handoff.
+Documentadas em `mobile/README.md`. Em resumo: a tela de Resultado corrige um cálculo
+duplicado do protótipo, e a semente tem `pendencia.dias` inconsistente com `pendencia.origem`
+— mantido como está no handoff. Onde o protótipo iOS Glass simplifica uma regra que o domínio já
+implementa (janelas fixas × motor `agenda.ts`, por exemplo), vale o domínio.
 
 ## Decisões que ainda exigem confirmação do time
 

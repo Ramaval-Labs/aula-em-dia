@@ -1,39 +1,40 @@
-/** Tela 8 — Ajustes (raiz da aba 3, Fluxo E1). */
+/** Tela 8 — Ajustes (raiz da aba 3, Fluxo E1). Handoff iOS Glass §8. */
 
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Avatar, Caixa, LinhaLista, Lista } from '../componentes/Base';
-import { BotaoPequeno, Chip, useDoisToques } from '../componentes/Botoes';
-import { CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
-import { Tela } from '../componentes/Tela';
-import { dinheiro } from '../dominio/formato';
+import { Avatar, CartaoVidro } from '../componentes/Blocos';
+import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
+import { Segmentado } from '../componentes/Controles';
+import { Icone } from '../componentes/Icone';
+import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
 import { resumo as resumoDaDisponibilidade } from '../dominio/disponibilidade';
+import { dinheiro } from '../dominio/formato';
 import { temPacote, VALOR_AULA } from '../dominio/politica';
-import { avisos, useDados } from '../estado/dados';
+import { useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
-import { useToast } from '../estado/toast';
-import { useTema } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { RAIO } from '../tema/tokens';
+import { useTema, useCores } from '../tema/TemaProvider';
+import { comEspaco, texto } from '../tema/tipografia';
+import { TAMANHO } from '../tema/tokens';
+
+/** Rodapé do handoff §8, sem o "protótipo acadêmico" (mapa de telas). */
+const VERSAO = 'Versão 0.5';
+
+const APARENCIAS = [
+  { valor: 'claro' as const, rotulo: 'Claro' },
+  { valor: 'escuro' as const, rotulo: 'Escuro' },
+];
 
 export function Ajustes() {
-  const { cores, tema, trocarTema } = useTema();
+  const { cores } = useCores();
+  // `useTema` é o provider, não o token: é ele que troca claro/escuro.
+  const { tema, trocarTema } = useTema();
   const alunos = useDados((s) => s.alunos);
   const perfil = useDados((s) => s.perfil);
   const politicas = useDados((s) => s.politicas);
   const disponibilidade = useDados((s) => s.disponibilidade);
   const padraoSalvo = useDados((s) => s.pacotePadrao);
-  const zerar = useDados((s) => s.zerar);
-  const { ir, trocarTab } = useNavegacao();
-  const avisar = useToast((s) => s.avisar);
-
-  // Zerar apaga tudo o que o professor registrou: dois toques.
-  const zerarDados = useDoisToques(() => {
-    zerar();
-    trocarTab('home');
-    avisar(avisos.estadoZerado);
-  });
+  const { ir } = useNavegacao();
 
   const comPacote = alunos.filter(temPacote).length;
 
@@ -52,127 +53,121 @@ export function Ajustes() {
   }`;
 
   return (
-    <Tela
-      comNavbar
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela}>
-          <View style={{ marginTop: 8 }}>
-            <TituloTela tamanho={22}>Ajustes</TituloTela>
+    <TelaVidro tipo="raiz" titulo="Ajustes">
+      <TituloDeConteudo porte="grande" titulo="Ajustes" />
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${perfil.nome}. ${comPacote} alunos com pacote, ${alunos.length} cadastrados. Editar perfil.`}
+        onPress={() => ir('perfil')}
+        style={({ pressed }) => [estilos.perfil, pressed ? estilos.pressionado : null]}
+      >
+        <CartaoVidro estilo={estilos.cartaoPerfil}>
+          <Avatar texto={perfil.iniciais} estado="perfil" tamanho={48} />
+          <View style={estilos.flexivel}>
+            <Text
+              numberOfLines={1}
+              style={[
+                texto(16.5, 700, { altura: 1.2, tracking: -0.015 }),
+                { color: cores.tinta },
+              ]}
+            >
+              {perfil.nome}
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={[
+                comEspaco(texto(12.5, 500, { altura: 1.35 }), { topo: 4 }),
+                { color: cores.tinta2 },
+              ]}
+            >
+              {`${comPacote} alunos com pacote · ${alunos.length} cadastrados`}
+            </Text>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${perfil.nome}. ${comPacote} alunos com pacote, ${alunos.length} cadastrados. Editar perfil.`}
-            onPress={() => ir('perfil')}
-            style={{
-              marginTop: 14,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              backgroundColor: cores.topoCartao,
-              borderRadius: RAIO.cartao,
-              paddingVertical: 12,
-              paddingHorizontal: 14,
-            }}
-          >
-            <Avatar iniciais={perfil.iniciais} />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[texto(14.5, 600, { altura: 1.2 }), { color: cores.topoTexto }]}>
-                {perfil.nome}
-              </Text>
-              <Text style={[comEspaco(TIPO.nota, { topo: 3 }), { color: cores.elevadoSuave }]}>
-                {`${comPacote} alunos com pacote · ${alunos.length} cadastrados`}
-              </Text>
-            </View>
-            <Text style={[texto(16, 600, { altura: 1 }), { color: cores.topoFraco }]}>›</Text>
-          </Pressable>
-        </CabecalhoEscuro>
-      }
-    >
-      <Lista rotulo="Regras do seu trabalho">
+          <Icone nome="chevron" tamanho={TAMANHO.chevron} cor={cores.tinta3} />
+        </CartaoVidro>
+      </Pressable>
+
+      <View style={estilos.grupo}>
+        <CabecalhoGrupo titulo="Regras do seu trabalho" />
+      </View>
+      <ListaAgrupada>
         <LinhaLista
+          porte="grande"
           titulo="Política de faltas"
-          sub={resumoPolitica}
-          alturaMinima={62}
-          chevron
+          subtitulo={resumoPolitica}
           aoTocar={() => ir('politica')}
         />
         <LinhaLista
+          porte="grande"
           titulo="Minha disponibilidade"
-          sub={resumoDaDisponibilidade(disponibilidade.blocos)}
-          alturaMinima={62}
-          chevron
+          subtitulo={resumoDaDisponibilidade(disponibilidade.blocos)}
           aoTocar={() => ir('minhaDisponibilidade')}
         />
         <LinhaLista
+          porte="grande"
           titulo="Pacotes e valores padrão"
-          sub={pacotePadrao}
-          alturaMinima={62}
-          chevron
-          ultima
+          subtitulo={pacotePadrao}
           aoTocar={() => ir('pacotesPadrao')}
         />
-      </Lista>
+      </ListaAgrupada>
 
-      <Lista rotulo="App">
+      <View style={estilos.grupo}>
+        <CabecalhoGrupo titulo="App" />
+      </View>
+      <ListaAgrupada>
         <LinhaLista
+          porte="app"
           titulo="Aparência"
           direita={
-            <View
-              accessibilityRole="radiogroup"
-              style={{ flexDirection: 'row', gap: 5 }}
-            >
-              <Chip
-                rotulo="Claro"
-                altura={34}
-                ativo={tema === 'claro'}
-                aoTocar={() => trocarTema('claro')}
-              />
-              <Chip
-                rotulo="Noturno"
-                altura={34}
-                ativo={tema === 'escuro'}
-                aoTocar={() => trocarTema('escuro')}
-              />
-            </View>
+            <Segmentado
+              opcoes={APARENCIAS}
+              valor={tema}
+              aoTrocar={trocarTema}
+              porte="linha"
+              rotuloDoGrupo="Aparência"
+            />
           }
         />
-        <LinhaLista titulo="Avisos e lembretes" chevron aoTocar={() => ir('avisos')} />
+        <LinhaLista porte="app" titulo="Avisos e lembretes" aoTocar={() => ir('avisos')} />
         <LinhaLista
+          porte="app"
           titulo="Chave Pix e dados de cobrança"
-          sub={perfil.chavePix ?? 'não configurada'}
-          chevron
+          subtitulo={perfil.chavePix ?? 'não configurada'}
           aoTocar={() => ir('chavePix')}
         />
         <LinhaLista
+          porte="app"
           titulo="Conta e assinatura"
-          sub={perfil.plano === 'pago' ? 'Plano pago' : 'Plano gratuito'}
-          chevron
-          ultima
+          subtitulo={perfil.plano === 'pago' ? 'Plano pago' : 'Plano gratuito'}
           aoTocar={() => ir('conta')}
         />
-      </Lista>
+      </ListaAgrupada>
 
-      <Caixa>
-        <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-          Estado do protótipo
-        </Text>
-        <Text style={[comEspaco(TIPO.corpo, { topo: 5 }), { color: cores.textoMedio }]}>
-          Tudo o que você registra fica salvo neste aparelho. Zerar volta aos quatro alunos
-          originais.
-        </Text>
-        <View style={{ marginTop: 11 }}>
-          <BotaoPequeno
-            rotulo={
-              zerarDados.armado ? 'Tocar de novo para zerar' : 'Zerar dados de demonstração'
-            }
-            aoTocar={zerarDados.tocar}
-          />
-        </View>
-      </Caixa>
-
-      <Text style={[TIPO.nota, { color: cores.suave, textAlign: 'center' }]}>
-        Versão 0.4 · protótipo acadêmico
+      <Text
+        style={[
+          comEspaco(texto(11.5, 500, { altura: 1.5 }), { topo: 20 }),
+          estilos.centro,
+          { color: cores.tinta3 },
+        ]}
+      >
+        {VERSAO}
       </Text>
-    </Tela>
+    </TelaVidro>
   );
 }
+
+const estilos = StyleSheet.create({
+  flexivel: { flex: 1, minWidth: 0 },
+  centro: { textAlign: 'center' },
+  pressionado: { opacity: 0.86 },
+  perfil: { marginTop: 18 },
+  cartaoPerfil: {
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+  },
+  grupo: { marginTop: 24, marginBottom: 9 },
+});

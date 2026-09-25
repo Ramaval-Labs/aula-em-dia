@@ -1,13 +1,20 @@
-/** Cadastro e edição de aluno. Arquivar mora aqui, no fim da tela. */
+/**
+ * Cadastro e edição de aluno — sheet de tarefa (88%) no iOS Glass.
+ *
+ * Derivada: o handoff não desenha formulário. Modelo é o sheet de H§3
+ * (título no cabeçalho, corpo rolável, primário no rodapé fixo) com os campos
+ * derivados dentro de um cartão de vidro. Arquivar mora no fim do corpo, como
+ * botão texto que pede dois toques.
+ */
 
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Cartao } from '../componentes/Base';
-import { BotaoPequeno, BotaoPrimario, useDoisToques } from '../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
-import { CampoDeTexto } from '../componentes/Formulario';
-import { Tela } from '../componentes/Tela';
+import { CartaoVidro } from '../componentes/Blocos';
+import { CampoDeTexto } from '../componentes/Campos';
+import { BotaoPrimario, BotaoTexto, NotaDoBotao } from '../componentes/Controles';
+import { Sheet } from '../componentes/Sheet';
+import { useDoisToques } from '../componentes/useDoisToques';
 import { primeiroNome } from '../dominio/formato';
 import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
@@ -15,12 +22,11 @@ import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { TAMANHO } from '../tema/tokens';
+import { texto } from '../tema/tipografia';
 
 export function AlunoForm() {
-  const cores = useCores();
-  const { alunoId, concluir, voltar } = useNavegacao();
+  const { cores } = useCores();
+  const { alunoId, concluir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const emEdicao = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const criarAluno = useDados((s) => s.criarAluno);
@@ -91,30 +97,12 @@ export function AlunoForm() {
   };
 
   return (
-    <Tela
+    <Sheet
       comTeclado
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>
-              {emEdicao ? 'Editar aluno' : 'Novo aluno'}
-            </TituloTela>
-          </View>
-        </CabecalhoEscuro>
-      }
+      titulo={emEdicao ? 'Editar aluno' : 'Novo aluno'}
       rodape={
-        <View>
-          {notaDoQueFalta ? (
-            <Text
-              style={[
-                comEspaco(TIPO.nota, { base: 8 }),
-                { color: cores.textoMedio, textAlign: 'center' },
-              ]}
-            >
-              {notaDoQueFalta}
-            </Text>
-          ) : null}
+        <View style={estilos.rodape}>
+          {notaDoQueFalta ? <NotaDoBotao texto={notaDoQueFalta} /> : null}
           <BotaoPrimario
             rotulo={emEdicao ? 'Salvar alterações' : 'Criar aluno'}
             desabilitado={!pronto}
@@ -123,72 +111,79 @@ export function AlunoForm() {
         </View>
       }
     >
-      <CampoDeTexto
-        rotulo="Nome"
-        valor={form.nome}
-        aoMudar={(nome) => {
-          setNomeTocado(true);
-          atualizar({ nome });
-        }}
-        erro={erroDoNome}
-        placeholder="Nome do aluno"
-        capitalizar="words"
-        tamanhoDoValor={16.5}
-      />
-
-      <CampoDeTexto
-        rotulo="Disciplina"
-        valor={form.disciplina}
-        aoMudar={(disciplina) => atualizar({ disciplina })}
-        placeholder="Inglês"
-        capitalizar="words"
-      />
-
-      <View style={{ flexDirection: 'row', gap: 9 }}>
+      <CartaoVidro estilo={estilos.campos}>
         <CampoDeTexto
-          estilo={{ flex: 1 }}
-          rotulo="Dia"
-          valor={form.dia}
-          aoMudar={(dia) => atualizar({ dia })}
-          placeholder="terça e quinta"
+          rotulo="Nome"
+          valor={form.nome}
+          aoMudar={(nome) => {
+            setNomeTocado(true);
+            atualizar({ nome });
+          }}
+          erro={erroDoNome}
+          placeholder="Nome do aluno"
+          capitalizar="words"
         />
-        <CampoDeTexto
-          estilo={{ flex: 1 }}
-          rotulo="Hora"
-          valor={form.hora}
-          aoMudar={(hora) => atualizar({ hora })}
-          placeholder="18h"
-        />
-      </View>
 
-      <CampoDeTexto
-        rotulo="Telefone"
-        valor={form.telefone}
-        aoMudar={(telefone) => atualizar({ telefone: formatarTelefone(telefone) })}
-        placeholder="(51) 99999-4182"
-        teclado="telefone"
-        ajuda="Usado para montar a mensagem de reposição e de cobrança."
-      />
+        <CampoDeTexto
+          rotulo="Disciplina"
+          valor={form.disciplina}
+          aoMudar={(disciplina) => atualizar({ disciplina })}
+          placeholder="Inglês"
+          capitalizar="words"
+        />
+
+        <View style={estilos.linha}>
+          <CampoDeTexto
+            estilo={estilos.flexivel}
+            rotulo="Dia"
+            valor={form.dia}
+            aoMudar={(dia) => atualizar({ dia })}
+            placeholder="terça e quinta"
+          />
+          <CampoDeTexto
+            estilo={estilos.flexivel}
+            rotulo="Hora"
+            valor={form.hora}
+            aoMudar={(hora) => atualizar({ hora })}
+            placeholder="18h"
+          />
+        </View>
+
+        <CampoDeTexto
+          rotulo="Telefone"
+          valor={form.telefone}
+          aoMudar={(telefone) => atualizar({ telefone: formatarTelefone(telefone) })}
+          placeholder="(51) 99999-4182"
+          teclado="telefone"
+          ajuda="Usado para montar a mensagem de reposição e de cobrança."
+        />
+      </CartaoVidro>
 
       {emEdicao ? (
-        <Cartao estilo={{ marginTop: 6, paddingVertical: 14, paddingHorizontal: 16 }}>
-          <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.texto }]}>
-            Arquivar aluno
-          </Text>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 5 }), { color: cores.textoMedio }]}>
+        <View style={estilos.arquivar}>
+          <Text
+            style={[texto(12.5, 500, { altura: 1.45 }), estilos.centro, { color: cores.tinta2 }]}
+          >
             Ele sai da lista, mas o extrato e o histórico ficam guardados.
           </Text>
-          <View style={{ marginTop: 11 }}>
-            {/* Dois toques: arquivar tira o aluno da lista e sai da tela. Contorno,
-                não vermelho — vermelho é só para o que venceu. */}
-            <BotaoPequeno
-              variante="contorno"
-              rotulo={arquivar.armado ? 'Tocar de novo para arquivar' : 'Arquivar aluno'}
-              aoTocar={arquivar.tocar}
-            />
-          </View>
-        </Cartao>
+          {/* Dois toques: arquivar tira o aluno da lista e sai da tela. Tom
+              neutro, não vermelho — vermelho é só para o que venceu, e
+              arquivar não apaga nada. */}
+          <BotaoTexto
+            rotulo={arquivar.armado ? 'Tocar de novo para arquivar' : 'Arquivar aluno'}
+            aoTocar={arquivar.tocar}
+          />
+        </View>
       ) : null}
-    </Tela>
+    </Sheet>
   );
 }
+
+const estilos = StyleSheet.create({
+  flexivel: { flex: 1, minWidth: 0 },
+  centro: { textAlign: 'center' },
+  campos: { gap: 16 },
+  linha: { flexDirection: 'row', gap: 10 },
+  arquivar: { marginTop: 18, alignItems: 'center', gap: 4 },
+  rodape: { gap: 10 },
+});

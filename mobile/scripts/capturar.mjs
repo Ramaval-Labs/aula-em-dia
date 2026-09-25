@@ -8,6 +8,26 @@
  * que o detector do Impeccable consegue ler: ele não entende o código React
  * Native, mas entende o DOM que o react-native-web produz.
  *
+ * Opções:
+ *   --tela <chave>       tela do app (união `Tela` de estado/navegacao.ts); padrão home
+ *   --aluno <id>         aluno do contexto (raf, val, bea… da semente)
+ *   --tema claro|escuro  padrão claro
+ *   --entrada <qual>     máquina de entrada: splash, boasVindas, acesso, onboarding:1..4
+ *   --catalogo           catálogo de componentes (src/componentes/__catalogo__)
+ *   --clicar <texto>     toca no primeiro elemento com esse texto (repetível)
+ *   --rolar <px|fim>     rola a maior área rolável
+ *   --nome <arquivo>     nome do PNG/HTML sem extensão; padrão tela-aluno-tema
+ *   --saida <pasta>      padrão docs/design/revisoes/capturas
+ *   --porta <n>          porta do Expo Web; padrão 8099 (reaproveita se já no ar)
+ *   --largura/--altura   viewport; padrão 390 × 844
+ *
+ * Como cada tela é aberta sai do próprio app, pelo gancho `__aulaEmDia`
+ * (src/estado/depuracao.ts), que expõe `TIPO_DA_TELA`:
+ *   - raiz → `trocarTab(tela)`;
+ *   - empilhada → `ir(tela)`, empilhada sobre a raiz da aba;
+ *   - sheet → com `--aluno`, abre a ficha do aluno e sobe o painel sobre ela
+ *     (sem aluno, sobre a Home), como o professor chega lá.
+ *
  * Exemplos:
  *   node scripts/capturar.mjs --tela home
  *   node scripts/capturar.mjs --tela reposicao --aluno raf --nome antes-reposicao
@@ -16,6 +36,11 @@
  *   node scripts/capturar.mjs --tela aluno --aluno raf --rolar fim
  *   node scripts/capturar.mjs --entrada acesso
  *   node scripts/capturar.mjs --entrada onboarding:2
+ *   node scripts/capturar.mjs --catalogo --tema escuro
+ *   node scripts/capturar.mjs --catalogo --rolar 400 --nome catalogo-rolado
+ *
+ * `--catalogo` abre o catálogo do redesign (src/componentes/__catalogo__) por
+ * cima do app, pelo gancho de depuração; `--rolar` e `--clicar` valem nele.
  *
  * O web não é idêntico ao Expo Go (sombra e renderização de fonte variam um
  * pouco), mas espaçamento, hierarquia, cor e texto cortado aparecem igual.
@@ -31,7 +56,6 @@ import { chromium } from 'playwright-core';
 
 const RAIZ_MOBILE = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SAIDA_PADRAO = resolve(RAIZ_MOBILE, '..', 'docs', 'design', 'revisoes', 'capturas');
-const RAIZES = ['home', 'financeiro', 'ajustes'];
 
 // As chaves de storage vêm do próprio app, para o script não divergir dele.
 const fonteDasChaves = readFileSync(join(RAIZ_MOBILE, 'src', 'dados', 'armazenamento.ts'), 'utf8');
@@ -45,6 +69,7 @@ const { values: op } = parseArgs({
     aluno: { type: 'string' },
     tema: { type: 'string', default: 'claro' },
     entrada: { type: 'string' },
+    catalogo: { type: 'boolean', default: false },
     clicar: { type: 'string', multiple: true, default: [] },
     rolar: { type: 'string' },
     nome: { type: 'string' },
@@ -146,8 +171,12 @@ try {
   await pagina.evaluate(() => document.fonts.ready);
 
   await pagina.evaluate(
-    ({ tela, aluno, entrada, raizes }) => {
-      const { navegacao, sessao } = globalThis.__aulaEmDia;
+    ({ tela, aluno, entrada, catalogo }) => {
+      const { navegacao, sessao, tipoDaTela } = globalThis.__aulaEmDia;
+      if (catalogo) {
+        globalThis.__aulaEmDia.catalogo.getState().abrir();
+        return;
+      }
       if (entrada) {
         const [qual, passo] = entrada.split(':');
         if (qual === 'splash') sessao.setState({ fase: 'carregando' });
@@ -161,11 +190,27 @@ try {
         } else sessao.setState({ fase: 'entrada', tela: qual });
         return;
       }
-      if (raizes.includes(tela)) navegacao.getState().trocarTab(tela);
-      else navegacao.getState().ir(tela, aluno ? { alunoId: aluno } : undefined);
+      const tipo = tipoDaTela[tela];
+      if (!tipo) throw new Error(`Tela desconhecida: ${tela}`);
+      const nav = navegacao.getState();
+      if (tipo === 'raiz') {
+        nav.trocarTab(tela);
+      } else if (tipo === 'sheet' && aluno) {
+        // O painel sobe sobre a ficha, como no app; o sheet guarda o aluno.
+        nav.ir('aluno', { alunoId: aluno });
+        navegacao.getState().ir(tela, { alunoId: aluno });
+      } else {
+        nav.ir(tela, aluno ? { alunoId: aluno } : undefined);
+      }
     },
-    { tela: op.tela, aluno: op.aluno ?? null, entrada: op.entrada ?? null, raizes: RAIZES },
+    {
+      tela: op.tela,
+      aluno: op.aluno ?? null,
+      entrada: op.entrada ?? null,
+      catalogo: op.catalogo,
+    },
   );
+  // O sheet sobe em 340ms; a barra e o toast, em 200ms.
   await pagina.waitForTimeout(500);
 
   for (const alvo of op.clicar) {
@@ -175,20 +220,27 @@ try {
 
   if (op.rolar) {
     // A rolagem do React Native Web é de um View interno, não do documento.
-    await pagina.evaluate((px) => {
+    await pagina.evaluate(({ px, catalogo }) => {
       const rolaveis = [...document.querySelectorAll('div')].filter((el) => {
         const s = getComputedStyle(el);
         return /(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight;
       });
+      // O catálogo fica por cima do app e vem depois no DOM: no empate de altura,
+      // a rolagem dele vence a da tela que está embaixo.
+      if (catalogo) rolaveis.reverse();
       const maior = rolaveis.sort((a, b) => b.clientHeight - a.clientHeight)[0];
       if (maior) maior.scrollTop = px === 'fim' ? maior.scrollHeight : Number(px);
-    }, op.rolar);
+    }, { px: op.rolar, catalogo: op.catalogo });
   }
 
   // Deixa assentar a expansão da aba ativa (220ms) e qualquer transição.
   await pagina.waitForTimeout(700);
 
-  const alvo = op.entrada ? `entrada-${op.entrada.replace(':', '-')}` : op.tela;
+  const alvo = op.catalogo
+    ? 'catalogo'
+    : op.entrada
+      ? `entrada-${op.entrada.replace(':', '-')}`
+      : op.tela;
   const nome = op.nome ?? [alvo, op.aluno, op.tema].filter(Boolean).join('-');
   mkdirSync(op.saida, { recursive: true });
   const png = join(op.saida, `${nome}.png`);

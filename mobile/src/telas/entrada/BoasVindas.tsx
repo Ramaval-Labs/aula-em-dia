@@ -1,16 +1,16 @@
 /** A2 — Boas-vindas: a proposta em três passos, e a bifurcação entrar/criar. */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { BotaoPrimario, BotaoTexto } from '../../componentes/Botoes';
-import { CabecalhoEscuro } from '../../componentes/Cabecalho';
-import { Barras } from '../../componentes/Marca';
-import { Tela } from '../../componentes/Tela';
+import { Avatar } from '../../componentes/Blocos';
+import { BotaoPrimario, BotaoSecundario } from '../../componentes/Controles';
+import { ListaAgrupada } from '../../componentes/Listas';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
-import { MARCA, TAMANHO } from '../../tema/tokens';
+import { definirModoDeAcesso, type ModoDeAcesso } from './modoDeAcesso';
+import { TelaDeEntrada } from './TelaDeEntrada';
 
 const PASSOS = [
   {
@@ -33,63 +33,78 @@ const PASSOS = [
 ];
 
 export function BoasVindas() {
-  const cores = useCores();
   const irPara = useSessao((s) => s.irPara);
 
+  const abrirAcesso = (modo: ModoDeAcesso) => {
+    definirModoDeAcesso(modo);
+    irPara('acesso');
+  };
+
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <View style={{ marginTop: 26 }}>
-            <Barras altura={22} espaco={4} cor={cores.topoTexto} />
-          </View>
-          <Text
-            style={[
-              comEspaco(texto(27, 600, { altura: 1.2, tracking: -0.03 }), { topo: 14 }),
-              { color: cores.topoTexto },
-            ]}
-          >
-            Aula em Dia
-          </Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ paddingTop: 24, gap: 16 }}
+    <TelaDeEntrada
+      titulo="Aula em Dia"
+      subtitulo="A conta das aulas, sem discussão"
       rodape={
         <>
-          <BotaoPrimario rotulo="Começar" aoTocar={() => irPara('acesso')} />
-          <BotaoTexto rotulo="Já tenho conta" aoTocar={() => irPara('acesso')} />
+          <BotaoPrimario rotulo="Criar conta" aoTocar={() => abrirAcesso('criar')} />
+          <BotaoSecundario rotulo="Entrar" aoTocar={() => abrirAcesso('entrar')} />
         </>
       }
-      semMascara
     >
-      {PASSOS.map((p, i) => (
-        <View key={p.numero} style={{ gap: 16 }}>
-          {i > 0 ? <View style={{ height: 1, backgroundColor: cores.linha }} /> : null}
-          <View>
-            <Text
-              style={[texto(15, 800, { altura: 1 }), { color: cores.texto }]}
-            >
-              {p.numero}
-            </Text>
-            <Text
-              style={[
-                comEspaco(texto(19, 600, { altura: 1.3 }), { topo: 8 }),
-                { color: cores.texto },
-              ]}
-            >
-              {p.titulo}
-            </Text>
-            <Text
-              style={[
-                comEspaco(texto(14, 400, { altura: 1.5 }), { topo: 6 }),
-                { color: cores.textoMedio },
-              ]}
-            >
-              {p.apoio}
-            </Text>
-          </View>
-        </View>
-      ))}
-    </Tela>
+      <ListaAgrupada>
+        {PASSOS.map((p) => (
+          <LinhaDePasso key={p.numero} {...p} />
+        ))}
+      </ListaAgrupada>
+    </TelaDeEntrada>
   );
 }
+
+/**
+ * Linha numerada da lista agrupada. A `LinhaLista` do catálogo não serve: ela
+ * não tem ornamento à esquerda, e a `LinhaAluno` corta título e apoio em uma
+ * linha só — aqui as duas frases ocupam duas e três linhas.
+ *
+ * O número usa o `Avatar` do catálogo, que já é o quadrado de 38px em
+ * `tintSuave` com o texto em tint.
+ */
+function LinhaDePasso({
+  numero,
+  titulo,
+  apoio,
+}: {
+  numero: string;
+  titulo: string;
+  apoio: string;
+}) {
+  const { cores } = useCores();
+  return (
+    <View accessible accessibilityLabel={`Passo ${numero}. ${titulo} ${apoio}`} style={estilos.linha}>
+      <Avatar texto={numero} tamanho={38} />
+      <View style={estilos.flexivel}>
+        <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
+          {titulo}
+        </Text>
+        <Text
+          style={[
+            comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 4 }),
+            { color: cores.tinta2 },
+          ]}
+        >
+          {apoio}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  flexivel: { flex: 1, minWidth: 0 },
+  linha: {
+    paddingVertical: 14,
+    paddingHorizontal: 15,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+});

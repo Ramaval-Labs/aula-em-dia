@@ -1,13 +1,17 @@
-/** D5 — Lembrete de cobrança, nos três tons. */
+/**
+ * D5 — Lembrete de cobrança, nos três tons (sheet 88%, derivada).
+ *
+ * Tom em segmentado dentro de cartão (padrão dos cartões de H§9), mensagem na
+ * `PreviaDeMensagem` e o aviso de lembrete repetido como bloco âmbar.
+ */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { Caixa, Cartao, EstadoVazio } from '../componentes/Base';
-import { BotaoPrimario, BotaoTexto, Segmentado } from '../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
+import { BlocoStatus, CartaoDeAjuste, EstadoVazio } from '../componentes/Blocos';
+import { BotaoPrimario, Segmentado } from '../componentes/Controles';
 import { PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
-import { Tela } from '../componentes/Tela';
+import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { primeiroNome } from '../dominio/formato';
 import { mascararTelefone, mensagemDeCobranca } from '../dominio/mensagens';
 import type { TomDeMensagem } from '../dominio/tipos';
@@ -15,9 +19,6 @@ import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useCores } from '../tema/TemaProvider';
-import { comEspaco, TIPO } from '../tema/tipografia';
-import { TAMANHO } from '../tema/tokens';
 
 const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
   { valor: 'cordial', rotulo: 'Cordial' },
@@ -25,9 +26,10 @@ const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
   { valor: 'formal', rotulo: 'Formal' },
 ];
 
+const TITULO = 'Lembrete de cobrança';
+
 export function Lembrete() {
-  const cores = useCores();
-  const { alunoId, concluir, voltar } = useNavegacao();
+  const { alunoId, concluir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const perfil = useDados((s) => s.perfil);
   const enviarLembrete = useDados((s) => s.enviarLembrete);
@@ -41,19 +43,13 @@ export function Lembrete() {
 
   if (!aluno) {
     return (
-      <Tela
-        cabecalho={
-          <CabecalhoEscuro corDaCurva={cores.tela}>
-            <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          </CabecalhoEscuro>
-        }
-      >
+      <Sheet titulo={TITULO}>
         <EstadoVazio titulo="Aluno não encontrado." />
-      </Tela>
+      </Sheet>
     );
   }
 
-  const texto_ = mensagemDeCobranca(aluno, msg.tom, perfil.chavePix);
+  const mensagem = mensagemDeCobranca(aluno, msg.tom, perfil.chavePix);
   const segundoLembrete = (aluno.lembretes ?? 0) > 0;
 
   const registrar = () => {
@@ -63,68 +59,51 @@ export function Lembrete() {
   };
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>Lembrete de cobrança</TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>
-            {`Para ${primeiroNome(aluno.name)}`}
-          </Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 12 }}
-      rodape={
-        <>
-          <BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />
-          {/* Botão de texto: a ação ainda não existe, e contorno escuro dava a
-              ela o mesmo peso de "Marcar como enviado". */}
-          <BotaoTexto
-            rotulo="Agendar para amanhã, 9h"
-            // Não existe agendamento no app: o aviso diz isso e a tela fica,
-            // para o professor copiar a mensagem.
-            aoTocar={() =>
-              avisar(
-                `O agendamento de lembretes ainda não existe nesta versão. Copie a mensagem para ${primeiroNome(
-                  aluno.name,
-                )} e envie quando quiser.`,
-              )
-            }
-          />
-        </>
-      }
+    <Sheet
+      titulo={TITULO}
+      // Um primário só: agendar o envio não existe no app, e um botão que só
+      // explica isso ocupava o lugar da ação de verdade. A limitação está na
+      // nota abaixo da prévia.
+      rodape={<BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />}
     >
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text style={[TIPO.rotulo, { color: cores.suave }]}>
-          Tom da mensagem
-        </Text>
-        <View style={{ marginTop: 10 }}>
-          <Segmentado
-            opcoes={TONS}
-            valor={msg.tom}
-            aoTrocar={(tom) => atualizar({ tom, editado: false })}
-            rotuloAcessivel="Tom da mensagem"
-          />
-        </View>
-      </Cartao>
+      <SubLinhaSheet texto={`Para ${primeiroNome(aluno.name)}`} />
 
-      <PreviaDeMensagem
-        texto={texto_}
-        destino={mascararTelefone(aluno.telefone)}
-        aoCopiar={() => avisar(avisos.mensagemCopiada)}
-      />
+      <CartaoDeAjuste titulo="Tom da mensagem" estilo={estilos.espaco16}>
+        <Segmentado
+          porte="cartao"
+          opcoes={TONS}
+          valor={msg.tom}
+          aoTrocar={(tom) => atualizar({ tom, editado: false })}
+          rotuloDoGrupo="Tom da mensagem"
+        />
+      </CartaoDeAjuste>
+
+      <View style={estilos.espaco14}>
+        <PreviaDeMensagem
+          texto={mensagem}
+          destino={mascararTelefone(aluno.telefone)}
+          nota={`Copie e envie para ${primeiroNome(
+            aluno.name,
+          )} quando quiser: agendar o envio ainda não existe nesta versão.`}
+          aoCopiar={() => avisar(avisos.mensagemCopiada)}
+        />
+      </View>
 
       {segundoLembrete ? (
-        <Caixa>
-          <Text style={[TIPO.corpo, { color: cores.textoMedio }]}>
-            {`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete${
-              aluno.ultimoLembrete ? `. O último foi em ${aluno.ultimoLembrete}.` : '.'
-            } Vale considerar pausar as aulas ou combinar parcelamento.`}
-          </Text>
-        </Caixa>
+        <BlocoStatus
+          tom="ambar"
+          titulo={`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete`}
+          texto={`${
+            aluno.ultimoLembrete ? `O último foi em ${aluno.ultimoLembrete}. ` : ''
+          }Vale considerar pausar as aulas ou combinar parcelamento.`}
+          estilo={estilos.espaco14}
+        />
       ) : null}
-    </Tela>
+    </Sheet>
   );
 }
+
+const estilos = StyleSheet.create({
+  espaco14: { marginTop: 14 },
+  espaco16: { marginTop: 16 },
+});

@@ -99,6 +99,16 @@ export function efeito(desfecho: Desfecho, avisoH: number, p: Politicas): Efeito
   };
 }
 
+/**
+ * A reposição que **este** registro cria: a regra quer reposição e o aluno
+ * ainda tem direito a ela no pacote. É a mesma condição que `registrarAula`
+ * aplica; existe à parte porque a tela de Resultado precisa saber se a
+ * pendência que ela vê nasceu agora ou já existia antes.
+ */
+export function geraReposicao(a: Aluno, ef: EfeitoRegistro, p: Politicas): boolean {
+  return ef.reposicao && podeRepor(a, p);
+}
+
 /** Aplica o registro: retorna aluno novo e lançamento. Não muta a entrada. */
 export function registrarAula(
   a: Aluno,
@@ -111,7 +121,7 @@ export function registrarAula(
   const novoSaldo = Math.max(0, saldo(a) + ef.delta);
   const aluno: Aluno = { ...a };
   if (ef.delta < 0) aluno.usadas = a.usadas + 1;
-  if (ef.reposicao && podeRepor(aluno, p)) aluno.pendencia = { origem: hoje, dias: 0 };
+  if (geraReposicao(aluno, ef, p)) aluno.pendencia = { origem: hoje, dias: 0 };
   return {
     aluno,
     lancamento: { d: hoje, t: ef.rotulo, s: ef.detalhe, delta: ef.delta, saldo: novoSaldo },

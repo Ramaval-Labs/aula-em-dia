@@ -97,6 +97,11 @@ export function mesmaJanela(
 export interface RascunhoRegistro {
   desfecho: Desfecho | null;
   avisoH: number;
+  /**
+   * O que o registro fez de fato, guardado na hora de confirmar para a tela
+   * de Resultado não reler o aluno: `null` antes de confirmar.
+   */
+  reposicaoCriada: boolean | null;
 }
 
 /** Uma entrada por formulário do app. */
@@ -123,6 +128,7 @@ export const AVISO_PADRAO = 26;
 export const REGISTRO_INICIAL: RascunhoRegistro = {
   desfecho: null,
   avisoH: AVISO_PADRAO,
+  reposicaoCriada: null,
 };
 
 /** Estado zerado da escolha de horário de reposição. */

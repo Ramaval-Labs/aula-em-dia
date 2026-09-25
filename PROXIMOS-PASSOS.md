@@ -52,6 +52,9 @@ O Business Model Canvas já aponta a direção: **Supabase ou Firebase** para au
 Ordem sugerida: autenticação do professor → sincronizar alunos, extratos e políticas → só então o
 link público de consulta do aluno.
 
+**Planejado:** [docs/backend/PLANO-BACKEND.md](docs/backend/PLANO-BACKEND.md). Supabase, com as
+regras no app e gravação transacional por RPC, dividido em 8 partes que podem ser construídas aos poucos.
+
 ## 5. Envio real da mensagem ao aluno
 
 Hoje o app registra a ação e mostra um toast — não envia nada. O MVP prevê **lembrete disparado
@@ -77,17 +80,89 @@ disciplina, horário fixo e telefone. O onboarding também cria o primeiro aluno
 
 ---
 
+## Redesign iOS Glass — o que ficou depois da integração
+
+A troca de design system terminou na Onda 4: um único sistema visual, o legado apagado e
+teste que impede o amarelo e as curvas de voltarem. O que segue é revisão (Onda 5) e decisão
+de design.
+
+**P2 — decisão de design**
+- **Âmbar como texto no tema claro** (`#C07C00`) fica em 2.4–3.2:1 sobre cartão e sobre
+  `ambarSuave` (`spec/acessibilidade.md`). Afeta "Reposição pendente", saldo baixo e "A
+  receber". Proposta: um âmbar de texto mais escuro só no claro, mantendo o de fundo.
+- **Glifo branco (`sobreCor`) sobre verde/âmbar no escuro** fica abaixo de 3:1 (check da
+  medalha do Resultado, ícone de bloco). O handoff pede branco; `sobreTint` resolveria.
+- **Título do cartão de ajuste**: o protótipo usa 14.5/700 em H§9; algumas fatias tinham usado
+  15. Ficou 14.5 em todos (`CartaoDeAjuste`). Confirmar.
+- **Divergências de comportamento** registradas em `mobile/README.md` → "Onde a implementação
+  diverge do protótipo" (itens 4 a 11): "Fechar" no Resultado, "Trocar o horário" sempre para
+  as sugestões, alternativa da proposta que seleciona em vez de aceitar, bloco "Zerar dados"
+  removido, Pagamento que volta para a Cobrança, efeito da falta avisada só depois de escolhida.
+
+**P2 — telas derivadas a validar com design** (o handoff novo não desenha; o visual foi
+montado com o catálogo, seguindo a tela desenhada mais parecida — `MAPA-DE-TELAS.md`):
+- Entrada: Splash, Boas-vindas, Acesso, os 4 passos do onboarding (chassi `TelaDeEntrada`).
+- Alunos: Novo/Editar aluno, Pacote, as quatro telas da visão do aluno.
+- Reposição: disponibilidade do aluno, outro horário, sem horário, confirmar, aguardando aceite.
+- Financeiro: Registrar pagamento, Lembrete de cobrança.
+- Ajustes: Meu perfil, Minha disponibilidade, Pacotes padrão, Avisos, Chave Pix, Conta.
+
+**P3 — acabamento**
+- Calibrar o blur no aparelho (iOS e Android 12+): `MATERIAL.intensidade*` partiu da conversão
+  do CSS; o checkpoint da Onda 1 validou só o essencial.
+- Teclado no sheet: o painel tem altura fixa (88%), então no Android (adjustResize) o topo pode
+  ser cortado com o teclado aberto em Novo aluno e Pacote. Conferir no aparelho.
+- Medidas soltas que ainda não são token (paddings internos de cartão, `alturaDaCelula={52}` na
+  disponibilidade do aluno, margens entre blocos): vale uma passada do `/designer` com
+  `extract`.
+- `DESIGN.md` regravado a partir do que foi entregue (Onda 4, sessão principal).
+
+---
+
+## Depois do redesign iOS Glass
+
+O que a revisão final das 35 telas (três `revisor-design`) levantou e a Onda 5 **não** fez —
+os P0/P1 foram corrigidos; o que ficou é o que exige regra nova, dependência nova ou aparelho.
+
+**Regra e domínio**
+- Resumo do mês do Financeiro para o domínio, com filtro por mês: hoje a tela soma o extrato
+  inteiro, então "aulas dadas em agosto" cresce para sempre.
+- Validar o "valor por aula" em Pacotes padrão: digitar "62,50" vira 6250 (o campo só tira o
+  que não é dígito).
+- "Marcar folga" em Minha disponibilidade não faz nada: ou implementa, ou sai da tela.
+
+**Movimento e plataforma**
+- Sheet sem animação de saída e sem arrastar-para-fechar (só "Cancelar", toque fora e voltar).
+- `useNativeDriver: false` em todas as animações (sheet, toast, barra, switch): medir no
+  aparelho antes de trocar, porque a cor e a altura animadas não rodam no driver nativo.
+- Brilho da pílula da aba ativa usa `filter: blur()`, que o iOS não aplica — lá o realce vem
+  só do gradiente e da borda.
+- Alvo de 48dp no Android (o app garante os 44pt do iOS; as linhas de lista já passam).
+- Calibrar o blur no aparelho e conferir o teclado do sheet no Android (a altura do painel
+  passou a reagir ao teclado, mas só foi testada no web).
+
+**Acabamento visual (P2/P3 da revisão)**
+- Telas derivadas ainda por validar com design (lista do P2 acima).
+- Medidas soltas que ainda não são token (paddings internos de cartão, `alturaDaCelula={52}`).
+- Cartão de escolha desabilitado, agora por cor: conferir com design se o contraste do
+  `tinta3` no título basta.
+- `EstadoVazio` e blocos de status não têm ilustração nenhuma — decisão consciente, mas vale
+  revisar com design.
+
+---
+
 ## Dívidas técnicas conhecidas
 
 - **Teste de interface só de fumaça.** Existe um teste que monta as 28 telas do app em quatro
-  estados e afirma que nenhuma lança — foi ele que pegou um loop infinito de render causado por
+  estados, as 7 da entrada e o app com um sheet aberto, e afirma que nenhuma lança — foi ele que pegou um loop infinito de render causado por
   seletor de store instável. Falta teste de fluxo de verdade: registrar aula e confirmar
   reposição, com asserção de conteúdo.
 - **Os módulos de domínio novos não têm teste próprio.** `agenda.ts`, `mensagens.ts` e
   `pacote.ts` são puros e testáveis, mas hoje só são exercitados de lado, pelo teste de
   montagem.
-- **O visual das telas novas não foi conferido tela a tela.** A verificação foi por tipos,
-  testes e build. Vale uma passada com o protótipo aberto ao lado.
+- **O visual foi conferido por capturas web**, não no aparelho: as 35 telas nos dois temas
+  estão em `docs/design/revisoes/capturas/redesign-integrado/` (fora do git). Falta a passada
+  no Expo Go.
 - **`mobile/src/dados/seed.json` é cópia** de `data/seed.json`, porque o Metro não resolve arquivos
   fora da raiz do projeto. Mudou um, copie no outro.
 - **Sem linter configurado.** Só `tsc --noEmit`. Um `eslint-config-expo` fecharia a lacuna.

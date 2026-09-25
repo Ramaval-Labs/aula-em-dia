@@ -1,18 +1,25 @@
 /**
- * Tela 5 — Sugestões de reposição (C3, passo 2 de 3).
+ * Tela 5 — Escolher horário (handoff-ios-glass/README.md §5; C3, passo 2 de 3).
  *
- * As janelas saem do motor de `dominio/agenda.ts`, calculadas contra a
- * disponibilidade do professor, a do aluno, as folgas e as aulas fixas dos
- * outros alunos. Lista vazia leva à tela C5.
+ * Sheet de tarefa (88%). As janelas saem do motor de `dominio/agenda.ts`,
+ * calculadas contra a disponibilidade do professor, a do aluno, as folgas e
+ * as aulas fixas dos outros alunos — não das três fixas do protótipo. A
+ * primeira leva o selo "MELHOR" e cada uma mostra o motivo calculado. Lista
+ * vazia leva à tela C5.
  */
 
 import React, { useMemo } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { BarraDePassos, Caixa, Radio } from '../componentes/Base';
-import { BotaoPequeno, BotaoPrimario, BotaoTexto } from '../componentes/Botoes';
-import { BotaoVoltar, CabecalhoEscuro, TituloTela } from '../componentes/Cabecalho';
-import { Tela } from '../componentes/Tela';
+import { BlocoStatus } from '../componentes/Blocos';
+import {
+  BotaoCompacto,
+  BotaoPrimario,
+  BotaoTexto,
+  CartaoEscolha,
+} from '../componentes/Controles';
+import { CabecalhoGrupo } from '../componentes/Listas';
+import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { candidatos, melhores, type Candidata } from '../dominio/agenda';
 import { hoje } from '../dominio/datas';
 import { podeRepor } from '../dominio/politica';
@@ -20,16 +27,12 @@ import { avisos, useDados } from '../estado/dados';
 import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
-import { useCores } from '../tema/TemaProvider';
-import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { MARCA, RAIO, TAMANHO } from '../tema/tokens';
 
 /** "Sexta, 29/08" → "sexta, 29/08", para caber no meio da frase do botão. */
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 export function Reposicao() {
-  const cores = useCores();
-  const { alunoId, ir, voltar } = useNavegacao();
+  const { alunoId, ir } = useNavegacao();
 
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const alunos = useDados((s) => s.alunos);
@@ -70,24 +73,12 @@ export function Reposicao() {
     : '';
 
   return (
-    <Tela
-      cabecalho={
-        <CabecalhoEscuro corDaCurva={cores.tela} padBaixo={TAMANHO.padCabecalhoCompacto}>
-          <BotaoVoltar rotulo="Voltar" aoTocar={voltar} />
-          <View style={{ marginTop: 12 }}>
-            <BarraDePassos total={3} atual={2} rotulo="Passo 2 de 3" />
-          </View>
-          <View style={{ marginTop: 14 }}>
-            <TituloTela tamanho={22}>Escolher horário</TituloTela>
-          </View>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 6 }), { color: cores.topoFraco }]}>{sub}</Text>
-        </CabecalhoEscuro>
-      }
-      conteudoEstilo={{ gap: 9, paddingBottom: 12 }}
+    <Sheet
+      titulo="Escolher horário"
       rodape={
         liberada && janelas.length > 0 ? (
           <>
-            {/* O botão diz o que vai acontecer; "Nenhum serve" é secundário
+            {/* O botão diz o que vai acontecer; "Nenhum serve" é terciário
                 e não disputa peso com ele. */}
             <BotaoPrimario
               rotulo={
@@ -96,83 +87,68 @@ export function Reposicao() {
               desabilitado={!marcada && form.janela === null}
               aoTocar={continuar}
             />
-            <BotaoTexto rotulo="Nenhum serve · escolher outro" aoTocar={() => ir('outroHorario')} />
+            <BotaoTexto
+              rotulo="Nenhum serve · escolher outro"
+              aoTocar={() => ir('outroHorario')}
+            />
           </>
         ) : undefined
       }
     >
+      <SubLinhaSheet passo="Passo 2 de 3" texto={sub} />
+
       {!liberada ? (
-        <Caixa>
-          <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
-            Limite de reposições atingido
-          </Text>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
-            {aluno
+        <BlocoStatus
+          tom="ambar"
+          titulo="Limite de reposições atingido"
+          texto={
+            aluno
               ? `${aluno.reposicoes} de ${politicas.limiteReposicoes} usadas neste pacote. Sua política não permite mais.`
-              : ''}
-          </Text>
-          <View style={{ marginTop: 11 }}>
-            <BotaoPequeno rotulo="Rever política" aoTocar={() => ir('politica')} />
-          </View>
-        </Caixa>
+              : undefined
+          }
+          acao={{ rotulo: 'Rever política', aoTocar: () => ir('politica'), variante: 'vidro' }}
+          estilo={estilos.bloco}
+        />
       ) : janelas.length === 0 ? (
-        <Caixa>
-          <Text style={[texto(14, 600, { altura: 1.25 }), { color: cores.textoMedio }]}>
-            Nenhum horário cabe
-          </Text>
-          <Text style={[comEspaco(TIPO.corpo, { topo: 4 }), { color: cores.textoMedio }]}>
-            A agenda até a validade do pacote está cheia. Veja as saídas possíveis.
-          </Text>
-          <View style={{ marginTop: 11 }}>
-            <BotaoPequeno rotulo="Ver saídas" aoTocar={() => ir('semHorario')} />
-          </View>
-        </Caixa>
+        <BlocoStatus
+          tom="ambar"
+          titulo="Nenhum horário cabe"
+          texto="A agenda até a validade do pacote está cheia. Veja as saídas possíveis."
+          acao={{ rotulo: 'Ver saídas', aoTocar: () => ir('semHorario'), variante: 'vidro' }}
+          estilo={estilos.bloco}
+        />
       ) : (
         <>
-          <Text
-            style={[
-              comEspaco(TIPO.rotulo, { base: 2 }),
-              { color: cores.textoMedio },
-            ]}
-          >
-            {`${todas.length} horários possíveis · as ${janelas.length} melhores`}
-          </Text>
+          <CabecalhoGrupo
+            titulo={`${todas.length} horários possíveis`}
+            contagem={`as ${janelas.length} melhores`}
+            estilo={estilos.cabecalho}
+          />
 
-          {janelas.map((j) => (
-            <CartaoJanela
-              key={`${j.data}-${j.hora}`}
-              janela={j}
-              selecionada={j === marcada}
-              aoTocar={() => atualizar({ janela: { data: j.data, hora: j.hora } })}
-            />
-          ))}
+          <View style={estilos.cartoes}>
+            {janelas.map((j) => (
+              <CartaoJanela
+                key={`${j.data}-${j.hora}`}
+                janela={j}
+                selecionada={j === marcada}
+                aoTocar={() => atualizar({ janela: { data: j.data, hora: j.hora } })}
+              />
+            ))}
+          </View>
 
           {aluno && !aluno.validadeEstendida ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => {
+            <BotaoCompacto
+              rotulo="Estender validade em 15 dias"
+              aoTocar={() => {
                 const nova = estenderValidade(aluno.id);
                 if (nova) avisar(avisos.validade(nova));
               }}
-              style={{
-                marginTop: 3,
-                height: 46,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 1,
-                borderColor: cores.linha,
-                borderRadius: RAIO.cartao,
-                backgroundColor: cores.cartao,
-              }}
-            >
-              <Text style={[texto(13.5, 600, { altura: 1 }), { color: cores.textoMedio }]}>
-                Estender validade em 15 dias
-              </Text>
-            </Pressable>
+              estilo={estilos.estender}
+            />
           ) : null}
         </>
       )}
-    </Tela>
+    </Sheet>
   );
 }
 
@@ -185,75 +161,24 @@ function CartaoJanela({
   selecionada: boolean;
   aoTocar: () => void;
 }) {
-  const cores = useCores();
   return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selecionada }}
-      accessibilityLabel={`${janela.melhor ? 'Melhor opção. ' : ''}${janela.dia}, ${
+    <CartaoEscolha
+      titulo={janela.dia}
+      aoLado={janela.hora}
+      selo={janela.melhor ? 'Melhor' : undefined}
+      subtitulo={janela.razoes.join(' ')}
+      selecionado={selecionada}
+      aoTocar={aoTocar}
+      rotuloAcessivel={`${janela.melhor ? 'Melhor opção. ' : ''}${janela.dia}, ${
         janela.hora
       }. ${janela.razoes.join(' ')}`}
-      onPress={aoTocar}
-    >
-      <View
-        style={{
-          backgroundColor: cores.cartao,
-          borderRadius: RAIO.cartao,
-          overflow: 'hidden',
-          borderWidth: selecionada ? 1.5 : 1,
-          borderColor: selecionada ? cores.texto : cores.linha,
-        }}
-      >
-        {janela.melhor ? (
-          <View
-            style={{
-              backgroundColor: MARCA.amarelo,
-              paddingVertical: 6,
-              paddingHorizontal: 15,
-            }}
-          >
-            <Text
-              style={[
-                texto(10, 600, { altura: 1.2, tracking: 0.14, maiuscula: true }),
-                { color: MARCA.tintaSobreAmarelo },
-              ]}
-            >
-              Melhor opção
-            </Text>
-          </View>
-        ) : null}
-        <View
-          style={{
-            paddingVertical: 13,
-            paddingHorizontal: 15,
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: 13,
-          }}
-        >
-          <View style={{ marginTop: 2 }}>
-            <Radio selecionado={selecionada} />
-          </View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-              <Text style={[TIPO.nome, { color: cores.texto }]}>{janela.dia}</Text>
-              <Text style={[texto(15, 700, { altura: 1.25 }), { color: cores.texto }]}>
-                {janela.hora}
-              </Text>
-            </View>
-            <View style={{ marginTop: 6, gap: 4 }}>
-              {janela.razoes.map((r) => (
-                <Text
-                  key={r}
-                  style={[texto(12, 400, { altura: 1.45 }), { color: cores.textoMedio }]}
-                >
-                  {`· ${r}`}
-                </Text>
-              ))}
-            </View>
-          </View>
-        </View>
-      </View>
-    </Pressable>
+    />
   );
 }
+
+const estilos = StyleSheet.create({
+  bloco: { marginTop: 16 },
+  cabecalho: { marginTop: 16 },
+  cartoes: { marginTop: 9, gap: 9 },
+  estender: { marginTop: 12 },
+});

@@ -20,9 +20,9 @@ cobertas por testes e estado persistido no aparelho. Os dados são mock, de prop
 
 | Área | Situação |
 |---|---|
-| 35 telas do handoff | prontas, nos temas claro e noturno |
+| 35 telas | prontas na direção visual *iOS Glass*, nos temas claro e escuro |
 | Entrada e onboarding | splash, login e 4 passos que gravam dados de verdade |
-| Regras de negócio | módulos puros em `src/dominio/`, 218 testes verdes |
+| Regras de negócio | módulos puros em `src/dominio/`, 294 testes verdes |
 | Motor de reposição | **existe**: calcula contra agenda, folgas e aulas fixas |
 | Persistência local | AsyncStorage, chave `aulaemdia.app.v4` |
 | Backend / sincronização | fora do escopo até aqui — Supabase é a escolha registrada |
@@ -52,14 +52,15 @@ Para só conferir o visual, sem celular e sem conta: `npx expo start --web`.
 
 ```bash
 cd mobile
-npm test           # 218 testes
+npm test           # 294 testes
 npm run typecheck  # tsc --noEmit
 ```
 
 Os testes portam os casos tabelados de [`spec/casos-de-teste.md`](spec/casos-de-teste.md) e
 conferem as strings letra a letra, porque elas aparecem na interface. Há também um teste que
-monta as 28 telas do app em quatro estados diferentes — é ele que pega tela quebrada antes
-do aparelho.
+monta as 28 telas do app em quatro estados diferentes, as 7 da entrada e o app com um sheet
+aberto — é ele que pega tela quebrada antes do aparelho — e um que impede a direção visual
+anterior (amarelo, curvas) de voltar ao código.
 
 ## Estrutura
 
@@ -67,26 +68,26 @@ do aparelho.
 mobile/            o aplicativo (React Native + Expo + TypeScript)
   src/dominio/       regras de negócio puras, sem UI — comece por aqui
   src/telas/         as 35 telas, agrupadas por fluxo
-  src/componentes/   chassi visual (curvas, navbar de vidro, cabeçalho)
+  src/componentes/   catálogo iOS Glass: vidro, chassi, sheet, tab bar, controles, listas
   src/tema/          tokens tipados e tipografia
   README.md          mapa interno, decisões de stack e solução de problemas
 
-HANDOFF.md         especificação de design: telas, medidas, tokens, estado
+handoff-ios-glass/  especificação de design atual (iOS Glass): README e protótipos em HTML
+HANDOFF.md         aponta para a especificação atual
 IMPLEMENTACAO.md   plano em 6 fases, com o que ficou pendente
 PROXIMOS-PASSOS.md backlog priorizado
 CLAUDE.md          regras do projeto para quem for programar com IA
 
 spec/              regras, navegação, componentes e acessibilidade
-tokens/            tokens de design em JSON, CSS, SCSS e Tailwind
+tokens/            tokens de design em JSON (espelhados em mobile/src/tema/tokens.ts)
 data/seed.json     dados-semente (alunos, extratos, políticas)
-assets/            SVGs das curvas e dos ícones
-*.dc.html          protótipos de design — referência visual, não código
+docs/design/       plano e mapa do redesign, histórico da direção anterior e revisões de design
 ```
 
 ## Como este repositório funciona
 
-Ele guarda **duas coisas**: o pacote de handoff de design (specs, tokens, protótipos em HTML) e a
-implementação em `mobile/`. Os arquivos `.dc.html` são **referência visual, não código para
+Ele guarda **duas coisas**: o pacote de handoff de design (specs, tokens, protótipos em HTML, em
+`handoff-ios-glass/`) e a implementação em `mobile/`. Os arquivos `.dc.html` são **referência visual, não código para
 copiar** — usam um runtime de prototipagem próprio (`support.js`) que não vai para produção.
 
 Duas regras que valem para qualquer mudança:

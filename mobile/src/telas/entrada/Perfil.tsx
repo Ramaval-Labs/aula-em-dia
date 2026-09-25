@@ -1,18 +1,16 @@
 /** A4 — Onboarding, passo 1: quem é o professor. */
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { Cartao } from '../../componentes/Base';
-import { Chip, Segmentado } from '../../componentes/Botoes';
-import { CampoDeTexto } from '../../componentes/Formulario';
-import { ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
+import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
+import { CampoDeTexto } from '../../componentes/Campos';
+import { FichaDeEscolha, Segmentado } from '../../componentes/Controles';
 import type { FaixaDeAlunos } from '../../dominio/tipos';
+import { ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
-import { useCores } from '../../tema/TemaProvider';
-import { texto, TIPO } from '../../tema/tipografia';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 
 /** Catálogo sugerido; "+ outra" acrescenta o que o professor escrever. */
@@ -25,7 +23,6 @@ const FAIXAS: { valor: FaixaDeAlunos; rotulo: string }[] = [
 ];
 
 export function Perfil() {
-  const cores = useCores();
   const email = useSessao((s) => s.email);
   const avancar = useSessao((s) => s.avancar);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
@@ -81,59 +78,42 @@ export function Perfil() {
       motivoDesabilitado={motivo}
       aoAvancar={continuar}
     >
-      <CampoDeTexto
-        rotulo="Como seus alunos te chamam"
-        valor={form.nome}
-        aoMudar={(nome) => atualizar({ nome })}
-        placeholder="Seu nome"
-        capitalizar="words"
-        tamanhoDoValor={17}
-      />
+      <CartaoVidro>
+        <CampoDeTexto
+          rotulo="Como seus alunos te chamam"
+          valor={form.nome}
+          aoMudar={(nome) => atualizar({ nome })}
+          placeholder="Seu nome"
+          capitalizar="words"
+        />
+      </CartaoVidro>
 
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text
-          style={[
-            TIPO.rotulo,
-            { color: cores.suave },
-          ]}
-        >
-          O que você ensina
-        </Text>
-        <View
-          style={{ marginTop: 11, flexDirection: 'row', flexWrap: 'wrap', gap: 7 }}
-        >
+      <CartaoDeAjuste titulo="O que você ensina">
+        <View accessibilityRole="list" accessibilityLabel="O que você ensina" style={estilos.fichas}>
           {DISCIPLINAS.map((d) => (
-            <Chip
+            <FichaDeEscolha
               key={d}
               rotulo={d}
-              altura={36}
-              variante="caixa"
-              ativo={form.disciplinas.includes(d)}
+              marcada={form.disciplinas.includes(d)}
               aoTocar={() => alternarDisciplina(d)}
             />
           ))}
         </View>
-      </Cartao>
+      </CartaoDeAjuste>
 
-      <Cartao estilo={{ paddingVertical: 13, paddingHorizontal: 15 }}>
-        <Text
-          style={[
-            TIPO.rotulo,
-            { color: cores.suave },
-          ]}
-        >
-          Quantos alunos hoje
-        </Text>
-        <View style={{ marginTop: 11 }}>
-          <Segmentado
-            opcoes={FAIXAS}
-            valor={form.faixaDeAlunos}
-            altura={44}
-            aoTrocar={(faixaDeAlunos) => atualizar({ faixaDeAlunos })}
-            rotuloAcessivel="Quantos alunos hoje"
-          />
-        </View>
-      </Cartao>
+      <CartaoDeAjuste titulo="Quantos alunos hoje">
+        <Segmentado
+          opcoes={FAIXAS}
+          valor={form.faixaDeAlunos}
+          porte="cartao"
+          aoTrocar={(faixaDeAlunos) => atualizar({ faixaDeAlunos })}
+          rotuloDoGrupo="Quantos alunos hoje"
+        />
+      </CartaoDeAjuste>
     </PassoDoOnboarding>
   );
 }
+
+const estilos = StyleSheet.create({
+  fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+});

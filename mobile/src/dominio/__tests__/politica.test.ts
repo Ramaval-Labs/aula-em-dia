@@ -4,7 +4,7 @@
  */
 
 import { estadoInicial, JANELA_VALIDADE_ESTENDIDA, JANELAS } from '../../dados/semente';
-import { dinheiro } from '../formato';
+import { dinheiro, dinheiroCompacto, plural, unidade } from '../formato';
 import {
   efeito,
   estenderValidade,
@@ -14,6 +14,7 @@ import {
   ordenar,
   podeRepor,
   POLITICAS_PADRAO,
+  geraReposicao,
   registrarAula,
   registrarPagamento,
   saldo,
@@ -184,6 +185,19 @@ describe('registrarAula', () => {
     expect(entrada).toEqual(copia);
   });
 
+  it('geraReposicao diz se a pendência nasce neste registro', () => {
+    const val = alunoPor('val');
+    // Falta avisada no prazo cria; aula realizada não; no limite, não cria.
+    expect(geraReposicao(val, efeito('avisada', 26, padrao), padrao)).toBe(true);
+    expect(geraReposicao(val, efeito('realizada', 0, padrao), padrao)).toBe(false);
+    expect(
+      geraReposicao(alunoBase({ reposicoes: 3 }), efeito('avisada', 26, padrao), padrao),
+    ).toBe(false);
+    // O que `registrarAula` grava é exatamente isso.
+    const { aluno } = registrarAula(val, 'avisada', 26, padrao, HOJE);
+    expect(!!aluno.pendencia).toBe(geraReposicao(val, efeito('avisada', 26, padrao), padrao));
+  });
+
   it('23 — o lançamento entra no topo do extrato', () => {
     const { extratos } = semente();
     const { lancamento } = registrarAula(alunoPor('val'), 'realizada', 0, padrao, HOJE);
@@ -246,6 +260,24 @@ describe('pagamento e validade', () => {
   it('30 — dinheiro em pt-BR, com duas casas e milhar', () => {
     expect(dinheiro(480)).toBe('R$ 480,00');
     expect(dinheiro(1234.5)).toBe('R$ 1.234,50');
+  });
+
+  it('dinheiro compacto encurta só a partir de 5 dígitos', () => {
+    expect(dinheiroCompacto(480)).toBe('R$ 480');
+    expect(dinheiroCompacto(1234.5)).toBe('R$ 1.235');
+    expect(dinheiroCompacto(9999)).toBe('R$ 9.999');
+    expect(dinheiroCompacto(10000)).toBe('R$ 10 mil');
+    expect(dinheiroCompacto(12500)).toBe('R$ 12,5 mil');
+    expect(dinheiroCompacto(128400)).toBe('R$ 128,4 mil');
+    expect(dinheiroCompacto(1250000)).toBe('R$ 1,3 mi');
+    expect(dinheiroCompacto(-12500)).toBe('R$ -12,5 mil');
+  });
+
+  it('plural e unidade concordam com o número', () => {
+    expect(plural(1, 'aula restante', 'aulas restantes')).toBe('1 aula restante');
+    expect(plural(0, 'aula restante', 'aulas restantes')).toBe('0 aulas restantes');
+    expect(unidade(1, 'aula', 'aulas')).toBe('aula');
+    expect(unidade(2, 'aula', 'aulas')).toBe('aulas');
   });
 
   it('31 — estender validade grava a data e marca o pacote', () => {
