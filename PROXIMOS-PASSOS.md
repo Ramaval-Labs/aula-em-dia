@@ -108,10 +108,6 @@ montado com o catálogo, seguindo a tela desenhada mais parecida — `MAPA-DE-TE
 - Ajustes: Meu perfil, Minha disponibilidade, Pacotes padrão, Avisos, Chave Pix, Conta.
 
 **P3 — acabamento**
-- Calibrar o blur no aparelho (iOS e Android 12+): `MATERIAL.intensidade*` partiu da conversão
-  do CSS; o checkpoint da Onda 1 validou só o essencial.
-- Teclado no sheet: o painel tem altura fixa (88%), então no Android (adjustResize) o topo pode
-  ser cortado com o teclado aberto em Novo aluno e Pacote. Conferir no aparelho.
 - Medidas soltas que ainda não são token (paddings internos de cartão, `alturaDaCelula={52}` na
   disponibilidade do aluno, margens entre blocos): vale uma passada do `/designer` com
   `extract`.
@@ -138,8 +134,6 @@ os P0/P1 foram corrigidos; o que ficou é o que exige regra nova, dependência n
 - Brilho da pílula da aba ativa usa `filter: blur()`, que o iOS não aplica — lá o realce vem
   só do gradiente e da borda.
 - Alvo de 48dp no Android (o app garante os 44pt do iOS; as linhas de lista já passam).
-- Calibrar o blur no aparelho e conferir o teclado do sheet no Android (a altura do painel
-  passou a reagir ao teclado, mas só foi testada no web).
 
 **Acabamento visual (P2/P3 da revisão)**
 - Telas derivadas ainda por validar com design (lista do P2 acima).
@@ -160,9 +154,6 @@ os P0/P1 foram corrigidos; o que ficou é o que exige regra nova, dependência n
 - **Os módulos de domínio novos não têm teste próprio.** `agenda.ts`, `mensagens.ts` e
   `pacote.ts` são puros e testáveis, mas hoje só são exercitados de lado, pelo teste de
   montagem.
-- **O visual foi conferido por capturas web**, não no aparelho: as 35 telas nos dois temas
-  estão em `docs/design/revisoes/capturas/redesign-integrado/` (fora do git). Falta a passada
-  no Expo Go.
 - **`mobile/src/dados/seed.json` é cópia** de `data/seed.json`, porque o Metro não resolve arquivos
   fora da raiz do projeto. Mudou um, copie no outro.
 - **Sem linter configurado.** Só `tsc --noEmit`. Um `eslint-config-expo` fecharia a lacuna.

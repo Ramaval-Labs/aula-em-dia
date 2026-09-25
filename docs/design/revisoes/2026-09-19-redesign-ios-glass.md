@@ -63,10 +63,12 @@ Registradas em `mobile/README.md` → "Onde a implementação diverge do protót
 - "Agosto de 2025": o ano de demonstração é 2025 porque os dias da semana da semente só batem com
   2025; o "2026" do protótipo é que está inconsistente.
 
-## Não verificado
+## Verificação no aparelho
 
-- **Nada foi visto em aparelho.** Blur no iOS e no Android, teclado nos sheets, anúncios do
-  VoiceOver/TalkBack e escala de fonte foram conferidos só por código e Expo Web.
+- Até a integração, blur no iOS e no Android, teclado nos sheets, anúncios do VoiceOver/TalkBack e
+  escala de fonte tinham sido conferidos só por código e Expo Web.
+- **Em 25/09/2026 a pessoa usuária testou no aparelho e aprovou.** O redesign foi mesclado na
+  `main` (`3f1a50e`) e enviado ao GitHub.
 
 ## Backlog
 
