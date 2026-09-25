@@ -150,6 +150,7 @@ PRODUCT.md, DESIGN.md          contexto de produto e sistema visual que o Impecc
 docs/design/redesign-ios-glass/ plano e mapa de telas da troca de design system
 docs/design/historico/         direção visual aposentada (tinta chapada) e seus protótipos
 docs/design/revisoes/          relatórios das rodadas do /designer (capturas ficam fora do git)
+docs/backend/                  plano do backend (Supabase) em 8 partes — nada construído ainda
 .claude/                       skill /designer, revisor-design e os agentes do redesign
 PROXIMOS-PASSOS.md             backlog priorizado do que vem depois
 IMPLEMENTACAO.md               plano em 6 fases — as seis estão concluídas

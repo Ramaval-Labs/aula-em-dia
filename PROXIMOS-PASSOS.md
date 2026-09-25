@@ -52,6 +52,9 @@ O Business Model Canvas já aponta a direção: **Supabase ou Firebase** para au
 Ordem sugerida: autenticação do professor → sincronizar alunos, extratos e políticas → só então o
 link público de consulta do aluno.
 
+**Planejado:** [docs/backend/PLANO-BACKEND.md](docs/backend/PLANO-BACKEND.md). Supabase, com as
+regras no app e gravação transacional por RPC, dividido em 8 partes que podem ser construídas aos poucos.
+
 ## 5. Envio real da mensagem ao aluno
 
 Hoje o app registra a ação e mostra um toast — não envia nada. O MVP prevê **lembrete disparado
