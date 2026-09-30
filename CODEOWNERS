@@ -1,0 +1,37 @@
+# Donos de código do Aula em Dia
+#
+# O GitHub pede automaticamente a revisão do dono quando um PR toca o caminho dele.
+# A divisão por camada está explicada em CONTRIBUTING.md § 2.
+#
+# ATENÇÃO: o GitHub ignora silenciosamente um @usuario que não existe ou que não tem
+# acesso ao repositório — a regra simplesmente não vale, sem aviso. Por isso só o
+# usuário confirmado está ativo aqui. As linhas de Mauro e Valentin estão comentadas
+# até alguém preencher os usuários reais do GitHub; descomente e confira em
+# Settings → Branches que a revisão está sendo pedida.
+
+# ── Apresentação: Rafael ──────────────────────────────────────────────────────
+# É o revisor obrigatório do visual. Não é fila única: o CONTRIBUTING manda Mauro e
+# Valentin revisarem um ao outro no resto do código.
+/mobile/src/telas/            @dornelasxz
+/mobile/src/componentes/      @dornelasxz
+/mobile/src/tema/             @dornelasxz
+/tokens/                      @dornelasxz
+/handoff-ios-glass/           @dornelasxz
+/docs/design/                 @dornelasxz
+/DESIGN.md                    @dornelasxz
+/PRODUCT.md                   @dornelasxz
+/CLAUDE.md                    @dornelasxz
+
+# ── Contratos: mudança aqui é decisão de time, não de uma pessoa ──────────────
+/spec/                        @dornelasxz
+
+# ── Regra pura, testes e portões: Mauro ───────────────────────────────────────
+# /mobile/src/dominio/        @usuario-do-mauro
+# /.github/                   @usuario-do-mauro
+# /CONTRIBUTING.md             @usuario-do-mauro
+
+# ── Persistência e backend: Valentin ──────────────────────────────────────────
+# /mobile/src/dados/          @usuario-do-valentin
+# /supabase/                  @usuario-do-valentin
+# /data/                      @usuario-do-valentin
+# /docs/backend/              @usuario-do-valentin

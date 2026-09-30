@@ -1,0 +1,31 @@
+{
+  "//": "Permissões de equipe para as sessões de Claude Code neste repositório. Ver CONTRIBUTING.md § 5 e § 6. allow: os comandos de verificação, para ninguém levar prompt em npm test. ask: caminhos que um card legítimo pode mudar, mas nunca por acidente. deny: contrato, que nenhum card deve tocar.",
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run capturar:*)",
+      "Bash(npm ci:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)"
+    ],
+    "ask": [
+      "Edit(tokens/**)",
+      "Edit(DESIGN.md)",
+      "Edit(PRODUCT.md)",
+      "Edit(data/seed.json)",
+      "Edit(supabase/migrations/**)",
+      "Edit(IMPLEMENTACAO.md)"
+    ],
+    "deny": [
+      "Edit(spec/**)",
+      "Edit(handoff-ios-glass/**)",
+      "Edit(docs/design/historico/**)",
+      "Edit(docs/design/redesign-ios-glass/**)"
+    ]
+  }
+}

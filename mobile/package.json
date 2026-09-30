@@ -1,6 +1,9 @@
 {
   "name": "aula-em-dia",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=22"
+  },
   "main": "index.ts",
   "dependencies": {
     "@expo/metro-runtime": "~57.0.15",

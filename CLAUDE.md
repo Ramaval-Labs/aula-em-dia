@@ -35,6 +35,23 @@ npm run typecheck     # tsc --noEmit
 Rode `npm test` e `npm run typecheck` antes de dar qualquer tarefa por concluída.
 Para conferir o visual sem celular: `npx expo start --web` (não exige login).
 
+## Três pessoas, três camadas
+
+O repositório passou a ter três autores (Rafael, Mauro e Valentin), todos usando Claude Code.
+**O processo está em [`CONTRIBUTING.md`](CONTRIBUTING.md)**: convenção de commit
+(`SCRUM-nn: <imperativo>`), fluxo de PR, review cruzado e a tabela de donos.
+
+A divisão segue as camadas que o código já tem, para que dois cards nunca abram o mesmo arquivo:
+
+| Camada | Dono | Onde |
+|---|---|---|
+| Apresentação | Rafael | `src/telas/`, `src/componentes/`, `src/tema/`, `tokens/`, `estado/{navegacao,formularios,toast,avisos}.ts` |
+| Regra pura e portões | Mauro | `src/dominio/` e seus testes, `.github/`, os testes de montagem e de navegação |
+| Persistência | Valentin | `src/dados/`, `estado/{dados,sessao,depuracao}.ts`, `data/seed.json`, `supabase/` |
+
+Antes de editar arquivo fora da faixa do card, leia o protocolo em `CONTRIBUTING.md` § 2: o
+**dono** faz a fatia dele num commit separado, e só depois a outra pessoa liga em cima.
+
 Desde o SDK 57 o Expo Go só abre o projeto com a **mesma conta** logada no terminal e no
 app; sem isso ele mostra "You need to be signed in to Expo Go and Expo CLI". `npx expo login`
 é interativo e pede senha — quem roda é a pessoa usuária, nunca o agente. Outros erros
@@ -108,6 +125,20 @@ em `docs/design/revisoes/`. A pessoa aprova, aprova parte ou descarta. O roteiro
   `comEspaco(estilo, { topo, base })`. Do mesmo jeito, não sobrescreva `fontSize` nem
   `lineHeight` em cima de um `TIPO.*`: chame `texto()` com o tamanho que você quer.
 - **Data "hoje"** só sai de `mobile/src/dominio/datas.ts`. Nunca escreva `'28/08'` numa tela.
+- **A semente guarda deslocamento, não data.** Decisão de PO de 30/09/2026, registrada em
+  `SCRUM-13`: em `data/seed.json`, toda data é escrita como `hoje±N` dias — `"venceu": "hoje-12"`,
+  `"validade": "hoje+32"` — e `dados/semente.ts` resolve na carga com `somarDias(hoje(), N)`.
+  Data absoluta em `dd/mm` continua aceita para o que é fixo de calendário (feriado).
+  Os tipos **não mudam**: depois de resolvida, `Aluno.validade` segue sendo `dd/mm`.
+  O gerador de `supabase/seed.sql` resolve a mesma notação, com ano completo.
+  A alternativa (app sem dados de demonstração) foi recusada por agora: o teste de montagem
+  das 35 telas, a review e o `seed.sql` do backend saem todos desta fonte. Abrir vazio vale
+  para publicar, e pode virar um interruptor depois.
+- **O ano de uma data `dd/mm` é inferido, não fixo.** `lerDdMm` assume o ano de `hoje` e
+  desloca ±1 ano quando a data cai a mais de 183 dias dele. Sem isso,
+  `diasEntre('28/12', '05/01')` devolve −357 em vez de +8, porque nenhum chamador passa ano e
+  o padrão era um `ANO_DEMO` congelado. Ao comparar ou somar datas, use `datas.ts` — não
+  construa `new Date(...)` na tela nem no domínio.
 - **São duas máquinas de navegação.** `estado/sessao.ts` cuida da entrada (splash,
   login, 4 passos de onboarding) e `estado/navegacao.ts` cuida do app, com o contrato
   de `spec/navegacao.md`: `ir` empilha, `voltar` desempilha, `trocarTab` zera a pilha,
@@ -144,6 +175,12 @@ mobile/                        o app (ver mobile/README.md para o mapa interno)
   src/telas/aluno/               a visão do aluno (Fluxo F)
   src/telas/ajustes/             as sub-telas de configuração (Fluxo E)
 README.md                      apresentação do projeto (é a página inicial no GitHub)
+CONTRIBUTING.md                processo do time: donos, branch, commit, PR e armadilhas
+CODEOWNERS                     quem o GitHub chama para revisar cada caminho
+.github/workflows/ci.yml       CI: typecheck e testes a cada push e PR
+supabase/                      migrações do banco (esquema + RLS) e o que falta na Parte 2
+.env.example                   variáveis de ambiente; copie para mobile/.env
+docs/jira/                     o quadro Scrum: papéis, sprints e o backlog importado
 handoff-ios-glass/             especificação de design atual: README + protótipos iOS Glass
 HANDOFF.md                     aponta para handoff-ios-glass/README.md
 PRODUCT.md, DESIGN.md          contexto de produto e sistema visual que o Impeccable lê
@@ -151,9 +188,9 @@ docs/design/redesign-ios-glass/ plano e mapa de telas da troca de design system
 docs/design/historico/         direção visual aposentada (tinta chapada) e seus protótipos
 docs/design/revisoes/          relatórios das rodadas do /designer (capturas ficam fora do git)
 docs/backend/                  plano do backend (Supabase) em 8 partes — nada construído ainda
-.claude/                       skill /designer, revisor-design e os agentes do redesign
+.claude/                       skill /designer, revisor-design, permissões e agentes do redesign
 PROXIMOS-PASSOS.md             backlog priorizado do que vem depois
-IMPLEMENTACAO.md               plano em 6 fases — as seis estão concluídas
+IMPLEMENTACAO.md               HISTÓRICO: plano da direção aposentada — não seguir
 tokens/                        tokens em JSON (fonte dos tokens, espelhada em tokens.ts)
 spec/politica.ts               regras de negócio como módulo puro (referência do porte)
 spec/casos-de-teste.md         casos de teste tabelados das regras
