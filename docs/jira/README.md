@@ -47,10 +47,13 @@ aprovação numa sprint de cinco dias. Duas mitigações já estão no lugar:
 
 ## 2. As quatro janelas
 
-### Preparação · 30/09 a 02/10 · não conta para a velocidade
+### Preparação · 30/09 a 02/10 · **ativa** · não conta para a velocidade
 
-Não é sprint: é o que impede as três pessoas de se atrapalharem. Fica fora da conta porque medir
-setup contamina a primeira medição de velocidade.
+Esta é a sprint que está no quadro agora. Numa board Scrum só a ativa aparece no quadro; as
+outras três ficam no Backlog até serem iniciadas.
+
+Não é sprint de verdade: é o que impede as três pessoas de se atrapalharem. Fica fora da conta
+de velocidade porque medir setup contamina a primeira medição.
 
 | Card | Dono | O que é |
 |---|---|---|
@@ -202,8 +205,12 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
 o quadro precise ser remontado. Ele é uma versão sem acentos e com as dependências do backend
 descritas como fila; o que está no Jira é mais fiel ao plano.
 
-**Limpeza pendente:** `SCRUM-1` a `SCRUM-4` (`Tarefa 1`, `Tarefa 2`, `Tarefa 3`,
-`Subtarefa 2.1`) são os itens de exemplo do template e podem ser apagados — está no `SCRUM-49`.
+**As sobras do template**, preparadas para apagar no `SCRUM-49`: a API do Atlassian não apaga
+item nem sprint, só move, renomeia e fecha. Então `SCRUM-1` a `SCRUM-4` foram para o backlog,
+voltaram para "A fazer", ganharam o título `APAGAR — sobra do template` e a etiqueta **`apagar`**
+— filtre por ela no Backlog e apague os quatro de uma vez. A sprint vazia `SCRUM Sprint 0`, que
+estava **ativa**, foi fechada; a outra (`APAGAR — sprint do template`) some pelo menu `···` do
+Backlog.
 
 ---
 
