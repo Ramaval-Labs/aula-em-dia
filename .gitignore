@@ -44,3 +44,7 @@ docs/design/revisoes/capturas/
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+
+# Supabase local (o CLI gera; migrações e seed são versionados)
+supabase/.temp/
+supabase/.branches/
