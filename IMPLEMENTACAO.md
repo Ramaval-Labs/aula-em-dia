@@ -1,5 +1,19 @@
 # Plano de implementação
 
+> **HISTÓRICO — não siga este arquivo.**
+>
+> Este plano descreve a direção visual **aposentada** (*tinta chapada*: cabeçalho escuro com
+> curva, amarelo `#FFD032`, chips de filtro, barra amarela no toast) e cita a chave de
+> persistência `aulaemdia.app.v3`, que hoje é `v4`. As seis fases abaixo foram concluídas — e
+> depois **substituídas** pelo redesign iOS Glass, que reescreveu as 35 telas.
+>
+> Seguir este arquivo é reconstruir o que foi jogado fora. O teste
+> `mobile/src/tema/__tests__/legado.test.ts` barra o amarelo e as curvas de voltar.
+>
+> A especificação vigente é [`handoff-ios-glass/README.md`](handoff-ios-glass/README.md), as
+> regras estão em [`CLAUDE.md`](CLAUDE.md) (em especial a regra 5) e o que vem depois está em
+> [`PROXIMOS-PASSOS.md`](PROXIMOS-PASSOS.md). Mantido só como registro do caminho percorrido.
+
 Seis fases. Cada uma entrega algo verificável.
 
 > **Status: as seis fases estão concluídas** em `mobile/` (React Native + Expo, TypeScript).

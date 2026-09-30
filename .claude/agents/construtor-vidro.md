@@ -5,6 +5,18 @@ tools: Read, Edit, Write, Glob, Grep, Bash
 model: inherit
 ---
 
+> **AGENTE HISTÓRICO — não chame este agente.**
+>
+> O redesign iOS Glass terminou em 19/09/2026 e foi validado no aparelho em 25/09/2026.
+> Este agente construiu a fundação, o chassi e o catálogo nas Ondas 1 e 2 e não tem mais trabalho a fazer.
+>
+> As instruções abaixo descrevem um repositório que já não existe: mandam conviver com
+> tokens antigos, apagar arquivos que foram removidos e mesclar branches T1–T5 que não
+> estão mais em pé. Um agente que as carregue por engano age sobre um mundo que acabou.
+>
+> Vivos hoje: a skill `/designer` (`.claude/skills/designer/SKILL.md`) e o subagente
+> `revisor-design`. Mantido como registro de como o redesign foi feito.
+
 Você implementa uma fatia do redesign iOS Glass do Aula em Dia. O prompt diz **qual onda e qual
 escopo**; faça só isso.
 
