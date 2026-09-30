@@ -24,7 +24,7 @@ build no navegador.
 ## Verificação
 
 ```bash
-npm test          # 294 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
+npm test          # 303 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
 npm run typecheck # tsc --noEmit
 ```
 

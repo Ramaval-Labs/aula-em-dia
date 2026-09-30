@@ -1,0 +1,44 @@
+Issue Type,Summary,Description,Priority,Labels,Epic Name,Epic Link,Story Points
+Epic,Datas reais no lugar de 28/08,"O app tem datas.ts pronto; falta revisar a semente antes de ligar USAR_DATA_REAL.",High,dominio,Datas reais,,
+Epic,Backend e sincronizacao (Supabase),"Plano em 8 partes em docs/backend/PLANO-BACKEND.md. Hoje tudo e local (AsyncStorage).",High,backend,Backend Supabase,,
+Epic,Envio real da mensagem ao aluno,"Hoje so registra e mostra toast. MVP preve link direto do WhatsApp.",High,feature,Envio de mensagem,,
+Epic,Regras de negocio pendentes,"Ajustes de dominio levantados na revisao final das 35 telas.",Medium,dominio,Regras pendentes,,
+Epic,Qualidade e CI,"Testes de dominio proprios, teste de fluxo, linter e workflow de CI.",Medium,qualidade,Qualidade e CI,,
+Epic,Acabamento de design e acessibilidade,"P2/P3 do redesign iOS Glass: contraste, telas derivadas, tokens faltantes.",Medium,design,Design e a11y,,
+Epic,Movimento e plataforma,"Animacao do sheet, driver nativo, diferencas iOS/Android.",Low,plataforma,Movimento e plataforma,,
+Epic,Publicacao,"Licenca da fonte, icone e splash, development build.",Low,publicacao,Publicacao,,
+Story,Decidir o modelo de datas da semente,"Escolher entre semente com datas relativas ao dia de hoje ou app sem dados de demonstracao. Decisao do PO, bloqueia o resto do epico.",Highest,dominio,,Datas reais,3
+Story,Reescrever data/seed.json com datas relativas,"Validades, dias de atraso e janelas fixas passam a ser calculados a partir de hoje. Copiar para mobile/src/dados/seed.json (o Metro nao resolve fora da raiz).",High,dominio,,Datas reais,5
+Story,Resolver a inconsistencia pendencia.origem x pendencia.dias,"Rafael tem origem 12/08 com dias 3, mas sao 16 dias. Definir qual valor vale e corrigir a semente.",Medium,dominio,,Datas reais,1
+Story,Ligar USAR_DATA_REAL e validar as 35 telas,"Virar a chave em dominio/datas.ts e conferir tela a tela que nenhum numero fica sem sentido. Rodar npm test e npm run typecheck.",High,dominio,,Datas reais,3
+Story,Parte 1 - Camada de repositorio no app,"Isolar a leitura e escrita atras de uma interface, com a implementacao local atual por tras. Pre-requisito de tudo que vem depois.",High,backend,,Backend Supabase,8
+Story,Parte 2 - Projeto Supabase esquema e RLS,"Criar o projeto, rodar 0001_esquema.sql e 0002_rls.sql, carregar os dados de demonstracao.",High,backend,,Backend Supabase,8
+Story,Parte 3 - Autenticacao do professor,"Login real substituindo a tela de acesso mock, com sessao persistida.",High,backend,,Backend Supabase,5
+Story,Parte 4 - Leitura e escrita simples,"Alunos, extratos e politicas passam a vir do Supabase pela camada de repositorio.",Medium,backend,,Backend Supabase,5
+Story,Parte 5 - Operacoes transacionais por RPC,"Registrar aula, falta, reposicao e pagamento em uma unica funcao transacional.",Medium,backend,,Backend Supabase,8
+Story,Parte 6 - Link publico do aluno,"Pagina de consulta do aluno sem login, prevista no MVP.",Medium,backend,,Backend Supabase,5
+Story,Parte 7 - Mensagens e lembretes no backend,"Registro das mensagens enviadas e base para lembretes.",Low,backend,,Backend Supabase,3
+Story,Parte 8 - Qualidade e operacao do backend,"Migracoes versionadas, ambiente de teste e monitoramento basico.",Low,backend,,Backend Supabase,5
+Story,Abrir o WhatsApp na mensagem de reposicao,"Trocar Clipboard por Linking.openURL com https://wa.me/<telefone>?text=<mensagem>. O texto ja e montado por dominio/mensagens.ts.",High,feature,,Envio de mensagem,3
+Story,Abrir o WhatsApp no lembrete de cobranca,"Mesma troca na tela de cobranca, reaproveitando o telefone do aluno e a chave Pix ja modelados.",High,feature,,Envio de mensagem,2
+Story,Fallback quando o WhatsApp nao esta instalado,"canOpenURL antes de abrir; se falhar, manter o copiar para a area de transferencia com toast explicando.",Medium,feature,,Envio de mensagem,2
+Story,Resumo do mes do Financeiro no dominio,"Hoje a tela soma o extrato inteiro, entao aulas dadas em agosto cresce para sempre. Mover para o dominio com filtro por mes e teste.",High,dominio,,Regras pendentes,5
+Story,Validar o valor por aula em Pacotes padrao,"Digitar 62,50 vira 6250 porque o campo so tira o que nao e digito. Tratar centavos e cobrir com teste.",High,bug,,Regras pendentes,2
+Story,Marcar folga em Minha disponibilidade,"O botao nao faz nada hoje. Implementar contra dominio/disponibilidade.ts ou remover da tela.",Medium,dominio,,Regras pendentes,3
+Story,Modelo estruturado de horario fixo do aluno,"Hoje e texto livre lido por palavra-chave (terca e quinta, 18h). Estruturar para o motor de agenda detectar colisao de forma exata.",Medium,dominio,,Regras pendentes,5
+Story,Teste proprio do motor de agenda,"agenda.ts e puro e hoje so e exercitado de lado pelo teste de montagem. Cobrir folga, colisao, disponibilidade e pontuacao.",High,qualidade,,Qualidade e CI,5
+Story,Teste proprio de mensagens.ts e pacote.ts,"Mesma lacuna do agenda.ts: modulos puros sem teste dedicado.",Medium,qualidade,,Qualidade e CI,3
+Story,Teste de fluxo com asseracao de conteudo,"Registrar aula e confirmar reposicao de ponta a ponta, afirmando o que aparece na tela e nao so que nada lanca.",Medium,qualidade,,Qualidade e CI,5
+Story,Configurar eslint-config-expo,"Hoje so existe tsc --noEmit. Adicionar o linter e o script npm run lint.",Low,qualidade,,Qualidade e CI,2
+Story,Workflow de CI rodando testes e typecheck,"GitHub Actions a cada push, para nao regredir as regras de negocio.",Medium,qualidade,,Qualidade e CI,2
+Story,Ambar de texto mais escuro no tema claro,"C07C00 fica em 2.4-3.2:1 sobre cartao e sobre ambarSuave. Criar um ambar de texto so no claro, mantendo o de fundo.",High,a11y,,Design e a11y,3
+Story,Glifo sobre verde e ambar no tema escuro,"sobreCor branco fica abaixo de 3:1 no check da medalha e no icone de bloco. Avaliar sobreTint.",Medium,a11y,,Design e a11y,2
+Story,Validar as 26 telas derivadas com design,"O handoff novo desenha so 9 telas; as outras 26 foram montadas com o catalogo. Lista completa em MAPA-DE-TELAS.md.",Medium,design,,Design e a11y,5
+Story,Extrair medidas soltas para token,"Paddings internos de cartao, alturaDaCelula 52 na disponibilidade do aluno e margens entre blocos. Uma passada de /designer extract.",Low,design,,Design e a11y,3
+Story,Alvo de toque de 48dp no Android,"O app garante os 44pt do iOS. Conferir os alvos menores no Android.",Medium,a11y,,Design e a11y,2
+Story,Animacao de saida e arrastar para fechar no sheet,"Hoje so fecha por Cancelar, toque fora e voltar, sem animacao de saida.",Low,plataforma,,Movimento e plataforma,5
+Story,Medir useNativeDriver no aparelho,"Todas as animacoes usam useNativeDriver false. Cor e altura animadas nao rodam no driver nativo: medir antes de trocar.",Low,plataforma,,Movimento e plataforma,3
+Story,Brilho da pilula da aba ativa no iOS,"filter blur nao e aplicado pelo iOS; la o realce vem so do gradiente e da borda. Decidir se compensa.",Low,plataforma,,Movimento e plataforma,2
+Story,Conferir a licenca da fonte Satoshi,"Pendencia aberta desde o handoff. Ler os termos da Fontshare para app publicado.",Medium,publicacao,,Publicacao,1
+Story,Icone e splash de verdade,"Hoje sao os padroes do template do Expo.",Medium,publicacao,,Publicacao,3
+Story,Development build ou EAS Build,"Development build nao exige login no Expo Go, o que resolve o atrito de rodar em celular emprestado.",Low,publicacao,,Publicacao,5

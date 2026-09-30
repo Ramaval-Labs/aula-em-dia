@@ -22,7 +22,7 @@ cobertas por testes e estado persistido no aparelho. Os dados são mock, de prop
 |---|---|
 | 35 telas | prontas na direção visual *iOS Glass*, nos temas claro e escuro |
 | Entrada e onboarding | splash, login e 4 passos que gravam dados de verdade |
-| Regras de negócio | módulos puros em `src/dominio/`, 294 testes verdes |
+| Regras de negócio | módulos puros em `src/dominio/`, 303 testes verdes |
 | Motor de reposição | **existe**: calcula contra agenda, folgas e aulas fixas |
 | Persistência local | AsyncStorage, chave `aulaemdia.app.v4` |
 | Backend / sincronização | fora do escopo até aqui — Supabase é a escolha registrada |
@@ -52,7 +52,7 @@ Para só conferir o visual, sem celular e sem conta: `npx expo start --web`.
 
 ```bash
 cd mobile
-npm test           # 294 testes
+npm test           # 303 testes
 npm run typecheck  # tsc --noEmit
 ```
 
@@ -101,7 +101,7 @@ O resto está em [CLAUDE.md](CLAUDE.md).
 
 ## Equipe
 
-Grupo 08 — Mauro Schulz, Rafael Dornelas e Valentin Klein.
+Grupo 08 — Mauro Schulz, Rafael Dornelas e Valentin Klein Antunes.
 
 ## Licença e fontes
 
