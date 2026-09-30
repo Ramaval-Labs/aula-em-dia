@@ -1,0 +1,45 @@
+name: CI
+
+# Portão de qualidade do Aula em Dia. Roda a cada push e em todo PR contra a main.
+# Existe porque três pessoas trabalham em paralelo: sem isto, "os testes passam" é
+# declaração de quem abriu o PR, não fato verificado.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Um PR que recebe vários pushes cancela a execução anterior em vez de enfileirar.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Testes e tipos
+    runs-on: ubuntu-latest
+    # O app mora em mobile/, não na raiz do repositório.
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Tipos
+        run: npm run typecheck
+
+      # --ci faz o Jest falhar em vez de escrever snapshot novo, e
+      # --runInBand evita a concorrência engolir memória no runner compartilhado.
+      - name: Testes
+        run: npm test -- --ci --runInBand
