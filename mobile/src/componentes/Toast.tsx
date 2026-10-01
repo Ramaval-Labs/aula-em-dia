@@ -48,12 +48,14 @@ export function Toast() {
       fade.setValue(1);
       return;
     }
-    Animated.timing(fade, {
+    const movimento = Animated.timing(fade, {
       toValue: 1,
       duration: MOVIMENTO.toastMs,
       easing: Easing.ease,
       useNativeDriver: false,
-    }).start();
+    });
+    movimento.start();
+    return () => movimento.stop();
   }, [mensagem, semMovimento, fade]);
 
   if (!mensagem) return null;

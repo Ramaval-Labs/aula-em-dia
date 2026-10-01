@@ -17,7 +17,7 @@
  * nunca cubra conteúdo.
  */
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   Animated,
   Easing,
@@ -75,6 +75,11 @@ export function useBarraComRolagem() {
   const semMovimento = useReduzirMovimento();
   const opacidade = useRef(new Animated.Value(0)).current;
   const degrau = useRef(0);
+  // A última animação disparada pela rolagem. Desmontar não cancela o
+  // `Animated`, que é independente da árvore — sem isto o timer continua
+  // batendo num nó que já saiu.
+  const emCurso = useRef<Animated.CompositeAnimation | null>(null);
+  useEffect(() => () => emCurso.current?.stop(), []);
 
   const aoRolar = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -89,13 +94,15 @@ export function useBarraComRolagem() {
         opacidade.setValue(alvo);
         return;
       }
-      Animated.timing(opacidade, {
+      emCurso.current?.stop();
+      emCurso.current = Animated.timing(opacidade, {
         toValue: alvo,
         duration: MOVIMENTO.barraNavMs,
         easing: Easing.linear,
         // O driver nativo não roda no web, e a barra é uma view só.
         useNativeDriver: false,
-      }).start();
+      });
+      emCurso.current.start();
     },
     [opacidade, semMovimento],
   );

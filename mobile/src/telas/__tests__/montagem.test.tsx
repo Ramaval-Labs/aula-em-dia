@@ -78,6 +78,20 @@ const SHEETS: Tela[] = [
 
 const TELAS = Object.keys(REGISTRO) as Tela[];
 
+// Timer falso em todo este arquivo. As ~150 montagens daqui deixam
+// `requestAnimationFrame` pendente — o preset do React Native o implementa com
+// `setTimeout`, e o Animated agenda um por quadro. Quando o ambiente do Jest cai
+// antes deles, o processo sai com código 1 mesmo com as 10 suítes passando, e o
+// CI fica vermelho sem nenhum teste falhando. Voltar para o timer real descarta
+// o que ficou agendado no relógio falso, em vez de deixar vazando.
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 describe('todas as telas montam', () => {
   beforeEach(() => {
     useFormularios.getState().limparTudo();

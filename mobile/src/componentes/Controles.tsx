@@ -526,11 +526,13 @@ export function Switch({
   const anim = useRef(new Animated.Value(ligado ? 1 : 0)).current;
 
   useEffect(() => {
-    Animated.timing(anim, {
+    const movimento = Animated.timing(anim, {
       toValue: ligado ? 1 : 0,
       duration: duracao(MOVIMENTO.switchMs, reduzido),
       useNativeDriver: false,
-    }).start();
+    });
+    movimento.start();
+    return () => movimento.stop();
   }, [ligado, reduzido, anim]);
 
   // Desabilitado por cor, não por opacidade: ligado vira `tinta3` no lugar

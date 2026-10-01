@@ -104,7 +104,9 @@ export function Sheet({
       fade.setValue(1);
       return;
     }
-    Animated.parallel([
+    // A animação é independente da árvore: desmontar não a cancela, e o timer
+    // segue batendo num nó que já saiu. Por isso ela para na limpeza do efeito.
+    const movimento = Animated.parallel([
       Animated.timing(subida, {
         toValue: 0,
         duration: MOVIMENTO.sheetMs,
@@ -117,7 +119,9 @@ export function Sheet({
         easing: Easing.ease,
         useNativeDriver: false,
       }),
-    ]).start();
+    ]);
+    movimento.start();
+    return () => movimento.stop();
   }, [semMovimento, subida, fade]);
 
   // O foco do leitor de tela vai para o título quando o painel abre: sem
