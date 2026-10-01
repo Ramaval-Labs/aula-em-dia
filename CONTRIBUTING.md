@@ -117,14 +117,28 @@ no cartão. Sem ele o board não sabe que o trabalho aconteceu, e alguém vai te
 card à mão. Os escopos antigos do histórico (`redesign(onda-5):`, `designer(<comando>):`)
 pertencem a trabalhos encerrados; não use.
 
-**PR:** um por card, contra `main`.
+**PR:** um por card, contra `main`. **A `main` é protegida** desde o `SCRUM-49`: para quem não
+é administrador o GitHub recusa o push direto e exige o PR, com 1 aprovação e o check
+`Testes e tipos` verde. A aprovação é descartada quando chega commit novo, a branch precisa
+estar atualizada com a `main` antes de mesclar, e force push e deleção estão fechados para
+todo mundo.
+
+> **Exceção consciente:** `enforce_admins` está `false`, então o dono do repositório
+> (`@dornelasxz`) consegue empurrar direto e mesclar por cima da regra. É o que mantém o fluxo
+> de trabalho dele; o portão vale para o Mauro e o Valentin. Não é licença para contornar o
+> CI — se o check está vermelho, o problema é o código.
 
 - **Review cruzado, não centralizado:** Mauro revisa os PRs de Valentin e vice-versa. Rafael é
   revisor obrigatório só do que é dele (`tema/`, `componentes/`, `telas/`), e o
   [`CODEOWNERS`](CODEOWNERS) faz isso valer sem ninguém precisar lembrar. Isso existe para o
   Rafael não virar fila única de aprovação — ele acumula PO e review.
-- **CI verde é obrigatório.** `npm test` e `npm run typecheck` rodam no GitHub Actions a cada
-  push. "Passou aqui" não conta.
+- **CI verde é obrigatório** — e agora é o GitHub que cobra, não a boa vontade de quem abriu
+  o PR. `npm test` e `npm run typecheck` rodam no Actions a cada push, e o botão de merge fica
+  bloqueado enquanto o check `Testes e tipos` não passar. "Passou aqui" não conta.
+- **Branch de verificação descartável não leva a chave do card no nome.** O GitHub for Jira
+  vincula pelo nome da branch e pelo prefixo do commit, então um PR de teste chamado
+  `teste/portao-scrum-49` deixou um PR `DECLINED` e uma compilação vermelha penduradas no
+  painel do cartão, para sempre. Para experimento, use nome sem `scrum-nn`.
 - No corpo do PR: o "Pronto quando" do card, marcado. Se mexeu em tela, **anexe captura nos
   dois temas** (`npm run capturar -- --tela <chave>`).
 - `git diff --name-only` só deve listar arquivos da sua faixa. Se listar mais, pare.
@@ -135,9 +149,18 @@ pertencem a trabalhos encerrados; não use.
 
 ```bash
 cd mobile
-npm test           # hoje: 303 testes, 10 suítes
-npm run typecheck  # tsc --noEmit, sem saída = passou
+npm test ; echo "EXIT=$?"   # hoje: 303 testes, 10 suítes — só conta com EXIT=0
+npm run typecheck           # tsc --noEmit, sem saída = passou
 ```
+
+**Leia o código de saída, não o resumo.** O Jest consegue imprimir
+`Test Suites: 10 passed` e `Tests: 303 passed` e **ainda assim sair com 1**. Foi assim que o CI
+ficou vermelho por duas execuções sem ninguém notar, até o `SCRUM-49`: trabalho assíncrono
+agendado durante a montagem e não cancelado dispara depois do ambiente da suíte cair, vira
+`ReferenceError: ... after the Jest environment has been torn down`, e o Jest conta isso como
+erro do **processo** sem marcar suíte nenhuma como falha. Se der 1 com tudo passando, procure
+`torn down` na saída — costuma ser `Animated.timing(...).start()` sem
+`return () => movimento.stop()` na limpeza do efeito.
 
 **Adicionou teste? Atualize a contagem** no `CLAUDE.md`, `README.md` e `mobile/README.md` no
 mesmo PR. Esses números já divergiram uma vez (dois diziam 294 quando eram 303), e é
@@ -242,5 +265,9 @@ confiar:
 - **O teste de interface é de fumaça:** monta as 35 telas e afirma que nada lança exceção. Não
   afirma o que aparece escrito.
 - **Sem linter** ainda, e **sem teste de integração do banco**.
+
+O que **deixou** de ser buraco: o CI roda a cada push e PR, e a `main` só aceita código que
+passou por ele (`SCRUM-36` e `SCRUM-49`). O resto continua valendo — portão verde não é o
+mesmo que cobertura.
 
 Fechar esses buracos é o épico `SCRUM-9` (Qualidade e CI).
