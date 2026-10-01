@@ -4,10 +4,13 @@
 # A divisão por camada está explicada em CONTRIBUTING.md § 2.
 #
 # ATENÇÃO: o GitHub ignora silenciosamente um @usuario que não existe ou que não tem
-# acesso ao repositório — a regra simplesmente não vale, sem aviso. Por isso só o
-# usuário confirmado está ativo aqui. As linhas de Mauro e Valentin estão comentadas
-# até alguém preencher os usuários reais do GitHub; descomente e confira em
-# Settings → Branches que a revisão está sendo pedida.
+# acesso ao repositório — a regra simplesmente não vale, sem aviso. Os três usuários
+# abaixo foram conferidos em Settings → Collaborators (SCRUM-49): os três têm acesso
+# de escrita ao repositório.
+#
+# Este arquivo também não vale em repositório privado de conta GitHub Free: nesse
+# plano nem CODEOWNERS nem branch protection existem. Vale porque o repositório
+# é público — ver SCRUM-49.
 
 # ── Apresentação: Rafael ──────────────────────────────────────────────────────
 # É o revisor obrigatório do visual. Não é fila única: o CONTRIBUTING manda Mauro e
@@ -26,12 +29,18 @@
 /spec/                        @dornelasxz
 
 # ── Regra pura, testes e portões: Mauro ───────────────────────────────────────
-# /mobile/src/dominio/        @usuario-do-mauro
-# /.github/                   @usuario-do-mauro
-# /CONTRIBUTING.md             @usuario-do-mauro
+# Os dois testes-portão são dele mesmo cobrindo código alheio (CONTRIBUTING § 2).
+/mobile/src/dominio/          @MauroSchulz
+/mobile/src/telas/__tests__/  @MauroSchulz
+/mobile/src/estado/__tests__/ @MauroSchulz
+/mobile/jest.setup.js         @MauroSchulz
+/.github/                     @MauroSchulz
+/CONTRIBUTING.md              @MauroSchulz
+/CODEOWNERS                   @MauroSchulz
 
 # ── Persistência e backend: Valentin ──────────────────────────────────────────
-# /mobile/src/dados/          @usuario-do-valentin
-# /supabase/                  @usuario-do-valentin
-# /data/                      @usuario-do-valentin
-# /docs/backend/              @usuario-do-valentin
+/mobile/src/dados/            @ValentinAntunes
+/supabase/                    @ValentinAntunes
+/data/                        @ValentinAntunes
+/docs/backend/                @ValentinAntunes
+/.env.example                 @ValentinAntunes
