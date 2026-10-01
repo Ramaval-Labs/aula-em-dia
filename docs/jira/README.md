@@ -60,7 +60,7 @@ de velocidade porque medir setup contamina a primeira medição.
 | `SCRUM-54` | Mauro | Revisar e mesclar a preparação do repositório (processo, permissões, avisos de histórico) |
 | `SCRUM-36` | Mauro | CI no GitHub Actions — **não cortável**: é o portão que dá sentido a todo "Pronto quando" |
 | `SCRUM-49` | Rafael | Proteger a `main`, ligar o GitHub for Jira, higiene do quadro |
-| `SCRUM-48` | Rafael | Quebrar `SubTelas.tsx` em seis arquivos — destrava `SCRUM-29` e `SCRUM-30` |
+| `SCRUM-48` | Rafael | ~~Quebrar `SubTelas.tsx` em seis arquivos~~ — **feito em 01/10** no commit `d2a1ef8`; `SCRUM-29` e `SCRUM-30` destravados |
 | `SCRUM-13` | Rafael | ~~Decisão de PO: o modelo de datas da semente~~ — **decidida em 30/09**, ver § 3 |
 | `SCRUM-50` | Valentin | Definir o professor de teste do seed — é o bloqueador da Parte 2 |
 
@@ -197,6 +197,11 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   do redesign, mas a Onda 5 já os havia resolvido no commit `4c5a22e` — `ambarTexto: #6C4500`
   mede 4.53:1 e `sobreCor` no escuro já é `#0B1524`. A razão está comentada em cada card
 - **`SCRUM-13` decidido e fechado** em 30/09, com a razão comentada no card — ver § 3
+- **`SCRUM-48` fechado** em 01/10 (`d2a1ef8`): as seis telas de Ajustes passam a ter arquivo
+  próprio, com `pecas.tsx` para o molde comum e `SubTelas.tsx` reduzido a re-export, então
+  `SCRUM-29` e `SCRUM-30` já podem rodar na mesma sprint. O comentário do card registra duas
+  anotações que ficaram de fora por serem outra faixa: o `faixaDeAlunos` sem campo no
+  `PerfilProfessor` e o caminho velho das seis telas no `MAPA-DE-TELAS.md`
 - **27 vínculos *blocks***, seguindo a tabela de dependências do plano do backend. O CSV original
   dizia que a Parte 1 era pré-requisito de todas; **estava errado** — as Partes 1 e 2 não
   dependem uma da outra
