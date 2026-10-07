@@ -47,30 +47,45 @@ aprovação numa sprint de cinco dias. Duas mitigações já estão no lugar:
 
 ## 2. As quatro janelas
 
-### Preparação · 30/09 a 02/10 · **ativa** · não conta para a velocidade
+### Preparação · 30/09 a 07/10 · **fechada, 6 de 6** · não contou para a velocidade
+
+Não era sprint de verdade: era o que impedia as três pessoas de se atrapalharem. Ficou fora da
+conta de velocidade porque medir setup contamina a primeira medição.
+
+**Durou 8 dias, não 3.** Estava planejada para 30/09–02/10 e os dois últimos cards fecharam em
+07/10. É o primeiro dado real de ritmo do grupo, e vale lembrar dele na planning: a estimativa
+inicial de uma janela de setup errou por mais de duas vezes.
+
+O que a semana rendeu além dos cards: o CI pegou um problema de verdade no primeiro uso — uma
+animação que não parava ao desmontar (`f3e7528`) —, o `CODEOWNERS` ganhou os três usuários reais
+do GitHub, e a quebra do `SubTelas.tsx` saiu melhor que o card pedia, com um `pecas.tsx` para o
+molde comum das seis telas de Ajustes.
+
+Todos os seis fecharam:
+
+| Card | Dono | Fechado |
+|---|---|---|
+| `SCRUM-13` | Rafael | 30/09 — decisão de datas, ver § 3 |
+| `SCRUM-36` | Mauro | 01/10 — CI, e já pegou um bug no primeiro uso (`f3e7528`) |
+| `SCRUM-49` | Rafael | 01/10 — `main` protegida, GitHub for Jira ligado, `CODEOWNERS` com os três usuários |
+| `SCRUM-48` | Rafael | 01/10 — `SubTelas.tsx` em seis arquivos (`d2a1ef8`); destravou `SCRUM-29` e `SCRUM-30` |
+| `SCRUM-54` | Mauro | 07/10 — processo revisado e mesclado |
+| `SCRUM-50` | Valentin | 07/10 — professor de teste definido; destravou o `seed.sql` do `SCRUM-18` |
+
+A ordem que importava foi respeitada: `SCRUM-36` antes de `SCRUM-49`, porque o status check só
+aparece na lista do GitHub depois de o workflow ter rodado uma vez.
+
+### Sprint 1 · 07/10 a 14/10 · **ativa** · 18 pontos
 
 Esta é a sprint que está no quadro agora. Numa board Scrum só a ativa aparece no quadro; as
-outras três ficam no Backlog até serem iniciadas.
+outras duas ficam no Backlog até serem iniciadas.
 
-Não é sprint de verdade: é o que impede as três pessoas de se atrapalharem. Fica fora da conta
-de velocidade porque medir setup contamina a primeira medição.
-
-| Card | Dono | O que é |
-|---|---|---|
-| `SCRUM-54` | Mauro | Revisar e mesclar a preparação do repositório (processo, permissões, avisos de histórico) |
-| `SCRUM-36` | Mauro | CI no GitHub Actions — **não cortável**: é o portão que dá sentido a todo "Pronto quando" |
-| `SCRUM-49` | Rafael | Proteger a `main`, ligar o GitHub for Jira, higiene do quadro |
-| `SCRUM-48` | Rafael | ~~Quebrar `SubTelas.tsx` em seis arquivos~~ — **feito em 01/10** no commit `d2a1ef8`; `SCRUM-29` e `SCRUM-30` destravados |
-| `SCRUM-13` | Rafael | ~~Decisão de PO: o modelo de datas da semente~~ — **decidida em 30/09**, ver § 3 |
-| `SCRUM-50` | Valentin | Definir o professor de teste do seed — é o bloqueador da Parte 2 |
-
-**Ordem que importa:** `SCRUM-36` antes de `SCRUM-49`, porque o check só aparece na lista de
-status checks do GitHub depois de o workflow ter rodado uma vez.
-
-### Sprint 1 · 05/10 a 09/10 · 18 pontos
+**As sprints passaram a correr quarta → quarta**, porque foi quando a preparação de fato fechou.
+Boundary no meio da semana é melhor que uma data bonita que ninguém cumpre.
 
 O número existe para **ser medido**, não para ser confiado — ninguém sabe quanto o grupo entrega
-por semana antes da primeira terminar.
+por semana antes da primeira terminar, e o único dado que existe é que a preparação levou 8 dias
+em vez de 3.
 
 | Dono | Cards | Pts |
 |---|---|---|
@@ -78,11 +93,11 @@ por semana antes da primeira terminar.
 | Mauro | `SCRUM-55` — inferência de ano (3) + `SCRUM-32` — teste do motor de agenda (5) | 8 |
 | Rafael | `SCRUM-45` — licença da Satoshi (1), mais PO e review | 1 |
 
-**Regra de corte na quarta:** se `SCRUM-14` não estiver em review, ninguém puxa mais nada e o
+**Regra de corte na segunda 12/10:** se `SCRUM-14` não estiver em review, ninguém puxa mais nada e o
 Mauro entrega o teste do agenda cobrindo só descarte e pontuação. O `SCRUM-55` **não** é cortável
 — o `SCRUM-16` da sprint 2 depende dele.
 
-### Sprint 2 · 12/10 a 16/10 · 22 pontos
+### Sprint 2 · 14/10 a 21/10 · 22 pontos
 
 Replanejar com a velocidade real da sprint 1 antes de começar.
 
@@ -98,7 +113,7 @@ dois foram escolhidos por não abrirem ele.
 **Ordem obrigatória dentro da sprint:** `SCRUM-28` antes de `SCRUM-52`; `SCRUM-51` antes de
 `SCRUM-29`. Os dois são commits de abertura do Mauro, e estão no board como *blocks*.
 
-### Sprint 3 · 19/10 a 23/10 · 25 pontos
+### Sprint 3 · 21/10 a 28/10 · 25 pontos
 
 | Dono | Cards | Pts |
 |---|---|---|
