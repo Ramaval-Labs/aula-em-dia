@@ -84,7 +84,7 @@ vai ter de tomar e que não estão escritas em lugar nenhum:
 
 ### 3. A RPC `aplicar_movimento` (Parte 5)
 
-Está no plano (L546–592) com o **ramo da proposta como stub literal** (`-- detalhado na
+Está no plano (Parte 5 § A função) com o **ramo da proposta como stub literal** (`-- detalhado na
 implementação` seguido de `null;`). Não foi trazida para cá porque não está pronta: virar
 migração agora seria versionar um stub.
 
