@@ -101,7 +101,7 @@ as janelas seguintes recuaram uma semana: a Sprint 3 passa a 14/10 a 21/10.
 |---|---|---|
 | Valentin | `SCRUM-17` — Parte 1, camada de repositório (8) | 8 |
 | Mauro | `SCRUM-16` (2) + `SCRUM-28` (3) + `SCRUM-51` (1) | 6 |
-| Rafael | ~~`SCRUM-25` (3)~~ **feito em 07/10** → `SCRUM-26` (2) → `SCRUM-52` (2) | 7 |
+| Rafael | ~~`SCRUM-25` (3)~~ → ~~`SCRUM-26` (2)~~ **feitos em 07/10** → `SCRUM-52` (2) | 7 |
 
 **`estado/dados.ts` fica fechado para todos menos o Valentin nesta sprint.** Os cards dos outros
 dois foram escolhidos por não abrirem ele.
@@ -252,6 +252,11 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   país na frente, o `wa.me` lê o `51` do DDD como Peru. A prévia ganhou duas rotas no mesmo
   botão, então `ChavePix.tsx`, `Lembrete.tsx` e o catálogo seguiram copiando sem precisar de
   mudança, e o `SCRUM-26` herda o componente pronto. Verificado no aparelho em 07/10
+- **`SCRUM-26` fechado** em 07/10 (`bf80d83`), logo depois: a cobrança abre o WhatsApp pelo
+  mesmo botão. Do lado da lógica foi passar a prop, como o card previa; o que ele não previa
+  era a nota, que é escrita pela tela porque carrega a limitação de agendamento — daí o
+  `abreNoWhatsApp` exportado, para a tela não prometer o que o botão não faz. A chave Pix já
+  ia inteira desde o `SCRUM-25`, que codifica a mensagem toda
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
