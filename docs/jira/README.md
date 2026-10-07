@@ -91,7 +91,7 @@ em vez de 3.
 |---|---|---|
 | Valentin | `SCRUM-15` (1) → `SCRUM-14` (8) | 9 |
 | Mauro | `SCRUM-55` — inferência de ano (3) + `SCRUM-32` — teste do motor de agenda (5) | 8 |
-| Rafael | `SCRUM-45` — licença da Satoshi (1), mais PO e review | 1 |
+| Rafael | ~~`SCRUM-45` — licença da Satoshi (1)~~ **fechado em 07/10**, mais PO e review | 1 |
 
 **Regra de corte na segunda 12/10:** se `SCRUM-14` não estiver em review, ninguém puxa mais nada e o
 Mauro entrega o teste do agenda cobrindo só descarte e pontuação. O `SCRUM-55` **não** é cortável
@@ -217,6 +217,14 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   `SCRUM-29` e `SCRUM-30` já podem rodar na mesma sprint. O comentário do card registra duas
   anotações que ficaram de fora por serem outra faixa: o `faixaDeAlunos` sem campo no
   `PerfilProfessor` e o caminho velho das seis telas no `MAPA-DE-TELAS.md`
+- **`SCRUM-45` fechado** em 07/10 (`5480e32`), e **`SCRUM-56` aberto** no lugar da dúvida que
+  sobrou. A ITF Free Font License **2.0, de 17/08/2026** permite a Satoshi em app publicado e
+  permite embutir o arquivo no bundle — as duas perguntas do card. O que não está em
+  conformidade é o nosso arquivo: os cinco TTFs são instâncias fatiadas do variável
+  (Derivative Work, § 05) e estão versionados num repositório público (§ 02). A métrica de
+  `tipografia.ts` não muda com a troca pelos oficiais — a suposição do card estava errada;
+  o que precisa de decisão de PO são os pesos 600 e 800, que não existem como arquivo
+  oficial. Resposta escrita no `README.md` da raiz
 - **27 vínculos *blocks***, seguindo a tabela de dependências do plano do backend. O CSV original
   dizia que a Parte 1 era pré-requisito de todas; **estava errado** — as Partes 1 e 2 não
   dependem uma da outra
