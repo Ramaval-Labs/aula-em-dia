@@ -121,8 +121,15 @@ conteúdo e comportamento é o histórico em `../docs/design/historico/tinta-cha
 
 1. **Saldo na tela de Resultado.** O protótipo aplica o delta duas vezes. Aqui a tela mostra o
    saldo já gravado.
-2. **Semente com `dias` inconsistente.** Rafael tem `pendencia.origem: "12/08"` e `dias: 3` —
-   de 12/08 a 28/08 são 16 dias. Mantivemos os dados do handoff; a decisão é do time.
+2. **Semente com `dias` inconsistente — resolvido no `SCRUM-15`.** O handoff trazia Rafael com
+   `pendencia.origem: "12/08"` e `dias: 3`, mas de 12/08 a 28/08 são 16 dias. O valor errado
+   era o `dias`: o extrato dele tem a "Falta avisada" em 12/08, que confirma a origem. A semente
+   agora diz `origem: "hoje-16"` e `dias: 16`, e os dois seguem concordando com a data real
+   ligada, porque a origem é relativa. Fica em aberto que `dias` é gravado e não derivado:
+   `registrarAula` grava `dias: 0` e nada o atualiza depois, então a pendência criada no app
+   mostra o número do dia em que nasceu. O banco já não guarda esse campo
+   (`pendencia_origem` em `0001_esquema.sql`); derivar no domínio é mudança em `tipos.ts` e
+   `politica.ts`.
 3. **Reposição: janelas do motor `agenda.ts`**, com o motivo calculado, não as três fixas do
    protótipo.
 4. **Resultado: "Voltar aos alunos" virou "Fechar"** (`fecharSheet()`), como em H§4 — volta
