@@ -214,4 +214,8 @@ implementa (janelas fixas × motor `agenda.ts`, por exemplo), vale o domínio.
 - Envio real de mensagem ao aluno (hoje só registra e mostra o toast).
 - Calendário real para sugerir janelas de reposição (as janelas ainda são as fixas do
   handoff, em `data/seed.json`) — é o motor que o Envio 01 aponta como o diferencial.
-- Licença da fonte Satoshi para app publicado.
+- Satoshi em app publicado: **a licença permite** (ITF FFL 2.0, lida em 07/10/2026 — ver
+  `README.md`). O que falta decidir é o `SCRUM-56`: os TTFs daqui são instâncias fatiadas do
+  variável (Derivative Work, § 05) e estão versionados num repositório público (§ 02). A
+  métrica de `tipografia.ts` não muda com a troca pelos oficiais; os pesos 600 e 800 é que
+  não existem como arquivo oficial.
