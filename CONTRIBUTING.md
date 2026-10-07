@@ -48,9 +48,9 @@ conjuntos de arquivos serem quase disjuntos e ninguém pisar no pé de ninguém.
 
 | Camada | Dono | Diretórios |
 |---|---|---|
-| **Apresentação** | Rafael | `mobile/src/telas/`, `mobile/src/componentes/`, `mobile/src/tema/`, `tokens/`, `mobile/src/estado/{navegacao,formularios,toast,avisos}.ts`, `DESIGN.md`, `PRODUCT.md`, `CLAUDE.md`, `README.md`, `handoff-ios-glass/`, `docs/design/` |
+| **Apresentação** | Rafael | `mobile/src/telas/`, `mobile/src/componentes/`, `mobile/src/tema/`, `tokens/`, `mobile/src/estado/{navegacao,formularios,toast,avisos}.ts`, `DESIGN.md`, `PRODUCT.md`, `CLAUDE.md`, `README.md`, `mobile/scripts/`, `handoff-ios-glass/`, `docs/design/` |
 | **Regra pura + portões** | Mauro | `mobile/src/dominio/` e seus testes, `mobile/jest.setup.js`, bloco `jest` do `package.json`, `mobile/src/telas/__tests__/montagem.test.tsx`, `mobile/src/estado/__tests__/navegacao.test.ts`, `.github/`, eslint, `.nvmrc`, este arquivo, `.claude/settings.json`, `CODEOWNERS` |
-| **Persistência** | Valentin | `mobile/src/dados/`, `mobile/src/estado/{dados,sessao,depuracao}.ts`, `data/seed.json`, `supabase/`, `scripts/`, `.env.example`, `docs/backend/` |
+| **Persistência** | Valentin | `mobile/src/dados/`, `mobile/src/estado/{dados,sessao,depuracao}.ts`, `data/seed.json`, `supabase/`, `.env.example`, `docs/backend/` |
 
 **O teste segue o dono do módulo testado.** `tema/__tests__/` é de Rafael (é o mesmo commit que
 muda o token); `dominio/__tests__/` é de Mauro. Duas exceções, porque são portões e não
@@ -230,8 +230,12 @@ dez segundos.
   `src/componentes/`, sugira em uma linha e pare.
 - **Não edite `spec/`, `handoff-ios-glass/`, `tokens/` nem `docs/design/historico/`
   fora de um card que diga explicitamente para editar.** São contrato. O
-  [`.claude/settings.json`](.claude/settings.json) nega esses caminhos para as sessões de
-  Claude Code.
+  [`.claude/settings.json`](.claude/settings.json) **nega** `spec/`, `handoff-ios-glass/`,
+  `docs/design/historico/` e `docs/design/redesign-ios-glass/` para as sessões de Claude Code,
+  e **pede confirmação** em `tokens/`, `DESIGN.md`, `PRODUCT.md`, `data/seed.json`,
+  `IMPLEMENTACAO.md` e `supabase/migrations/` — esses um card legítimo precisa poder mudar.
+  A negação cobre as ferramentas de edição, não o shell: um `sed -i` passa, e quem pega é o
+  `git diff --name-only`.
 
 ---
 
