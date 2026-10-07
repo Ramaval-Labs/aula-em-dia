@@ -109,8 +109,9 @@ assets/fonts/                Satoshi 400/500/600/700/800
 - **Satoshi** vem do arquivo variável da Fontshare, fatiado em instâncias estáticas
   400/500/600/700/800 — o RN não interpola eixos de fonte variável, por isso a família é
   escolhida pelo peso em `src/tema/tipografia.ts`.
-- **A data "hoje"** está em `src/dominio/datas.ts`. O padrão é `28/08` (a data em que a
-  semente foi escrita); `USAR_DATA_REAL = true` passa tudo a usar a data do aparelho.
+- **A data "hoje"** está em `src/dominio/datas.ts` e é a do aparelho (`USAR_DATA_REAL = true`,
+  desde o SCRUM-16). `USAR_DATA_REAL = false` congela o app em `28/08`, a âncora de onde os
+  deslocamentos da semente foram derivados.
 - **Reduzir movimento** (`tema/movimento.ts`) zera as transições do sheet, da barra, do switch
   e do toast em vez de deixá-las lentas.
 

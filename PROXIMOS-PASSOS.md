@@ -30,18 +30,12 @@ feriados, e persistência junto do resto do estado.
 contar 2h por bloco. As faixas desenhadas são de 4h, 3h, 3h e 2h — os mesmos 13 blocos somam
 **40h**. O app calcula pela duração real, porque é esse número que o motor de agenda usa.
 
-## 3. Datas reais no lugar de `28/08`
+## 3. Datas reais no lugar de `28/08` — feito
 
-O app tem tudo pronto para virar essa chave: `mobile/src/dominio/datas.ts` centraliza o "hoje" e
-já faz contas de dias de verdade. Basta `USAR_DATA_REAL = true`.
-
-**O que trava:** `data/seed.json` foi escrito em volta de 28/08 — validades, dias de atraso e as
-janelas fixas. Ligar a data real sem revisar a semente produz números sem sentido ("venceu há 400
-dias"). Decidir: ou a semente passa a usar datas relativas ao dia de hoje, ou o app deixa de vir
-com dados de demonstração.
-
-Há também uma inconsistência herdada do handoff: Rafael tem `pendencia.origem: "12/08"` com
-`dias: 3`, mas de 12/08 a 28/08 são 16 dias. Definir qual dos dois valores é o correto.
+O app usa a data do aparelho desde o `SCRUM-16` (`USAR_DATA_REAL = true` em
+`mobile/src/dominio/datas.ts`). O que travava foi resolvido antes: a semente guarda deslocamentos
+relativos a hoje (`SCRUM-14`), a inconsistência `pendencia.origem` × `pendencia.dias` foi
+desfeita (`SCRUM-15`) e `lerDdMm` infere o ano, para a virada de dezembro não quebrar (`SCRUM-55`).
 
 ## 4. Backend e sincronização
 
