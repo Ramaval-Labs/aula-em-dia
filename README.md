@@ -145,4 +145,7 @@ descendente −240, entrelinha 100, 1000 unidades por em. Daí saem exatamente o
 não mexe em `tipografia.ts` nem no alinhamento das 35 telas.
 
 Os dois itens e os caminhos para cada um estão em **`SCRUM-56`**, que **bloqueia publicar o app
-em qualquer loja**.
+em qualquer loja**. A decisão, de 07/10/2026, é **adiar**: o `SCRUM-57` traz a ordem de
+execução (pedir autorização à ITF primeiro) e fica fora das sprints. Até ele ser puxado, não
+mexa nos arquivos de `mobile/assets/fonts/`, no histórico do git nem na visibilidade do
+repositório.

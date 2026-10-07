@@ -247,6 +247,11 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   `tipografia.ts` não muda com a troca pelos oficiais — a suposição do card estava errada;
   o que precisa de decisão de PO são os pesos 600 e 800, que não existem como arquivo
   oficial. Resposta escrita no `README.md` da raiz
+- **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
+  e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
+  publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
+  o app dos três (`tipografia.ts` faz `require` deles) e o histórico público continua
+  distribuindo os arquivos
 - **27 vínculos *blocks***, seguindo a tabela de dependências do plano do backend. O CSV original
   dizia que a Parte 1 era pré-requisito de todas; **estava errado** — as Partes 1 e 2 não
   dependem uma da outra
