@@ -44,22 +44,26 @@ registrado no cabeçalho do `0002_rls.sql`.
 
 ## O que falta, e é decisão de quem for fazer a Parte 2
 
-### 1. O professor de teste (bloqueia o seed)
+### 1. O professor de teste — decidido (`SCRUM-50`)
 
 `alunos.professor_id` tem `default auth.uid()` e FK até `auth.users`. Um `seed.sql` rodando
 **sem contexto de auth** recebe `null` no default e viola o `not null`. O trigger que cria a
-linha de `professores` só chega na Parte 3, então a Parte 2 isolada não tem caminho definido
+linha de `professores` só chega na Parte 3, então a Parte 2 isolada não tinha caminho definido
 para inserir uma linha sequer.
 
-O caminho: inserir `auth.users` e `professores` explicitamente no seed, com uuid fixo, sem
-depender do default nem do trigger. Proposta para o time confirmar — vale **só no banco
-local**, nunca em produção:
+O caminho: inserir `auth.users`, `auth.identities` e `professores` explicitamente no seed, com
+uuid fixo, sem depender do default nem do trigger. Os valores valem **somente no banco local,
+nunca em produção**:
 
 ```
 uuid  00000000-0000-4000-8000-000000000001
 email professor@exemplo.test
 senha aulaemdia-local
 ```
+
+O SQL testado, as versões em que rodou e o que acontece quando o trigger da Parte 3 existir
+estão em [`PLANO-BACKEND.md`, Parte 2 § Professor de teste do seed](../docs/backend/PLANO-BACKEND.md#professor-de-teste-do-seed).
+O SQL não é repetido aqui de propósito: ele entra no `seed.sql`, que é da `SCRUM-18`.
 
 ### 2. `seed.sql` e `scripts/gerar-seed-sql.mjs`
 
@@ -80,7 +84,7 @@ vai ter de tomar e que não estão escritas em lugar nenhum:
 
 ### 3. A RPC `aplicar_movimento` (Parte 5)
 
-Está no plano (L546–592) com o **ramo da proposta como stub literal** (`-- detalhado na
+Está no plano (Parte 5 § A função) com o **ramo da proposta como stub literal** (`-- detalhado na
 implementação` seguido de `null;`). Não foi trazida para cá porque não está pronta: virar
 migração agora seria versionar um stub.
 
