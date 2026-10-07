@@ -75,45 +75,67 @@ Todos os seis fecharam:
 A ordem que importava foi respeitada: `SCRUM-36` antes de `SCRUM-49`, porque o status check só
 aparece na lista do GitHub depois de o workflow ter rodado uma vez.
 
-### Sprint 1 · 07/10 a 14/10 · **ativa** · 18 pontos
+### Sprint 1 · 07/10 · **fechada, 5 de 5, 18 pontos num dia**
 
-Esta é a sprint que está no quadro agora. Numa board Scrum só a ativa aparece no quadro; as
-outras duas ficam no Backlog até serem iniciadas.
+| Dono | Cards | Pts | PR |
+|---|---|---|---|
+| Valentin | `SCRUM-15` (1) → `SCRUM-14` (8) | 9 | #5, #4 |
+| Mauro | `SCRUM-55` — inferência de ano (3) + `SCRUM-32` — teste do motor de agenda (5) | 8 | #6, #7 |
+| Rafael | `SCRUM-45` — licença da Satoshi (1), mais PO e review | 1 | direto (`5480e32`) |
 
-**As sprints passaram a correr quarta → quarta**, porque foi quando a preparação de fato fechou.
-Boundary no meio da semana é melhor que uma data bonita que ninguém cumpre.
+**Planejada para uma semana, fechada no mesmo dia em que começou.** A preparação errou para
+mais (8 dias em vez de 3); a Sprint 1 errou para menos, por um fator ainda maior. As duas
+medições juntas dizem que o grupo ainda **não sabe estimar**, não que é rápido: os cards da
+Sprint 1 eram os mais bem especificados do quadro, com arquivo e linha, e quase não tinham
+decisão em aberto. Os da Sprint 2 têm mais decisão (o formato da interface na Parte 1, o
+`reposicoes` do Financeiro, o código do país no WhatsApp). Não extrapole 18 pontos por dia.
 
-O número existe para **ser medido**, não para ser confiado — ninguém sabe quanto o grupo entrega
-por semana antes da primeira terminar, e o único dado que existe é que a preparação levou 8 dias
-em vez de 3.
+A suíte saiu de 303 para **399 testes**, todos do Mauro (`agenda.test.ts` e `datas.test.ts`).
 
-| Dono | Cards | Pts |
-|---|---|---|
-| Valentin | `SCRUM-15` (1) → `SCRUM-14` (8) | 9 |
-| Mauro | `SCRUM-55` — inferência de ano (3) + `SCRUM-32` — teste do motor de agenda (5) | 8 |
-| Rafael | ~~`SCRUM-45` — licença da Satoshi (1)~~ **fechado em 07/10**, mais PO e review | 1 |
+### Sprint 2 · 07/10 a 14/10 · **ativa** · 21 pontos
 
-**Regra de corte na segunda 12/10:** se `SCRUM-14` não estiver em review, ninguém puxa mais nada e o
-Mauro entrega o teste do agenda cobrindo só descarte e pontuação. O `SCRUM-55` **não** é cortável
-— o `SCRUM-16` da sprint 2 depende dele.
-
-### Sprint 2 · 14/10 a 21/10 · 22 pontos
-
-Replanejar com a velocidade real da sprint 1 antes de começar.
+Esta é a sprint que está no quadro agora. Começou no mesmo dia em que a Sprint 1 fechou, então
+as janelas seguintes recuaram uma semana: a Sprint 3 passa a 14/10 a 21/10.
 
 | Dono | Cards | Pts |
 |---|---|---|
 | Valentin | `SCRUM-17` — Parte 1, camada de repositório (8) | 8 |
-| Mauro | `SCRUM-16` (3) + `SCRUM-28` (3) + `SCRUM-51` (1) | 7 |
+| Mauro | `SCRUM-16` (2) + `SCRUM-28` (3) + `SCRUM-51` (1) | 6 |
 | Rafael | `SCRUM-25` (3) → `SCRUM-26` (2) → `SCRUM-52` (2) | 7 |
 
 **`estado/dados.ts` fica fechado para todos menos o Valentin nesta sprint.** Os cards dos outros
 dois foram escolhidos por não abrirem ele.
 
-**Ordem obrigatória dentro da sprint:** `SCRUM-28` antes de `SCRUM-52`; `SCRUM-51` antes de
-`SCRUM-29`. Os dois são commits de abertura do Mauro, e estão no board como *blocks*.
+**Ordem obrigatória dentro da sprint:** `SCRUM-28` antes de `SCRUM-52`; `SCRUM-25` antes de
+`SCRUM-26` (mesmo arquivo). Os vínculos estão no board como *blocks*.
 
-### Sprint 3 · 21/10 a 28/10 · 25 pontos
+**Se a sua faixa esvaziar antes de 14/10**, puxe da Sprint 3, **só da sua faixa** e nesta ordem.
+Está escrito no objetivo da sprint, no quadro:
+
+| Dono | Puxa | Por quê nessa ordem |
+|---|---|---|
+| Valentin | `SCRUM-18` | Parte 2. Não depende da Parte 1 e não abre `estado/dados.ts` |
+| Mauro | `SCRUM-53`, depois `SCRUM-33` | `SCRUM-53` é o commit de abertura do `SCRUM-30` do Rafael |
+| Rafael | `SCRUM-29` (depois do `SCRUM-51`), depois `SCRUM-27` (depois do `SCRUM-26`) | os dois esperam um commit que já está nesta sprint |
+
+Puxar da faixa de outra pessoa é o que a divisão por camadas existe para evitar. Se a sua faixa
+inteira acabou, avise na daily em vez de abrir o arquivo de outra pessoa.
+
+**Revisado antes de abrir.** Os sete cards foram conferidos contra a `main` de 07/10. Dois tinham
+premissa errada, e quatro, referência velha:
+
+- **`SCRUM-16` desceu de 3 para 2 pontos.** A flag foi virada numa cópia local: quebram **2
+  testes**, não 3 suítes. A montagem das 35 telas passa, porque o seed relativo do `SCRUM-14` já
+  resolveu essa parte. O card agora tem os dois testes, a linha e o conserto de cada um
+- **`SCRUM-28` tinha o contrato errado.** Pedia "valor recebido e a receber" no resumo do mês,
+  mas esses números vêm de `totaisFinanceiro(alunos)`, que lê o status de pagamento e não o
+  extrato. O contrato encolheu para o que vem do extrato, e a decisão sobre `reposicoes`, que hoje
+  é o contador do pacote e não um número do mês, ficou explícita para o Mauro
+- **`SCRUM-52`, `SCRUM-26` e `SCRUM-51`** ganharam comentário com as linhas que mudaram
+  (`Financeiro.tsx`, `ChavePix.tsx` l.87, contagem de 399), e o **`SCRUM-25`** uma nota sobre o
+  `55` que o `wa.me` exige e os números do seed não trazem
+
+### Sprint 3 · 14/10 a 21/10 · 25 pontos
 
 | Dono | Cards | Pts |
 |---|---|---|
