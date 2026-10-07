@@ -12,8 +12,19 @@ export const USAR_DATA_REAL = false;
 /** dd/mm fixo do protótipo (data/seed.json → "hoje"). */
 export const HOJE_DEMO = '28/08';
 
-/** Ano assumido para a semente, já que o handoff só traz dd/mm. */
+/**
+ * Ano de `HOJE_DEMO`, e só dele. Não é mais o ano de toda data: `lerDdMm`
+ * infere o ano a partir de hoje (ver abaixo). Fica enquanto `HOJE_DEMO`
+ * existir, porque um dd/mm de demonstração precisa de um ano para ser Date.
+ */
 export const ANO_DEMO = 2025;
+
+/**
+ * Meio ano de folga para cada lado de hoje. Um dd/mm cai no ano de hoje; se
+ * ficar a MAIS de 183 dias, desloca um ano na direção que o aproxima.
+ * Exatamente 183 fica no mesmo ano.
+ */
+export const JANELA_DO_ANO = 183;
 
 const MESES_PT = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -32,14 +43,55 @@ export function formatarDdMm(d: Date): string {
   return `${doisDigitos(d.getDate())}/${doisDigitos(d.getMonth() + 1)}`;
 }
 
-/** dd/mm → Date, assumindo o ano de referência. */
-export function lerDdMm(ddmm: string, ano: number = ANO_DEMO): Date | null {
+const UM_DIA = 24 * 60 * 60 * 1000;
+
+/** Dias de `a` até `b`, arredondado para não sofrer com horário de verão. */
+function diasDeAte(a: Date, b: Date): number {
+  return Math.round((b.getTime() - a.getTime()) / UM_DIA);
+}
+
+/**
+ * dd/mm → Date.
+ *
+ * `referencia` decide o ano:
+ * - um número é o ano, usado sem inferência (o gerador do seed.sql passa assim);
+ * - uma Date é o "hoje" de onde o ano é inferido (padrão: o hoje do app).
+ *
+ * A inferência assume o ano da referência e desloca ±1 ano quando a data cai a
+ * mais de `JANELA_DO_ANO` dias dela. Sem isso `diasEntre('28/12', '05/01')`
+ * dava −357 em vez de +8.
+ *
+ * A validação é estrita: `31/04` é `null`, e não 1º de maio, que é o que
+ * `new Date(ano, 3, 31)` devolveria em silêncio. O mesmo vale para `29/02`
+ * quando o ano escolhido não é bissexto: a data não existe, então é `null` —
+ * empurrá-la para 1º de março mudaria vencimento e extrato sem ninguém ver.
+ * O ano é escolhido antes de validar, então `29/02` perto de um ano bissexto
+ * cai nele.
+ */
+export function lerDdMm(
+  ddmm: string,
+  referencia: number | Date = hojeComoData(),
+): Date | null {
   const m = /^(\d{2})\/(\d{2})$/.exec(ddmm.trim());
   if (!m) return null;
   const dia = Number(m[1]);
   const mes = Number(m[2]);
   if (mes < 1 || mes > 12 || dia < 1 || dia > 31) return null;
-  return new Date(ano, mes - 1, dia);
+
+  let ano: number;
+  if (typeof referencia === 'number') {
+    ano = referencia;
+  } else {
+    ano = referencia.getFullYear();
+    // Data aproximada (29/02 num ano comum vira 01/03): só decide o ano.
+    const distancia = diasDeAte(referencia, new Date(ano, mes - 1, dia));
+    if (distancia > JANELA_DO_ANO) ano -= 1;
+    else if (distancia < -JANELA_DO_ANO) ano += 1;
+  }
+
+  const data = new Date(ano, mes - 1, dia);
+  if (data.getMonth() !== mes - 1 || data.getDate() !== dia) return null;
+  return data;
 }
 
 /** O "hoje" do app em dd/mm. */
@@ -53,17 +105,23 @@ export function hojeComoData(): Date {
     const agora = new Date();
     return new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
   }
-  return lerDdMm(HOJE_DEMO) as Date;
+  // Ano explícito: inferir aqui seria chamar a si mesmo pelo padrão de lerDdMm.
+  return lerDdMm(HOJE_DEMO, ANO_DEMO) as Date;
 }
 
-const UM_DIA = 24 * 60 * 60 * 1000;
-
-/** Dias corridos de `de` até `ate` (negativo se `de` for no futuro). */
+/**
+ * Dias corridos de `de` até `ate` (negativo se `de` for no futuro).
+ *
+ * `ate` tem o ano inferido a partir de hoje, e `de` a partir de `ate`: assim o
+ * par fica coerente mesmo quando os dois estão longe de hoje e perto um do
+ * outro, e o resultado nunca passa de meio ano para nenhum lado.
+ */
 export function diasEntre(de: string, ate: string = hoje()): number | null {
-  const a = lerDdMm(de);
   const b = lerDdMm(ate);
-  if (!a || !b) return null;
-  return Math.round((b.getTime() - a.getTime()) / UM_DIA);
+  if (!b) return null;
+  const a = lerDdMm(de, b);
+  if (!a) return null;
+  return diasDeAte(a, b);
 }
 
 /** dd/mm somando dias — usado para validade estendida e pacotes novos. */
@@ -74,15 +132,24 @@ export function somarDias(ddmm: string, dias: number): string {
 }
 
 /** Eyebrow do cabeçalho da home: "Quinta, 28 de agosto". */
-export function dataPorExtenso(ddmm: string = hoje()): string {
-  const d = lerDdMm(ddmm);
+export function dataPorExtenso(
+  ddmm: string = hoje(),
+  referencia: number | Date = hojeComoData(),
+): string {
+  const d = lerDdMm(ddmm, referencia);
   if (!d) return ddmm;
   return `${DIAS_PT[d.getDay()]}, ${d.getDate()} de ${MESES_PT[d.getMonth()]}`;
 }
 
-/** "Agosto de 2025" — eyebrow do Financeiro. */
-export function mesPorExtenso(ddmm: string = hoje()): string {
-  const d = lerDdMm(ddmm);
+/**
+ * "Agosto de 2025" — eyebrow do Financeiro. É a única função que mostra o ano,
+ * então é onde um ano errado apareceria na tela.
+ */
+export function mesPorExtenso(
+  ddmm: string = hoje(),
+  referencia: number | Date = hojeComoData(),
+): string {
+  const d = lerDdMm(ddmm, referencia);
   if (!d) return ddmm;
   const nome = MESES_PT[d.getMonth()];
   return `${nome[0].toUpperCase()}${nome.slice(1)} de ${d.getFullYear()}`;
