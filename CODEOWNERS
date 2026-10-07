@@ -18,12 +18,18 @@
 /mobile/src/telas/            @dornelasxz
 /mobile/src/componentes/      @dornelasxz
 /mobile/src/tema/             @dornelasxz
+/mobile/src/estado/navegacao.ts   @dornelasxz
+/mobile/src/estado/formularios.ts @dornelasxz
+/mobile/src/estado/toast.ts       @dornelasxz
+/mobile/src/estado/avisos.ts      @dornelasxz
+/mobile/scripts/              @dornelasxz
 /tokens/                      @dornelasxz
 /handoff-ios-glass/           @dornelasxz
 /docs/design/                 @dornelasxz
 /DESIGN.md                    @dornelasxz
 /PRODUCT.md                   @dornelasxz
 /CLAUDE.md                    @dornelasxz
+/README.md                    @dornelasxz
 
 # ── Contratos: mudança aqui é decisão de time, não de uma pessoa ──────────────
 /spec/                        @dornelasxz
@@ -32,14 +38,19 @@
 # Os dois testes-portão são dele mesmo cobrindo código alheio (CONTRIBUTING § 2).
 /mobile/src/dominio/          @MauroSchulz
 /mobile/src/telas/__tests__/  @MauroSchulz
-/mobile/src/estado/__tests__/ @MauroSchulz
+/mobile/src/estado/__tests__/navegacao.test.ts @MauroSchulz
 /mobile/jest.setup.js         @MauroSchulz
 /.github/                     @MauroSchulz
+/.nvmrc                       @MauroSchulz
+/.claude/settings.json        @MauroSchulz
 /CONTRIBUTING.md              @MauroSchulz
 /CODEOWNERS                   @MauroSchulz
 
 # ── Persistência e backend: Valentin ──────────────────────────────────────────
 /mobile/src/dados/            @ValentinAntunes
+/mobile/src/estado/dados.ts      @ValentinAntunes
+/mobile/src/estado/sessao.ts     @ValentinAntunes
+/mobile/src/estado/depuracao.ts  @ValentinAntunes
 /supabase/                    @ValentinAntunes
 /data/                        @ValentinAntunes
 /docs/backend/                @ValentinAntunes
