@@ -1,21 +1,37 @@
 /**
  * Data de referência do app, num lugar só.
  *
- * O pacote de handoff congela o "hoje" em 28/08 porque toda a semente
- * (validades, dias de atraso, janelas de reposição) foi escrita em volta
- * dessa data. Trocar para a data real do aparelho é ligar `USAR_DATA_REAL`
- * — todo o resto do app já lê daqui.
+ * Desde o SCRUM-16 o app usa a data do aparelho (`USAR_DATA_REAL = true`).
+ * A semente guarda deslocamentos (`hoje-12`, `hoje+32`) e é resolvida na
+ * carga contra este hoje, e `lerDdMm` infere o ano a partir dele — todo o
+ * resto do app já lê daqui.
  */
 
-export const USAR_DATA_REAL = false;
+export const USAR_DATA_REAL = true;
+
+/**
+ * `HOJE_DEMO` e `ANO_DEMO` ficam, de propósito, com a flag ligada. São a
+ * âncora de demonstração, e servem a duas coisas:
+ *
+ * - é o 28/08 de onde cada deslocamento de `data/seed.json` foi derivado (o
+ *   campo `"hoje"` da semente é o espelho dele), e que a copy do handoff cita;
+ * - virar a flag para `false` congela o app nesse dia, para quando for preciso
+ *   texto de tela idêntico entre dias diferentes (capturas comparadas fora da
+ *   mesma rodada do /designer, que tira o antes e o depois no mesmo dia).
+ *
+ * Os testes NÃO usam esta âncora: cada suíte recebe a data por parâmetro ou
+ * fixa o ano (`lerDdMm('28/08', 2025)`), para passar em qualquer dia e com a
+ * flag em qualquer posição. Se a âncora deixar de servir às duas coisas
+ * acima, apague as duas constantes juntas.
+ */
 
 /** dd/mm fixo do protótipo (data/seed.json → "hoje"). */
 export const HOJE_DEMO = '28/08';
 
 /**
- * Ano de `HOJE_DEMO`, e só dele. Não é mais o ano de toda data: `lerDdMm`
- * infere o ano a partir de hoje (ver abaixo). Fica enquanto `HOJE_DEMO`
- * existir, porque um dd/mm de demonstração precisa de um ano para ser Date.
+ * Ano de `HOJE_DEMO`, e só dele. Não é o ano de toda data: `lerDdMm` infere o
+ * ano a partir de hoje (ver abaixo). Um dd/mm de demonstração precisa de um
+ * ano para ser Date.
  */
 export const ANO_DEMO = 2025;
 

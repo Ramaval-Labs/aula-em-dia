@@ -12,7 +12,7 @@
  */
 
 import type { BlocoSemanal, DiaDaSemana, FaixaHoraria, Folga } from './tipos';
-import { diasEntre, hoje as hojeDoApp, lerDdMm } from './datas';
+import { diasEntre, hoje as hojeDoApp, hojeComoData, lerDdMm } from './datas';
 
 export const DIAS: { chave: DiaDaSemana; curto: string; longo: string }[] = [
   { chave: 'seg', curto: 'SEG', longo: 'Segunda' },
@@ -123,9 +123,17 @@ export function periodoDaFolga(f: Folga): string {
 export const diasAteFolga = (f: Folga, hoje: string = hojeDoApp()): number | null =>
   diasEntre(hoje, f.de);
 
-/** Qual `DiaDaSemana` corresponde a uma data dd/mm. */
-export function diaDaSemanaDe(ddmm: string): DiaDaSemana | null {
-  const d = lerDdMm(ddmm);
+/**
+ * Qual `DiaDaSemana` corresponde a uma data dd/mm.
+ *
+ * `referencia` é a mesma de `lerDdMm`: um número fixa o ano, uma Date é o hoje
+ * de onde o ano é inferido. Sem ela, o dia da semana muda com o ano corrente.
+ */
+export function diaDaSemanaDe(
+  ddmm: string,
+  referencia: number | Date = hojeComoData(),
+): DiaDaSemana | null {
+  const d = lerDdMm(ddmm, referencia);
   if (!d) return null;
   // getDay(): 0 = domingo
   const ordem: DiaDaSemana[] = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];

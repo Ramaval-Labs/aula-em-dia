@@ -181,7 +181,7 @@ describe('folgas', () => {
 
 describe('diaDaSemanaDe', () => {
   it('28/08 de 2025 é uma quinta', () => {
-    expect(diaDaSemanaDe('28/08')).toBe('qui');
+    expect(diaDaSemanaDe('28/08', 2025)).toBe('qui');
   });
 
   it('data inválida devolve null', () => {
