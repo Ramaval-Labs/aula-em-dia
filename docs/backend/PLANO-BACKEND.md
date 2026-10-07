@@ -428,8 +428,124 @@ create policy "insere no próprio extrato" on public.lancamentos
 ### Dados de demonstração
 
 `supabase/seed.sql` é gerado a partir de [data/seed.json](../../data/seed.json) por um script
-(`scripts/gerar-seed-sql.mjs`), com os 4 alunos e seus extratos sob um professor de teste. Não é
-escrito à mão: o seed.json continua sendo a fonte, como diz o CLAUDE.md.
+(`scripts/gerar-seed-sql.mjs`), com os 4 alunos e seus extratos sob um professor de teste (definido
+logo abaixo). Não é escrito à mão: o seed.json continua sendo a fonte, como diz o CLAUDE.md.
+
+### Professor de teste do seed
+
+Decidido no `SCRUM-50`. **Somente banco local, nunca produção.**
+
+```
+uuid  00000000-0000-4000-8000-000000000001
+email professor@exemplo.test
+senha aulaemdia-local
+```
+
+O uuid é um v4 válido e fácil de reconhecer numa consulta, o domínio `.test` é reservado e nunca
+entrega e-mail, e a senha não é usada em nenhum outro lugar. Nenhuma chave do projeto entra no seed:
+ele só precisa destes três valores.
+
+**Por que existe.** O seed roda sem contexto de autenticação, então `auth.uid()` devolve `null`.
+Como `alunos.professor_id` é `not null default auth.uid()`, inserir um aluno sem informar o
+professor falha (`null value in column "professor_id" ... violates not-null constraint`). Informar o
+professor exige uma linha em `professores`, que por sua vez exige uma linha em `auth.users`, e o
+trigger que cria `professores` a partir de `auth.users` só chega na Parte 3. Por isso o seed insere
+as duas explicitamente, com uuid fixo, sem depender do default nem do trigger.
+
+**O SQL testado.** É o primeiro bloco do `seed.sql`, antes de qualquer aluno:
+
+```sql
+-- Professor de teste do Aula em Dia. SOMENTE banco local, nunca produção.
+begin;
+
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password,
+  email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+  created_at, updated_at,
+  confirmation_token, email_change, email_change_token_new, recovery_token
+) values (
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-4000-8000-000000000001',
+  'authenticated', 'authenticated',
+  'professor@exemplo.test',
+  extensions.crypt('aulaemdia-local', extensions.gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}', '{}',
+  now(), now(),
+  '', '', '', ''
+)
+on conflict (id) do nothing;
+
+insert into auth.identities (
+  id, user_id, provider_id, provider, identity_data,
+  last_sign_in_at, created_at, updated_at
+) values (
+  '00000000-0000-4000-8000-000000000001',
+  '00000000-0000-4000-8000-000000000001',
+  '00000000-0000-4000-8000-000000000001',
+  'email',
+  jsonb_build_object(
+    'sub',   '00000000-0000-4000-8000-000000000001',
+    'email', 'professor@exemplo.test',
+    'email_verified', true
+  ),
+  now(), now(), now()
+)
+on conflict (provider_id, provider) do nothing;
+
+insert into public.professores (id, email)
+values ('00000000-0000-4000-8000-000000000001', 'professor@exemplo.test')
+on conflict (id) do nothing;
+
+commit;
+```
+
+O que cada detalhe segura, conferido no banco e não presumido:
+
+- **Os quatro tokens como `''`.** Com eles em `null`, o login devolve 500 (`Database error querying
+  schema`), porque o serviço de Auth não converte `null` em texto ao ler `confirmation_token`.
+- **`extensions.crypt`.** O `pgcrypto` mora no schema `extensions`; sem o prefixo a função não é
+  encontrada.
+- **`auth.identities`.** Nesta versão o login por senha funciona mesmo sem a linha, mas ela fica: é
+  o que o `signUp` cria, e o usuário de teste deve ter a mesma forma de um usuário real. O `id` é o
+  uuid fixo, e o `on conflict` aponta para `(provider_id, provider)`, que é o índice único da
+  tabela. As colunas `email` de `auth.identities` e `confirmed_at` de `auth.users` são geradas e não
+  entram no insert.
+- **`professores (id, email)`.** `email` é a única coluna `not null` sem default. Nome, iniciais e
+  disciplinas vêm do gerador, na `SCRUM-18`.
+
+**Onde foi testado.** Em 07/10/2026, com PostgreSQL 17.11, Supabase CLI 2.120.0 e Auth (GoTrue)
+v2.197.0, só no ambiente local. A forma de `auth.users` e `auth.identities` muda entre versões:
+ao subir a versão do CLI, rodar este roteiro de novo.
+
+1. `npx supabase db reset`, depois o bloco duas vezes seguidas pelo `psql`, como `postgres` e com
+   `ON_ERROR_STOP=1`. A primeira insere uma linha em cada tabela; a segunda não insere nenhuma e
+   também sai sem erro.
+2. Um aluno mínimo (`professor_id`, `nome`, `disciplina`, `dia`, `hora`) entra com este
+   `professor_id`, dentro de uma transação desfeita em seguida.
+3. `POST /auth/v1/token?grant_type=password` com o e-mail e a senha devolve `access_token`. Com esse
+   token, `select` em `professores` devolve só a linha do professor de teste; sem ele, devolve vazio.
+
+**Interação com a Parte 3.** Quando a `0003_novo_professor.sql` existir, o insert em `auth.users`
+dispara o trigger, que cria sozinho as linhas de `professores`, `politicas` e `disponibilidades`.
+Fica valendo a **idempotência**: o insert explícito em `professores` usa `on conflict (id) do
+nothing` e o bloco roda igual com ou sem o trigger. Foi testado com o trigger deste plano instalado
+só no banco local: as duas execuções passam e sobra uma linha em cada tabela. Sem o `on conflict`, a
+mesma execução para em `duplicate key value violates unique constraint "professores_pkey"`.
+
+A alternativa era o seed rodar antes de o trigger existir. Foi recusada porque o `db reset` aplica
+todas as migrações e só depois o seed: assim que a `0003` entrar, o seed sempre encontra o trigger.
+Depender da ordem faria o seed quebrar no primeiro `db reset` da Parte 3.
+
+Duas consequências para quem escrever o resto do seed:
+
+- `do nothing` não sobrescreve. Com o trigger no lugar, a linha de `professores` já chega criada
+  só com `id` e `email`; o perfil (nome, iniciais, disciplinas, faixa) tem de entrar por `on
+  conflict (id) do update` ou por um `update` depois do bloco.
+- O mesmo vale para `politicas` e `disponibilidades`: o trigger as cria com os padrões, então os
+  inserts do seed precisam de `on conflict (professor_id) do update`.
+
+O `seed.sql` em si é escrito na `SCRUM-18`, usando este bloco.
 
 ### Pronto quando
 
