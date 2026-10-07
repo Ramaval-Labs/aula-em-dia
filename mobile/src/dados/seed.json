@@ -1,5 +1,6 @@
 {
-  "chaveStorage": "aulaemdia.app.v3",
+  "//": "Datas em deslocamento (SCRUM-13): \"hoje-12\" e \"hoje+32\" viram dd/mm na carga, por resolverData em mobile/src/dados/semente.ts. Dentro de texto, {hoje-58} vira a data e {dia:hoje+1} vira \"Sexta, 29/08\", com o dia da semana derivado. O campo \"hoje\" fica absoluto de propósito: é a âncora de 28/08 de onde cada N foi derivado, espelho de HOJE_DEMO em dominio/datas.ts. Edite só data/seed.json e copie para mobile/src/dados/seed.json.",
+  "chaveStorage": "aulaemdia.app.v4",
   "chaveTema": "aulaemdia.app.v3.tema",
   "hoje": "28/08",
   "valorAula": 80,
@@ -15,23 +16,23 @@
   },
   "janelasReposicao": [
     {
-      "dia": "Sexta, 29/08",
+      "dia": "{dia:hoje+1}",
       "hora": "17h",
       "motivo": "Livre na sua agenda e o aluno já teve aula nesse horário"
     },
     {
-      "dia": "Sábado, 30/08",
+      "dia": "{dia:hoje+2}",
       "hora": "10h",
       "motivo": "Livre, mas fora do horário habitual do aluno"
     },
     {
-      "dia": "Terça, 02/09",
+      "dia": "{dia:hoje+5}",
       "hora": "19h",
       "motivo": "Emenda na aula do Rafael, sem intervalo entre as duas"
     }
   ],
   "janelaValidadeEstendida": {
-    "dia": "Quinta, 11/09",
+    "dia": "{dia:hoje+14}",
     "hora": "18h",
     "motivo": "Só cabe dentro da validade estendida"
   },
@@ -42,17 +43,20 @@
       "disciplina": "Matemática",
       "dia": "quarta",
       "hora": "17h",
+      "telefone": "51900000101",
+      "email": "valentin.klein@exemplo.test",
       "hoje": true,
       "total": 6,
       "usadas": 2,
-      "validade": "30/10",
+      "validade": "hoje+63",
+      "valorPorAula": 80,
       "reposicoes": 0,
       "lembretes": 1,
-      "ultimoLembrete": "22/08",
+      "ultimoLembrete": "hoje-6",
       "atrasosHistoricos": 3,
       "pagamento": {
         "status": "atraso",
-        "venceu": "16/08",
+        "venceu": "hoje-12",
         "dias": 12
       }
     },
@@ -62,18 +66,36 @@
       "disciplina": "Violão",
       "dia": "segunda",
       "hora": "19h",
+      "telefone": "51900000202",
+      "email": "rafael.dornelas@exemplo.test",
       "hoje": false,
       "total": 8,
       "usadas": 6,
-      "validade": "30/09",
+      "validade": "hoje+33",
+      "valorPorAula": 80,
       "reposicoes": 1,
       "pagamento": {
         "status": "aberto",
-        "vence": "12/09"
+        "vence": "hoje+15"
       },
       "pendencia": {
-        "origem": "12/08",
+        "origem": "hoje-16",
         "dias": 3
+      },
+      "proposta": {
+        "janela": {
+          "dia": "{dia:hoje+1}",
+          "hora": "17h"
+        },
+        "enviadaEm": "hoje-2",
+        "status": "enviada",
+        "alternativas": [
+          {
+            "dia": "{dia:hoje+2}",
+            "hora": "10h",
+            "motivo": "Livre, mas fora do horário habitual do aluno"
+          }
+        ]
       }
     },
     {
@@ -82,14 +104,17 @@
       "disciplina": "Inglês",
       "dia": "terça e quinta",
       "hora": "18h",
+      "telefone": "51900000303",
+      "email": "mateus.alves@exemplo.test",
       "hoje": true,
       "total": 8,
       "usadas": 3,
-      "validade": "30/11",
+      "validade": "hoje+94",
+      "valorPorAula": 80,
       "reposicoes": 0,
       "pagamento": {
         "status": "pago",
-        "em": "01/08",
+        "em": "hoje-27",
         "meio": "Pix"
       }
     },
@@ -99,11 +124,13 @@
       "disciplina": "Inglês",
       "dia": "sem horário fixo",
       "hora": "",
+      "telefone": "51900000404",
+      "email": "bernardo.lemos@exemplo.test",
       "hoje": false,
       "total": 0,
       "usadas": 0,
       "semPacote": true,
-      "encerrado": "04/07",
+      "encerrado": "hoje-55",
       "reposicoes": 0,
       "pagamento": {
         "status": "sem"
@@ -113,21 +140,21 @@
   "extratos": {
     "val": [
       {
-        "d": "26/08",
+        "d": "hoje-2",
         "t": "Aula realizada",
         "s": "Quarta, 17h",
         "delta": -1,
         "saldo": 4
       },
       {
-        "d": "19/08",
+        "d": "hoje-9",
         "t": "Aula realizada",
         "s": "Quarta, 17h",
         "delta": -1,
         "saldo": 5
       },
       {
-        "d": "01/08",
+        "d": "hoje-27",
         "t": "Pacote de 6 aulas",
         "s": "Aguardando pagamento",
         "delta": 6,
@@ -136,67 +163,74 @@
     ],
     "raf": [
       {
-        "d": "12/08",
+        "d": "hoje-2",
+        "t": "Proposta de reposição enviada",
+        "s": "{dia:hoje+1}, 17h · aguardando resposta",
+        "delta": 0,
+        "saldo": 2
+      },
+      {
+        "d": "hoje-16",
         "t": "Falta avisada",
         "s": "Aviso com 30h · reposição gerada",
         "delta": 0,
         "saldo": 2
       },
       {
-        "d": "05/08",
+        "d": "hoje-23",
         "t": "Aula realizada",
         "s": "Segunda, 19h",
         "delta": -1,
         "saldo": 2
       },
       {
-        "d": "29/07",
+        "d": "hoje-30",
         "t": "Reposição realizada",
         "s": "Sábado, 10h",
         "delta": -1,
         "saldo": 3
       },
       {
-        "d": "01/07",
+        "d": "hoje-58",
         "t": "Pacote de 8 aulas",
-        "s": "Pago em 01/07 · Pix",
+        "s": "Pago em {hoje-58} · Pix",
         "delta": 8,
         "saldo": 8
       }
     ],
     "mar": [
       {
-        "d": "26/08",
+        "d": "hoje-2",
         "t": "Aula realizada",
         "s": "Terça, 18h",
         "delta": -1,
         "saldo": 5
       },
       {
-        "d": "21/08",
+        "d": "hoje-7",
         "t": "Aula realizada",
         "s": "Quinta, 18h",
         "delta": -1,
         "saldo": 6
       },
       {
-        "d": "19/08",
+        "d": "hoje-9",
         "t": "Falta sem aviso",
         "s": "Política: debita a aula",
         "delta": -1,
         "saldo": 7
       },
       {
-        "d": "14/08",
+        "d": "hoje-14",
         "t": "Falta avisada",
         "s": "Aviso com 26h · reposição realizada",
         "delta": 0,
         "saldo": 8
       },
       {
-        "d": "01/08",
+        "d": "hoje-27",
         "t": "Pacote de 8 aulas",
-        "s": "Pago em 01/08 · Pix",
+        "s": "Pago em {hoje-27} · Pix",
         "delta": 8,
         "saldo": 8
       }
