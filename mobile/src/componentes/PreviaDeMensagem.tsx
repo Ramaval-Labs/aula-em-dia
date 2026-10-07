@@ -41,6 +41,15 @@ function numeroParaWhatsApp(telefone?: string): string | null {
   return d.length <= 11 ? `55${d}` : d;
 }
 
+/**
+ * Se este telefone faz o botão abrir o WhatsApp em vez de copiar. A tela que
+ * escreve a própria nota precisa saber disso para não prometer o que o botão
+ * não vai fazer — quem decide continua sendo a função acima, uma só.
+ */
+export function abreNoWhatsApp(telefone?: string): boolean {
+  return numeroParaWhatsApp(telefone) !== null;
+}
+
 export function PreviaDeMensagem({
   texto: mensagem,
   destino,

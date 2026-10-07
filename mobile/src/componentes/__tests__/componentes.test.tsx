@@ -263,6 +263,33 @@ describe('prévia de mensagem', () => {
     await waitFor(() => expect(copiou).toHaveBeenCalled());
   });
 
+  // A cobrança leva a chave Pix dentro do texto, e chave de e-mail ou
+  // aleatória tem `@`, `+`, `/` e `-`: sem codificar, elas cortam a URL no
+  // primeiro caractere reservado e chegam truncadas na conversa.
+  it.each([
+    ['chave de e-mail', 'professor+aulas@escola.com.br'],
+    ['chave aleatória', 'a1b2c3d4-e5f6/7890+abcd=='],
+  ])('a %s chega inteira dentro do link', async (_rotulo, chave) => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const comChave = `Oi, Valentin!\n\nMinha chave Pix é ${chave}.\nSão R$ 480,00.`;
+
+    await comTema(<PreviaDeMensagem texto={comChave} telefone="51900000101" />);
+    fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
+    await waitFor(() => expect(openURL).toHaveBeenCalled());
+
+    const url = openURL.mock.calls[0][0] as string;
+    expect(decodeURIComponent(url.split('?text=')[1])).toBe(comChave);
+    openURL.mockRestore();
+  });
+
+  it('abreNoWhatsApp responde o mesmo que o botão faz', () => {
+    const { abreNoWhatsApp } = require('../PreviaDeMensagem');
+    expect(abreNoWhatsApp('51900000101')).toBe(true);
+    expect(abreNoWhatsApp('+55 51 90000-0101')).toBe(true);
+    expect(abreNoWhatsApp('90000101')).toBe(false);
+    expect(abreNoWhatsApp(undefined)).toBe(false);
+  });
+
   it('WhatsApp que não abre cai no copiar, e o aviso de abertura não sai', async () => {
     const abriu = jest.fn();
     const copiou = jest.fn();
