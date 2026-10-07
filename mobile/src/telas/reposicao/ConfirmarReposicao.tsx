@@ -121,6 +121,10 @@ export function ConfirmarReposicao() {
         <PreviaDeMensagem
           texto={texto_ || 'Escolha um horário para montar a mensagem.'}
           destino={mascararTelefone(aluno?.telefone)}
+          /* Sem horário escolhido o texto é o convite para escolher um, e
+             abrir o WhatsApp com ele não faria sentido: aí o botão copia. */
+          telefone={texto_ ? aluno?.telefone : undefined}
+          aoAbrir={() => avisar(avisos.whatsappAberto)}
           aoCopiar={() => avisar(avisos.mensagemCopiada)}
         />
       </View>

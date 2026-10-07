@@ -4,7 +4,7 @@
  * texto alternativo do delta do extrato (cor não pode ser o único sinal).
  */
 
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import { TemaProvider } from '../../tema/TemaProvider';
@@ -188,5 +188,102 @@ describe('sheet e toast', () => {
     expect(useToast.getState().reservaDoSheet).not.toBeNull();
     await r.unmount();
     expect(useToast.getState().reservaDoSheet).toBeNull();
+  });
+});
+
+// A prévia é o único componente do catálogo que sai do app (abre o WhatsApp)
+// e o único cujo botão tem dois comportamentos. O mock evita depender do
+// módulo nativo da área de transferência para afirmar qual dos dois rodou.
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn().mockResolvedValue(true) }));
+
+describe('prévia de mensagem', () => {
+  const { Linking } = require('react-native');
+  const Clipboard = require('expo-clipboard');
+  const { PreviaDeMensagem } = require('../PreviaDeMensagem');
+
+  // Acento, quebra de linha e `R$`: é o que a mensagem de reposição tem e o
+  // que chega corrompido se alguém esquecer o `encodeURIComponent`.
+  const MENSAGEM = 'Oi, Caio!\n\nA reposição ficou em ter, às 17h.\nValor: R$ 90,00.';
+
+  beforeEach(() => {
+    (Clipboard.setStringAsync as jest.Mock).mockClear();
+  });
+
+  it('com telefone, abre o WhatsApp com o país na frente e o texto codificado', async () => {
+    const abriu = jest.fn();
+    const copiou = jest.fn();
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+
+    await comTema(
+      <PreviaDeMensagem
+        texto={MENSAGEM}
+        telefone="51900000101"
+        aoAbrir={abriu}
+        aoCopiar={copiou}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
+    await waitFor(() => expect(abriu).toHaveBeenCalled());
+
+    expect(openURL).toHaveBeenCalledWith(
+      `https://wa.me/5551900000101?text=${encodeURIComponent(MENSAGEM)}`,
+    );
+    expect(Clipboard.setStringAsync).not.toHaveBeenCalled();
+    expect(copiou).not.toHaveBeenCalled();
+    openURL.mockRestore();
+  });
+
+  it('telefone que já vem com o código do país não ganha outro 55', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    await comTema(<PreviaDeMensagem texto={MENSAGEM} telefone="+55 51 90000-0101" />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
+    await waitFor(() => expect(openURL).toHaveBeenCalled());
+
+    expect(openURL.mock.calls[0][0]).toContain('wa.me/5551900000101?');
+    openURL.mockRestore();
+  });
+
+  it('sem telefone copia — é o que a chave Pix e o catálogo usam', async () => {
+    const copiou = jest.fn();
+    await comTema(<PreviaDeMensagem texto={MENSAGEM} aoCopiar={copiou} />);
+
+    expect(screen.queryByRole('button', { name: 'Abrir no WhatsApp' })).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'Copiar mensagem' }));
+    await waitFor(() => expect(copiou).toHaveBeenCalled());
+    expect(Clipboard.setStringAsync).toHaveBeenCalledWith(MENSAGEM);
+  });
+
+  it('telefone sem DDD não vira link: aluno incompleto não quebra a tela', async () => {
+    const copiou = jest.fn();
+    await comTema(<PreviaDeMensagem texto={MENSAGEM} telefone="90000101" aoCopiar={copiou} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Copiar mensagem' }));
+    await waitFor(() => expect(copiou).toHaveBeenCalled());
+  });
+
+  it('WhatsApp que não abre cai no copiar, e o aviso de abertura não sai', async () => {
+    const abriu = jest.fn();
+    const copiou = jest.fn();
+    const openURL = jest
+      .spyOn(Linking, 'openURL')
+      .mockRejectedValue(new Error('sem aplicativo para o link'));
+
+    await comTema(
+      <PreviaDeMensagem
+        texto={MENSAGEM}
+        telefone="51900000101"
+        aoAbrir={abriu}
+        aoCopiar={copiou}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
+    await waitFor(() => expect(copiou).toHaveBeenCalled());
+
+    expect(Clipboard.setStringAsync).toHaveBeenCalledWith(MENSAGEM);
+    expect(abriu).not.toHaveBeenCalled();
+    openURL.mockRestore();
   });
 });
