@@ -105,6 +105,44 @@ Grupo 08 — Mauro Schulz, Rafael Dornelas e Valentin Klein Antunes.
 
 ## Licença e fontes
 
-Projeto acadêmico, sem licença de uso definida. A tipografia **Satoshi** vem da Fontshare
-(licença gratuita) e está self-hospedada em `mobile/assets/fonts/` — **conferir os termos antes de
-publicar o app** em qualquer loja.
+Projeto acadêmico, sem licença de uso definida.
+
+A tipografia **Satoshi** é da Indian Type Foundry e vem da
+[Fontshare](https://www.fontshare.com/fonts/satoshi), sob a
+[ITF Free Font License](https://www.fontshare.com/licenses/itf-ffl) — **versão 2.0, de
+17/08/2026**, lida em **07/10/2026** (o mesmo texto vem em `License/FFL.txt` dentro do pacote
+baixado). É gratuita, para uso pessoal **e** comercial, por prazo indeterminado. As duas
+perguntas que estavam abertas (`SCRUM-45`) têm resposta:
+
+- **App publicado: pode.** A § 01 lista "Mobile or Desktop Applications" entre as mídias
+  permitidas, "at any scale and in any location worldwide", e não distingue protótipo de app de
+  loja.
+- **Arquivo dentro do bundle: pode.** A § 01 diz, com estas palavras, que a fonte pode ser
+  embutida em aplicativos móveis, e a § 02 fecha a questão: nada nela "restricts the
+  self-hosting, embedding or other use of the Font Software by the Licensee for the Licensee's
+  own websites, applications". A § 03 proíbe **extrair** o arquivo de dentro do que o embute,
+  o que é obrigação de quem extrai. Creditar a ITF é opcional ("You may, but are not required
+  to") — este README credita por cortesia.
+
+**Duas coisas não estão em conformidade hoje**, e nenhuma delas é a fonte errada:
+
+1. **Os cinco TTFs em `mobile/assets/fonts/` são derivados, não os oficiais.** Foram fatiados do
+   `Satoshi-Variable.ttf`: os cinco carregam o `uniqueID` do arquivo variável
+   (`2.000;ITFO;SatoshiVariable-Bold`), guardam a tabela `STAT` que sobrou da instanciação, têm
+   ~77 KB contra ~73 KB dos oficiais e tiveram o nome reescrito. A § 02 proíbe "subsetting,
+   format conversion, or altering font names … or other metadata", e a § 05 exige consentimento
+   escrito prévio para Derivative Work. Agrava que o pacote oficial só traz estáticos em 300,
+   400, 500, 700 e 900: os pesos **600** e **800** que o app usa não existem como arquivo
+   oficial.
+2. **Os TTFs estão versionados, e o repositório é público.** A § 02 proíbe distribuir a fonte
+   "through another font website, font library, marketplace, **repository**, download service".
+   Isso vale mesmo depois de trocar pelos oficiais.
+
+**A métrica não corre risco.** O `1.25em` de tinta do `texto()` sai das métricas verticais, e
+elas são idênticas nos nossos arquivos, nos estáticos oficiais e no variável: ascendente 1010,
+descendente −240, entrelinha 100, 1000 unidades por em. Daí saem exatamente o `1.25`
+(1010 + 240) e o `ALTURA_NORMAL` de `1.35` (1010 + 240 + 100). Trocar os arquivos pelos oficiais
+não mexe em `tipografia.ts` nem no alinhamento das 35 telas.
+
+Os dois itens e os caminhos para cada um estão em **`SCRUM-56`**, que **bloqueia publicar o app
+em qualquer loja**.
