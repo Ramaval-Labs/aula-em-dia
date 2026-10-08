@@ -149,7 +149,7 @@ todo mundo.
 
 ```bash
 cd mobile
-npm test ; echo "EXIT=$?"   # hoje: 642 testes, 20 suítes — só conta com EXIT=0
+npm test ; echo "EXIT=$?"   # hoje: 648 testes, 21 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
 ```
 
@@ -260,7 +260,7 @@ As três pessoas usam Claude Code neste repositório, então vale combinar o bá
 
 ## 7. Onde a rede de segurança tem buraco
 
-642 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
+648 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
 confiar:
 
 - **Todo módulo de `dominio/` com lógica já tem suíte própria**, mas em `estado/dados.ts`, o maior arquivo
@@ -268,8 +268,12 @@ confiar:
   store segue sem asserção própria.
 - **Três defeitos conhecidos em `dominio/mensagens.ts`** estão marcados como `it.failing` em
   `mensagens.test.ts` (`SCRUM-33`), à espera de correção.
-- **O teste de interface é de fumaça:** monta as 35 telas e afirma que nada lança exceção. Não
-  afirma o que aparece escrito.
+- **O teste de interface é quase todo de fumaça:** `montagem.test.tsx` monta as 35 telas e
+  afirma que nada lança exceção. Só dois fluxos têm o conteúdo conferido, em `fluxo.test.tsx`
+  (`SCRUM-34`): registrar aula e confirmar reposição. O resto das telas pode mostrar um número
+  errado sem que teste nenhum acuse.
+- **Um defeito conhecido em `estado/dados.ts`** está marcado como `it.failing` em
+  `fluxo.test.tsx`: marcar a reposição direto não desfaz a proposta que estava aberta.
 - **Sem linter** ainda. O teste de integração do banco existe (`npx supabase test db`, RLS com
   dois professores), mas **não roda no CI**: precisa de Docker.
 
