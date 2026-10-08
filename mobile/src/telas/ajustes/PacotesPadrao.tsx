@@ -9,7 +9,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
-import { CampoDeTexto } from '../../componentes/Campos';
+import { CampoDeDinheiro, useCampoDeDinheiro } from '../../componentes/Campos';
 import { BotaoPrimario, Segmentado } from '../../componentes/Controles';
 import { dinheiro, plural } from '../../dominio/formato';
 import { AULAS_OFERECIDAS } from '../../dominio/pacote';
@@ -43,6 +43,10 @@ export function PacotesPadrao() {
     },
   );
 
+  const { campo: campoDeValor, confirmar } = useCampoDeDinheiro(cfg.valorPorAula, (valorPorAula) =>
+    atualizar({ valorPorAula }),
+  );
+
   const opcoes = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 
   return (
@@ -54,6 +58,7 @@ export function PacotesPadrao() {
         <BotaoPrimario
           rotulo="Salvar padrão"
           aoTocar={() => {
+            if (!confirmar()) return;
             salvarPacotePadrao(cfg);
             avisar('Padrão de pacote salvo.');
             concluir('ajustes');
@@ -72,11 +77,9 @@ export function PacotesPadrao() {
       </CartaoDeAjuste>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <CampoDeTexto
-          rotulo="Valor por aula, em R$"
-          valor={String(cfg.valorPorAula)}
-          aoMudar={(v) => atualizar({ valorPorAula: Number(v.replace(/\D/g, '')) || 0 })}
-          teclado="numerico"
+        <CampoDeDinheiro
+          {...campoDeValor}
+          rotulo="Valor por aula"
           ajuda={`Pacote de ${cfg.aulas} aulas sai por ${dinheiro(
             cfg.aulas * cfg.valorPorAula,
           )}.`}

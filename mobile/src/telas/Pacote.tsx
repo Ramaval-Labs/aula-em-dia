@@ -10,7 +10,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../componentes/Blocos';
-import { CampoDeTexto } from '../componentes/Campos';
+import { CampoDeDinheiro, useCampoDeDinheiro } from '../componentes/Campos';
 import { BotaoPrimario, CartaoEscolha, Segmentado, Switch } from '../componentes/Controles';
 import { CabecalhoGrupo } from '../componentes/Listas';
 import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
@@ -55,8 +55,13 @@ export function Pacote() {
 
   const calculado = calcularPacote(cfg, sobrando, hoje());
 
+  const { campo: campoDeValor, confirmar: valorConfere } = useCampoDeDinheiro(
+    cfg.valorPorAula,
+    (valorPorAula) => atualizar({ valorPorAula }),
+  );
+
   const confirmar = () => {
-    if (!aluno) return;
+    if (!aluno || !valorConfere()) return;
     criarPacoteCom(aluno.id, cfg);
     avisar(
       renovacao
@@ -101,11 +106,9 @@ export function Pacote() {
       </View>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <CampoDeTexto
-          rotulo="Valor por aula, em R$"
-          valor={String(cfg.valorPorAula)}
-          aoMudar={(v) => atualizar({ valorPorAula: Number(v.replace(/\D/g, '')) || 0 })}
-          teclado="numerico"
+        <CampoDeDinheiro
+          {...campoDeValor}
+          rotulo="Valor por aula"
           ajuda={`Total do pacote: ${dinheiro(calculado.valorTotal)}`}
         />
       </CartaoVidro>
