@@ -101,7 +101,7 @@ as janelas seguintes recuaram uma semana: a Sprint 3 passa a 14/10 a 21/10.
 |---|---|---|
 | Valentin | `SCRUM-17` — Parte 1, camada de repositório (8) | 8 |
 | Mauro | `SCRUM-16` (2) + `SCRUM-28` (3) + `SCRUM-51` (1) | 6 |
-| Rafael | ~~`SCRUM-25` (3)~~ → ~~`SCRUM-26` (2)~~ **feitos em 07/10** → `SCRUM-52` (2) | 7 |
+| Rafael | ~~`SCRUM-25` (3)~~ → ~~`SCRUM-26` (2)~~ → ~~`SCRUM-52` (2)~~ **os três em 07/10** | 7 |
 
 **`estado/dados.ts` fica fechado para todos menos o Valentin nesta sprint.** Os cards dos outros
 dois foram escolhidos por não abrirem ele.
@@ -257,6 +257,13 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   era a nota, que é escrita pela tela porque carrega a limitação de agendamento — daí o
   `abreNoWhatsApp` exportado, para a tela não prometer o que o botão não faz. A chave Pix já
   ia inteira desde o `SCRUM-25`, que codifica a mensagem toda
+- **`SCRUM-52` fechado** em 07/10 (`bc9dbfc`), logo depois do `SCRUM-28` entrar: o Financeiro
+  não soma mais o extrato, e o cartão do mês cai de 6 para 2 na semente. A barra precisou de
+  mais que trocar o campo — no contrato novo `reposicoes` é subconjunto de `aulasDadas`, então
+  o segmento azul virou `aulasDadas - reposicoes` e o rótulo dele, que é o que o leitor de
+  tela anuncia, passou a dizer "aulas regulares". A contagem de testes dos três READMEs foi
+  a 416 num commit à parte: tinha ficado em 408 porque o `SCRUM-25` e o `SCRUM-26` não a
+  atualizaram
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
