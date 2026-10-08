@@ -149,7 +149,7 @@ todo mundo.
 
 ```bash
 cd mobile
-npm test ; echo "EXIT=$?"   # hoje: 399 testes, 12 suítes — só conta com EXIT=0
+npm test ; echo "EXIT=$?"   # hoje: 465 testes, 15 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
 ```
 
@@ -260,12 +260,13 @@ As três pessoas usam Claude Code neste repositório, então vale combinar o bá
 
 ## 7. Onde a rede de segurança tem buraco
 
-399 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
+465 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
 confiar:
 
 - **Sem teste próprio:** `dominio/agenda.ts` (o motor de reposição, que é o diferencial do
   produto), `dominio/mensagens.ts`, `dominio/pacote.ts`,
-  `dominio/formato.ts`, e `estado/dados.ts` — o maior arquivo do app.
+  `dominio/formato.ts`. Em `estado/dados.ts`, o maior arquivo do app, o teste cobre o contrato
+  de persistência (`SCRUM-17`); o que cada ação calcula na store segue sem asserção própria.
 - **O teste de interface é de fumaça:** monta as 35 telas e afirma que nada lança exceção. Não
   afirma o que aparece escrito.
 - **Sem linter** ainda, e **sem teste de integração do banco**.

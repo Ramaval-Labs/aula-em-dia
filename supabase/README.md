@@ -71,9 +71,11 @@ Nenhum dos dois existe. O plano (Parte 2) diz que o seed é **gerado** de
 [`data/seed.json`](../data/seed.json), que segue sendo a fonte. Quatro decisões que o gerador
 vai ter de tomar e que não estão escritas em lugar nenhum:
 
-- **Título → `tipo_lancamento`.** O enum tem 10 valores; o `seed.json` tem 6 títulos livres
-  ("Aula realizada", "Falta avisada", "Falta sem aviso", "Reposição realizada", "Pacote de 6
-  aulas", "Pacote de 8 aulas"). A tabela de conversão não existe.
+- **Título → `tipo_lancamento` — decidido no `SCRUM-17`.** O enum tem 10 valores; o `seed.json`
+  tem 7 títulos livres ("Aula realizada", "Falta avisada", "Falta sem aviso", "Reposição
+  realizada", "Pacote de 6 aulas", "Pacote de 8 aulas", "Proposta de reposição enviada"). A
+  tabela de conversão está em `PLANO-BACKEND.md`, Parte 1, decisão 1; o que não casar vira
+  `legado`.
 - **Ano nas datas.** `"26/08"` → `date` precisa de ano. A regra existe (`ANO_DEMO` em
   `mobile/src/dominio/datas.ts`), mas o plano só a enuncia para o adaptador do app.
 - **`validade: ""`.** O plano cobre `'sem prazo' → null`, mas `criarAluno` grava string vazia
