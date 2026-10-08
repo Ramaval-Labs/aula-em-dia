@@ -149,7 +149,7 @@ dias, porque a Sprint 2 fechou na noite em que abriu.
 |---|---|---|
 | Valentin | `SCRUM-18` — Parte 2 completa (8) | 8 |
 | Mauro | `SCRUM-33` (3) + `SCRUM-34` (5) — o `SCRUM-53` passou para o Rafael | 8 |
-| Rafael | ~~`SCRUM-29` (3)~~ + ~~`SCRUM-27` (2)~~ + ~~`SCRUM-53` (2)~~ **os três em 08/10** + `SCRUM-30` (3, desbloqueado) | 10 |
+| Rafael | ~~`SCRUM-29` (3)~~ + ~~`SCRUM-27` (2)~~ + ~~`SCRUM-53` (2)~~ + ~~`SCRUM-30` (3)~~ **os quatro em 08/10** | 10 |
 
 **Ordem obrigatória:** `SCRUM-53` antes de `SCRUM-30`. O `SCRUM-53` é o commit de abertura no
 domínio, e o `SCRUM-30` só consome.
@@ -313,6 +313,13 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   lido a partir de `de`, então "28/12 a 05/01" é uma folga válida que atravessa a virada do ano;
   e as duas funções ganharam um terceiro parâmetro opcional, `referencia`, que só fixa o ano no
   teste, como em `diaDaSemanaDe`. Folga no passado continua válida. A suíte foi a 573 testes
+- **`SCRUM-30` fechado** em 08/10 (`4df7e9d`), **sem a conferência no aparelho** registrada. A
+  decisão de escopo se sustentou: folga inline, nenhum arquivo-gargalo aberto, dois arquivos no
+  diff. Três escolhas fora do card: o "Adicionar" é secundário, porque o "Salvar" já é o primário
+  da tela; os campos de data têm máscara dd/mm, porque o teclado numérico do iOS não tem barra; e
+  a tela descarta o rascunho ao desmontar, porque o `voltar` não limpava e uma folga não salva
+  reaparecia na visita seguinte. Conferido no Expo Web: uma folga amanhã tira o dia do "Escolher
+  outro horário" (74 → 70 horários). Fica em aberto: teclado e máscara no Expo Go
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
