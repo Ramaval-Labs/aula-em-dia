@@ -130,42 +130,108 @@ transação. O aluno entra por um link com token, sem conta.
 **Objetivo:** a store para de falar direto com o AsyncStorage e passa a falar com um `Repositorio`.
 Nada muda para quem usa o app. Esta parte não depende do Supabase e pode ser feita antes.
 
+**Feita no `SCRUM-17`.** O texto abaixo descreve o que foi construído. Onde isso difere do plano
+original, a diferença e a razão estão em [Decisões tomadas na Parte 1](#decisões-tomadas-na-parte-1).
+
 ### O que fazer
 
-1. Criar `mobile/src/dados/repositorio.ts` com a interface:
+1. `mobile/src/dados/repositorio.ts` traz a interface:
 
    ```ts
    export interface Repositorio {
-     carregar(): Promise<Persistido | null>;
+     carregar(): Promise<Gravado | null>;
      /** chamado depois de cada ação; o local grava tudo, o remoto grava só o que mudou */
-     registrar(mudanca: Mudanca): Promise<void>;
+     registrar(mudanca: Mudanca, estado: Persistido): Promise<void>;
+     /** "zerar dados de demonstração": só faz sentido no modo local */
+     apagar(): Promise<void>;
    }
    ```
 
-   `Mudanca` é uma união com um caso por ação da store (`{ tipo: 'registrarAula', aluno, lancamento }`,
-   `{ tipo: 'salvarPoliticas', politicas }`, …). O mapa completo está no [Apêndice A](#apêndice-a-ações-da-store--backend).
-2. `RepositorioLocal`: move o `gravar()` e o `carregar()` de `estado/dados.ts` para cá, sem mudar o
-   comportamento.
+   `Mudanca` é uma união com um caso por ação da store que grava, com o mesmo nome da ação
+   (`{ tipo: 'registrarAula', aluno, lancamento, desfecho }`, `{ tipo: 'salvarPoliticas', politicas }`, …).
+   São 22 casos, e o typecheck cobra a correspondência nos dois sentidos: ação nova sem caso, ou caso
+   sem ação, não compila. O mapa completo está no [Apêndice A](#apêndice-a-ações-da-store--backend).
+2. `mobile/src/dados/adaptador.ts` é o repositório local: o `gravar()` e o `carregar()` que moravam em
+   `estado/dados.ts`, com o mesmo formato e a mesma chave (`aulaemdia.app.v4`).
 3. `estado/dados.ts`: toda ação continua **síncrona e otimista**. Ela calcula com o `dominio/`, faz
    `set()` e devolve o resultado na hora (as telas dependem disso, por exemplo o `EfeitoRegistro`).
-   Depois chama `repositorio.registrar(...)` sem esperar. Se der erro, recarrega do repositório e
-   mostra um toast.
+   Depois chama `repositorio.registrar(...)` uma vez, sem esperar. O que acontece quando dá erro está
+   nas decisões abaixo.
 4. A escolha da implementação sai de `EXPO_PUBLIC_BACKEND` (`local` ou `supabase`), com `local` como
-   padrão. Os testes rodam sempre no local.
-5. **Adaptador de fronteira** (`mobile/src/dados/adaptador.ts`), usado só pelo repositório remoto.
-   Ele converte entre o formato do app e o do banco, para as telas não mudarem:
+   padrão. Um valor sem implementação cai no local. Os testes rodam sempre no local.
+5. **Conversor de fronteira** (`mobile/src/dados/conversor.ts`), usado só pelo repositório remoto.
+   **Fica para a Parte 4**, quando houver banco para receber. Ele converte entre o formato do app e o
+   do banco, para as telas não mudarem, e segue esta tabela:
 
-   | No app hoje | No banco | Regra do adaptador |
+   | No app hoje | No banco | Regra do conversor |
    |---|---|---|
-   | `'30/10'` (dd/mm) | `date` `2025-10-30` | Usa o ano de `datas.ts` (`ANO_DEMO` enquanto a data real estiver desligada) |
+   | `'30/10'` (dd/mm) | `date` `2026-10-30` | O ano é inferido por `lerDdMm` a partir de hoje (`SCRUM-55`) |
    | `validade: 'sem prazo'` | `validade = null` | `null` ↔ `'sem prazo'` |
    | reais inteiros (`80`) | centavos (`8000`) | × 100 / ÷ 100 |
-   | `Lancamento` sem id | `lancamentos.id uuid` + `tipo` | O tipo vem da ação que gerou o lançamento |
-   | `pendencia: { origem, dias }` | `pendencia_origem date` | `dias` passa a ser calculado (`diasEntre(origem, hoje)`), o que resolve a inconsistência da semente (PROXIMOS-PASSOS §3) |
+   | `Lancamento` sem id nem tipo | `lancamentos.id uuid` + `tipo` | Ver a decisão 1, abaixo |
+   | `pendencia: { origem, dias }` | `pendencia_origem date` | `dias` passa a ser calculado (`diasEntre(origem, hoje)`) |
    | `pagamento.vence` / `pagamento.venceu` / `dias` | `pagamento_vencimento date` | `dias` calculado |
    | `hoje: boolean` | não é gravado | Derivado do dia fixo e da data de hoje |
    | `agendada`, `proposta.janela` (rótulos como "Sexta, 29/08") | `jsonb` igual ao app | Viram `timestamptz` junto com as datas reais |
-   | id `al…` gerado por `Date.now()` | `uuid` | O app gera com `expo-crypto` (`randomUUID()`), para a criação continuar otimista |
+   | id `al…` gerado por `Date.now()` | `uuid` | Ver a decisão 2, abaixo |
+
+### Decisões tomadas na Parte 1
+
+**1. `id` e `tipo` do lançamento.** O `Lancamento` do app só tem `d`, `t`, `s`, `delta`, `saldo` e
+`dinheiro?`; o banco exige `id` e `tipo`.
+
+- **`tipo` sai da mudança, não do título.** Todo lançamento nasce de uma ação, e a `Mudanca` que o
+  leva ao repositório diz qual. É por isso que o caso `registrarAula` carrega o `desfecho`:
+
+  | Ação | `tipo` no banco |
+  |---|---|
+  | `registrarAula` com `realizada` | `aula` |
+  | `registrarAula` com `avisada` | `falta_avisada` |
+  | `registrarAula` com `sem_aviso` | `falta_sem_aviso` |
+  | `registrarAula` com `cancelada_professor` | `cancelada_professor` |
+  | `marcarReposicao`; `responderProposta` aceita ou confirmada | `reposicao` |
+  | `receberPagamento`, `registrarPagamentoCom` | `pagamento` |
+  | `estenderValidade` | `validade` |
+  | `criarPacote`, `renovarPacote`, `criarPacoteCom` | `pacote` |
+  | `enviarProposta` | `proposta` |
+
+- **Lançamento que já existia antes do banco** (a semente, e o estado local importado no primeiro
+  login, item 4 da Parte 4) não tem mudança de onde tirar o tipo. Para esses vale o título exato:
+  "Aula realizada" → `aula`; "Falta avisada" → `falta_avisada`; "Falta sem aviso" → `falta_sem_aviso`;
+  "Aula cancelada por você" → `cancelada_professor`; "Reposição marcada" e "Reposição realizada" →
+  `reposicao`; "Pagamento recebido" → `pagamento`; "Validade estendida" → `validade`;
+  "Pacote de N aulas" → `pacote`; "Proposta de reposição enviada" → `proposta`. O que não casar com
+  nenhum vira `legado`, que é para isso que o valor existe no enum. É a mesma tabela que o gerador
+  de `seed.sql` usa.
+- **`id` não é sintetizado no app.** Quem gera é o banco (`default gen_random_uuid()`). O app nunca
+  endereça um lançamento pelo id, porque o extrato só recebe inserção, e por isso `Lancamento` segue
+  sem o campo e `dominio/tipos.ts` não muda. A ordem do extrato, que hoje é a posição no array, vira
+  `criado_em desc`; na importação em lote o `criado_em` é montado a partir da posição, para dois
+  lançamentos do mesmo dia não trocarem de lugar.
+
+**2. O uuid do aluno entra na Parte 4, não aqui.** Antes de existir banco nada consome uuid, e trocar
+agora não tiraria trabalho de depois: os ids da semente (`val`, `raf`, …) e os `al…` de quem já usa o
+app também não são uuid, então a importação da Parte 4 precisa de um mapa de ids de qualquer jeito.
+Fazer aqui só acrescentaria o `expo-crypto` a uma parte cujo papel é abrir a fronteira. Na Parte 4:
+`criarAluno` passa a gerar o id com `randomUUID()`, e a importação troca os ids antigos uma única vez,
+em `alunos` e nas chaves de `extratos`.
+
+**3. Erro de persistência deixou de ser engolido, mas ainda não chega à tela.** O `gravar()` antigo
+tinha um `catch` vazio. Agora o repositório rejeita a promessa e a store decide num lugar só
+(`aoFalharNaPersistencia`, em `estado/dados.ts`). No modo local a decisão é manter a tela como está:
+a memória é o que a pessoa vê, e recarregar de um disco que acabou de falhar jogaria fora o que ela
+fez. O erro aparece no console em desenvolvimento. **Falta** o aviso na tela, porque o texto de
+toast mora em `estado/avisos.ts`, que é da camada de apresentação. Com o repositório remoto é nesse
+mesmo ponto que entram a recarga e o toast.
+
+**4. Uma gravação por ação, e não duas.** Antes, um movimento gravava o estado duas vezes: uma com o
+aluno alterado e outra com o lançamento. Agora a store avisa o repositório uma vez, depois de todos os
+`set()`. O conteúdo final do disco é o mesmo; o que deixa de existir é o estado intermediário, com a
+aula debitada e sem o lançamento.
+
+**5. Nomes de arquivo.** O card deu o nome `adaptador.ts` ao repositório local, e é lá que o
+AsyncStorage ficou. A conversão app ↔ banco, que este plano chamava de adaptador, passa a se chamar
+**conversor de fronteira** para os dois não se confundirem.
 
 ### Pronto quando
 
@@ -623,7 +689,7 @@ não mexem em saldo.
 ### O que fazer
 
 1. `RepositorioSupabase.carregar()`: seis `select` em paralelo (professor, políticas,
-   disponibilidade, alunos, lançamentos, propostas abertas). O adaptador da Parte 1 monta o mesmo
+   disponibilidade, alunos, lançamentos, propostas abertas). O conversor de fronteira monta o mesmo
    `Persistido` que a store já espera. O resultado também vai para o AsyncStorage como cache, e na
    próxima abertura o app mostra o cache primeiro e atualiza em seguida.
 2. Ações de gravação direta (sem lançamento no extrato):
@@ -661,7 +727,7 @@ supabase-js não abre transação pelo cliente, então a transação mora numa f
 
 ```sql
 create function public.aplicar_movimento(
-  p_aluno      jsonb,             -- o aluno inteiro, já calculado pelo dominio/ e convertido pelo adaptador
+  p_aluno      jsonb,             -- o aluno inteiro, já calculado pelo dominio/ e convertido pelo conversor
   p_versao     int,               -- a versão que o app leu
   p_lancamento jsonb default null,
   p_proposta   jsonb default null
@@ -826,7 +892,7 @@ Esta parte não tem fim: cada parte anterior deixa aqui o que precisa.
     - RLS: o professor B não lê nem grava nada do professor A;
     - `aplicar_movimento` faz rollback quando o lançamento falha e dá conflito com versão velha;
     - a Edge Function só devolve o aluno do token.
-  - O adaptador tem testes de ida e volta: app → banco → app devolve o mesmo objeto.
+  - O conversor de fronteira tem testes de ida e volta: app → banco → app devolve o mesmo objeto.
 - **CI (GitHub Actions):** `npm test` + `npm run typecheck` a cada push. Com a Parte 2, entram também
   `supabase db lint` e os testes de integração (a Supabase CLI roda no Actions com Docker).
 - **Segredos:**
@@ -876,7 +942,7 @@ Todas as ações de [mobile/src/estado/dados.ts](../../mobile/src/estado/dados.t
 
 ## Apêndice B: Linguagens e métodos, em resumo
 
-- **Linguagens:** TypeScript (app, adaptador, Edge Functions) e SQL / PL/pgSQL (esquema, RLS, RPC,
+- **Linguagens:** TypeScript (app, conversor de fronteira, Edge Functions) e SQL / PL/pgSQL (esquema, RLS, RPC,
   triggers). Nada além disso.
 - **Métodos:**
   - Migrações versionadas e reproduzíveis.

@@ -1,13 +1,21 @@
 /**
  * Estado persistido do app: alunos, extratos e políticas.
- * Toda regra vem de src/dominio/politica.ts — aqui só há orquestração
- * e gravação em disco, para a regra continuar testável sem UI.
+ * Toda regra vem de src/dominio/politica.ts — aqui só há orquestração,
+ * para a regra continuar testável sem UI.
+ *
+ * A gravação fica atrás de `dados/repositorio.ts`: cada ação calcula, faz
+ * `set()`, devolve o resultado na hora e só então avisa o repositório, sem
+ * esperar por ele. As telas dependem de a resposta vir no mesmo instante.
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-import { CHAVE_ESTADO } from '../dados/armazenamento';
+import {
+  repositorio,
+  type Mudanca,
+  type Persistido,
+  type PreferenciasDeAviso,
+} from '../dados/repositorio';
 import { estadoInicial } from '../dados/semente';
 import { hoje, somarDias } from '../dominio/datas';
 import {
@@ -39,33 +47,15 @@ const AULAS_DO_PACOTE = 8;
 /** Dias somados pela ação "estender validade" na tela de reposição. */
 const DIAS_DE_EXTENSAO = 15;
 
-/**
- * Preferências da tela "Avisos e lembretes". Só a escolha fica salva — nada é
- * enviado nesta versão, e a tela diz isso.
- */
-export interface PreferenciasDeAviso {
-  aulaDoDia: boolean;
-  saldoBaixo: boolean;
-  reposicaoPendente: boolean;
-  pagamentoVencendo: boolean;
-}
+// O tipo mora com o contrato de persistência; o re-export mantém válido quem
+// o importa daqui.
+export type { PreferenciasDeAviso } from '../dados/repositorio';
 
 export const AVISOS_PADRAO: PreferenciasDeAviso = {
   aulaDoDia: true,
   saldoBaixo: true,
   reposicaoPendente: true,
   pagamentoVencendo: false,
-};
-
-type Persistido = {
-  alunos: Aluno[];
-  extratos: Extratos;
-  politicas: Politicas;
-  perfil: Perfil;
-  disponibilidade: Disponibilidade;
-  /** opcionais: entraram depois da v4 e não existem em estado gravado antes */
-  pacotePadrao?: ConfigPacote;
-  preferenciasDeAviso?: PreferenciasDeAviso;
 };
 
 type Dados = Persistido & {
@@ -122,19 +112,31 @@ export interface NovoAluno {
   telefone?: string;
 }
 
-function gravar(estado: Persistido) {
-  const bruto = JSON.stringify({
-    alunos: estado.alunos,
-    extratos: estado.extratos,
-    politicas: estado.politicas,
-    perfil: estado.perfil,
-    disponibilidade: estado.disponibilidade,
-    pacotePadrao: estado.pacotePadrao,
-    preferenciasDeAviso: estado.preferenciasDeAviso,
-  });
-  AsyncStorage.setItem(CHAVE_ESTADO, bruto).catch(() => {
-    // Persistência é conveniência: falhar aqui não pode derrubar a tela.
-  });
+/** Toda ação que muda o que vai para o disco: o resto é campo, carga ou leitura. */
+type AcaoQueGrava = Exclude<
+  keyof Dados,
+  keyof Persistido | 'carregado' | 'carregar' | 'zerar' | 'alunoPor'
+>;
+type Iguais<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+type Exige<T extends true> = T;
+// Só existe para o typecheck: ele quebra aqui se uma ação nascer sem caso em
+// `Mudanca`, ou se sobrar caso sem ação.
+type TodaAcaoTemMudanca = Exige<Iguais<AcaoQueGrava, Mudanca['tipo']>>;
+
+/**
+ * Falha ao gravar, ler ou apagar: a decisão mora aqui, num lugar só.
+ *
+ * No modo local a tela segue como está. A memória é o que a pessoa vê, e
+ * recarregar de um disco que acabou de falhar jogaria fora o que ela fez.
+ * O erro deixou de ser engolido — chega até aqui e aparece no console em
+ * desenvolvimento — mas ainda não vira aviso na tela: o texto do toast é de
+ * `estado/avisos.ts`. Com o repositório remoto (Parte 4), é neste ponto que
+ * entram a recarga e o toast previstos no plano.
+ */
+function aoFalharNaPersistencia(erro: unknown) {
+  if (__DEV__) {
+    console.warn('[dados] a persistência falhou; o app segue com o estado em memória.', erro);
+  }
 }
 
 /** Nova validade a partir da política ativa — 0 dias significa sem prazo. */
@@ -143,22 +145,31 @@ function validadeDoPacote(p: Politicas): string {
 }
 
 export const useDados = create<Dados>((set, get) => {
-  /** Aplica uma transformação num aluno e persiste. Não muta o estado antigo. */
+  /** Aplica uma transformação num aluno. Não muta o estado antigo. */
   const mutar = (id: string, fn: (a: Aluno) => Aluno) => {
-    set((s) => {
-      const proximo = { ...s, alunos: s.alunos.map((a) => (a.id === id ? fn({ ...a }) : a)) };
-      gravar(proximo);
-      return { alunos: proximo.alunos };
-    });
+    set((s) => ({ alunos: s.alunos.map((a) => (a.id === id ? fn({ ...a }) : a)) }));
   };
 
   /** Insere o lançamento no topo do extrato do aluno. */
   const lancar = (id: string, ev: Lancamento) => {
     set((s) => {
       const extratos: Extratos = { ...s.extratos, [id]: [ev, ...(s.extratos[id] ?? [])] };
-      gravar({ ...s, extratos });
       return { extratos };
     });
+  };
+
+  /**
+   * Avisa o repositório do que mudou, uma vez por ação e depois de todos os
+   * `set()`. Não espera: a ação já devolveu o resultado para a tela.
+   */
+  const persistir = (mudanca: Mudanca) => {
+    repositorio.registrar(mudanca, get()).catch(aoFalharNaPersistencia);
+  };
+
+  /** O mesmo, para as mudanças que levam o aluno como ele ficou. */
+  const persistirAluno = (id: string, montar: (aluno: Aluno) => Mudanca) => {
+    const aluno = get().alunoPor(id);
+    if (aluno) persistir(montar(aluno));
   };
 
   return {
@@ -167,24 +178,20 @@ export const useDados = create<Dados>((set, get) => {
 
     async carregar() {
       try {
-        const bruto = await AsyncStorage.getItem(CHAVE_ESTADO);
-        if (bruto) {
-          const d = JSON.parse(bruto) as Partial<Persistido>;
-          if (d && Array.isArray(d.alunos) && d.extratos && d.politicas) {
-            // Espalhar sobre a semente, e não substituir campo a campo: o
-            // estado persistido cresce a cada fase, e um payload gravado por
-            // uma versão anterior deixaria os campos novos indefinidos.
-            set({ ...estadoInicial(), ...d });
-          }
-        }
-      } catch {
-        // Estado corrompido ou ausente: segue com a semente.
+        const gravado = await repositorio.carregar();
+        // Espalhar sobre a semente, e não substituir campo a campo: o
+        // estado persistido cresce a cada fase, e um payload gravado por
+        // uma versão anterior deixaria os campos novos indefinidos.
+        if (gravado) set({ ...estadoInicial(), ...gravado });
+      } catch (erro) {
+        // Estado corrompido ou ilegível: segue com a semente.
+        aoFalharNaPersistencia(erro);
       }
       set({ carregado: true });
     },
 
     zerar() {
-      AsyncStorage.removeItem(CHAVE_ESTADO).catch(() => {});
+      repositorio.apagar().catch(aoFalharNaPersistencia);
       set({ ...estadoInicial() });
     },
 
@@ -206,6 +213,7 @@ export const useDados = create<Dados>((set, get) => {
       );
       mutar(id, () => aluno);
       lancar(id, lancamento);
+      persistir({ tipo: 'registrarAula', aluno, lancamento, desfecho });
       return efeito;
     },
 
@@ -215,6 +223,7 @@ export const useDados = create<Dados>((set, get) => {
       const { aluno, lancamento } = regraMarcarReposicao(atual, janela, hoje());
       mutar(id, () => aluno);
       lancar(id, lancamento);
+      persistir({ tipo: 'marcarReposicao', aluno, lancamento });
     },
 
     receberPagamento(id) {
@@ -223,6 +232,7 @@ export const useDados = create<Dados>((set, get) => {
       const { aluno, lancamento } = regraRegistrarPagamento(atual, hoje());
       mutar(id, () => aluno);
       lancar(id, lancamento);
+      persistir({ tipo: 'receberPagamento', aluno, lancamento });
     },
 
     estenderValidade(id) {
@@ -232,6 +242,7 @@ export const useDados = create<Dados>((set, get) => {
       const { aluno, lancamento } = regraEstenderValidade(atual, nova, hoje());
       mutar(id, () => aluno);
       lancar(id, lancamento);
+      persistir({ tipo: 'estenderValidade', aluno, lancamento });
       return nova;
     },
 
@@ -240,6 +251,7 @@ export const useDados = create<Dados>((set, get) => {
       if (!atual) return false;
       const pausado = !atual.pausado;
       mutar(id, (a) => ({ ...a, pausado }));
+      persistirAluno(id, (aluno) => ({ tipo: 'alternarPausa', aluno }));
       return pausado;
     },
 
@@ -249,6 +261,7 @@ export const useDados = create<Dados>((set, get) => {
         lembretes: (a.lembretes ?? 0) + 1,
         ultimoLembrete: hoje(),
       }));
+      persistirAluno(id, (aluno) => ({ tipo: 'enviarLembrete', aluno }));
     },
 
     cobrarTodosEmAtraso() {
@@ -260,9 +273,15 @@ export const useDados = create<Dados>((set, get) => {
             ? { ...a, lembretes: (a.lembretes ?? 0) + 1, ultimoLembrete: hoje() }
             : a,
         );
-        gravar({ ...s, alunos });
         return { alunos };
       });
+      if (emAtraso.length > 0) {
+        const ids = new Set(emAtraso.map((a) => a.id));
+        persistir({
+          tipo: 'cobrarTodosEmAtraso',
+          alunos: get().alunos.filter((a) => ids.has(a.id)),
+        });
+      }
       return emAtraso.length;
     },
 
@@ -279,13 +298,15 @@ export const useDados = create<Dados>((set, get) => {
         validadeEstendida: false,
         pagamento: { status: 'aberto', vence: somarDias(hoje(), 7) },
       }));
-      lancar(id, {
+      const lancamento: Lancamento = {
         d: hoje(),
         t: `Pacote de ${AULAS_DO_PACOTE} aulas`,
         s: `Validade ${validade} · aguardando pagamento`,
         delta: AULAS_DO_PACOTE,
         saldo: AULAS_DO_PACOTE,
-      });
+      };
+      lancar(id, lancamento);
+      persistirAluno(id, (aluno) => ({ tipo: 'criarPacote', aluno, lancamento }));
       return validade;
     },
 
@@ -301,54 +322,41 @@ export const useDados = create<Dados>((set, get) => {
         validadeEstendida: false,
         pagamento: { status: 'aberto', vence: somarDias(hoje(), 7) },
       }));
-      lancar(id, {
+      const lancamento: Lancamento = {
         d: hoje(),
         t: `Pacote de ${AULAS_DO_PACOTE} aulas`,
         s: `Renovação · validade ${validade}`,
         delta: AULAS_DO_PACOTE,
         saldo: novoSaldo,
-      });
+      };
+      lancar(id, lancamento);
+      persistirAluno(id, (aluno) => ({ tipo: 'renovarPacote', aluno, lancamento }));
       return { saldo: novoSaldo, validade };
     },
 
     salvarPoliticas(p) {
-      set((s) => {
-        const proximo = { ...s, politicas: p };
-        gravar(proximo);
-        return { politicas: p };
-      });
+      set({ politicas: p });
+      persistir({ tipo: 'salvarPoliticas', politicas: p });
     },
 
     salvarPerfil(perfil) {
-      set((s) => {
-        const proximo = { ...s, perfil };
-        gravar(proximo);
-        return { perfil };
-      });
+      set({ perfil });
+      persistir({ tipo: 'salvarPerfil', perfil });
     },
 
     salvarDisponibilidade(disponibilidade) {
-      set((s) => {
-        const proximo = { ...s, disponibilidade };
-        gravar(proximo);
-        return { disponibilidade };
-      });
+      set({ disponibilidade });
+      persistir({ tipo: 'salvarDisponibilidade', disponibilidade });
     },
 
     salvarPacotePadrao(pacotePadrao) {
-      set((s) => {
-        const proximo = { ...s, pacotePadrao };
-        gravar(proximo);
-        return { pacotePadrao };
-      });
+      set({ pacotePadrao });
+      persistir({ tipo: 'salvarPacotePadrao', pacotePadrao });
     },
 
     salvarPreferenciasDeAviso(preferenciasDeAviso) {
-      set((s) => {
-        const proximo = { ...s, preferenciasDeAviso };
-        gravar(proximo);
-        return { preferenciasDeAviso };
-      });
+      set({ preferenciasDeAviso });
+      persistir({ tipo: 'salvarPreferenciasDeAviso', preferenciasDeAviso });
     },
 
     criarAluno(dados) {
@@ -369,20 +377,19 @@ export const useDados = create<Dados>((set, get) => {
         criadoEm: hoje(),
         pagamento: { status: 'sem' },
       };
-      set((s) => {
-        const proximo = { ...s, alunos: [...s.alunos, novo], extratos: { ...s.extratos, [id]: [] } };
-        gravar(proximo);
-        return { alunos: proximo.alunos, extratos: proximo.extratos };
-      });
+      set((s) => ({ alunos: [...s.alunos, novo], extratos: { ...s.extratos, [id]: [] } }));
+      persistir({ tipo: 'criarAluno', aluno: novo });
       return id;
     },
 
     atualizarAluno(id, patch) {
       mutar(id, (a) => ({ ...a, ...patch }));
+      persistirAluno(id, (aluno) => ({ tipo: 'atualizarAluno', aluno }));
     },
 
     arquivarAluno(id) {
       mutar(id, (a) => ({ ...a, arquivado: true }));
+      persistirAluno(id, (aluno) => ({ tipo: 'arquivarAluno', aluno }));
     },
 
     criarPacoteCom(id, cfg) {
@@ -402,7 +409,7 @@ export const useDados = create<Dados>((set, get) => {
         pagamento: { status: 'aberto', vence: calculado.vence },
       }));
 
-      lancar(id, {
+      const lancamento: Lancamento = {
         d: hoje(),
         t: `Pacote de ${cfg.aulas} aulas`,
         s: cfg.somarSaldo && anterior > 0
@@ -410,7 +417,9 @@ export const useDados = create<Dados>((set, get) => {
           : `Validade ${calculado.validade} · aguardando pagamento`,
         delta: cfg.aulas,
         saldo: calculado.saldoFinal,
-      });
+      };
+      lancar(id, lancamento);
+      persistirAluno(id, (aluno) => ({ tipo: 'criarPacoteCom', aluno, lancamento }));
 
       return calculado;
     },
@@ -421,10 +430,12 @@ export const useDados = create<Dados>((set, get) => {
       const { aluno, lancamento } = regraRegistrarPagamento(atual, hoje(), meio);
       mutar(id, () => aluno);
       lancar(id, lancamento);
+      persistir({ tipo: 'registrarPagamentoCom', aluno, lancamento });
     },
 
     salvarDisponibilidadeDoAluno(id, blocos) {
       mutar(id, (a) => ({ ...a, disponibilidade: blocos }));
+      persistirAluno(id, (aluno) => ({ tipo: 'salvarDisponibilidadeDoAluno', aluno }));
     },
 
     enviarProposta(id, janela, alternativas) {
@@ -432,13 +443,15 @@ export const useDados = create<Dados>((set, get) => {
         ...a,
         proposta: { janela, enviadaEm: hoje(), status: 'enviada', alternativas },
       }));
-      lancar(id, {
+      const lancamento: Lancamento = {
         d: hoje(),
         t: 'Proposta de reposição enviada',
         s: `${janela.dia}, ${janela.hora} · aguardando resposta`,
         delta: 0,
         saldo: saldo(get().alunoPor(id) ?? ({ total: 0, usadas: 0 } as Aluno)),
-      });
+      };
+      lancar(id, lancamento);
+      persistirAluno(id, (aluno) => ({ tipo: 'enviarProposta', aluno, lancamento }));
     },
 
     responderProposta(id, status, escolhida) {
@@ -451,6 +464,12 @@ export const useDados = create<Dados>((set, get) => {
           ...a,
           proposta: a.proposta ? { ...a.proposta, status } : null,
         }));
+        persistirAluno(id, (aluno) => ({
+          tipo: 'responderProposta',
+          aluno,
+          lancamento: null,
+          status,
+        }));
         return;
       }
 
@@ -458,6 +477,12 @@ export const useDados = create<Dados>((set, get) => {
       const { aluno, lancamento } = regraMarcarReposicao(atual, janela, hoje());
       mutar(id, () => ({ ...aluno, proposta: null }));
       lancar(id, lancamento);
+      persistirAluno(id, (marcado) => ({
+        tipo: 'responderProposta',
+        aluno: marcado,
+        lancamento,
+        status,
+      }));
     },
   };
 });

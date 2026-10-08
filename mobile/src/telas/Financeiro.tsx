@@ -22,7 +22,8 @@ import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { useDoisToques } from '../componentes/useDoisToques';
-import { mesPorExtenso } from '../dominio/datas';
+import { hoje, hojeComoData, mesPorExtenso } from '../dominio/datas';
+import { resumoDoMes } from '../dominio/financeiro';
 import { dinheiro, dinheiroCompacto, plural } from '../dominio/formato';
 import { temPacote, totaisFinanceiro, valorPacote } from '../dominio/politica';
 import type { Aluno } from '../dominio/tipos';
@@ -65,31 +66,30 @@ export function Financeiro() {
   const aVencer = comPacote.filter((a) => a.pagamento.status === 'aberto');
   const pagos = comPacote.filter((a) => a.pagamento.status === 'pago');
 
-  // Resumo do mês, lido do extrato: aulas dadas, reposições e faltas debitadas.
-  const resumo = useMemo(() => {
-    let aulasDadas = 0;
-    let faltasDebitadas = 0;
-    Object.values(extratos).forEach((lista) =>
-      lista.forEach((e) => {
-        if (e.t === 'Aula realizada' || e.t === 'Reposição realizada') aulasDadas += 1;
-        if (e.t.startsWith('Falta') && e.delta < 0) faltasDebitadas += 1;
-      }),
-    );
-    const reposicoes = alunos.reduce((t, a) => t + a.reposicoes, 0);
-    return { aulasDadas, faltasDebitadas, reposicoes };
-  }, [extratos, alunos]);
+  // Uma referência de mês para a tela inteira: o eyebrow, o rótulo do cartão e
+  // a conta do resumo precisam falar do mesmo mês. `resumoDoMes` recebe a
+  // referência por parâmetro de propósito, então é aqui que o "hoje" do app
+  // entra — a tela não soma extrato nem infere mês.
+  const referencia = hojeComoData();
+  const mes = mesPorExtenso(hoje(), referencia);
+  const resumo = resumoDoMes(extratos, referencia);
 
   const textoReposicoes = plural(resumo.reposicoes, 'reposição', 'reposições');
   const textoFaltas = plural(resumo.faltasDebitadas, 'falta debitada', 'faltas debitadas');
+
+  // `reposicoes` é subconjunto de `aulasDadas` no contrato do domínio: uma
+  // reposição realizada conta nos dois. Somar os dois segmentos a contaria
+  // duas vezes e inflaria a barra, então o segmento das aulas é o que sobra.
+  const aulasRegulares = resumo.aulasDadas - resumo.reposicoes;
 
   // Segmento de peso zero não aparece: um tracinho vermelho com zero faltas
   // seria um débito que não existiu. Sem nada no mês, sem barra.
   const segmentos: SegmentoProporcional[] = (
     [
       {
-        peso: resumo.aulasDadas,
+        peso: aulasRegulares,
         tom: 'tint',
-        rotulo: plural(resumo.aulasDadas, 'aula dada', 'aulas dadas'),
+        rotulo: plural(aulasRegulares, 'aula regular', 'aulas regulares'),
       },
       { peso: resumo.reposicoes, tom: 'ambar', rotulo: textoReposicoes },
       { peso: resumo.faltasDebitadas, tom: 'vermelho', rotulo: textoFaltas },
@@ -152,7 +152,7 @@ export function Financeiro() {
         ) : undefined
       }
     >
-      <TituloDeConteudo porte="grande" acima={mesPorExtenso()} titulo="Financeiro" />
+      <TituloDeConteudo porte="grande" acima={mes} titulo="Financeiro" />
 
       <View style={estilos.resumo}>
         {totaisTopo.map((t) => (
@@ -211,7 +211,7 @@ export function Financeiro() {
 
       <CartaoVidro estilo={estilos.grupo}>
         <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>
-          {`Aulas dadas em ${mesPorExtenso().split(' de ')[0].toLowerCase()}`}
+          {`Aulas dadas em ${mes.split(' de ')[0].toLowerCase()}`}
         </Text>
         <View style={estilos.linhaNumero}>
           <Text
