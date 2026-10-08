@@ -1,59 +1,55 @@
 # supabase/
 
-O banco do Aula em Dia. As migrações aqui são o que roda;
+O banco do Aula em Dia. O que está aqui é o que roda;
 [`docs/backend/PLANO-BACKEND.md`](../docs/backend/PLANO-BACKEND.md) é o que argumenta cada
-decisão (9 ADRs, comparativo de alternativas, riscos).
+decisão (ADRs, comparativo de alternativas, riscos). Por enquanto o banco é **só local**: o app
+ainda não fala com ele.
 
 | Arquivo | O que é |
 |---|---|
+| `config.toml` | Portas e versão do Postgres, iguais para as três pessoas |
 | `migrations/0001_esquema.sql` | 5 enums, 6 tabelas, 2 índices |
 | `migrations/0002_rls.sql` | RLS nas 6 tabelas, com política em todas |
+| `seed.sql` | Os dados de demonstração. **Gerado**: não edite à mão |
+| `tests/database/rls.test.sql` | Teste de RLS com dois professores, em pgTAP |
 
-## Primeira vez
+## Para rodar
 
-O `config.toml` **não está versionado ainda** porque quem roda o CLI é que o gera. Rodar:
+**Docker Desktop é pré-requisito** e precisa estar aberto: sem ele o `supabase start` falha no
+primeiro passo. Na raiz do repositório:
 
 ```bash
-npx supabase init     # cria supabase/config.toml — NÃO apaga as migrações que já estão aqui
-npx supabase start    # sobe Postgres + Studio local (precisa de Docker Desktop rodando)
-npx supabase db reset # aplica 0001 e depois 0002
+npx supabase start      # sobe Postgres, Auth e Studio locais; a primeira vez baixa as imagens
+npx supabase db reset   # recria o banco: 0001, 0002 e depois o seed.sql
+npx supabase test db    # o teste de RLS
+npx supabase stop       # desliga, guardando os dados
 ```
 
-**Docker Desktop é pré-requisito** do `supabase start` e não estava declarado em lugar nenhum
-do repositório até agora. Sem ele o comando falha no primeiro passo.
+O Studio fica em <http://127.0.0.1:54323> e a API em `http://127.0.0.1:54321`. O
+`npx supabase status` mostra as chaves locais. **Nenhuma chave entra em arquivo do repositório**,
+nem em comentário.
 
-Depois de `init`, comite o `config.toml`: ele fixa portas e versão do Postgres para as três
-pessoas.
+## O seed é gerado
 
-## Como conferir que a RLS entrou inteira
+`seed.sql` sai de [`data/seed.json`](../data/seed.json) e de
+[`mobile/src/dados/semente.ts`](../mobile/src/dados/semente.ts) (perfil e disponibilidade), pela
+regra que está em [`mobile/src/dados/sementeSql.ts`](../mobile/src/dados/sementeSql.ts). Mudou a
+semente? Regere, na raiz:
 
-Este é o teste que importa, porque a falha é silenciosa — com RLS ligada e sem política, o
-`select` volta vazio e o `update` não afeta linha nenhuma, **sem erro**:
-
-```sql
-select tablename, policyname, cmd from pg_policies where schemaname = 'public'
-order by tablename;
+```bash
+node scripts/gerar-seed-sql.mjs             # grava supabase/seed.sql
+node scripts/gerar-seed-sql.mjs --conferir  # só confere; sai com 1 se estiver defasado
 ```
 
-Tem de aparecer política para **todas as seis** tabelas: `alunos`, `disponibilidades`,
-`lancamentos` (duas — select e insert), `politicas`, `professores`, `propostas`.
+O script usa o TypeScript de `mobile/node_modules`, então precisa de `npm install` em `mobile/`.
+Um teste do jest (`sementeSql.test.ts`) compara o arquivo comitado com o que o gerador produz:
+esquecer de regerar quebra o CI.
 
-O plano original trazia só três escritas e um comentário no lugar das outras. As de
-`politicas`, `disponibilidades` e `propostas` foram escritas seguindo o mesmo padrão; está
-registrado no cabeçalho do `0002_rls.sql`.
+**As datas são relativas.** A semente guarda `hoje-12`, e o `seed.sql` guarda
+`pg_temp.hoje() - 12`: quem resolve é o banco, a cada `db reset`. Por isso o arquivo não muda de um
+dia para o outro, e o banco de demonstração nunca envelhece. O "hoje" é o de `America/Sao_Paulo`.
 
-## O que falta, e é decisão de quem for fazer a Parte 2
-
-### 1. O professor de teste — decidido (`SCRUM-50`)
-
-`alunos.professor_id` tem `default auth.uid()` e FK até `auth.users`. Um `seed.sql` rodando
-**sem contexto de auth** recebe `null` no default e viola o `not null`. O trigger que cria a
-linha de `professores` só chega na Parte 3, então a Parte 2 isolada não tinha caminho definido
-para inserir uma linha sequer.
-
-O caminho: inserir `auth.users`, `auth.identities` e `professores` explicitamente no seed, com
-uuid fixo, sem depender do default nem do trigger. Os valores valem **somente no banco local,
-nunca em produção**:
+**O professor de teste** existe somente no banco local, nunca em produção:
 
 ```
 uuid  00000000-0000-4000-8000-000000000001
@@ -61,34 +57,102 @@ email professor@exemplo.test
 senha aulaemdia-local
 ```
 
-O SQL testado, as versões em que rodou e o que acontece quando o trigger da Parte 3 existir
-estão em [`PLANO-BACKEND.md`, Parte 2 § Professor de teste do seed](../docs/backend/PLANO-BACKEND.md#professor-de-teste-do-seed).
-O SQL não é repetido aqui de propósito: ele entra no `seed.sql`, que é da `SCRUM-18`.
+Os quatro alunos têm uuid fixo, de `…-000000000101` (`val`) a `…-000000000104` (`bea`). O porquê
+de cada escolha está em
+[`PLANO-BACKEND.md`, Parte 2 § Decisões tomadas na Parte 2](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-2).
 
-### 2. `seed.sql` e `scripts/gerar-seed-sql.mjs`
+O arquivo pode rodar mais de uma vez e termina sempre no mesmo estado.
 
-Nenhum dos dois existe. O plano (Parte 2) diz que o seed é **gerado** de
-[`data/seed.json`](../data/seed.json), que segue sendo a fonte. Quatro decisões que o gerador
-vai ter de tomar e que não estão escritas em lugar nenhum:
+## O teste que importa: RLS com dois professores
 
-- **Título → `tipo_lancamento` — decidido no `SCRUM-17`.** O enum tem 10 valores; o `seed.json`
-  tem 7 títulos livres ("Aula realizada", "Falta avisada", "Falta sem aviso", "Reposição
-  realizada", "Pacote de 6 aulas", "Pacote de 8 aulas", "Proposta de reposição enviada"). A
-  tabela de conversão está em `PLANO-BACKEND.md`, Parte 1, decisão 1; o que não casar vira
-  `legado`.
-- **Ano nas datas.** `"26/08"` → `date` precisa de ano. A regra existe (`ANO_DEMO` em
-  `mobile/src/dominio/datas.ts`), mas o plano só a enuncia para o adaptador do app.
-- **`validade: ""`.** O plano cobre `'sem prazo' → null`, mas `criarAluno` grava string vazia
-  e o aluno `bea` não tem validade. O caso da string vazia não está tratado.
-- **`perfil` e `disponibilidade` não vêm do JSON.** Nascem em
-  `mobile/src/dados/semente.ts` (`PERFIL_PADRAO`, `DISPONIBILIDADE_PADRAO`). O gerador precisa
-  ler os dois arquivos, não só o `seed.json`.
+`db reset` passar não prova a segurança. Com RLS ligada e **sem** política, o `select` volta vazio e
+o `update` não afeta linha nenhuma, **sem erro**. O que prova é um professor não enxergar o que é do
+outro, e é isso que `npx supabase test db` confere, em 30 casos:
 
-### 3. A RPC `aplicar_movimento` (Parte 5)
+- RLS ligada nas seis tabelas e política em todas (`lancamentos` tem duas: ler e inserir);
+- o professor A, do seed, vê os 4 alunos dele e nenhum do professor B;
+- o professor B, criado dentro do teste, vê só o aluno dele, não altera nem apaga aluno do A, e não
+  lança no extrato de um aluno do A;
+- o extrato não aceita `update` nem `delete`, nem do dono;
+- sem login não se vê nada.
 
-Está no plano (Parte 5 § A função) com o **ramo da proposta como stub literal** (`-- detalhado na
-implementação` seguido de `null;`). Não foi trazida para cá porque não está pronta: virar
-migração agora seria versionar um stub.
+O professor B nasce e some dentro do teste. O teste **não roda no CI**, que não tem Docker: rode
+antes de abrir PR que mexa em `migrations/`.
+
+Para ver as políticas à mão:
+
+```sql
+select tablename, policyname, cmd from pg_policies where schemaname = 'public'
+order by tablename;
+```
+
+## Demonstrar no Studio com dois professores
+
+O seed tem um professor só. Para a demonstração, crie o segundo no SQL Editor do Studio:
+
+```sql
+-- Professor B, só para a demonstração. Some no próximo `db reset`.
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password,
+  email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+  created_at, updated_at,
+  confirmation_token, email_change, email_change_token_new, recovery_token
+) values (
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-4000-8000-000000000002',
+  'authenticated', 'authenticated',
+  'professor.b@exemplo.test',
+  extensions.crypt('aulaemdia-local', extensions.gen_salt('bf')),
+  now(), '{"provider":"email","providers":["email"]}', '{}',
+  now(), now(), '', '', '', ''
+);
+
+insert into public.professores (id, nome, email)
+values ('00000000-0000-4000-8000-000000000002', 'Professor B', 'professor.b@exemplo.test');
+
+insert into public.alunos (professor_id, nome, disciplina, dia, hora)
+values ('00000000-0000-4000-8000-000000000002', 'Aluno do B', 'Piano', 'sexta', '15h');
+```
+
+Depois rode a mesma consulta como cada um, trocando só o final do `sub` (`…0001` é o A, `…0002` é
+o B):
+
+```sql
+begin;
+set local role authenticated;
+set local "request.jwt.claims" to
+  '{"sub": "00000000-0000-4000-8000-000000000001", "role": "authenticated"}';
+select nome from public.alunos order by nome;
+rollback;
+```
+
+Como A aparecem os quatro alunos da semente; como B, só "Aluno do B". Os dois também entram pela
+API com a senha `aulaemdia-local`.
+
+## Tipos do banco
+
+`mobile/src/dados/banco.ts` é gerado a partir do banco local. Mudou o esquema? Com o banco no ar:
+
+```bash
+npx supabase gen types typescript --local > mobile/src/dados/banco.ts
+```
+
+O arquivo sai sem formatação e não é editado à mão. `sementeSql.ts` já tira dele o tipo do
+lançamento, então um enum que mude no banco aparece no `npm run typecheck`.
+
+## Versões em que isto foi testado
+
+Em 08/10/2026: Supabase CLI 2.120.0, PostgreSQL 17.11, Auth (GoTrue) v2.197.0. O `npx supabase`
+não fixa versão, e a forma de `auth.users` muda entre versões do CLI: se o `db reset` começar a
+falhar no bloco do professor de teste depois de uma atualização, é por aí.
+
+## O que ainda não está aqui
+
+- **A RPC `aplicar_movimento` (Parte 5).** Está no plano (Parte 5 § A função) com o ramo da proposta
+  como stub literal. Virar migração agora seria versionar um stub.
+- **O trigger que cria o professor a partir do login (Parte 3).** O seed já convive com ele: foi
+  testado com o trigger instalado só no banco local.
+- **Migração aplicada não se edita.** Se o seed revelar um problema no esquema, crie a `0003`.
 
 ## Divergência conhecida no plano
 

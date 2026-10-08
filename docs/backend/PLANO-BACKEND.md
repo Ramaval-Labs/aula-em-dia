@@ -254,12 +254,16 @@ com cada professor enxergando só os próprios dados.
 
 ```bash
 # na raiz do repositório (precisa de Docker Desktop para o ambiente local)
-npx supabase init                    # cria supabase/ (config, migrations, seed)
 npx supabase start                   # sobe Postgres, Auth e Studio locais
-npx supabase migration new esquema   # supabase/migrations/<data>_esquema.sql
 npx supabase db reset                # aplica as migrações + supabase/seed.sql
-npx supabase gen types typescript --local > mobile/src/dados/banco.ts
+npx supabase test db                 # RLS com dois professores (pgTAP)
+node scripts/gerar-seed-sql.mjs      # só quando data/seed.json ou a semente mudarem
+npx supabase gen types typescript --local > mobile/src/dados/banco.ts   # só quando o esquema mudar
 ```
+
+O `supabase init` já foi rodado: `supabase/config.toml` está versionado e fixa as portas e a
+versão do Postgres para as três pessoas. O dia a dia está em
+[supabase/README.md](../../supabase/README.md).
 
 Para o projeto na nuvem: criar em supabase.com, depois rodar `npx supabase link --project-ref <ref>`
 e `npx supabase db push`.
@@ -497,6 +501,72 @@ create policy "insere no próprio extrato" on public.lancamentos
 (`scripts/gerar-seed-sql.mjs`), com os 4 alunos e seus extratos sob um professor de teste (definido
 logo abaixo). Não é escrito à mão: o seed.json continua sendo a fonte, como diz o CLAUDE.md.
 
+**Feito no `SCRUM-18`.** O script da raiz só executa. A regra mora em
+[mobile/src/dados/sementeSql.ts](../../mobile/src/dados/sementeSql.ts), que é TypeScript tipado
+contra o domínio e contra `banco.ts`, e um teste do jest compara o `seed.sql` comitado com o que o
+gerador produz: quem mudar a semente e não regerar quebra o CI.
+
+### Decisões tomadas na Parte 2
+
+**1. Título → `tipo_lancamento`.** O gerador consome a tabela da Parte 1 (decisão 1). Os sete
+títulos da semente viram tipo; nenhum cai em `legado`, e há teste que cobra isso.
+
+**2. As datas ficam relativas também no banco.** A pergunta era se o `seed.sql`, que é comitado,
+seria regerado a cada `db reset` ou ficaria congelado no dia da geração. Nenhum dos dois: ele guarda
+o deslocamento, e quem resolve é o Postgres, na hora do `db reset`.
+
+| Na semente | No `seed.sql` |
+|---|---|
+| `"hoje-12"` numa coluna `date` | `pg_temp.hoje() - 12` |
+| `"Pago em {hoje-58} · Pix"` | `'Pago em ' \|\| pg_temp.ddmm(-58) \|\| ' · Pix'` |
+| `"{dia:hoje+1}"` dentro de um `jsonb` | `pg_temp.dia_e_data(1)`, que devolve "Sexta, 09/10" |
+| `"07/09"` (feriado), dentro de um `jsonb` | fica `"07/09"`: o `jsonb` é igual ao app, sem ano |
+
+Com isso o arquivo é comitado uma vez, não envelhece e sai igual em qualquer dia, que é o que deixa
+o teste-guarda existir. As funções `pg_temp.*` são criadas no começo do seed e só vivem naquela
+sessão. O "hoje" do banco é o de `America/Sao_Paulo`: o contêiner roda em UTC e viraria o dia às
+21h. A gramática da notação continua num lugar só, `lerNotacao` em `dados/semente.ts`; o app troca
+cada deslocamento por dd/mm e o gerador troca por SQL. Uma data absoluta numa coluna `date` faz o
+gerador falhar, porque sem ano ela não é uma data; a semente não tem nenhuma.
+
+**3. `validade` vazia, ausente e `'sem prazo'` viram `null`.** São três formas de dizer que não há
+data. No app, `criarAluno` grava `''` e `bea` nem tem o campo, os dois com `semPacote`; `'sem prazo'`
+é o pacote sem validade. No banco as três são `validade is null`, e na volta o conversor da Parte 4
+distingue pelo `sem_pacote`: com ele, `''`; sem ele, `'sem prazo'`.
+
+**4. Perfil e disponibilidade saem de `dados/semente.ts`, não do JSON.** O gerador importa
+`PERFIL_PADRAO` e a disponibilidade ainda na notação, em vez de copiar os valores. Uma exceção:
+`professores.email` recebe o e-mail do login (`professor@exemplo.test`), não o de demonstração que
+o app monta a partir do nome. É o que o trigger da Parte 3 vai fazer com `new.email`.
+
+**5. Os quatro alunos da semente têm uuid fixo.** O app ainda usa `val`, `raf`, `mar` e `bea`; o
+banco exige uuid. A tabela está em `ID_DO_ALUNO` (`…-000000000101` a `…-000000000104`) e é o começo
+do mapa de ids da Parte 4. O `token_publico` fica com o default do banco.
+
+**6. A ordem do extrato vira `criado_em`.** No app o extrato é uma lista do mais novo para o mais
+antigo. O seed grava `criado_em` como o meio-dia da data, menos a posição na lista em segundos, e o
+gerador falha se a lista não estiver nessa ordem.
+
+**7. O seed pode rodar mais de uma vez.** `professores`, `politicas` e `disponibilidades` usam
+`on conflict … do update`, que é também o que faz o perfil ser gravado quando o trigger da Parte 3
+já tiver criado as três linhas. Os alunos são apagados e inseridos de novo, porque o extrato não
+tem chave natural; o `delete` cascateia lançamentos e propostas. O bloco do professor de teste entra
+sem `begin`/`commit`: o CLI já aplica o seed do seu jeito, e fora dele o arquivo roda igual.
+
+**8. O que não vai para o banco.** `hoje`, `pendencia.dias` e `pagamento.dias` são derivados.
+`janelasReposicao` e `janelaValidadeEstendida` são as janelas fixas do handoff, que o app já trocou
+pelo motor `agenda.ts`, e não têm tabela.
+
+**9. O segundo professor existe só no teste.** `supabase/tests/database/rls.test.sql` cria o
+professor B dentro de uma transação e desfaz no fim. O `seed.sql` continua com um professor, fiel ao
+`seed.json`.
+
+**Onde foi testado.** Em 08/10/2026, com PostgreSQL 17.11, Supabase CLI 2.120.0 e pgTAP pelo
+`supabase test db`, só no ambiente local: `db reset` duas vezes, o seed reaplicado duas vezes por
+cima (4 alunos, 13 lançamentos e 1 proposta nas quatro), os 30 casos de RLS, o login pela API e o
+seed com o trigger da Parte 3 instalado só no banco local. O que o banco gravou foi comparado,
+campo a campo, com o que o app resolve no mesmo dia: nenhuma diferença.
+
 ### Professor de teste do seed
 
 Decidido no `SCRUM-50`. **Somente banco local, nunca produção.**
@@ -611,12 +681,17 @@ Duas consequências para quem escrever o resto do seed:
 - O mesmo vale para `politicas` e `disponibilidades`: o trigger as cria com os padrões, então os
   inserts do seed precisam de `on conflict (professor_id) do update`.
 
-O `seed.sql` em si é escrito na `SCRUM-18`, usando este bloco.
+O `seed.sql` foi gerado na `SCRUM-18` com este bloco. Duas diferenças, as duas previstas acima: ele
+entra sem o `begin`/`commit`, e o insert em `professores` leva o perfil com `on conflict (id) do
+update`.
 
 ### Pronto quando
 
 - `npx supabase db reset` sobe tudo sem erro.
-- No Studio, logado como o professor A, não aparece nenhum aluno do professor B. Testar com dois usuários criados no painel de Auth.
+- `npx supabase test db` passa: o professor A não enxerga nem altera nada do professor B, e o
+  contrário.
+- No Studio, logado como o professor A, não aparece nenhum aluno do professor B. O roteiro, com o
+  SQL que cria o B, está em [supabase/README.md](../../supabase/README.md).
 - `mobile/src/dados/banco.ts` foi gerado e compila.
 
 ### Como demonstrar
