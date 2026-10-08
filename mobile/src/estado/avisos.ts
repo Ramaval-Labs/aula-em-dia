@@ -40,6 +40,9 @@ export const avisos = {
     `Pagamento de ${primeiroNome(a.name)} registrado: ${dinheiro(valorPacote(a))} · ${meio}.`,
   // Confirma o que foi feito; o que fazer com ela está na nota da prévia.
   mensagemCopiada: 'Mensagem copiada.',
+  // O botão era de abrir, e o WhatsApp não abriu: o aviso diz as duas coisas,
+  // para a pessoa não procurar a conversa que não existe. Sem nome de exceção.
+  whatsappNaoAbriu: 'Não foi possível abrir o WhatsApp. A mensagem foi copiada.',
   // O app abriu o link e nada além disso: quem aperta enviar é o professor,
   // dentro do WhatsApp. Por isso o aviso não diz "enviada".
   whatsappAberto: 'WhatsApp aberto com a mensagem pronta.',

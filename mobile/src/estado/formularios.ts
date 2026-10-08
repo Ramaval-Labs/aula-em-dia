@@ -20,6 +20,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 
 import type {
+  Aluno,
   BlocoSemanal,
   ConfigPacote,
   Desfecho,
@@ -30,6 +31,7 @@ import type {
   Politicas,
   TomDeMensagem,
 } from '../dominio/tipos';
+import type { Tela } from './navegacao';
 
 export interface RascunhoAcesso {
   email: string;
@@ -53,6 +55,12 @@ export interface RascunhoAluno {
   dia: string;
   hora: string;
   telefone: string;
+  /**
+   * Para onde salvar volta, quando a edição foi aberta de dentro de outra
+   * tarefa (o atalho "Cadastrar telefone" da prévia de mensagem). Sem ele,
+   * salvar conclui na ficha do aluno.
+   */
+  retorno?: Tela;
 }
 
 export interface RascunhoPagamento {
@@ -136,6 +144,21 @@ export const REPOSICAO_INICIAL: RascunhoReposicao = {
   janela: null,
   filtro: 'livres',
 };
+
+/**
+ * O rascunho de edição de um aluno existente. Quem abre a edição grava este
+ * rascunho antes de navegar: um rascunho que sobrou de uma edição cancelada
+ * seria de outro aluno, ou levaria o `retorno` de outra tarefa.
+ */
+export const rascunhoDeAluno = (aluno: Aluno, retorno?: Tela): RascunhoAluno => ({
+  id: aluno.id,
+  nome: aluno.name,
+  disciplina: aluno.disciplina,
+  dia: aluno.dia,
+  hora: aluno.hora,
+  telefone: aluno.telefone ?? '',
+  retorno,
+});
 
 type Guardados = { [K in ChaveDeRascunho]?: MapaDeRascunhos[K] };
 

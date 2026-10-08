@@ -227,7 +227,7 @@ describe('prévia de mensagem', () => {
     await waitFor(() => expect(abriu).toHaveBeenCalled());
 
     expect(openURL).toHaveBeenCalledWith(
-      `https://wa.me/5551900000101?text=${encodeURIComponent(MENSAGEM)}`,
+      `whatsapp://send?phone=5551900000101&text=${encodeURIComponent(MENSAGEM)}`,
     );
     expect(Clipboard.setStringAsync).not.toHaveBeenCalled();
     expect(copiou).not.toHaveBeenCalled();
@@ -241,7 +241,7 @@ describe('prévia de mensagem', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
     await waitFor(() => expect(openURL).toHaveBeenCalled());
 
-    expect(openURL.mock.calls[0][0]).toContain('wa.me/5551900000101?');
+    expect(openURL.mock.calls[0][0]).toContain('phone=5551900000101&');
     openURL.mockRestore();
   });
 
@@ -251,7 +251,7 @@ describe('prévia de mensagem', () => {
 
     expect(screen.queryByRole('button', { name: 'Abrir no WhatsApp' })).toBeNull();
     fireEvent.press(screen.getByRole('button', { name: 'Copiar mensagem' }));
-    await waitFor(() => expect(copiou).toHaveBeenCalled());
+    await waitFor(() => expect(copiou).toHaveBeenCalledWith('escolha'));
     expect(Clipboard.setStringAsync).toHaveBeenCalledWith(MENSAGEM);
   });
 
@@ -278,7 +278,7 @@ describe('prévia de mensagem', () => {
     await waitFor(() => expect(openURL).toHaveBeenCalled());
 
     const url = openURL.mock.calls[0][0] as string;
-    expect(decodeURIComponent(url.split('?text=')[1])).toBe(comChave);
+    expect(decodeURIComponent(url.split('&text=')[1])).toBe(comChave);
     openURL.mockRestore();
   });
 
@@ -307,10 +307,53 @@ describe('prévia de mensagem', () => {
     );
 
     fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
-    await waitFor(() => expect(copiou).toHaveBeenCalled());
+    // O motivo é o que faz o toast dizer que o WhatsApp não abriu, em vez de
+    // um "copiada" igual ao de quem escolheu copiar.
+    await waitFor(() => expect(copiou).toHaveBeenCalledWith('whatsappNaoAbriu'));
 
     expect(Clipboard.setStringAsync).toHaveBeenCalledWith(MENSAGEM);
     expect(abriu).not.toHaveBeenCalled();
     openURL.mockRestore();
+  });
+
+  // O `https://wa.me` tem sempre quem o abra (o navegador), então sem
+  // WhatsApp ele não falhava e o fallback acima nunca rodava no aparelho.
+  // Na web não há esquema próprio para tentar, e o wa.me é o WhatsApp Web.
+  it('no aparelho tenta o esquema whatsapp://; na web, o wa.me', async () => {
+    const { Platform } = require('react-native');
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const original = Platform.OS;
+
+    await comTema(<PreviaDeMensagem texto={MENSAGEM} telefone="51900000101" />);
+    fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
+    await waitFor(() => expect(openURL).toHaveBeenCalledTimes(1));
+    expect(openURL.mock.calls[0][0]).toMatch(/^whatsapp:\/\/send\?/);
+
+    Platform.OS = 'web';
+    try {
+      fireEvent.press(screen.getByRole('button', { name: 'Abrir no WhatsApp' }));
+      await waitFor(() => expect(openURL).toHaveBeenCalledTimes(2));
+      expect(openURL.mock.calls[1][0]).toMatch(/^https:\/\/wa\.me\/5551900000101\?text=/);
+    } finally {
+      Platform.OS = original;
+      openURL.mockRestore();
+    }
+  });
+
+  it('sem telefone, oferece cadastrar um; com telefone, o atalho some', async () => {
+    const cadastrar = jest.fn();
+    await comTema(<PreviaDeMensagem texto={MENSAGEM} aoCadastrarTelefone={cadastrar} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Cadastrar o telefone do aluno' }));
+    expect(cadastrar).toHaveBeenCalled();
+
+    await comTema(
+      <PreviaDeMensagem
+        texto={MENSAGEM}
+        telefone="51900000101"
+        aoCadastrarTelefone={cadastrar}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Cadastrar o telefone do aluno' })).toBeNull();
   });
 });

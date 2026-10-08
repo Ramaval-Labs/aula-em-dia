@@ -18,7 +18,7 @@ import { useDoisToques } from '../componentes/useDoisToques';
 import { primeiroNome } from '../dominio/formato';
 import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
-import { useRascunho } from '../estado/formularios';
+import { rascunhoDeAluno, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
@@ -26,7 +26,7 @@ import { texto } from '../tema/tipografia';
 
 export function AlunoForm() {
   const { cores } = useCores();
-  const { alunoId, concluir } = useNavegacao();
+  const { alunoId, concluir, ir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const emEdicao = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const criarAluno = useDados((s) => s.criarAluno);
@@ -34,14 +34,18 @@ export function AlunoForm() {
   const arquivarAluno = useDados((s) => s.arquivarAluno);
   const avisar = useToast((s) => s.avisar);
 
-  const [form, atualizar] = useRascunho('aluno', {
-    id: emEdicao?.id,
-    nome: emEdicao?.name ?? '',
-    disciplina: emEdicao?.disciplina ?? perfil.disciplinas[0] ?? '',
-    dia: emEdicao?.dia ?? '',
-    hora: emEdicao?.hora ?? '',
-    telefone: emEdicao?.telefone ?? '',
-  });
+  const [form, atualizar, , fechar] = useRascunho(
+    'aluno',
+    emEdicao
+      ? rascunhoDeAluno(emEdicao)
+      : {
+          nome: '',
+          disciplina: perfil.disciplinas[0] ?? '',
+          dia: '',
+          hora: '',
+          telefone: '',
+        },
+  );
 
   const pronto = nomeValido(form.nome) && !!form.disciplina;
 
@@ -82,6 +86,14 @@ export function AlunoForm() {
         telefone: form.telefone || undefined,
       });
       avisar(`Dados de ${primeiroNome(form.nome)} atualizados.`);
+      if (form.retorno) {
+        // Aberta de dentro de outra tarefa (o atalho de cadastrar telefone):
+        // volta para ela, sem `concluir`, que limparia o rascunho que a
+        // alimenta — o horário escolhido na reposição, o tom do lembrete.
+        fechar();
+        ir(form.retorno);
+        return;
+      }
       concluir('aluno', emEdicao.id);
       return;
     }

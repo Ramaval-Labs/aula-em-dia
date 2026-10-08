@@ -16,7 +16,7 @@ import { primeiroNome } from '../dominio/formato';
 import { mascararTelefone, mensagemDeCobranca } from '../dominio/mensagens';
 import type { TomDeMensagem } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
-import { useRascunho } from '../estado/formularios';
+import { rascunhoDeAluno, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 
@@ -29,11 +29,12 @@ const TONS: { valor: TomDeMensagem; rotulo: string }[] = [
 const TITULO = 'Lembrete de cobrança';
 
 export function Lembrete() {
-  const { alunoId, concluir } = useNavegacao();
+  const { alunoId, concluir, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const perfil = useDados((s) => s.perfil);
   const enviarLembrete = useDados((s) => s.enviarLembrete);
   const avisar = useToast((s) => s.avisar);
+  const reiniciarRascunho = useFormularios((s) => s.substituir);
 
   const [msg, atualizar] = useRascunho('mensagem', {
     tom: 'cordial' as TomDeMensagem,
@@ -97,7 +98,14 @@ export function Lembrete() {
               : `Copie e envie para ${nome} quando quiser: agendar o envio ainda não existe nesta versão.`
           }
           aoAbrir={() => avisar(avisos.whatsappAberto)}
-          aoCopiar={() => avisar(avisos.mensagemCopiada)}
+          aoCopiar={(motivo) =>
+            avisar(motivo === 'whatsappNaoAbriu' ? avisos.whatsappNaoAbriu : avisos.mensagemCopiada)
+          }
+          // Salvar o telefone volta para cá, com o tom escolhido intacto.
+          aoCadastrarTelefone={() => {
+            reiniciarRascunho('aluno', rascunhoDeAluno(aluno, 'lembrete'));
+            ir('alunoForm');
+          }}
         />
       </View>
 

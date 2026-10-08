@@ -29,7 +29,7 @@ import { dinheiro, plural, primeiroNome, unidade } from '../dominio/formato';
 import { podeRegistrar, saldo, saldoBaixo, temPacote, valorPacote } from '../dominio/politica';
 import type { Aluno, Lancamento } from '../dominio/tipos';
 import { avisos, useDados } from '../estado/dados';
-import { REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
+import { rascunhoDeAluno, REGISTRO_INICIAL, useFormularios } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
@@ -262,7 +262,12 @@ export function AlunoDetalhe() {
         <LinhaLista
           titulo="Editar dados do aluno"
           subtitulo="Nome, disciplina, horário e telefone"
-          aoTocar={() => ir('alunoForm')}
+          aoTocar={() => {
+            // Rascunho novo a cada edição: o de uma edição cancelada antes
+            // podia ser de outro aluno, ou trazer o retorno de outra tarefa.
+            reiniciarRascunho('aluno', rascunhoDeAluno(aluno));
+            ir('alunoForm');
+          }}
         />
         {/* Só quando o rodapé não oferece a mesma coisa (renovar aparece lá
             com saldo baixo; criar, para quem não tem pacote). */}

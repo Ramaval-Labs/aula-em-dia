@@ -678,6 +678,10 @@ function SecaoDerivados() {
       <Amostra rotulo="prévia de mensagem · sem handoff">
         <PreviaDeMensagem texto={MENSAGEM} destino="+55 51 9•••• 4182" />
       </Amostra>
+
+      <Amostra rotulo="prévia de mensagem · aluno sem telefone">
+        <PreviaDeMensagem texto={MENSAGEM} aoCadastrarTelefone={() => {}} />
+      </Amostra>
     </Secao>
   );
 }

@@ -12,13 +12,19 @@ import { StyleSheet, Text, View } from 'react-native';
 import { CartaoVidro } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoTexto, Switch } from '../../componentes/Controles';
 import { CabecalhoGrupo } from '../../componentes/Listas';
-import { PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
+import { abreNoWhatsApp, PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
 import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { mascararTelefone, mensagemDeReposicao } from '../../dominio/mensagens';
 import { avisos, useDados } from '../../estado/dados';
-import { mesmaJanela, REPOSICAO_INICIAL, useRascunho } from '../../estado/formularios';
+import {
+  mesmaJanela,
+  rascunhoDeAluno,
+  REPOSICAO_INICIAL,
+  useFormularios,
+  useRascunho,
+} from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
@@ -34,6 +40,7 @@ export function ConfirmarReposicao() {
   const marcarReposicao = useDados((s) => s.marcarReposicao);
   const enviarProposta = useDados((s) => s.enviarProposta);
   const avisar = useToast((s) => s.avisar);
+  const reiniciarRascunho = useFormularios((s) => s.substituir);
 
   const [form] = useRascunho('reposicao', REPOSICAO_INICIAL);
   const [msg] = useRascunho('mensagem', {
@@ -125,7 +132,20 @@ export function ConfirmarReposicao() {
              abrir o WhatsApp com ele não faria sentido: aí o botão copia. */
           telefone={texto_ ? aluno?.telefone : undefined}
           aoAbrir={() => avisar(avisos.whatsappAberto)}
-          aoCopiar={() => avisar(avisos.mensagemCopiada)}
+          aoCopiar={(motivo) =>
+            avisar(motivo === 'whatsappNaoAbriu' ? avisos.whatsappNaoAbriu : avisos.mensagemCopiada)
+          }
+          /* O atalho é pelo aluno, não pelo texto: sem horário o botão copia,
+             mas um aluno com telefone não precisa cadastrar outro. Salvar
+             volta para cá, com o horário escolhido intacto. */
+          aoCadastrarTelefone={
+            aluno && !abreNoWhatsApp(aluno.telefone)
+              ? () => {
+                  reiniciarRascunho('aluno', rascunhoDeAluno(aluno, 'confirmarReposicao'));
+                  ir('alunoForm');
+                }
+              : undefined
+          }
         />
       </View>
 
