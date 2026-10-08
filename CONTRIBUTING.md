@@ -149,7 +149,7 @@ todo mundo.
 
 ```bash
 cd mobile
-npm test ; echo "EXIT=$?"   # hoje: 551 testes, 18 suítes — só conta com EXIT=0
+npm test ; echo "EXIT=$?"   # hoje: 573 testes, 18 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
 ```
 
@@ -260,7 +260,7 @@ As três pessoas usam Claude Code neste repositório, então vale combinar o bá
 
 ## 7. Onde a rede de segurança tem buraco
 
-551 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
+573 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
 confiar:
 
 - **Sem teste próprio:** `dominio/agenda.ts` (o motor de reposição, que é o diferencial do

@@ -123,6 +123,70 @@ export function periodoDaFolga(f: Folga): string {
 export const diasAteFolga = (f: Folga, hoje: string = hojeDoApp()): number | null =>
   diasEntre(hoje, f.de);
 
+/** Mensagens de "Marcar folga" em E3, prontas para a prop `erro` do campo. */
+export const ERRO_FOLGA = {
+  inicioInvalido: 'Data de início inválida, use dd/mm',
+  fimInvalido: 'Data de fim inválida, use dd/mm',
+  fimAntesDoInicio: 'A folga termina antes de começar',
+} as const;
+
+/** "Já existe folga em 14/09 a 21/09 (viagem)" — diz com qual folga bateu. */
+export function erroSobreposicao(f: Folga): string {
+  const motivo = f.motivo.trim();
+  return `Já existe folga em ${periodoDaFolga(f)}${motivo ? ` (${motivo})` : ''}`;
+}
+
+/**
+ * As duas pontas da folga como Date. `ate` é lido a partir de `de`, então
+ * "28/12 a 05/01" atravessa a virada do ano em vez de terminar antes de começar.
+ */
+function intervaloDaFolga(f: Folga, referencia: number | Date): [Date, Date] | null {
+  const de = lerDdMm(f.de, referencia);
+  const ate = de && lerDdMm(f.ate, de);
+  return de && ate ? [de, ate] : null;
+}
+
+/**
+ * A folga nova pode entrar? Devolve a mensagem de erro ou `null`.
+ *
+ * Folga no passado não é erro — é decisão de produto que ainda não foi tomada.
+ * `referencia` só decide o ano de `nova.de` (como em `lerDdMm`); as outras
+ * datas são lidas a partir dela, então a resposta não muda com o dia em que roda.
+ */
+export function folgaValida(
+  nova: Folga,
+  existentes: Folga[],
+  referencia: number | Date = hojeComoData(),
+): string | null {
+  const de = lerDdMm(nova.de, referencia);
+  if (!de) return ERRO_FOLGA.inicioInvalido;
+  const ate = lerDdMm(nova.ate, de);
+  if (!ate) return ERRO_FOLGA.fimInvalido;
+  if (ate.getTime() < de.getTime()) return ERRO_FOLGA.fimAntesDoInicio;
+
+  for (const f of existentes) {
+    const outra = intervaloDaFolga(f, de);
+    if (!outra) continue;
+    const [outraDe, outraAte] = outra;
+    if (de.getTime() <= outraAte.getTime() && outraDe.getTime() <= ate.getTime()) {
+      return erroSobreposicao(f);
+    }
+  }
+  return null;
+}
+
+/** Insere a folga e devolve um array novo, em ordem de data. Não muta a entrada. */
+export function adicionarFolga(
+  folgas: Folga[],
+  nova: Folga,
+  referencia: number | Date = hojeComoData(),
+): Folga[] {
+  const ancora = lerDdMm(nova.de, referencia) ?? referencia;
+  const inicio = (f: Folga) =>
+    intervaloDaFolga(f, ancora)?.[0].getTime() ?? Number.POSITIVE_INFINITY;
+  return [...folgas, { ...nova }].sort((a, b) => inicio(a) - inicio(b));
+}
+
 /**
  * Qual `DiaDaSemana` corresponde a uma data dd/mm.
  *

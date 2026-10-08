@@ -4,6 +4,7 @@
  */
 
 import {
+  adicionarFolga,
   alternarBloco,
   contarBlocos,
   diaDaSemanaDe,
@@ -11,7 +12,9 @@ import {
   DIAS_UTEIS,
   duracaoDaFaixa,
   emFolga,
+  ERRO_FOLGA,
   FAIXAS_HORARIAS,
+  folgaValida,
   horarioDaFaixa,
   horasPorSemana,
   intersecao,
@@ -176,6 +179,121 @@ describe('folgas', () => {
   it('formata o período como a lista de E3 mostra', () => {
     expect(periodoDaFolga(feriado)).toBe('07/09');
     expect(periodoDaFolga(viagem)).toBe('14/09 a 21/09');
+  });
+});
+
+describe('folgaValida', () => {
+  // Ano fixo: a resposta não pode depender do dia em que o teste roda.
+  const ANO = 2026;
+  const feriado: Folga = { de: '07/09', ate: '07/09', motivo: 'feriado' };
+  const viagem: Folga = { de: '14/09', ate: '21/09', motivo: 'viagem' };
+  const existentes = [feriado, viagem];
+  const folga = (de: string, ate: string): Folga => ({ de, ate, motivo: 'congresso' });
+
+  it('um dia só, com ate igual a de, é válido', () => {
+    expect(folgaValida(folga('10/09', '10/09'), existentes, ANO)).toBeNull();
+  });
+
+  it('período sem sobreposição é válido', () => {
+    expect(folgaValida(folga('01/10', '05/10'), existentes, ANO)).toBeNull();
+  });
+
+  it('folga colada em outra, sem dividir dia, é válida', () => {
+    expect(folgaValida(folga('08/09', '13/09'), existentes, ANO)).toBeNull();
+  });
+
+  it('período que atravessa a virada do ano é válido', () => {
+    expect(folgaValida(folga('28/12', '05/01'), existentes, ANO)).toBeNull();
+  });
+
+  it('de depois de ate é erro', () => {
+    expect(folgaValida(folga('20/10', '10/10'), existentes, ANO)).toBe(
+      'A folga termina antes de começar',
+    );
+    expect(ERRO_FOLGA.fimAntesDoInicio).toBe('A folga termina antes de começar');
+  });
+
+  it.each(['32/13', 'abc', '', '7/9', '31/02'])('início malformado "%s" é erro', (de) => {
+    expect(folgaValida(folga(de, '10/10'), existentes, ANO)).toBe(
+      'Data de início inválida, use dd/mm',
+    );
+  });
+
+  it.each(['32/13', 'abc', ''])('fim malformado "%s" é erro', (ate) => {
+    expect(folgaValida(folga('10/10', ate), existentes, ANO)).toBe(
+      'Data de fim inválida, use dd/mm',
+    );
+  });
+
+  it('sobreposição é erro e diz com qual folga', () => {
+    expect(folgaValida(folga('20/09', '25/09'), existentes, ANO)).toBe(
+      'Já existe folga em 14/09 a 21/09 (viagem)',
+    );
+    expect(folgaValida(folga('07/09', '07/09'), existentes, ANO)).toBe(
+      'Já existe folga em 07/09 (feriado)',
+    );
+  });
+
+  it('folga que engole outra inteira também sobrepõe', () => {
+    expect(folgaValida(folga('01/09', '30/09'), existentes, ANO)).toBe(
+      'Já existe folga em 07/09 (feriado)',
+    );
+  });
+
+  it('sobreposição atravessando a virada do ano', () => {
+    const recesso: Folga = { de: '28/12', ate: '05/01', motivo: 'recesso' };
+    expect(folgaValida(folga('03/01', '03/01'), [recesso], ANO)).toBe(
+      'Já existe folga em 28/12 a 05/01 (recesso)',
+    );
+  });
+
+  it('sem motivo, a mensagem não deixa parênteses vazios', () => {
+    const semMotivo: Folga = { de: '14/09', ate: '21/09', motivo: '' };
+    expect(folgaValida(folga('15/09', '15/09'), [semMotivo], ANO)).toBe(
+      'Já existe folga em 14/09 a 21/09',
+    );
+  });
+
+  it('folga no passado não é erro — barrar é decisão de produto', () => {
+    expect(folgaValida(folga('02/01', '03/01'), [], 2020)).toBeNull();
+  });
+});
+
+describe('adicionarFolga', () => {
+  const ANO = 2026;
+  const feriado: Folga = { de: '07/09', ate: '07/09', motivo: 'feriado' };
+  const viagem: Folga = { de: '14/09', ate: '21/09', motivo: 'viagem' };
+
+  it('insere em ordem de data', () => {
+    const nova: Folga = { de: '10/09', ate: '10/09', motivo: 'congresso' };
+    expect(adicionarFolga([viagem, feriado], nova, ANO).map((f) => f.de)).toEqual([
+      '07/09',
+      '10/09',
+      '14/09',
+    ]);
+  });
+
+  it('ordena pela data, não pelo texto dd/mm', () => {
+    const nova: Folga = { de: '01/10', ate: '01/10', motivo: 'congresso' };
+    expect(adicionarFolga([viagem], nova, ANO).map((f) => f.de)).toEqual(['14/09', '01/10']);
+  });
+
+  it('ordena atravessando a virada do ano', () => {
+    const recesso: Folga = { de: '28/12', ate: '05/01', motivo: 'recesso' };
+    const nova: Folga = { de: '10/01', ate: '10/01', motivo: 'congresso' };
+    expect(adicionarFolga([nova], recesso, ANO).map((f) => f.de)).toEqual(['28/12', '10/01']);
+  });
+
+  it('devolve array novo e não muta a entrada', () => {
+    const antes: Folga[] = [viagem, feriado];
+    const copia = JSON.parse(JSON.stringify(antes));
+    const nova: Folga = { de: '10/09', ate: '10/09', motivo: 'congresso' };
+    const depois = adicionarFolga(antes, nova, ANO);
+    expect(depois).not.toBe(antes);
+    expect(antes).toEqual(copia);
+    expect(depois).toHaveLength(3);
+    expect(depois).toContainEqual(nova);
+    expect(depois.find((f) => f.de === '10/09')).not.toBe(nova);
   });
 });
 
