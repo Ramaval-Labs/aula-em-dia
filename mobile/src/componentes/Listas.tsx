@@ -68,6 +68,7 @@ export function CabecalhoGrupo({
   titulo,
   contagem,
   tom = 'neutro',
+  acao,
   estilo,
 }: {
   titulo: string;
@@ -75,11 +76,14 @@ export function CabecalhoGrupo({
   contagem?: string;
   /** `atraso` pinta a contagem de vermelho, como no Financeiro */
   tom?: 'neutro' | 'atraso';
+  /** controle à direita ("Marcar folga"); só aparece quando não há `contagem` */
+  acao?: React.ReactNode;
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
+  const comAcao = !contagem && !!acao;
   return (
-    <View style={[estilos.cabecalhoGrupo, estilo]}>
+    <View style={[estilos.cabecalhoGrupo, comAcao && estilos.cabecalhoComAcao, estilo]}>
       <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>{titulo}</Text>
       {contagem ? (
         <Text
@@ -87,6 +91,8 @@ export function CabecalhoGrupo({
         >
           {contagem}
         </Text>
+      ) : comAcao ? (
+        acao
       ) : null}
     </View>
   );
@@ -433,6 +439,8 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
+  // um botão não tem linha de base: alinha pelo centro
+  cabecalhoComAcao: { alignItems: 'center' },
   faixaNaLinha: { marginTop: 7 },
   colunaData: { width: TAMANHO.colunaData },
   caixaValor: {
