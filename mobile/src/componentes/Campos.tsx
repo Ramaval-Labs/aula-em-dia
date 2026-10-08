@@ -32,17 +32,21 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { dinheiro, lerDinheiro } from '../dominio/formato';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
 import { RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 
-export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'telefone';
+export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'decimal' | 'telefone';
 
 const TECLADOS: Record<TipoDeTeclado, KeyboardTypeOptions> = {
   texto: 'default',
   email: 'email-address',
+  // o `number-pad` do iOS não tem separador; o `decimal-pad` traz a vírgula
+  // (ou o ponto, conforme a região do aparelho — `lerDinheiro` lê os dois)
   numerico: 'number-pad',
+  decimal: 'decimal-pad',
   telefone: 'phone-pad',
 };
 
@@ -63,6 +67,7 @@ export function CampoDeTexto({
   multilinha = false,
   sufixo,
   aoEnviar,
+  aoSair,
   estilo,
 }: {
   rotulo: string;
@@ -81,6 +86,8 @@ export function CampoDeTexto({
   /** ação à direita dentro do trilho ("mostrar" da senha) */
   sufixo?: React.ReactNode;
   aoEnviar?: () => void;
+  /** o campo perdeu o foco — quem valida no fim da digitação escuta aqui */
+  aoSair?: () => void;
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
@@ -125,7 +132,10 @@ export function CampoDeTexto({
           autoFocus={autoFoco}
           multiline={multilinha}
           onFocus={() => setFocado(true)}
-          onBlur={() => setFocado(false)}
+          onBlur={() => {
+            setFocado(false);
+            aoSair?.();
+          }}
           onSubmitEditing={aoEnviar}
           returnKeyType={aoEnviar ? 'done' : undefined}
           accessibilityLabel={rotulo}
@@ -135,7 +145,7 @@ export function CampoDeTexto({
             textoDeCampo(15.5, senha ? 600 : 500, {
               altura: 1.3,
               tracking: senha && valor ? 0.18 : undefined,
-              tabular: teclado === 'numerico' || teclado === 'telefone',
+              tabular: teclado === 'numerico' || teclado === 'decimal' || teclado === 'telefone',
             }),
             estilos.entrada,
             {
@@ -170,6 +180,90 @@ export function CampoDeTexto({
         </Text>
       ) : null}
     </View>
+  );
+}
+
+const ERRO_DE_DINHEIRO = 'Valor inválido. Use números, como 62,50.';
+
+/** O que `useCampoDeDinheiro` entrega para espalhar no `CampoDeDinheiro`. */
+export interface EstadoDoCampoDeDinheiro {
+  digitado: string;
+  aoDigitar: (v: string) => void;
+  aoSair: () => void;
+  erro?: string;
+}
+
+/**
+ * Estado do campo de dinheiro. O texto digitado mora aqui, separado do valor:
+ * no meio da digitação ("62,") ele ainda não é um valor, e não pode zerar o
+ * que estava salvo. `aoMudar` só é chamado com valor lido.
+ *
+ * O erro não aparece enquanto a pessoa digita — só ao sair do campo ou quando
+ * a tela chama `confirmar()` antes de gravar. Senão o leitor de tela anunciaria
+ * erro a cada tecla.
+ */
+export function useCampoDeDinheiro(
+  reais: number,
+  aoMudar: (reais: number) => void,
+): { campo: EstadoDoCampoDeDinheiro; confirmar: () => boolean } {
+  const [digitado, setDigitado] = useState(() => dinheiro(reais));
+  const [revelado, setRevelado] = useState(false);
+  const invalido = lerDinheiro(digitado) === null;
+
+  const aoDigitar = (v: string) => {
+    setDigitado(v);
+    setRevelado(false);
+    const centavos = lerDinheiro(v);
+    // `lerDinheiro` devolve centavos; `ConfigPacote.valorPorAula` guarda reais
+    // até o backend (`valor_por_aula_centavos`). Esta divisão é a borda: é
+    // aqui que o bug do 100× volta se alguém trocar a unidade de um dos lados.
+    if (centavos !== null) aoMudar(centavos / 100);
+  };
+
+  return {
+    campo: {
+      digitado,
+      aoDigitar,
+      aoSair: () => setRevelado(true),
+      erro: revelado && invalido ? ERRO_DE_DINHEIRO : undefined,
+    },
+    confirmar: () => {
+      setRevelado(true);
+      return !invalido;
+    },
+  };
+}
+
+/**
+ * Campo de valor em reais: abre com `dinheiro()` ("R$ 80,00"), aceita
+ * vírgula ou ponto pelo teclado decimal e lê com `lerDinheiro`. O estado vem
+ * de `useCampoDeDinheiro`, na tela que grava.
+ */
+export function CampoDeDinheiro({
+  rotulo,
+  digitado,
+  aoDigitar,
+  aoSair,
+  erro,
+  ajuda,
+  estilo,
+}: EstadoDoCampoDeDinheiro & {
+  rotulo: string;
+  ajuda?: string;
+  estilo?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <CampoDeTexto
+      rotulo={rotulo}
+      valor={digitado}
+      aoMudar={aoDigitar}
+      aoSair={aoSair}
+      erro={erro}
+      ajuda={ajuda}
+      teclado="decimal"
+      capitalizar="none"
+      estilo={estilo}
+    />
   );
 }
 

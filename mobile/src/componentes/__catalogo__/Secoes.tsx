@@ -10,6 +10,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { dinheiro } from '../../dominio/formato';
 import type { BlocoSemanal } from '../../dominio/tipos';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../../tema/tipografia';
@@ -26,7 +27,7 @@ import {
   type EstadoDoAvatar,
   type TamanhoDeAvatar,
 } from '../Blocos';
-import { CampoDeTexto } from '../Campos';
+import { CampoDeDinheiro, CampoDeTexto, useCampoDeDinheiro } from '../Campos';
 import {
   BotaoCompacto,
   BotaoInline,
@@ -626,6 +627,8 @@ function SecaoDerivados() {
   const [nome, setNome] = useState('Valentina Rocha');
   const [email, setEmail] = useState('valentina');
   const [marcados, setMarcados] = useState<BlocoSemanal[]>(BLOCOS);
+  const [valorPorAula, setValorPorAula] = useState(80);
+  const { campo: campoDeValor } = useCampoDeDinheiro(valorPorAula, setValorPorAula);
 
   const alternar = (b: BlocoSemanal) =>
     setMarcados((atual) =>
@@ -660,6 +663,25 @@ function SecaoDerivados() {
               valor={MENSAGEM}
               aoMudar={() => {}}
               multilinha
+            />
+          </View>
+        </CartaoVidro>
+      </Amostra>
+
+      <Amostra rotulo="campo de dinheiro · sem handoff">
+        <CartaoVidro>
+          <View style={estilos.colunaCampos}>
+            <CampoDeDinheiro
+              {...campoDeValor}
+              rotulo="Valor por aula"
+              ajuda={`Pacote de 8 aulas sai por ${dinheiro(8 * valorPorAula)}.`}
+            />
+            <CampoDeDinheiro
+              rotulo="Valor por aula"
+              digitado="80,555"
+              aoDigitar={() => {}}
+              aoSair={() => {}}
+              erro="Valor inválido. Use números, como 62,50."
             />
           </View>
         </CartaoVidro>

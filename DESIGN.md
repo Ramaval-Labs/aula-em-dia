@@ -720,7 +720,9 @@ sinal).
 ### Campos (`Campos.tsx`, derivado)
 `CampoDeTexto`: trilho `preenchimento`, altura 50, raio 13, rótulo acima em 11,5/600 caixa alta
 `tinta3`. Foco em borda de 1px `tint`; erro em borda `vermelho` e mensagem `vermelhoTexto`, com a mensagem como
-live region. `AcaoDoCampo` é a ação de texto em `tint` ao lado do campo.
+live region. `AcaoDoCampo` é a ação de texto em `tint` ao lado do campo. `CampoDeDinheiro` é o mesmo
+trilho com teclado decimal: abre com o valor em `dinheiro()` e só mostra erro ao sair do campo ou ao
+confirmar, nunca a cada tecla.
 
 ### Peças derivadas de conteúdo (`GradeSemanal.tsx`, `PreviaDeMensagem.tsx`)
 `GradeSemanal` e `RodapeDaGrade`: células só de toque, livres em `preenchimento` e marcadas em

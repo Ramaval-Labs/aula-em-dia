@@ -72,7 +72,8 @@ estados (`npm run capturar -- --catalogo`). `?` = opcional; H§n = seção do
 ## Campos e peças de conteúdo
 | componente | props | notas |
 |---|---|---|
-| `CampoDeTexto` (`Campos.tsx`) | `rotulo`, `valor`, `aoMudar`, `placeholder?`, `senha?`, `teclado?`, `erro?`, `ajuda?`, `autoFoco?`, `capitalizar?`, `multilinha?`, `sufixo?`, `aoEnviar?`, `estilo?` | derivado: trilho `preenchimento` 50px, raio 13; erro é live region |
+| `CampoDeTexto` (`Campos.tsx`) | `rotulo`, `valor`, `aoMudar`, `placeholder?`, `senha?`, `teclado?`, `erro?`, `ajuda?`, `autoFoco?`, `capitalizar?`, `multilinha?`, `sufixo?`, `aoEnviar?`, `aoSair?`, `estilo?` | derivado: trilho `preenchimento` 50px, raio 13; erro é live region; `teclado` aceita `decimal` (vírgula no iOS) |
+| `CampoDeDinheiro` + `useCampoDeDinheiro` (`Campos.tsx`) | `rotulo`, `ajuda?`, `estilo?` + o estado do hook: `digitado`, `aoDigitar`, `aoSair`, `erro?` · hook: `(reais, aoMudar)` → `{ campo, confirmar }` | abre com `dinheiro()`, lê com `lerDinheiro`; `aoMudar` só com valor lido (reais); erro só ao sair ou em `confirmar()` |
 | `AcaoDoCampo` (`Campos.tsx`) | `rotulo`, `aoTocar`, `rotuloAcessivel?` | ação em tint no `sufixo` ("mostrar", "copiar") |
 | `GradeSemanal`, `RodapeDaGrade` (`GradeSemanal.tsx`) | `marcados`, `aoAlternar?`, `dias?`, `faixas?`, `rotuloDaFaixa?`, `alturaDaCelula?`, `somenteLeitura?` · `esquerda`, `direita?` | derivada: disponibilidade semanal, só toque |
 | `PreviaDeMensagem` (`PreviaDeMensagem.tsx`) | `texto`, `destino?`, `rotuloDoBotao?`, `aoCopiar?`, `rodape?` | derivada: mensagem pronta + copiar |

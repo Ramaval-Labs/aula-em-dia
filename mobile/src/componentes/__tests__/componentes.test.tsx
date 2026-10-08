@@ -9,6 +9,7 @@ import React from 'react';
 
 import { TemaProvider } from '../../tema/TemaProvider';
 import { iniciais } from '../Blocos';
+import { CampoDeDinheiro, useCampoDeDinheiro } from '../Campos';
 import { BotaoPrimario, CartaoEscolha, Segmentado, Stepper, Switch } from '../Controles';
 import { LinhaAluno, LinhaExtrato, ListaAgrupada } from '../Listas';
 
@@ -188,6 +189,70 @@ describe('sheet e toast', () => {
     expect(useToast.getState().reservaDoSheet).not.toBeNull();
     await r.unmount();
     expect(useToast.getState().reservaDoSheet).toBeNull();
+  });
+});
+
+describe('campo de dinheiro', () => {
+  const ERRO = 'Valor inválido. Use números, como 62,50.';
+
+  function CampoDeValor({
+    aoMudar,
+    aoConfirmar = () => {},
+  }: {
+    aoMudar: (reais: number) => void;
+    aoConfirmar?: (ok: boolean) => void;
+  }) {
+    const { campo, confirmar } = useCampoDeDinheiro(80, aoMudar);
+    return (
+      <>
+        <CampoDeDinheiro {...campo} rotulo="Valor por aula" />
+        <BotaoPrimario rotulo="Salvar" aoTocar={() => aoConfirmar(confirmar())} />
+      </>
+    );
+  }
+
+  it('abre formatado e lê vírgula ou ponto como centavos, devolvendo reais', async () => {
+    const aoMudar = jest.fn();
+    await comTema(<CampoDeValor aoMudar={aoMudar} />);
+
+    const campo = screen.getByLabelText('Valor por aula');
+    expect(campo.props.value).toBe('R$ 80,00');
+
+    await fireEvent.changeText(campo, '62,50');
+    expect(aoMudar).toHaveBeenLastCalledWith(62.5);
+    await fireEvent.changeText(campo, '62.50');
+    expect(aoMudar).toHaveBeenLastCalledWith(62.5);
+  });
+
+  it('texto inválido não muda o valor e só mostra erro ao sair do campo', async () => {
+    const aoMudar = jest.fn();
+    await comTema(<CampoDeValor aoMudar={aoMudar} />);
+
+    const campo = screen.getByLabelText('Valor por aula');
+    await fireEvent.changeText(campo, 'abc');
+    expect(aoMudar).not.toHaveBeenCalled();
+    expect(screen.queryByText(ERRO)).toBeNull();
+
+    await fireEvent(campo, 'blur');
+    expect(screen.getByText(ERRO)).toBeTruthy();
+
+    await fireEvent.changeText(campo, '62,5');
+    expect(screen.queryByText(ERRO)).toBeNull();
+    expect(aoMudar).toHaveBeenLastCalledWith(62.5);
+  });
+
+  it('confirmar recusa texto inválido e revela o erro', async () => {
+    const aoConfirmar = jest.fn();
+    await comTema(<CampoDeValor aoMudar={() => {}} aoConfirmar={aoConfirmar} />);
+
+    await fireEvent.changeText(screen.getByLabelText('Valor por aula'), '80,555');
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    expect(aoConfirmar).toHaveBeenLastCalledWith(false);
+    expect(screen.getByText(ERRO)).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByLabelText('Valor por aula'), '80,55');
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    expect(aoConfirmar).toHaveBeenLastCalledWith(true);
   });
 });
 
