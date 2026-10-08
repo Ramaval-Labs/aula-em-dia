@@ -148,8 +148,8 @@ dias, porque a Sprint 2 fechou na noite em que abriu.
 | Dono | Cards | Pts |
 |---|---|---|
 | Valentin | `SCRUM-18` — Parte 2 completa (8) | 8 |
-| Mauro | `SCRUM-53` (2) → `SCRUM-33` (3) + `SCRUM-34` (5) | 10 |
-| Rafael | ~~`SCRUM-29` (3)~~ + ~~`SCRUM-27` (2)~~ **os dois em 08/10** + `SCRUM-30` (3, depois do `SCRUM-53`) | 8 |
+| Mauro | `SCRUM-33` (3) + `SCRUM-34` (5) — o `SCRUM-53` passou para o Rafael | 8 |
+| Rafael | ~~`SCRUM-29` (3)~~ + ~~`SCRUM-27` (2)~~ + ~~`SCRUM-53` (2)~~ **os três em 08/10** + `SCRUM-30` (3, desbloqueado) | 10 |
 
 **Ordem obrigatória:** `SCRUM-53` antes de `SCRUM-30`. O `SCRUM-53` é o commit de abertura no
 domínio, e o `SCRUM-30` só consome.
@@ -307,6 +307,12 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   `valorPorAula` segue em reais, com a conversão de centavos num lugar só e comentada; centavos
   no tipo fica para o backend. As cinco decisões estão no comentário do card. Fica em aberto:
   ver no iOS que o teclado mostra a vírgula, e quem já gravou `6250` corrige à mão
+- **`SCRUM-53` fechado** em 08/10 (`2a48632`) **pelo Rafael**, não pelo Mauro: assumiu o commit
+  de abertura para destravar o `SCRUM-30` na mesma sprint. A faixa de `dominio/` segue do Mauro,
+  e o comentário do card pede a ele uma revisão do diff. Duas decisões fora do card: `ate` é
+  lido a partir de `de`, então "28/12 a 05/01" é uma folga válida que atravessa a virada do ano;
+  e as duas funções ganharam um terceiro parâmetro opcional, `referencia`, que só fixa o ano no
+  teste, como em `diaDaSemanaDe`. Folga no passado continua válida. A suíte foi a 573 testes
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
