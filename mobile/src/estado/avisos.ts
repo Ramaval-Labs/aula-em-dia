@@ -40,6 +40,9 @@ export const avisos = {
     `Pagamento de ${primeiroNome(a.name)} registrado: ${dinheiro(valorPacote(a))} · ${meio}.`,
   // Confirma o que foi feito; o que fazer com ela está na nota da prévia.
   mensagemCopiada: 'Mensagem copiada.',
+  // O app abriu o link e nada além disso: quem aperta enviar é o professor,
+  // dentro do WhatsApp. Por isso o aviso não diz "enviada".
+  whatsappAberto: 'WhatsApp aberto com a mensagem pronta.',
   propostaEnviada: (a: Aluno, dia: string, hora: string) =>
     `Proposta enviada para ${primeiroNome(a.name)}: ${dia}, ${hora}.`,
   propostaAceita: (a: Aluno) => `${primeiroNome(a.name)} aceitou o horário.`,

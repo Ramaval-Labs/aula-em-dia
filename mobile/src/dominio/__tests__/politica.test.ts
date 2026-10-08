@@ -242,8 +242,8 @@ describe('janelas de reposição', () => {
     const a = { ...alunoPor('raf'), validadeEstendida: true };
     const j = janelasDisponiveis(a, JANELAS, JANELA_VALIDADE_ESTENDIDA);
     expect(j).toHaveLength(4);
-    expect(j[3].dia).toBe('Quinta, 11/09');
-    expect(j[3].hora).toBe('18h');
+    // A data da quarta janela é assunto da semente ({dia:hoje+14}), não da política.
+    expect(j[3]).toBe(JANELA_VALIDADE_ESTENDIDA);
   });
 });
 

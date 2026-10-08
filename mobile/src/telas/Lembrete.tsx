@@ -10,7 +10,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { BlocoStatus, CartaoDeAjuste, EstadoVazio } from '../componentes/Blocos';
 import { BotaoPrimario, Segmentado } from '../componentes/Controles';
-import { PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
+import { abreNoWhatsApp, PreviaDeMensagem } from '../componentes/PreviaDeMensagem';
 import { Sheet, SubLinhaSheet } from '../componentes/Sheet';
 import { primeiroNome } from '../dominio/formato';
 import { mascararTelefone, mensagemDeCobranca } from '../dominio/mensagens';
@@ -51,6 +51,12 @@ export function Lembrete() {
 
   const mensagem = mensagemDeCobranca(aluno, msg.tom, perfil.chavePix);
   const segundoLembrete = (aluno.lembretes ?? 0) > 0;
+  // A nota é escrita aqui (ela carrega a limitação de agendamento, que é
+  // desta tela), então precisa saber qual dos dois caminhos o botão vai
+  // tomar. Sem chave Pix a mensagem não quebra: `mensagemDeCobranca` troca a
+  // linha da chave por "me avisa como prefere pagar".
+  const abre = abreNoWhatsApp(aluno.telefone);
+  const nome = primeiroNome(aluno.name);
 
   const registrar = () => {
     enviarLembrete(aluno.id);
@@ -63,10 +69,12 @@ export function Lembrete() {
       titulo={TITULO}
       // Um primário só: agendar o envio não existe no app, e um botão que só
       // explica isso ocupava o lugar da ação de verdade. A limitação está na
-      // nota abaixo da prévia.
+      // nota abaixo da prévia. O botão da prévia abre o WhatsApp, mas quem
+      // diz que o lembrete saiu continua sendo o professor, aqui — abrir uma
+      // conversa não é prova de envio.
       rodape={<BotaoPrimario rotulo="Marcar como enviado" aoTocar={registrar} />}
     >
-      <SubLinhaSheet texto={`Para ${primeiroNome(aluno.name)}`} />
+      <SubLinhaSheet texto={`Para ${nome}`} />
 
       <CartaoDeAjuste titulo="Tom da mensagem" estilo={estilos.espaco16}>
         <Segmentado
@@ -82,9 +90,13 @@ export function Lembrete() {
         <PreviaDeMensagem
           texto={mensagem}
           destino={mascararTelefone(aluno.telefone)}
-          nota={`Copie e envie para ${primeiroNome(
-            aluno.name,
-          )} quando quiser: agendar o envio ainda não existe nesta versão.`}
+          telefone={aluno.telefone}
+          nota={
+            abre
+              ? `O WhatsApp abre com a mensagem para ${nome}. Agendar o envio ainda não existe nesta versão.`
+              : `Copie e envie para ${nome} quando quiser: agendar o envio ainda não existe nesta versão.`
+          }
+          aoAbrir={() => avisar(avisos.whatsappAberto)}
           aoCopiar={() => avisar(avisos.mensagemCopiada)}
         />
       </View>
