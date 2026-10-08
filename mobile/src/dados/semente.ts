@@ -10,9 +10,10 @@
  * viram dd/mm aqui, na carga, e os tipos do domínio seguem recebendo dd/mm.
  * Dentro de um texto a notação vai entre chaves: `{hoje-58}` vira a data e
  * `{dia:hoje+1}` vira "Sexta, 29/08", com o nome do dia derivado da data.
- * Tudo passa por `resolverData`: é a única regra, e o gerador de `seed.sql`
- * reusa a mesma. Data absoluta em dd/mm passa intacta, para o que é fixo de
- * calendário.
+ * A gramática mora em `lerNotacao`, e é lida por dois lados: `resolverData`
+ * troca cada deslocamento por dd/mm, para o app, e `sementeSql.ts` troca por
+ * uma expressão SQL, para o `seed.sql`. Data absoluta em dd/mm passa intacta,
+ * para o que é fixo de calendário.
  */
 
 import { hoje, somarDias } from '../dominio/datas';
@@ -49,12 +50,43 @@ const DESLOCAMENTO = /^hoje(?:([+-])(\d+))?$/;
 /** A mesma notação dentro de um texto: `{hoje-58}` ou `{dia:hoje+1}`. */
 const DESLOCAMENTO_NO_TEXTO = /\{(dia:)?(hoje(?:[+-]\d+)?)\}/g;
 
-/** "hoje-12" → dd/mm contado a partir de `base`; null quando não é a notação. */
-function dataRelativa(valor: string, base: string): string | null {
+/** Um deslocamento em dias a partir de hoje; `comDia` pede "Sexta, 29/08". */
+export interface Deslocamento {
+  dias: number;
+  comDia: boolean;
+}
+
+/** Um valor da semente, partido em texto literal e deslocamentos. */
+export type ParteDaNotacao = string | Deslocamento;
+
+/** "hoje-12" → -12; null quando não é a notação. */
+function diasDoDeslocamento(valor: string): number | null {
   const m = DESLOCAMENTO.exec(valor);
   if (!m) return null;
-  const dias = m[2] ? Number(m[2]) * (m[1] === '-' ? -1 : 1) : 0;
-  return somarDias(base, dias);
+  return m[2] ? Number(m[2]) * (m[1] === '-' ? -1 : 1) : 0;
+}
+
+/**
+ * A gramática da notação, num lugar só. Um valor que é só o deslocamento vira
+ * uma parte; dentro de um texto, cada trecho entre chaves vira uma parte e o
+ * resto fica como literal. O que não tem a notação (dd/mm, `""`,
+ * `"sem prazo"`, texto comum) volta como um literal único.
+ */
+export function lerNotacao(valor: string): ParteDaNotacao[] {
+  const inteiro = diasDoDeslocamento(valor);
+  if (inteiro !== null) return [{ dias: inteiro, comDia: false }];
+
+  const partes: ParteDaNotacao[] = [];
+  let lido = 0;
+  for (const m of valor.matchAll(DESLOCAMENTO_NO_TEXTO)) {
+    const dias = diasDoDeslocamento(m[2]);
+    if (dias === null) continue;
+    if (m.index > lido) partes.push(valor.slice(lido, m.index));
+    partes.push({ dias, comDia: Boolean(m[1]) });
+    lido = m.index + m[0].length;
+  }
+  if (lido < valor.length || partes.length === 0) partes.push(valor.slice(lido));
+  return partes;
 }
 
 /** "29/08" → "Sexta, 29/08". Escrito à mão, o dia mente assim que a data anda. */
@@ -65,18 +97,17 @@ function comDiaDaSemana(ddmm: string): string {
 }
 
 /**
- * A regra da notação, num lugar só. Um valor que é só o deslocamento vira
- * dd/mm; dentro de um texto, cada trecho entre chaves é trocado. O que não
- * tem a notação (dd/mm, `""`, `"sem prazo"`, texto comum) volta como entrou.
+ * A notação resolvida para o app: cada deslocamento vira dd/mm contado a
+ * partir de `base`, e o que não tem a notação volta como entrou.
  */
 export function resolverData(valor: string, base: string = hoje()): string {
-  const inteira = dataRelativa(valor, base);
-  if (inteira !== null) return inteira;
-  return valor.replace(DESLOCAMENTO_NO_TEXTO, (trecho, comDia, deslocamento) => {
-    const data = dataRelativa(deslocamento, base);
-    if (data === null) return trecho;
-    return comDia ? comDiaDaSemana(data) : data;
-  });
+  return lerNotacao(valor)
+    .map((parte) => {
+      if (typeof parte === 'string') return parte;
+      const data = somarDias(base, parte.dias);
+      return parte.comDia ? comDiaDaSemana(data) : data;
+    })
+    .join('');
 }
 
 /** Aplica `resolverData` a todo texto de uma estrutura, devolvendo uma cópia. */
@@ -141,7 +172,7 @@ const BLOCOS_PADRAO: BlocoSemanal[] = [
 ];
 
 /** Na notação da semente: a viagem anda com o hoje. */
-const DISPONIBILIDADE_DA_SEMENTE: Disponibilidade = {
+export const DISPONIBILIDADE_DA_SEMENTE: Disponibilidade = {
   blocos: BLOCOS_PADRAO,
   aceitaForaDosBlocos: true,
   sugereSabado: false,
@@ -163,15 +194,21 @@ export interface EstadoPersistivel {
 }
 
 /**
+ * A semente como está escrita, ainda na notação `hoje±N`. É o que o gerador de
+ * `seed.sql` lê; o app usa `estadoInicial()`, que já devolve as datas.
+ */
+export const SEMENTE_NA_NOTACAO: EstadoPersistivel = {
+  alunos: semente.alunos,
+  extratos: semente.extratos,
+  politicas: semente.politicas,
+  perfil: PERFIL_PADRAO,
+  disponibilidade: DISPONIBILIDADE_DA_SEMENTE,
+};
+
+/**
  * Cópia profunda, para o "zerar estado" nunca devolver o mesmo objeto mutado.
  * As datas são resolvidas a cada chamada, contra o hoje daquele momento.
  */
 export function estadoInicial(): EstadoPersistivel {
-  return resolverDatas({
-    alunos: semente.alunos,
-    extratos: semente.extratos,
-    politicas: semente.politicas,
-    perfil: PERFIL_PADRAO,
-    disponibilidade: DISPONIBILIDADE_DA_SEMENTE,
-  });
+  return resolverDatas(SEMENTE_NA_NOTACAO);
 }
