@@ -55,3 +55,55 @@ export function dinheiroCompacto(n: number): string {
   const corpo = decimal === 0 ? agruparMilhar(String(inteiro)) : `${inteiro},${decimal}`;
   return `R$ ${sinal}${corpo} ${sufixo}`;
 }
+
+/**
+ * Reais e centavos com vírgula decimal; os reais são dígitos soltos ou grupos
+ * de milhar bem formados ("1.234.567").
+ */
+const COM_VIRGULA = /^(\d{1,3}(?:\.\d{3})+|\d+),(\d+)$/;
+/** Só reais, sem vírgula, com ou sem milhar. */
+const SO_REAIS = /^(\d{1,3}(?:\.\d{3})+|\d+)$/;
+/** Sem vírgula, ponto com uma ou duas casas é decimal ("62.50"). */
+const PONTO_DECIMAL = /^(\d+)\.(\d{1,2})$/;
+
+/**
+ * Texto digitado → centavos inteiros, ou `null` se não for um valor utilizável.
+ *
+ * Centavos e não reais: é como o banco guarda (`valor_por_aula_centavos`) e
+ * evita ponto flutuante em dinheiro. Para mostrar, `dinheiro(centavos / 100)`.
+ *
+ * A leitura, em ordem:
+ * - "R$" na frente é aceito, colado ou com espaço; espaço em volta também;
+ * - com vírgula, ela é o decimal e os pontos antes dela são milhar ("1.234,56");
+ * - sem vírgula, ponto seguido de três dígitos é milhar, como em pt-BR
+ *   ("1.234" é mil e duzentos), e seguido de um ou dois é decimal ("62.50"),
+ *   porque o teclado numérico às vezes só tem ponto.
+ *
+ * Mais de duas casas decimais ("80,555") é recusado, não arredondado: num
+ * valor de moeda isso é erro de digitação, e arredondar mudaria em silêncio o
+ * que o professor cobra. Quem chama mostra o erro e a pessoa corrige.
+ *
+ * Sinal de menos, separador sobrando ("62,", ",50") e formato americano
+ * ("1,234.56") também dão `null` — nunca `NaN`, que chegaria à tela como
+ * "R$ NaN". Zero é valor: se pode ou não, é a validação de quem chama.
+ */
+export function lerDinheiro(texto: string): number | null {
+  const s = texto.trim().replace(/^R\$\s*/i, '');
+
+  let reais: string;
+  let centavos = '';
+  let m: RegExpExecArray | null;
+  if ((m = COM_VIRGULA.exec(s))) {
+    [, reais, centavos] = m;
+    if (centavos.length > 2) return null;
+  } else if ((m = SO_REAIS.exec(s))) {
+    [, reais] = m;
+  } else if ((m = PONTO_DECIMAL.exec(s))) {
+    [, reais, centavos] = m;
+  } else {
+    return null;
+  }
+
+  const total = Number(reais.replace(/\./g, '')) * 100 + Number(centavos.padEnd(2, '0'));
+  return Number.isSafeInteger(total) ? total : null;
+}
