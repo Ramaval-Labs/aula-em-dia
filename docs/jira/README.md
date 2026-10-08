@@ -92,10 +92,15 @@ decisão em aberto. Os da Sprint 2 têm mais decisão (o formato da interface na
 
 A suíte saiu de 303 para **399 testes**, todos do Mauro (`agenda.test.ts` e `datas.test.ts`).
 
-### Sprint 2 · 07/10 a 14/10 · **ativa** · 21 pontos
+### Sprint 2 · 07/10 · **fechada, 7 de 7, 21 pontos na mesma noite**
 
-Esta é a sprint que está no quadro agora. Começou no mesmo dia em que a Sprint 1 fechou, então
-as janelas seguintes recuaram uma semana: a Sprint 3 passa a 14/10 a 21/10.
+Abriu às 20h de 07/10 e o último PR (#11) entrou às 21h26. Fechada no Jira em 08/10. É a
+segunda sprint seguida que termina no dia em que começa, e desta vez com cards que **tinham**
+decisão em aberto (o contrato do `SCRUM-28`, o `55` do WhatsApp). Então "os cards eram os mais
+bem especificados" não explica tudo. A estimativa em semanas continua sem bater com o ritmo
+real, que hoje se mede em horas.
+
+A suíte foi de 399 para **496 testes**.
 
 | Dono | Cards | Pts |
 |---|---|---|
@@ -135,13 +140,36 @@ premissa errada, e quatro, referência velha:
   (`Financeiro.tsx`, `ChavePix.tsx` l.87, contagem de 399), e o **`SCRUM-25`** uma nota sobre o
   `55` que o `wa.me` exige e os números do seed não trazem
 
-### Sprint 3 · 14/10 a 21/10 · 25 pontos
+### Sprint 3 · 08/10 a 15/10 · **ativa** · 25 pontos
+
+Esta é a sprint que está no quadro agora. Estava planejada para 14/10 a 21/10 e recuou seis
+dias, porque a Sprint 2 fechou na noite em que abriu.
 
 | Dono | Cards | Pts |
 |---|---|---|
 | Valentin | `SCRUM-18` — Parte 2 completa (8) | 8 |
-| Mauro | `SCRUM-33` (3) + `SCRUM-34` (5) + `SCRUM-53` (2) | 10 |
-| Rafael | `SCRUM-30` (3) + `SCRUM-27` (2) + `SCRUM-29` (2) | 7 |
+| Mauro | `SCRUM-53` (2) → `SCRUM-33` (3) + `SCRUM-34` (5) | 10 |
+| Rafael | `SCRUM-29` (2) + `SCRUM-27` (2) + `SCRUM-30` (3, depois do `SCRUM-53`) | 7 |
+
+**Ordem obrigatória:** `SCRUM-53` antes de `SCRUM-30`. O `SCRUM-53` é o commit de abertura no
+domínio, e o `SCRUM-30` só consome.
+
+**Não há lista de puxar.** Depois desta não existe sprint planejada. Se uma faixa esvaziar,
+avise na daily: o que vem a seguir é decisão de PO, não de quem ficou livre.
+
+**Revisado antes de abrir**, contra a `main` de 08/10. Cada card ganhou um comentário de revisão:
+
+- **`SCRUM-27` encolheu, sem mudar de pontos.** O `SCRUM-25` já faz o fallback que o card pedia:
+  sem telefone a prévia copia, e se o `openURL` lança, ela copia e chama `aoCopiar`. Sobraram
+  três coisas: um toast que diga que o WhatsApp não abriu (hoje sai o mesmo "copiada" nos dois
+  casos), o atalho para cadastrar telefone e uma armadilha nova. Como o link é `https://wa.me`,
+  sem WhatsApp o navegador abre e provavelmente nada lança erro, então o `catch` pode nunca
+  rodar no aparelho
+- **`SCRUM-18` tem duas das quatro decisões resolvidas.** A tabela título → `tipo_lancamento` o
+  `SCRUM-17` já escreveu no plano, e a do ano envelheceu com o seed em `hoje±N`. No lugar entrou
+  outra: o `seed.sql` é comitado, então as datas dele congelam no dia em que foi gerado
+- **`SCRUM-33`** não listava `resumoDoPacote`; **`SCRUM-29`** e **`SCRUM-34`** tinham linha
+  velha e dependência já fechada. **`SCRUM-30`** e **`SCRUM-53`** conferem sem mudança
 
 **Fora das quatro janelas, de propósito:** `SCRUM-31` (modelo estruturado de horário — atravessa
 as três camadas e os três donos de uma vez), os cards de plataforma e publicação, e as Partes 3 a
