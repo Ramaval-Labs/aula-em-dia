@@ -149,7 +149,7 @@ dias, porque a Sprint 2 fechou na noite em que abriu.
 |---|---|---|
 | Valentin | `SCRUM-18` — Parte 2 completa (8) | 8 |
 | Mauro | `SCRUM-53` (2) → `SCRUM-33` (3) + `SCRUM-34` (5) | 10 |
-| Rafael | `SCRUM-29` (2) + `SCRUM-27` (2) + `SCRUM-30` (3, depois do `SCRUM-53`) | 7 |
+| Rafael | `SCRUM-29` (2) + ~~`SCRUM-27` (2)~~ **em 08/10** + `SCRUM-30` (3, depois do `SCRUM-53`) | 7 |
 
 **Ordem obrigatória:** `SCRUM-53` antes de `SCRUM-30`. O `SCRUM-53` é o commit de abertura no
 domínio, e o `SCRUM-30` só consome.
@@ -292,6 +292,14 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   tela anuncia, passou a dizer "aulas regulares". A contagem de testes dos três READMEs foi
   a 416 num commit à parte: tinha ficado em 408 porque o `SCRUM-25` e o `SCRUM-26` não a
   atualizaram
+- **`SCRUM-27` fechado** em 08/10 (`0e1b1b3`), **sem o teste no aparelho**, que o card pedia,
+  por decisão de PO. A armadilha do comentário de revisão se confirmou no código: com
+  `https://wa.me` o `catch` era inalcançável, então o link do aparelho virou `whatsapp://send`
+  (na web segue o `wa.me`). O toast distingue "não abriu" de "copiou", e o aluno sem telefone
+  ganhou o atalho que abre a edição e volta para a tarefa ao salvar. De passagem, a ficha
+  deixou de reaproveitar o rascunho de uma edição cancelada, que podia salvar os dados de um
+  aluno por cima de outro. Fica em aberto: confirmar no Expo Go o `whatsapp://` com e sem o app
+  e com só o WhatsApp Business, o que o `SCRUM-47` também vai precisar rever
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
