@@ -140,7 +140,7 @@ premissa errada, e quatro, referência velha:
   (`Financeiro.tsx`, `ChavePix.tsx` l.87, contagem de 399), e o **`SCRUM-25`** uma nota sobre o
   `55` que o `wa.me` exige e os números do seed não trazem
 
-### Sprint 3 · 08/10 a 15/10 · **ativa** · 25 pontos
+### Sprint 3 · 08/10 a 15/10 · **ativa** · 26 pontos (abriu com 25; o `SCRUM-29` cresceu de 2 para 3)
 
 Esta é a sprint que está no quadro agora. Estava planejada para 14/10 a 21/10 e recuou seis
 dias, porque a Sprint 2 fechou na noite em que abriu.
@@ -149,7 +149,7 @@ dias, porque a Sprint 2 fechou na noite em que abriu.
 |---|---|---|
 | Valentin | `SCRUM-18` — Parte 2 completa (8) | 8 |
 | Mauro | `SCRUM-53` (2) → `SCRUM-33` (3) + `SCRUM-34` (5) | 10 |
-| Rafael | `SCRUM-29` (2) + ~~`SCRUM-27` (2)~~ **em 08/10** + `SCRUM-30` (3, depois do `SCRUM-53`) | 7 |
+| Rafael | ~~`SCRUM-29` (3)~~ + ~~`SCRUM-27` (2)~~ **os dois em 08/10** + `SCRUM-30` (3, depois do `SCRUM-53`) | 8 |
 
 **Ordem obrigatória:** `SCRUM-53` antes de `SCRUM-30`. O `SCRUM-53` é o commit de abertura no
 domínio, e o `SCRUM-30` só consome.
@@ -300,6 +300,13 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   deixou de reaproveitar o rascunho de uma edição cancelada, que podia salvar os dados de um
   aluno por cima de outro. Fica em aberto: confirmar no Expo Go o `whatsapp://` com e sem o app
   e com só o WhatsApp Business, o que o `SCRUM-47` também vai precisar rever
+- **`SCRUM-29` fechado** em 08/10 (`ea7ac72`, `4753744`), **sem a conferência no aparelho**
+  registrada. O escopo cresceu de 2 para 3 pontos: o sheet Novo/Renovar pacote (`Pacote.tsx`)
+  tinha o mesmo `\D` comendo a vírgula, e as duas telas passaram a usar uma peça nova,
+  `CampoDeDinheiro`, com teclado decimal (o `number-pad` do iOS não tem vírgula). O
+  `valorPorAula` segue em reais, com a conversão de centavos num lugar só e comentada; centavos
+  no tipo fica para o backend. As cinco decisões estão no comentário do card. Fica em aberto:
+  ver no iOS que o teclado mostra a vírgula, e quem já gravou `6250` corrige à mão
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
