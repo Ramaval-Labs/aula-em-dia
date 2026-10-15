@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Ícone temático do Android 13+: silhueta em branco, o sistema usa só o alfa.
+    Folha em contorno, cabeçalho cheio e check, na escala .74 da camada da frente.
+    A geometria é a mesma nos sete SVG desta pasta; mudou um, mude os outros.
+    Exporte com `node assets/icone/exportar.mjs` (em mobile/).
+  -->
+  <defs>
+    <clipPath id="folha"><rect x="212" y="247" width="600" height="530" rx="136"/></clipPath>
+  </defs>
+
+  <g transform="translate(512 512) scale(.74) translate(-512 -512)">
+    <rect x="212" y="247" width="600" height="148" fill="#FFFFFF" clip-path="url(#folha)"/>
+    <rect x="236" y="271" width="552" height="482" rx="112" fill="none" stroke="#FFFFFF" stroke-width="48"/>
+    <path d="M362 579 L462 679 L662 479" fill="none" stroke="#FFFFFF" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
