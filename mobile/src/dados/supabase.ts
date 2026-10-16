@@ -35,8 +35,11 @@ export function clienteSupabase(): SupabaseClient<Database> {
   }
 
   // O guia "Supabase + Expo" importa o polyfill antes do cliente. Aqui ele vem
-  // só quando o cliente nasce, para não trocar o URL global do modo local.
+  // só quando o cliente nasce, para não trocar o URL global do modo local. O
+  // `require` é o que deixa isso preguiçoso: um `import` rodaria na carga do app.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- carga preguiçosa, ver acima
   require('react-native-url-polyfill/auto');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- carga preguiçosa, ver acima
   const { createClient } = require('@supabase/supabase-js') as typeof import('@supabase/supabase-js');
 
   const novo = createClient<Database>(url, chave, {
