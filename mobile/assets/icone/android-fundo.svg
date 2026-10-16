@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Ícone adaptativo do Android, camada de fundo: só o fundo de refração.
+    A geometria é a mesma nos sete SVG desta pasta; mudou um, mude os outros.
+    Exporte com `node assets/icone/exportar.mjs` (em mobile/).
+  -->
+  <defs>
+    <radialGradient id="m1" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(143 61) scale(594 451)">
+      <stop offset="0" stop-color="#8FB6FF"/><stop offset=".70" stop-color="#8FB6FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="m2" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(983 143) scale(532 410)">
+      <stop offset="0" stop-color="#FFD6A5"/><stop offset=".68" stop-color="#FFD6A5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="m3" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(840 942) scale(655 471)">
+      <stop offset="0" stop-color="#CDB8FF"/><stop offset=".72" stop-color="#CDB8FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="m4" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(82 758) scale(512 348)">
+      <stop offset="0" stop-color="#9FE3D0"/><stop offset=".70" stop-color="#9FE3D0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- fundo de refração: tela #E9EEF7 e as quatro manchas a 0.85 -->
+  <rect width="1024" height="1024" fill="#E9EEF7"/>
+  <g opacity=".85">
+    <rect width="1024" height="1024" fill="url(#m1)"/>
+    <rect width="1024" height="1024" fill="url(#m2)"/>
+    <rect width="1024" height="1024" fill="url(#m3)"/>
+    <rect width="1024" height="1024" fill="url(#m4)"/>
+  </g>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Ícone do Aula em Dia (iOS e base dos demais): folha de calendário em vidro,
+    com cabeçalho e check no tint, sobre o fundo de refração. Sem texto.
+    Cores do tema claro de src/tema/tokens.ts: tela, mancha1–4 a 0.85, cartao,
+    borda, gin (reflexo e halo), sombra e tint.
+    A geometria é a mesma nos sete SVG desta pasta; mudou um, mude os outros.
+    Exporte com `node assets/icone/exportar.mjs` (em mobile/).
+  -->
+  <defs>
+    <radialGradient id="m1" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(143 61) scale(594 451)">
+      <stop offset="0" stop-color="#8FB6FF"/><stop offset=".70" stop-color="#8FB6FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="m2" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(983 143) scale(532 410)">
+      <stop offset="0" stop-color="#FFD6A5"/><stop offset=".68" stop-color="#FFD6A5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="m3" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(840 942) scale(655 471)">
+      <stop offset="0" stop-color="#CDB8FF"/><stop offset=".72" stop-color="#CDB8FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="m4" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(82 758) scale(512 348)">
+      <stop offset="0" stop-color="#9FE3D0"/><stop offset=".70" stop-color="#9FE3D0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="reflexo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".98"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity=".66"/>
+    </linearGradient>
+    <filter id="sombra" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#090F1E" flood-opacity=".08"/>
+      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#090F1E" flood-opacity=".13"/>
+    </filter>
+    <filter id="halo" x="-20%" y="-20%" width="140%" height="140%">
+      <feFlood flood-color="#FFFFFF" flood-opacity=".16"/>
+      <feComposite in2="SourceAlpha" operator="out"/>
+      <feGaussianBlur stdDeviation="28"/>
+      <feComposite in2="SourceAlpha" operator="in"/>
+    </filter>
+    <clipPath id="folha"><rect x="212" y="247" width="600" height="530" rx="136"/></clipPath>
+  </defs>
+
+  <!-- fundo de refração: tela #E9EEF7 e as quatro manchas a 0.85 -->
+  <rect width="1024" height="1024" fill="#E9EEF7"/>
+  <g opacity=".85">
+    <rect width="1024" height="1024" fill="url(#m1)"/>
+    <rect width="1024" height="1024" fill="url(#m2)"/>
+    <rect width="1024" height="1024" fill="url(#m3)"/>
+    <rect width="1024" height="1024" fill="url(#m4)"/>
+  </g>
+
+  <!-- folha de vidro -->
+  <rect x="212" y="247" width="600" height="530" rx="136" fill="rgba(255,255,255,.558)" filter="url(#sombra)"/>
+  <rect x="212" y="247" width="600" height="530" rx="136" fill="#000" filter="url(#halo)"/>
+  <!-- cabeçalho da folha e check, no tint -->
+  <rect x="212" y="247" width="600" height="148" fill="#35577D" clip-path="url(#folha)"/>
+  <path d="M362 579 L462 679 L662 479" fill="none" stroke="#35577D" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- reflexo e borda do vidro, por cima do cabeçalho -->
+  <rect x="216" y="251" width="592" height="522" rx="132" fill="none" stroke="url(#reflexo)" stroke-width="8"/>
+  <rect x="212" y="247" width="600" height="530" rx="136" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="3"/>
+</svg>
