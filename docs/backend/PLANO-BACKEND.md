@@ -706,29 +706,34 @@ diferentes e mostrar resultados diferentes: é a RLS funcionando.
 **Objetivo:** criar conta e entrar de verdade. As fases da entrada (`carregando → entrada → onboarding → app`)
 continuam as mesmas.
 
+**Feita no `SCRUM-19`**, com o banco local (`npx supabase start`): o projeto na nuvem não é
+pré-requisito. O texto abaixo descreve o que foi construído; as escolhas e as razões estão em
+[Decisões tomadas na Parte 3](#decisões-tomadas-na-parte-3). Google e recuperação de senha ficaram
+fora por decisão de PO (14/10): os dois precisam de deep link, que no Expo Go é frágil, e viraram o
+`SCRUM-62` e o `SCRUM-63`.
+
 ### O que fazer
 
-1. Instalar `@supabase/supabase-js` e criar `mobile/src/dados/supabase.ts`:
+1. `@supabase/supabase-js` e `react-native-url-polyfill` nas dependências, e
+   `mobile/src/dados/supabase.ts` com o cliente, **criado só na primeira chamada** de
+   `clienteSupabase()`:
 
    ```ts
-   import AsyncStorage from '@react-native-async-storage/async-storage';
-   import { createClient } from '@supabase/supabase-js';
-   import type { Database } from './banco';
-
-   export const supabase = createClient<Database>(
-     process.env.EXPO_PUBLIC_SUPABASE_URL!,
-     process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, // chave pública; nunca a service role
-     { auth: { storage: AsyncStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false } },
-   );
+   const novo = createClient<Database>(url, chave, {
+     auth: { storage: AsyncStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false },
+   });
    ```
 
-   Antes de instalar, conferir no guia oficial "Supabase + Expo" se ainda é preciso algum polyfill
-   (`react-native-url-polyfill`) com o React Native 0.86.
-2. `estado/sessao.ts`:
-   - "Entrar" chama `signInWithPassword`.
-   - "Criar conta" chama `signUp` e abre o onboarding.
+   A URL e a chave vêm de `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+   `usaSupabase()` lê `EXPO_PUBLIC_BACKEND`, no mesmo padrão de `dados/repositorio.ts`.
+2. `estado/sessao.ts`, no modo `supabase`:
+   - "Entrar" chama `signInWithPassword`; "Criar conta" chama `signUp` e abre o onboarding.
+   - `entrar(email, senha?)` e `criarConta(email, senha?)` devolvem `Promise<string | null>`:
+     `null` deu certo; senão, a frase de `ERRO` para a tela mostrar.
    - "Sair" chama `signOut`.
-   - Erros do Supabase viram as mensagens de `validacao.ts` (`ERRO`), em pt-BR.
+   - `carregar` pergunta ao `getSession`, e não à chave `CHAVE_SESSAO`.
+   - `loginReal()` diz à tela se o login é de verdade, sem ela ler o ambiente.
+   - No modo `local`, tudo como antes.
 3. Migração `0003_novo_professor.sql`: um trigger em `auth.users` cria as linhas de `professores`,
    `politicas` e `disponibilidades` com os padrões:
 
@@ -736,7 +741,7 @@ continuam as mesmas.
    create function public.criar_professor() returns trigger
    language plpgsql security definer set search_path = '' as $$
    begin
-     insert into public.professores (id, email) values (new.id, new.email);
+     insert into public.professores (id, email) values (new.id, coalesce(new.email, ''));
      insert into public.politicas (professor_id) values (new.id);
      insert into public.disponibilidades (professor_id) values (new.id);
      return new;
@@ -745,14 +750,86 @@ continuam as mesmas.
    create trigger ao_criar_usuario after insert on auth.users
      for each row execute function public.criar_professor();
    ```
-4. Confirmação de e-mail: desligar no MVP (Auth → Providers → Email) para o cadastro seguir direto
-   para o onboarding. Religar antes de publicar.
+4. Confirmação de e-mail: desligada no MVP (no local, `enable_confirmations = false` em
+   `supabase/config.toml`) para o cadastro seguir direto para o onboarding. Religar antes de
+   publicar.
+
+### Decisões tomadas na Parte 3
+
+**1. O nome da chave é `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.** O plano já usava esse nome e o
+`.env.example` dizia `…_ANON_KEY`. Ficou o do plano, que é o nome atual do Supabase para a chave
+pública (o guia "Supabase + Expo" usa o mesmo) e o que o `npx supabase status` chama de
+`PUBLISHABLE_KEY`.
+
+**2. O polyfill de URL continua.** O guia oficial "Supabase + Expo" e o exemplo de React Native com
+AsyncStorage da referência do `createClient` ainda instalam o `react-native-url-polyfill` e o
+importam antes do cliente. Ele é carregado dentro de `clienteSupabase()`, para o modo local não ter
+o `URL` global trocado.
+
+**3. O cliente é preguiçoso.** Com `local` e nos testes, as variáveis vêm vazias: importar
+`dados/supabase.ts` não lança nem abre conexão. Pedir o cliente sem as variáveis falha com a lista
+do que falta, e a sessão transforma isso na falha genérica, com o motivo no console em
+desenvolvimento. A renovação do token só roda com o app em primeiro plano, por um ouvinte de
+`AppState`, como recomenda a referência do `startAutoRefresh`.
+
+**4. Erro do Supabase vira frase pelo código, nunca pelo texto em inglês.** A documentação de
+códigos de erro do Supabase Auth manda usar `error.code` e `error.name`. Cada caso foi conferido
+contra o Auth local (CLI 2.120, GoTrue 2.197):
+
+| O que aconteceu | O que o Supabase devolve | Frase (`ERRO`) |
+|---|---|---|
+| e-mail ou senha errados | `invalid_credentials` (400) | `credenciaisInvalidas` |
+| cadastro com e-mail que já existe | `user_already_exists` (422); a doc também lista `email_exists` | `emailJaCadastrado` |
+| senha curta no cadastro | `weak_password` (422) | `senhaCurta` |
+| sem rede | `AuthRetryableFetchError`, status 0 | `semConexao` |
+| qualquer outro (limite de tentativas, servidor fora do ar, e-mail não confirmado) | — | `falhaNoAcesso` |
+
+`weak_password` vira `senhaCurta` porque a única exigência configurada é o tamanho mínimo, o mesmo
+`SENHA_MINIMA` do app. Para e-mail e senha que a tela já sabe recusar, a sessão usa `validarAcesso`
+e nem vai à rede: sem senha, por exemplo, devolve `senhaVazia`.
+
+**5. No modo `supabase`, quem lembra do login é o supabase-js.** `CHAVE_SESSAO` não é lida nem
+gravada: o token fica no AsyncStorage, na chave do próprio supabase-js (`sb-…-auth-token`). A senha
+nunca chega ao disco; isso foi conferido olhando o AsyncStorage depois de um cadastro de verdade.
+
+**6. "Sair" funciona sem rede.** A tela volta para a entrada na hora, e o `signOut` do
+supabase-js 2.118 apaga a sessão do aparelho mesmo quando a chamada ao servidor falha (lido no
+código do `auth-js`): reabrir o app não volta logado.
+
+**7. Cadastro sem sessão não abre o onboarding.** Se a confirmação de e-mail estiver ligada, o
+`signUp` cria o usuário sem sessão. Seguir para o onboarding deixaria a pessoa num app que não grava
+nada no banco; a sessão devolve `falhaNoAcesso`. Com a confirmação desligada, que é o combinado do
+MVP, isso não acontece.
+
+**8. A assinatura nova não obriga a tela a mudar.** A senha é opcional e a promessa pode ser
+ignorada: `Acesso.tsx` e `Conta.tsx` seguem compilando como estão. É o `SCRUM-59` que passa a
+mandar a senha e mostrar a frase. Até lá, no modo `supabase` o "Entrar" da tela, que não manda
+senha, recebe `senhaVazia` e não faz nada.
+
+**9. O trigger.** `security definer` porque quem insere em `auth.users` é o serviço de Auth, sem
+permissão em `public`. `coalesce` no e-mail porque `professores.email` é `not null` e um usuário
+criado sem e-mail derrubaria o cadastro. O `seed.sql` convive com ele pela decisão 7 da Parte 2:
+o trigger cria as três linhas e o seed grava o perfil por cima.
+
+**O que fica em aberto.**
+
+- No modo `supabase`, quem fecha o app no meio do onboarding volta direto para o app, porque a
+  sessão existe e o onboarding não deixa marca no banco. A Parte 4 pode guardar "onboarding
+  concluído" no professor.
+- Os dados continuam no aparelho mesmo no modo `supabase`: o repositório remoto é a Parte 4, e
+  até lá `escolherRepositorio` cai no local com um aviso.
+
+**Onde foi testado.** Em 15/10/2026, contra o banco local: `db reset` com a `0003`, os testes pgTAP
+(o do trigger e o de RLS), e a sessão de verdade num teste temporário contra o Auth local —
+senha errada, e-mail repetido, senha curta, cadastro, reabrir logado, sair e entrar. No
+`sessao.test.ts`, que roda no CI, o cliente é simulado com os erros nessa mesma forma.
 
 ### Pronto quando
 
-- Criar conta no celular faz a linha aparecer em `professores` no painel.
+- Criar conta faz a linha aparecer em `professores` no painel.
 - Fechar e abrir o app mantém a pessoa logada.
 - "Sair" volta para a tela de acesso.
+- Com `local`, tudo como antes, sem `.env`.
 
 ---
 

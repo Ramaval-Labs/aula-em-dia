@@ -78,10 +78,8 @@ select is(
 
 -- ── o professor B, só para este teste ────────────────────────────────────────
 
+-- O trigger da 0003 cria o perfil, a política e a disponibilidade do B.
 insert into auth.users (id, email)
-values ('00000000-0000-4000-8000-000000000002', 'professor.b@exemplo.test');
-
-insert into public.professores (id, email)
 values ('00000000-0000-4000-8000-000000000002', 'professor.b@exemplo.test');
 
 insert into public.alunos (id, professor_id, nome, disciplina, dia, hora)

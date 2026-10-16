@@ -10,8 +10,10 @@ ainda não fala com ele.
 | `config.toml` | Portas e versão do Postgres, iguais para as três pessoas |
 | `migrations/0001_esquema.sql` | 5 enums, 6 tabelas, 2 índices |
 | `migrations/0002_rls.sql` | RLS nas 6 tabelas, com política em todas |
+| `migrations/0003_novo_professor.sql` | Trigger: criar o login cria o professor, a política e a disponibilidade |
 | `seed.sql` | Os dados de demonstração. **Gerado**: não edite à mão |
 | `tests/database/rls.test.sql` | Teste de RLS com dois professores, em pgTAP |
+| `tests/database/novo_professor.test.sql` | Teste do trigger da `0003`, em pgTAP |
 
 ## Para rodar
 
@@ -67,7 +69,7 @@ O arquivo pode rodar mais de uma vez e termina sempre no mesmo estado.
 
 `db reset` passar não prova a segurança. Com RLS ligada e **sem** política, o `select` volta vazio e
 o `update` não afeta linha nenhuma, **sem erro**. O que prova é um professor não enxergar o que é do
-outro, e é isso que `npx supabase test db` confere, em 30 casos:
+outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 14 do trigger da `0003`):
 
 - RLS ligada nas seis tabelas e política em todas (`lancamentos` tem duas: ler e inserir);
 - o professor A, do seed, vê os 4 alunos dele e nenhum do professor B;
@@ -107,8 +109,9 @@ insert into auth.users (
   now(), now(), '', '', '', ''
 );
 
-insert into public.professores (id, nome, email)
-values ('00000000-0000-4000-8000-000000000002', 'Professor B', 'professor.b@exemplo.test');
+-- O trigger da 0003 já criou o perfil; aqui só o nome.
+update public.professores set nome = 'Professor B'
+where id = '00000000-0000-4000-8000-000000000002';
 
 insert into public.alunos (professor_id, nome, disciplina, dia, hora)
 values ('00000000-0000-4000-8000-000000000002', 'Aluno do B', 'Piano', 'sexta', '15h');
@@ -128,6 +131,26 @@ rollback;
 
 Como A aparecem os quatro alunos da semente; como B, só "Aluno do B". Os dois também entram pela
 API com a senha `aulaemdia-local`.
+
+## Login de verdade no app (Parte 3)
+
+Com o banco local no ar, o app pode entrar e criar conta de verdade. Em `mobile/.env` (copie de
+[`.env.example`](../.env.example)):
+
+```bash
+EXPO_PUBLIC_BACKEND=supabase
+EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321           # no celular: o IP do computador na rede
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<a PUBLISHABLE_KEY do npx supabase status>
+```
+
+Criar conta pelo app passa pelo trigger da `0003`, que cria a linha em `professores`,
+`politicas` e `disponibilidades`. A confirmação de e-mail está desligada no local
+(`enable_confirmations = false` no `config.toml`), então o cadastro segue direto para o
+onboarding. O professor de teste do seed entra com a senha `aulaemdia-local`.
+
+Até o `SCRUM-59` a tela de Acesso não manda a senha, então no modo `supabase` o botão "Entrar"
+ainda não faz nada. Os dados continuam no aparelho até a Parte 4. As decisões estão em
+[`PLANO-BACKEND.md`, Parte 3](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-3).
 
 ## Tipos do banco
 
@@ -150,9 +173,8 @@ falhar no bloco do professor de teste depois de uma atualização, é por aí.
 
 - **A RPC `aplicar_movimento` (Parte 5).** Está no plano (Parte 5 § A função) com o ramo da proposta
   como stub literal. Virar migração agora seria versionar um stub.
-- **O trigger que cria o professor a partir do login (Parte 3).** O seed já convive com ele: foi
-  testado com o trigger instalado só no banco local.
-- **Migração aplicada não se edita.** Se o seed revelar um problema no esquema, crie a `0003`.
+- **Migração aplicada não se edita.** Se o seed revelar um problema no esquema, crie a próxima
+  (`0004`).
 
 ## Divergência conhecida no plano
 
