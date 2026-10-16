@@ -151,6 +151,7 @@ todo mundo.
 cd mobile
 npm test ; echo "EXIT=$?"   # hoje: 695 testes, 23 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
+npm run lint                # ESLint: não acrescente achado nos arquivos que você mexeu
 ```
 
 **Leia o código de saída, não o resumo.** O Jest consegue imprimir
@@ -274,8 +275,11 @@ confiar:
   errado sem que teste nenhum acuse.
 - **Um defeito conhecido em `estado/dados.ts`** está marcado como `it.failing` em
   `fluxo.test.tsx`: marcar a reposição direto não desfaz a proposta que estava aberta.
-- **Sem linter** ainda. O teste de integração do banco existe (`npx supabase test db`, RLS com
-  dois professores), mas **não roda no CI**: precisa de Docker.
+- **O linter existe, mas não está no CI** (`SCRUM-35`). `npm run lint` roda o
+  `eslint-config-expo`, e cada regra desligada tem a razão escrita em `mobile/eslint.config.js`.
+  Ele entra no CI quando os achados que sobraram, todos em arquivos do Rafael, forem resolvidos.
+- **O teste de integração do banco existe** (`npx supabase test db`, RLS com dois professores),
+  mas **não roda no CI**: precisa de Docker.
 
 O que **deixou** de ser buraco: o CI roda a cada push e PR, e a `main` só aceita código que
 passou por ele (`SCRUM-36` e `SCRUM-49`). O resto continua valendo — portão verde não é o
