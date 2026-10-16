@@ -61,6 +61,12 @@ export const ERRO = {
   nomeCurto: 'O nome está curto demais',
   disciplinaVazia: 'Escolha pelo menos uma disciplina',
   telefoneInvalido: 'Telefone incompleto',
+  // Quando o login de verdade falha. Qual erro do Supabase vira qual frase é
+  // decidido em estado/sessao.ts, na fronteira com o banco: o domínio só tem o texto.
+  credenciaisInvalidas: 'E-mail ou senha não conferem',
+  emailJaCadastrado: 'Já existe uma conta com esse e-mail',
+  semConexao: 'Sem conexão. Confira a internet e tente de novo',
+  falhaNoAcesso: 'Não deu para entrar agora. Tente de novo em instantes',
 } as const;
 
 export function validarAcesso(email: string, senha: string): Erros<{

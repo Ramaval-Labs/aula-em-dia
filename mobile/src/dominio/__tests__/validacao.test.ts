@@ -116,3 +116,25 @@ describe('validarAcesso', () => {
     expect(semErros(e)).toBe(false);
   });
 });
+
+describe('ERRO — as mensagens do login de verdade (SCRUM-58)', () => {
+  it.each([
+    ['credenciaisInvalidas', 'E-mail ou senha não conferem'],
+    ['emailJaCadastrado', 'Já existe uma conta com esse e-mail'],
+    ['semConexao', 'Sem conexão. Confira a internet e tente de novo'],
+    ['falhaNoAcesso', 'Não deu para entrar agora. Tente de novo em instantes'],
+  ] as const)('%s: "%s"', (chave, texto) => {
+    expect(ERRO[chave]).toBe(texto);
+  });
+
+  it('nenhuma mensagem do dicionário termina em ponto, como as que já existiam', () => {
+    expect(Object.values(ERRO).filter((m) => m.endsWith('.'))).toEqual([]);
+  });
+
+  it('as mensagens que a tela de Acesso já mostrava não mudaram', () => {
+    expect(ERRO.emailVazio).toBe('Informe seu e-mail');
+    expect(ERRO.emailInvalido).toBe('Esse e-mail não parece certo');
+    expect(ERRO.senhaVazia).toBe('Informe sua senha');
+    expect(ERRO.senhaCurta).toBe('A senha precisa de pelo menos 6 caracteres');
+  });
+});
