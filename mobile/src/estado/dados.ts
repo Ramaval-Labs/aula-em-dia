@@ -121,6 +121,7 @@ type Iguais<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 type Exige<T extends true> = T;
 // Só existe para o typecheck: ele quebra aqui se uma ação nascer sem caso em
 // `Mudanca`, ou se sobrar caso sem ação.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- o tipo é a própria checagem
 type TodaAcaoTemMudanca = Exige<Iguais<AcaoQueGrava, Mudanca['tipo']>>;
 
 /**
