@@ -43,3 +43,34 @@ jobs:
       # --runInBand evita a concorrência engolir memória no runner compartilhado.
       - name: Testes
         run: npm test -- --ci --runInBand
+
+  # O teste de RLS (SCRUM-60). Com RLS ligada e sem política, o select volta vazio sem
+  # erro: é a falha que nenhum teste do app pega, e até aqui dependia de alguém lembrar
+  # de rodar `supabase test db`. Fica num job separado para o portão do app não esperar
+  # o Postgres subir. Roda sempre, sem filtro de paths: check obrigatório com filtro fica
+  # pendente para sempre no PR que não mexe no banco. Ainda NÃO é obrigatório; depois de
+  # uma semana verde, quem administra a main o promove na proteção da branch.
+  banco:
+    name: RLS do banco
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # A versão em que o seed e os testes foram escritos (SCRUM-18). A forma de
+      # auth.users muda entre versões do CLI: subir esta é decisão, não acidente.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
+
+      # Só o Postgres, que o runner sobe no Docker que já tem. Aplica as migrações e o
+      # supabase/seed.sql, sem Auth, Studio nem API. Banco local, que morre com o job:
+      # nenhuma chave nem projeto da nuvem.
+      - name: Subir o banco
+        run: supabase db start
+
+      # Os testes pgTAP de supabase/tests/database: RLS com dois professores e o
+      # trigger que cria o professor.
+      - name: Testes do banco
+        run: supabase test db
