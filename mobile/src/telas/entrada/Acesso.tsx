@@ -1,16 +1,17 @@
 /**
  * A3 — Entrar ou criar conta.
  *
- * Autenticação é mock: qualquer e-mail bem formado com senha de 6 caracteres
- * entra. "Entrar" vai direto para o app (quem já tem conta); "Criar conta"
- * abre o onboarding de quatro passos.
+ * "Entrar" vai direto para o app (quem já tem conta); "Criar conta" abre o
+ * onboarding de quatro passos. Os dois exigem e-mail e senha válidos, pela
+ * mesma `validarAcesso`. Se o login é de verdade (Supabase Auth) ou de
+ * mentira, quem sabe é a sessão (`loginReal`): a tela só manda e-mail e senha
+ * e mostra a frase de `ERRO` que volta.
  *
  * No iOS Glass as duas intenções viram um segmentado no topo, e a ação
- * primária do rodapé acompanha a aba escolhida. A validação é a mesma de
- * antes: entrar exige e-mail e senha válidos; criar conta, só o e-mail.
+ * primária do rodapé acompanha a aba escolhida.
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BlocoStatus, CartaoVidro } from '../../componentes/Blocos';
@@ -23,7 +24,7 @@ import {
 } from '../../componentes/Controles';
 import { ERRO, emailValido, senhaValida, validarAcesso } from '../../dominio/validacao';
 import { useRascunho } from '../../estado/formularios';
-import { useSessao } from '../../estado/sessao';
+import { loginReal, useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto } from '../../tema/tipografia';
@@ -33,8 +34,19 @@ import { TelaDeEntrada } from './TelaDeEntrada';
 
 const ACESSO_INICIAL = { email: '', senha: '', mostrarSenha: false, erro: null };
 
-/** O login é mock: não há recuperação para oferecer, então o toque avisa. */
+/** Não há recuperação para oferecer em nenhum dos modos, então o toque avisa. */
 const AVISO_RECUPERAR_SENHA = 'A recuperação de senha chega junto com o login de verdade.';
+const AVISO_RECUPERAR_SENHA_REAL = 'A recuperação de senha ainda não está disponível.';
+
+/** Frases que apontam para o e-mail; as outras de campo ficam sob a senha. */
+const ERROS_DO_EMAIL: readonly string[] = [
+  ERRO.emailVazio,
+  ERRO.emailInvalido,
+  ERRO.emailJaCadastrado,
+];
+
+/** Frases que não são de campo nenhum: vão num bloco abaixo do formulário. */
+const ERROS_GERAIS: readonly string[] = [ERRO.semConexao, ERRO.falhaNoAcesso];
 
 const MODOS: readonly OpcaoSegmentada<ModoDeAcesso>[] = [
   { valor: 'entrar', rotulo: 'Entrar' },
@@ -48,42 +60,59 @@ export function Acesso() {
   const voltarEntrada = useSessao((s) => s.voltarEntrada);
   const avisar = useToast((s) => s.avisar);
   const [form, atualizar] = useRascunho('acesso', ACESSO_INICIAL);
-  // Aba escolhida: morre com a tela, então é estado local.
+  // Aba escolhida e pedido em andamento: morrem com a tela, então são locais.
   const [modo, setModo] = useState<ModoDeAcesso>(modoDeAcessoInicial);
+  const [enviando, setEnviando] = useState(false);
+  // O estado só desabilita o botão no render seguinte; a ref barra o segundo
+  // toque que chega antes dele.
+  const emAndamento = useRef(false);
+  const real = loginReal();
 
-  const erros = validarAcesso(form.email, form.senha);
-  const podeEntrar = emailValido(form.email) && senhaValida(form.senha);
+  const criando = modo === 'criar';
 
-  const tentarEntrar = () => {
-    if (!podeEntrar) {
+  const confirmar = async () => {
+    if (emAndamento.current) return;
+    if (!emailValido(form.email) || !senhaValida(form.senha)) {
+      const erros = validarAcesso(form.email, form.senha);
       atualizar({ erro: erros.email ?? erros.senha ?? null });
       return;
     }
-    entrar(form.email.trim());
+    emAndamento.current = true;
+    setEnviando(true);
+    const pedir = criando ? criarConta : entrar;
+    const erro = await pedir(form.email.trim(), form.senha);
+    emAndamento.current = false;
+    setEnviando(false);
+    // Deu certo: a sessão já trocou de fase, e a senha não fica no rascunho.
+    atualizar(erro ? { erro } : { senha: '', mostrarSenha: false, erro: null });
   };
-
-  const tentarCriar = () => {
-    if (!emailValido(form.email)) {
-      atualizar({ erro: form.email ? ERRO.emailInvalido : ERRO.emailVazio });
-      return;
-    }
-    criarConta(form.email.trim());
-  };
-
-  const criando = modo === 'criar';
-  const confirmar = criando ? tentarCriar : tentarEntrar;
 
   const trocarModo = (m: ModoDeAcesso) => {
+    if (enviando) return;
     setModo(m);
     atualizar({ erro: null });
   };
+
+  const erroDoEmail = form.erro && ERROS_DO_EMAIL.includes(form.erro) ? form.erro : undefined;
+  const erroGeral = form.erro && ERROS_GERAIS.includes(form.erro) ? form.erro : null;
+  const erroDaSenha = form.erro && !erroDoEmail && !erroGeral ? form.erro : undefined;
+
+  const rotuloDoBotao = criando
+    ? enviando
+      ? 'Criando conta…'
+      : 'Criar conta'
+    : enviando
+      ? 'Entrando…'
+      : 'Entrar';
 
   return (
     <TelaDeEntrada
       comTeclado
       titulo={criando ? 'Criar conta no Aula em Dia' : 'Entrar no Aula em Dia'}
       voltar={{ rotulo: 'Início', aoTocar: () => voltarEntrada() }}
-      rodape={<BotaoPrimario rotulo={criando ? 'Criar conta' : 'Entrar'} aoTocar={confirmar} />}
+      rodape={
+        <BotaoPrimario rotulo={rotuloDoBotao} aoTocar={confirmar} desabilitado={enviando} />
+      }
     >
       <Segmentado
         opcoes={MODOS}
@@ -99,7 +128,7 @@ export function Acesso() {
           aoMudar={(email) => atualizar({ email, erro: null })}
           placeholder="voce@email.com"
           teclado="email"
-          erro={form.erro && !emailValido(form.email) ? form.erro : undefined}
+          erro={erroDoEmail}
         />
 
         <CampoDeTexto
@@ -109,11 +138,7 @@ export function Acesso() {
           placeholder="pelo menos 6 caracteres"
           senha={!form.mostrarSenha}
           aoEnviar={confirmar}
-          erro={
-            !criando && form.erro && emailValido(form.email) && !senhaValida(form.senha)
-              ? form.erro
-              : undefined
-          }
+          erro={erroDaSenha}
           sufixo={
             <AcaoDoCampo
               rotulo={form.mostrarSenha ? 'ocultar' : 'mostrar'}
@@ -127,7 +152,7 @@ export function Acesso() {
           // O texto tem ~17px; o hitSlop vertical leva o alvo a ~45px.
           <Pressable
             accessibilityRole="link"
-            onPress={() => avisar(AVISO_RECUPERAR_SENHA)}
+            onPress={() => avisar(real ? AVISO_RECUPERAR_SENHA_REAL : AVISO_RECUPERAR_SENHA)}
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             style={estilos.link}
           >
@@ -138,6 +163,8 @@ export function Acesso() {
         )}
       </CartaoVidro>
 
+      {erroGeral ? <BlocoStatus tom="vermelho" titulo={erroGeral} vivo /> : null}
+
       {criando ? (
         <BlocoStatus
           titulo="Primeira vez aqui?"
@@ -145,16 +172,21 @@ export function Acesso() {
         />
       ) : null}
 
-      <View style={estilos.ou}>
-        <View style={[estilos.fio, { backgroundColor: cores.fio }]} />
-        <Text style={[texto(12, 600), { color: cores.tinta3 }]}>ou</Text>
-        <View style={[estilos.fio, { backgroundColor: cores.fio }]} />
-      </View>
+      {/* No login de verdade o Google ainda não existe (SCRUM-62). */}
+      {real ? null : (
+        <>
+          <View style={estilos.ou}>
+            <View style={[estilos.fio, { backgroundColor: cores.fio }]} />
+            <Text style={[texto(12, 600), { color: cores.tinta3 }]}>ou</Text>
+            <View style={[estilos.fio, { backgroundColor: cores.fio }]} />
+          </View>
 
-      <BotaoSecundario
-        rotulo="Continuar com Google"
-        aoTocar={() => entrar(form.email.trim() || 'professor@gmail.com')}
-      />
+          <BotaoSecundario
+            rotulo="Continuar com Google"
+            aoTocar={() => void entrar(form.email.trim() || 'professor@gmail.com')}
+          />
+        </>
+      )}
     </TelaDeEntrada>
   );
 }

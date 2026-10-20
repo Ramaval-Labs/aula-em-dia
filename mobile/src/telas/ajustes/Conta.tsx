@@ -43,7 +43,7 @@ export function Conta() {
 
   // Sair leva de volta ao login: dois toques.
   const sairDaConta = useDoisToques(() => {
-    sair();
+    void sair();
     avisar('Você saiu. Até logo!');
   });
 
