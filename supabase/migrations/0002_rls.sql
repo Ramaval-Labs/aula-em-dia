@@ -29,9 +29,8 @@ create policy "a própria disponibilidade" on public.disponibilidades
   for all using (professor_id = (select auth.uid()))
   with check (professor_id = (select auth.uid()));
 
-create policy "os próprios alunos" on public.alunos
-  for all using (professor_id = (select auth.uid()))
-  with check (professor_id = (select auth.uid()));
+-- BRANCH DESCARTÁVEL: a política de alunos foi apagada de propósito, para ver o CI
+-- do banco ficar vermelho. Esta branch não é mesclada.
 
 create policy "as próprias propostas" on public.propostas
   for all using (professor_id = (select auth.uid()))
