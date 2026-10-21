@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro, os cards atribuídos e quatro janelas criadas: uma semana de
-preparação e três sprints de uma semana.
+com as três pessoas dentro e os cards atribuídos. Até agora foram seis janelas: uma semana de
+preparação e cinco sprints de uma semana.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -45,7 +45,7 @@ aprovação numa sprint de cinco dias. Duas mitigações já estão no lugar:
 
 ---
 
-## 2. As quatro janelas
+## 2. As janelas
 
 ### Preparação · 30/09 a 07/10 · **fechada, 6 de 6** · não contou para a velocidade
 
@@ -140,15 +140,20 @@ premissa errada, e quatro, referência velha:
   (`Financeiro.tsx`, `ChavePix.tsx` l.87, contagem de 399), e o **`SCRUM-25`** uma nota sobre o
   `55` que o `wa.me` exige e os números do seed não trazem
 
-### Sprint 3 · 08/10 a 15/10 · **ativa** · 26 pontos (abriu com 25; o `SCRUM-29` cresceu de 2 para 3)
+### Sprint 3 · 08/10 · **fechada, 7 de 7, 26 pontos no dia em que abriu**
 
-Esta é a sprint que está no quadro agora. Estava planejada para 14/10 a 21/10 e recuou seis
-dias, porque a Sprint 2 fechou na noite em que abriu.
+Estava planejada para 14/10 a 21/10, recuou seis dias porque a Sprint 2 fechou na noite em que
+abriu, e terminou em 08/10, como as duas anteriores. Fechada no Jira em 14/10. Abriu com 25
+pontos; o `SCRUM-29` cresceu de 2 para 3. A suíte foi de 496 para **648 testes**.
+
+Os três cards da faixa do Mauro foram feitos por outras pessoas: o `SCRUM-53` pelo Rafael e o
+`SCRUM-33` e o `SCRUM-34` pelo Valentin (PRs #13 e #14). Os dois PRs deixaram defeitos marcados como
+`it.failing`, sem card. Viraram o `SCRUM-64` e o `SCRUM-65` em 14/10 (ver § 5).
 
 | Dono | Cards | Pts |
 |---|---|---|
 | Valentin | `SCRUM-18` — Parte 2 completa (8) | 8 |
-| Mauro | `SCRUM-33` (3) + `SCRUM-34` (5) — o `SCRUM-53` passou para o Rafael | 8 |
+| Mauro | `SCRUM-33` (3) + `SCRUM-34` (5), os dois feitos pelo Valentin — o `SCRUM-53` passou para o Rafael | 8 |
 | Rafael | ~~`SCRUM-29` (3)~~ + ~~`SCRUM-27` (2)~~ + ~~`SCRUM-53` (2)~~ + ~~`SCRUM-30` (3)~~ **os quatro em 08/10** | 10 |
 
 **Ordem obrigatória:** `SCRUM-53` antes de `SCRUM-30`. O `SCRUM-53` é o commit de abertura no
@@ -171,9 +176,118 @@ avise na daily: o que vem a seguir é decisão de PO, não de quem ficou livre.
 - **`SCRUM-33`** não listava `resumoDoPacote`; **`SCRUM-29`** e **`SCRUM-34`** tinham linha
   velha e dependência já fechada. **`SCRUM-30`** e **`SCRUM-53`** conferem sem mudança
 
-**Fora das quatro janelas, de propósito:** `SCRUM-31` (modelo estruturado de horário — atravessa
-as três camadas e os três donos de uma vez), os cards de plataforma e publicação, e as Partes 3 a
-8 do backend, que dependem em fila.
+### Sprint 4 · 14/10 a 20/10 · **fechada, 6 de 6, 17 pontos**
+
+O tema foi **login de verdade** (Parte 3) e o teste de RLS rodando no CI. Foi a primeira das
+sprints de uma semana que não fechou no dia em que abriu: os dois últimos cards (`SCRUM-59` e
+`SCRUM-60`) terminaram em 20/10. A suíte foi de 648 para **695 testes**.
+
+Duas sobras viraram card. O `SCRUM-46` deixou o splash para o `SCRUM-66`, porque ligar o plugin
+`expo-splash-screen` mexe no `package.json` que estava reservado ao `SCRUM-19` e ao `SCRUM-35`. E o
+`SCRUM-59` fechou sem a ponta a ponta contra o banco local, porque a máquina não tinha Docker; ela
+virou o `SCRUM-67`.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Valentin | `SCRUM-19` — Parte 3, autenticação do professor | 5 |
+| Mauro | `SCRUM-58` — mensagens de erro do login (1) + `SCRUM-60` — CI roda o teste de RLS (3) + `SCRUM-35` — eslint (2) | 6 |
+| Rafael | `SCRUM-59` — tela de Acesso com login de verdade (3) + `SCRUM-46` — ícone e splash (3) | 6 |
+
+**A Parte 3 foi partida em três, por faixa.** Hoje `criarConta` recebe só o e-mail e `entrar` é
+síncrono, e as duas são chamadas por `Acesso.tsx`, que é da apresentação. Então: o Mauro publica as
+frases de erro no domínio (`SCRUM-58`), o Valentin troca a sessão por uma API nova com a senha
+**opcional** (`SCRUM-19`), para `Acesso.tsx` e `Conta.tsx` continuarem compilando sem ele abri-los,
+e o Rafael liga a tela (`SCRUM-59`). A sessão também expõe um `loginReal`, para a tela saber o modo
+sem ler `process.env`.
+
+**Ordem obrigatória**, com os vínculos *blocks* no board:
+
+- `SCRUM-58` antes de `SCRUM-19`, e `SCRUM-19` antes de `SCRUM-59`
+- o primeiro commit do `SCRUM-19` (só a dependência `@supabase/supabase-js`) antes do `SCRUM-35`:
+  os dois mexem em `mobile/package.json` e no lock
+
+**Decisões de PO de 14/10:**
+
+- **Google e recuperação de senha ficam fora da Parte 3.** Os dois precisam de deep link, que no
+  Expo Go é frágil (`SCRUM-47`). Viraram o `SCRUM-62` e o `SCRUM-63`, no backlog. No modo supabase o
+  "Continuar com Google" some e o "Esqueci minha senha" mantém o aviso, com texto novo: o de hoje
+  promete a recuperação "junto com o login de verdade"
+- **A Parte 4 é lista de puxar, não compromisso.** As três sprints anteriores fecharam no dia em que
+  abriram, mas a Parte 4 é a de maior risco da fila (rede, cache e importação dos dados locais)
+- **O projeto Supabase na nuvem não é pré-requisito.** A Parte 3 roda contra o banco local do
+  `SCRUM-18`; no celular, pelo IP da máquina na rede
+
+**Se a sua faixa esvaziar**, puxe só da sua:
+
+| Dono | Puxa | Por quê |
+|---|---|---|
+| Valentin | `SCRUM-20` — Parte 4 | depende do `SCRUM-19`; já está no template completo |
+| Rafael | `SCRUM-61` — Parte 4 na tela | o **primeiro** commit dele (a frase de falha de gravação em `avisos.ts`) vai **antes** do `SCRUM-20`; o segundo (a pergunta de importar), depois |
+
+**Revisado antes de abrir**, contra a `main` de 14/10. Os cards que entraram estão no template de
+nove seções; o `SCRUM-35` ganhou um comentário: só começa depois do commit de dependência do
+`SCRUM-19`, e conserta a classe (a) só na faixa do Mauro, listando o resto por dono. O item "teste
+de banco no CI" saiu do `SCRUM-24` e virou o `SCRUM-60`. O `SCRUM-46` registra que o ícone na
+gaveta só aparece num build (`SCRUM-47`): o Expo Go mostra o dele.
+
+**Fora da sprint, de propósito:** `SCRUM-31` (modelo estruturado de horário — atravessa as três
+camadas e os três donos de uma vez; e fica mais caro a cada parte do backend, porque o horário vira
+coluna no banco), os cards de plataforma e publicação, e as Partes 5 a 8 do backend, que dependem em
+fila.
+
+### Sprint 5 · 21/10 a 28/10 · **ativa** · 14 pontos
+
+Esta é a sprint que está no quadro agora. O tema é a **Parte 4**: com `EXPO_PUBLIC_BACKEND=supabase`,
+o app lê e grava no banco o que não mexe em saldo. Junto vão os defeitos que os testes deixaram como
+`it.failing`, e dois deles saem para o aluno pelo WhatsApp.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Valentin | `SCRUM-65` — agendar direto fecha a proposta (2) + `SCRUM-20` — Parte 4 (5) | 7 |
+| Mauro | `SCRUM-64` — os cinco defeitos do domínio | 3 |
+| Rafael | `SCRUM-61` — Parte 4 na tela (2) + `SCRUM-67` — login ponta a ponta e as sobras do `SCRUM-59` (2) | 4 |
+
+**14 pontos, abaixo das quatro sprints anteriores (18, 21, 26 e 17), de propósito.** A Parte 4 é a
+de maior risco da fila (rede, cache e importação dos dados locais), e por isso foi lista de puxar
+na Sprint 4, não compromisso. O Mauro fica com a menor carga porque a faixa dele não tem outro card
+pronto: o `SCRUM-31` continua fora.
+
+**Ordem obrigatória.** O *blocks* `SCRUM-65` → `SCRUM-20` está no board; as outras duas são de
+commit, não de card, e estão escritas nos cards:
+
+- o **primeiro commit** do `SCRUM-64` (`marcarReposicao` devolve `proposta: null`) antes do
+  `SCRUM-65`
+- o `SCRUM-65` antes do `SCRUM-20`: os dois mexem em `estado/dados.ts`, então em sequência, nunca em
+  paralelo
+- o primeiro commit do `SCRUM-61` (a frase de falha de gravação em `avisos.ts`) antes do `SCRUM-20`,
+  e o segundo (a pergunta de importar) depois
+
+**Decisão de faixa de 21/10:** a regra "marcar a reposição fecha a proposta aberta" vai para o
+domínio. O `SCRUM-65` foi escrito como card só do Valentin, em `estado/dados.ts`, mas a store já
+fazia isso por conta própria no `responderProposta` (`proposta: null`), e regra de negócio mora em
+`dominio/`. Então o Mauro põe a regra em `politica.marcarReposicao` num commit de abertura do
+`SCRUM-64`, e o Valentin só consome e apaga a cópia da store.
+
+**Decisões de PO no caminho da sprint:**
+
+- a frase de cobrança de quem ainda **vai** vencer e de quem não tem data (`SCRUM-64`, passo 4).
+  Vai para o aluno pelo WhatsApp; o card traz um ponto de partida, ainda não aprovado
+- o subtítulo de "Alterar senha" com o login de verdade (`SCRUM-67`, § 4)
+
+**Risco conhecido:** a Parte A do `SCRUM-67` (a ponta a ponta contra o `npx supabase start`) precisa
+de uma máquina com Docker. Sem ela, a Parte B fecha e a A não.
+
+**Se a sua faixa esvaziar**, avise na daily: o que vem depois é decisão de PO. O candidato natural
+do Rafael é o `SCRUM-66` (splash, 1 ponto), que só se confere de verdade num build (`SCRUM-47`).
+
+**Revisado antes de abrir**, contra a `main` de 21/10. O `SCRUM-64` e o `SCRUM-65` subiram para o
+template de nove seções e ganharam pontos (3 e 2). O `SCRUM-20` tinha as linhas do plano velhas (a
+Parte 4 desceu de L759 para L836 com as decisões da Parte 3) e ganhou dois itens: usar o cliente de
+`dados/supabase.ts` e responder o "onboarding concluído" que a Parte 3 deixou em aberto. O
+`SCRUM-61` tinha a linha do plano velha. O `SCRUM-67` confere sem mudança.
+
+**Fora da sprint, de propósito:** `SCRUM-31`, `SCRUM-66`, os outros cards de plataforma e
+publicação, e as Partes 5 a 8 do backend, que esperam a Parte 4.
 
 ---
 
@@ -237,7 +351,7 @@ Por que as três seções menos óbvias:
   vizinho por prestatividade; nomear o dono transforma isso em recusa explícita.
 - **§4** com caminho e número de linha remove a etapa de grep, que é onde o agente inventa escopo.
 
-**Profundidade por card:** os das quatro janelas têm as nove seções. Os do backlog mais distante
+**Profundidade por card:** os que entram numa sprint têm as nove seções. Os do backlog mais distante
 têm profundidade média (objetivo, arquivos prováveis, atenção, pronto quando) e sobem para o
 template completo quando entrarem numa sprint — escrever em detalhe um card de cinco sprints à
 frente produz detalhe que envelhece antes de ser lido.
@@ -320,6 +434,30 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   a tela descarta o rascunho ao desmontar, porque o `voltar` não limpava e uma folga não salva
   reaparecia na visita seguinte. Conferido no Expo Web: uma folga amanhã tira o dia do "Escolher
   outro horário" (74 → 70 horários). Fica em aberto: teclado e máscara no Expo Go
+- **`SCRUM-18` fechado** em 08/10 (PR #12). As datas ficam relativas também no banco: o
+  `seed.sql` guarda `pg_temp.hoje() - 12`, e quem resolve é o Postgres a cada `db reset`, então o
+  arquivo comitado não envelhece. Isso respondeu a decisão que a revisão de abertura tinha deixado
+  aberta. O teste de RLS tem 30 casos em pgTAP, e as nove decisões estão no plano do backend
+- **`SCRUM-33` e `SCRUM-34` fechados** em 08/10 (PRs #13 e #14), feitos pelo Valentin. A suíte foi
+  a 620 e depois a 648. Os dois acharam defeitos e os deixaram como `it.failing`, como os cards
+  mandavam, sem tocar nos módulos
+- **`SCRUM-58` a `SCRUM-63` criados** em 14/10, na abertura da Sprint 4: a Parte 3 partida por
+  faixa (`58`, `59`), o CI de RLS que saiu do `SCRUM-24` (`60`), a fatia de tela da Parte 4 (`61`), e
+  recuperar senha e Google (`62`, `63`), que ficaram fora da Parte 3 por decisão de PO e dependem do
+  `SCRUM-47`
+- **`SCRUM-64` e `SCRUM-65` criados** em 14/10, a partir dos `it.failing` que ninguém tinha levado
+  para o quadro. O `64` (Mauro) junta cinco defeitos do domínio. Dois deles saem para o aluno pelo
+  WhatsApp: a cobrança de quem não tem vencimento escreve "undefined", e a de um pagamento ainda a
+  vencer diz "que venceu em". O `65` (Valentin) é a proposta que fica aberta quando a reposição é
+  marcada direto, e vale corrigir antes da Parte 4, porque o banco só aceita uma proposta aberta
+  por aluno
+- **`SCRUM-66` e `SCRUM-67` criados** durante a Sprint 4, em 15/10 e 20/10: as sobras do
+  `SCRUM-46` (o splash, que pede o plugin `expo-splash-screen`) e do `SCRUM-59` (a ponta a ponta
+  contra o banco local, que pede Docker)
+- **A operação de sprint saiu do conector da Atlassian** entre 14/10 e 21/10. O `manageJiraSprint`,
+  que criou, iniciou e fechou as sprints até a 4, agora devolve "Unknown operation", e o `discover`
+  não o lista mais. O conector ainda move card para uma sprint que já existe
+  (`transitionJiraIssue`), mas criar, iniciar e fechar sprint voltou a ser feito pelo navegador
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
