@@ -56,4 +56,7 @@ export const avisos = {
   perfilSalvo: 'Perfil atualizado.',
   politicaSalva: 'Política salva. O registro de aula já usa a regra nova.',
   estadoZerado: 'Dados de demonstração restaurados.',
+  // Gravar no banco falhou (Parte 4). A store recarrega do banco logo depois,
+  // então o aviso pede outra tentativa em vez de dizer o que se perdeu.
+  falhaAoSalvar: 'Não deu para salvar. Confira a conexão e tente de novo.',
 };
