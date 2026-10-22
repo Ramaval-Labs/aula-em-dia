@@ -16,7 +16,7 @@ import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Lis
 import { useDoisToques } from '../../componentes/useDoisToques';
 import { useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
-import { useSessao } from '../../estado/sessao';
+import { loginReal, useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../../tema/tipografia';
@@ -40,6 +40,7 @@ export function Conta() {
   const salvarPerfil = useDados((s) => s.salvarPerfil);
   const sair = useSessao((s) => s.sair);
   const avisar = useToast((s) => s.avisar);
+  const real = loginReal();
 
   // Sair leva de volta ao login: dois toques.
   const sairDaConta = useDoisToques(() => {
@@ -146,8 +147,12 @@ export function Conta() {
       </View>
       <ListaAgrupada>
         <LinhaLista titulo="E-mail da conta" subtitulo={perfil.email} />
-        {/* Sem chevron: não há para onde ir enquanto o login for mock. */}
-        <LinhaLista titulo="Alterar senha" subtitulo="Chega junto com o login de verdade" />
+        {/* Sem chevron: não há para onde ir em nenhum dos modos. Com o login
+            de verdade a promessa já chegou, então o texto só diz que falta. */}
+        <LinhaLista
+          titulo="Alterar senha"
+          subtitulo={real ? 'Ainda não disponível' : 'Chega junto com o login de verdade'}
+        />
         <LinhaLista
           titulo="Exportar meus dados"
           subtitulo="Copia alunos, extratos e políticas"

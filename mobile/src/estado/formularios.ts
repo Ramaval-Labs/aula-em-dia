@@ -33,10 +33,9 @@ import type {
 } from '../dominio/tipos';
 import type { Tela } from './navegacao';
 
+/** Sem a senha: ela morre com a tela de Acesso (`useState`), nunca atravessa telas. */
 export interface RascunhoAcesso {
   email: string;
-  senha: string;
-  mostrarSenha: boolean;
   erro: string | null;
 }
 

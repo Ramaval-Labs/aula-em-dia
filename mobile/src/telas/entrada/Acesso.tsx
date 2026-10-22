@@ -32,7 +32,7 @@ import { TAMANHO } from '../../tema/tokens';
 import { modoDeAcessoInicial, type ModoDeAcesso } from './modoDeAcesso';
 import { TelaDeEntrada } from './TelaDeEntrada';
 
-const ACESSO_INICIAL = { email: '', senha: '', mostrarSenha: false, erro: null };
+const ACESSO_INICIAL = { email: '', erro: null };
 
 /** Não há recuperação para oferecer em nenhum dos modos, então o toque avisa. */
 const AVISO_RECUPERAR_SENHA = 'A recuperação de senha chega junto com o login de verdade.';
@@ -60,7 +60,10 @@ export function Acesso() {
   const voltarEntrada = useSessao((s) => s.voltarEntrada);
   const avisar = useToast((s) => s.avisar);
   const [form, atualizar] = useRascunho('acesso', ACESSO_INICIAL);
-  // Aba escolhida e pedido em andamento: morrem com a tela, então são locais.
+  // Senha, aba escolhida e pedido em andamento morrem com a tela, então são
+  // locais. A senha, de propósito: não sobrevive a sair e voltar.
+  const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [modo, setModo] = useState<ModoDeAcesso>(modoDeAcessoInicial);
   const [enviando, setEnviando] = useState(false);
   // O estado só desabilita o botão no render seguinte; a ref barra o segundo
@@ -72,19 +75,19 @@ export function Acesso() {
 
   const confirmar = async () => {
     if (emAndamento.current) return;
-    if (!emailValido(form.email) || !senhaValida(form.senha)) {
-      const erros = validarAcesso(form.email, form.senha);
+    if (!emailValido(form.email) || !senhaValida(senha)) {
+      const erros = validarAcesso(form.email, senha);
       atualizar({ erro: erros.email ?? erros.senha ?? null });
       return;
     }
     emAndamento.current = true;
     setEnviando(true);
     const pedir = criando ? criarConta : entrar;
-    const erro = await pedir(form.email.trim(), form.senha);
+    const erro = await pedir(form.email.trim(), senha);
     emAndamento.current = false;
     setEnviando(false);
-    // Deu certo: a sessão já trocou de fase, e a senha não fica no rascunho.
-    atualizar(erro ? { erro } : { senha: '', mostrarSenha: false, erro: null });
+    // Deu certo (`null`): a sessão já trocou de fase e o erro antigo sai junto.
+    atualizar({ erro });
   };
 
   const trocarModo = (m: ModoDeAcesso) => {
@@ -133,17 +136,20 @@ export function Acesso() {
 
         <CampoDeTexto
           rotulo="Senha"
-          valor={form.senha}
-          aoMudar={(senha) => atualizar({ senha, erro: null })}
+          valor={senha}
+          aoMudar={(valor) => {
+            setSenha(valor);
+            atualizar({ erro: null });
+          }}
           placeholder="pelo menos 6 caracteres"
-          senha={!form.mostrarSenha}
+          senha={!mostrarSenha}
           aoEnviar={confirmar}
           erro={erroDaSenha}
           sufixo={
             <AcaoDoCampo
-              rotulo={form.mostrarSenha ? 'ocultar' : 'mostrar'}
-              rotuloAcessivel={form.mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
-              aoTocar={() => atualizar({ mostrarSenha: !form.mostrarSenha })}
+              rotulo={mostrarSenha ? 'ocultar' : 'mostrar'}
+              rotuloAcessivel={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              aoTocar={() => setMostrarSenha((m) => !m)}
             />
           }
         />
