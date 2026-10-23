@@ -24,7 +24,7 @@ build no navegador.
 ## Verificação
 
 ```bash
-npm test          # 695 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
+npm test          # 805 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
 npm run typecheck # tsc --noEmit
 ```
 
@@ -58,7 +58,12 @@ src/dominio/                 regras puras — sem UI, sem storage, sem rede
   mensagens.ts                 textos gerados da política
   validacao.ts                 validação de formulário
   __tests__/                   os casos de spec/casos-de-teste.md e mais
-src/dados/                   semente (cópia de ../data/seed.json) e chaves de storage
+src/dados/                   persistência: a semente (cópia de ../data/seed.json) e as chaves de storage
+  repositorio.ts               a interface; EXPO_PUBLIC_BACKEND escolhe local ou supabase
+  adaptador.ts                 o repositório local (AsyncStorage)
+  repositorioSupabase.ts       o do banco (Parte 4): leitura com cache, gravação do que não mexe em saldo
+  conversor.ts                 app ↔ banco: dd/mm ↔ date, reais ↔ centavos, extrato ↔ linhas
+  importacao.ts                leva os alunos do aparelho para a conta no primeiro login
 src/estado/                  dados persistidos, navegação (TIPO_DA_TELA), sessão, rascunhos, toast
 src/tema/                    tokens tipados (espelho de ../tokens/tokens.json), tipografia, tema
 src/componentes/             o catálogo iOS Glass (inventário em ../spec/componentes.md)
