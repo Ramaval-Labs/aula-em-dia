@@ -129,7 +129,10 @@ export function registrarAula(
   };
 }
 
-/** Marca a reposição: consome uma reposição, limpa a pendência e agenda. */
+/**
+ * Marca a reposição: consome uma reposição, limpa a pendência, agenda e fecha
+ * a proposta que estivesse aberta — marcada a aula, não há mais o que propor.
+ */
 export function marcarReposicao(
   a: Aluno,
   janela: { dia: string; hora: string },
@@ -140,6 +143,7 @@ export function marcarReposicao(
     reposicoes: a.reposicoes + 1,
     pendencia: null,
     agendada: { dia: janela.dia, hora: janela.hora },
+    proposta: null,
   };
   return {
     aluno,
