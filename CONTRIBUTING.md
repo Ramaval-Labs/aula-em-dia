@@ -149,7 +149,7 @@ todo mundo.
 
 ```bash
 cd mobile
-npm test ; echo "EXIT=$?"   # hoje: 805 testes, 26 suítes — só conta com EXIT=0
+npm test ; echo "EXIT=$?"   # hoje: 811 testes, 27 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
 npm run lint                # ESLint: não acrescente achado nos arquivos que você mexeu
 ```
@@ -261,28 +261,24 @@ As três pessoas usam Claude Code neste repositório, então vale combinar o bá
 
 ## 7. Onde a rede de segurança tem buraco
 
-805 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
+811 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
 confiar:
 
 - **Todo módulo de `dominio/` com lógica já tem suíte própria**, mas em `estado/dados.ts`, o maior arquivo
   do app, o teste cobre só o contrato de persistência (`SCRUM-17`): o que cada ação calcula na
   store segue sem asserção própria.
-- **Três defeitos conhecidos em `dominio/mensagens.ts`** estão marcados como `it.failing` em
-  `mensagens.test.ts` (`SCRUM-33`), à espera de correção.
 - **O teste de interface é quase todo de fumaça:** `montagem.test.tsx` monta as 35 telas e
   afirma que nada lança exceção. Só dois fluxos têm o conteúdo conferido, em `fluxo.test.tsx`
   (`SCRUM-34`): registrar aula e confirmar reposição. O resto das telas pode mostrar um número
   errado sem que teste nenhum acuse.
-- **Um defeito conhecido em `estado/dados.ts`** está marcado como `it.failing` em
-  `fluxo.test.tsx`: marcar a reposição direto não desfaz a proposta que estava aberta.
 - **O linter existe, mas não está no CI** (`SCRUM-35`). `npm run lint` roda o
   `eslint-config-expo`, e cada regra desligada tem a razão escrita em `mobile/eslint.config.js`.
   Ele entra no CI quando os achados que sobraram, todos em arquivos do Rafael, forem resolvidos.
-- **O teste de integração do banco existe** (`npx supabase test db`, RLS com dois professores),
-  mas **não roda no CI**: precisa de Docker.
 
 O que **deixou** de ser buraco: o CI roda a cada push e PR, e a `main` só aceita código que
-passou por ele (`SCRUM-36` e `SCRUM-49`). O resto continua valendo — portão verde não é o
-mesmo que cobertura.
+passou por ele (`SCRUM-36` e `SCRUM-49`). O teste do banco (`npx supabase test db`, RLS com dois
+professores) roda no CI, num job próprio (`SCRUM-60`). E os defeitos que as suítes deixaram como
+`it.failing` foram corrigidos (`SCRUM-64` e `SCRUM-65`): nenhum `it.failing` sobra hoje. O resto
+continua valendo — portão verde não é o mesmo que cobertura.
 
 Fechar esses buracos é o épico `SCRUM-9` (Qualidade e CI).

@@ -79,7 +79,7 @@ outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 16 do tri
 - o extrato não aceita `update` nem `delete`, nem do dono;
 - sem login não se vê nada.
 
-O professor B nasce e some dentro do teste. O teste **não roda no CI**, que não tem Docker: rode
+O professor B nasce e some dentro do teste. O CI roda esta suíte num job próprio (`SCRUM-60`), mas rode
 antes de abrir PR que mexa em `migrations/`.
 
 Para ver as políticas à mão:
