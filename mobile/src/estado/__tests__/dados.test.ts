@@ -13,8 +13,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CHAVE_ESTADO } from '../../dados/armazenamento';
-import { estadoVazio } from '../../dados/conversor';
+import { CAMPOS_DO_MOVIMENTO, estadoVazio } from '../../dados/conversor';
 import { repositorio, type Gravado, type Mudanca, type Repositorio } from '../../dados/repositorio';
+import { ConflitoDeVersao } from '../../dados/repositorioSupabase';
 import { estadoInicial } from '../../dados/semente';
 import type { ConfigPacote } from '../../dominio/tipos';
 import { avisos } from '../avisos';
@@ -387,6 +388,17 @@ describe('com um repositório remoto', () => {
     expect(d().alunoPor('mar')).toBeUndefined();
   });
 
+  it('conflito de versão: a frase de outro aparelho, e a mesma recarga', async () => {
+    carregarDoBanco.mockResolvedValue(doBanco());
+    registrar.mockRejectedValueOnce(new ConflitoDeVersao('registrar a aula'));
+
+    d().registrarAula('val', 'realizada', 0);
+    await assentar();
+
+    expect(useToast.getState().mensagem).toBe(avisos.alunoMudouEmOutroLugar);
+    expect(carregarDoBanco).toHaveBeenCalledTimes(1);
+  });
+
   it('uma rajada de falhas pede uma recarga só', async () => {
     const banco = resposta<Gravado>();
     carregarDoBanco.mockReturnValue(banco.promessa);
@@ -446,5 +458,44 @@ describe('com um repositório remoto', () => {
     expect(d().alunos).toEqual([]);
     expect(d().carregado).toBe(false);
     apagar.mockRestore();
+  });
+});
+
+/**
+ * A RPC da Parte 5 só grava as colunas do movimento. Se uma regra do domínio
+ * passar a mudar outro campo do aluno, esse campo se perderia em silêncio no
+ * modo supabase. Este teste é o alarme: ele diz que a 0005 e
+ * `CAMPOS_DO_MOVIMENTO` precisam crescer junto.
+ */
+describe('os movimentos só mudam o que a RPC grava', () => {
+  const MOVIMENTOS: [string, string, () => unknown][] = [
+    ['registrarAula realizada', 'val', () => d().registrarAula('val', 'realizada', 0)],
+    ['registrarAula avisada', 'raf', () => d().registrarAula('raf', 'avisada', 48)],
+    ['registrarAula sem aviso', 'mar', () => d().registrarAula('mar', 'sem_aviso', 0)],
+    ['registrarAula cancelada', 'mar', () => d().registrarAula('mar', 'cancelada_professor', 0)],
+    ['marcarReposicao', 'raf', () => d().marcarReposicao('raf', JANELA)],
+    ['receberPagamento', 'val', () => d().receberPagamento('val')],
+    ['registrarPagamentoCom', 'val', () => d().registrarPagamentoCom('val', 'Dinheiro')],
+    ['estenderValidade', 'raf', () => d().estenderValidade('raf')],
+    ['criarPacote', 'bea', () => d().criarPacote('bea')],
+    ['renovarPacote', 'mar', () => d().renovarPacote('mar')],
+    ['criarPacoteCom', 'bea', () => d().criarPacoteCom('bea', PACOTE)],
+    ['enviarProposta', 'mar', () => d().enviarProposta('mar', JANELA, [])],
+    ['responderProposta aceita', 'raf', () => d().responderProposta('raf', 'aceita')],
+    ['responderProposta recusada', 'raf', () => d().responderProposta('raf', 'recusada')],
+  ];
+
+  it.each(MOVIMENTOS)('%s', (_nome, id, executar) => {
+    const antes = d().alunoPor(id) as unknown as Record<string, unknown>;
+    executar();
+    const depois = d().alunoPor(id) as unknown as Record<string, unknown>;
+
+    const chaves = new Set([...Object.keys(antes), ...Object.keys(depois)]);
+    const mudaram = [...chaves].filter(
+      (k) => JSON.stringify(antes[k] ?? null) !== JSON.stringify(depois[k] ?? null),
+    );
+    // A proposta mora noutra tabela, e a RPC cuida dela à parte.
+    const gravaveis: string[] = [...CAMPOS_DO_MOVIMENTO, 'proposta'];
+    expect(mudaram.filter((k) => !gravaveis.includes(k))).toEqual([]);
   });
 });
