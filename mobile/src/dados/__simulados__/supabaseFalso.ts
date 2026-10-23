@@ -1,9 +1,10 @@
 /**
  * Um Supabase de mentira, em memória, para os testes da Parte 4.
  *
- * Responde ao pedaço do supabase-js que o app usa — `auth.getSession` e
+ * Responde ao pedaço do supabase-js que o app usa — `auth.getSession`,
  * `from(tabela)` com `select`, `insert`, `update`, `delete`, `eq`, `in`,
- * `order`, `range` e `single` — sobre tabelas que o teste preenche. Tem a forma
+ * `order`, `range` e `single`, e `rpc('aplicar_movimento')` com a mesma
+ * semântica da 0005 — sobre tabelas que o teste preenche. Tem a forma
  * da resposta de verdade (`{ data, error }`, sem lançar) e guarda cada consulta,
  * para o teste conferir tabela, filtro e valores.
  *
@@ -11,9 +12,11 @@
  * app não importa nada daqui, então o Metro não o leva para o bundle.
  *
  * O que ele não faz: RLS, tipos de coluna e os padrões do banco, fora o
- * professor e o `criado_em` de quem é inserido. Isso quem prova
+ * professor, o `criado_em` e a `versao` de quem é inserido. Isso quem prova
  * é o pgTAP (`supabase/tests/database/`) e a ponta a ponta contra o banco local.
  */
+
+import { COLUNAS_DO_MOVIMENTO } from '../conversor';
 
 type Linha = Record<string, unknown>;
 type Erro = { message: string; code?: string };
@@ -21,7 +24,7 @@ export type RespostaFalsa = { data: unknown; error: Erro | null };
 
 export interface Consulta {
   tabela: string;
-  operacao: 'select' | 'insert' | 'update' | 'delete';
+  operacao: 'select' | 'insert' | 'update' | 'delete' | 'rpc';
   valores?: unknown;
   filtros: { coluna: string; valor: unknown; em?: boolean }[];
   ordem: { coluna: string; crescente: boolean }[];
@@ -72,12 +75,13 @@ export function criarSupabaseFalso(opcoes: OpcoesDoFalso = {}) {
     const tabela = (tabelas[consulta.tabela] ??= []);
     switch (consulta.operacao) {
       case 'insert': {
-        // Os dois padrões que o app conta com o banco para pôr: o professor é
-        // `auth.uid()`, e `criado_em` é `now()`.
+        // Os padrões que o app conta com o banco para pôr: o professor é
+        // `auth.uid()`, `criado_em` é `now()`, e o aluno nasce na versão 0.
         const novas = ([] as Linha[])
           .concat(consulta.valores as Linha | Linha[])
           .map((l) => ({
             ...(consulta.tabela === 'professores' ? {} : { professor_id: estado.usuario }),
+            ...(consulta.tabela === 'alunos' ? { versao: 0 } : {}),
             criado_em: new Date().toISOString(),
             ...l,
           }));
@@ -104,6 +108,87 @@ export function criarSupabaseFalso(opcoes: OpcoesDoFalso = {}) {
         return { data: { ...linhas[0] }, error: null };
       }
     }
+  }
+
+  /**
+   * A `aplicar_movimento` da 0005, em memória: confere a versão, grava só as
+   * colunas do movimento, insere o lançamento e fecha ou abre a proposta. A
+   * falha no meio desfaz tudo, como a transação do Postgres.
+   */
+  function aplicarMovimento(args: Record<string, unknown>): RespostaFalsa {
+    const p = args.p_aluno as Linha;
+    const alunos = (tabelas.alunos ??= []);
+    const linha = alunos.find(
+      (a) => a.id === p.id && a.versao === args.p_versao && a.professor_id === estado.usuario,
+    );
+    if (!linha) return { data: null, error: { message: 'conflito_de_versao', code: 'P0001' } };
+
+    const antes = JSON.parse(JSON.stringify({ alunos, lancamentos: tabelas.lancamentos ?? [] }));
+    for (const coluna of COLUNAS_DO_MOVIMENTO) linha[coluna] = p[coluna] ?? null;
+    linha.versao = (linha.versao as number) + 1;
+
+    const lancamento = args.p_lancamento as Linha | undefined;
+    if (lancamento) {
+      if ((lancamento.saldo_depois as number) < 0) {
+        tabelas.alunos = antes.alunos;
+        tabelas.lancamentos = antes.lancamentos;
+        return { data: null, error: { message: 'violates check constraint', code: '23514' } };
+      }
+      (tabelas.lancamentos ??= []).push({
+        ...lancamento,
+        id: `rpc-${consultas.length}`,
+        aluno_id: p.id,
+        professor_id: linha.professor_id,
+        criado_em: new Date().toISOString(),
+      });
+    }
+
+    const proposta = args.p_proposta as Linha | undefined;
+    if (proposta) {
+      const propostas = (tabelas.propostas ??= []);
+      for (const aberta of propostas.filter((x) => x.aluno_id === p.id && x.status === 'enviada')) {
+        aberta.status = proposta.status === 'enviada' ? 'recusada' : proposta.status;
+        aberta.respondida_em = new Date().toISOString();
+      }
+      if (proposta.status === 'enviada') {
+        propostas.push({
+          id: `prop-rpc-${consultas.length}`,
+          aluno_id: p.id,
+          professor_id: linha.professor_id,
+          janela: proposta.janela,
+          alternativas: proposta.alternativas ?? [],
+          status: 'enviada',
+          enviada_em: proposta.enviada_em,
+          respondida_em: null,
+        });
+      }
+    }
+    return { data: linha.versao, error: null };
+  }
+
+  function rpc(nome: string, args: Record<string, unknown>) {
+    const consulta: Consulta = {
+      tabela: nome,
+      operacao: 'rpc',
+      valores: args,
+      filtros: [],
+      ordem: [],
+      unica: false,
+    };
+    return {
+      then: (ok: (r: RespostaFalsa) => unknown, falha?: (e: unknown) => unknown) =>
+        Promise.resolve()
+          .then(() => {
+            consultas.push(consulta);
+            const erro = opcoes.falhar?.(consulta) ?? null;
+            if (erro) return { data: null, error: erro };
+            if (nome !== 'aplicar_movimento') {
+              return { data: null, error: { message: `função ${nome} não existe` } };
+            }
+            return aplicarMovimento(args);
+          })
+          .then(ok, falha),
+    };
   }
 
   function construtor(tabela: string) {
@@ -135,12 +220,18 @@ export function criarSupabaseFalso(opcoes: OpcoesDoFalso = {}) {
       }),
     },
     from: (tabela: string) => construtor(tabela),
+    rpc,
   };
 
   return {
     cliente,
     consultas,
     tabelas,
+    /** O outro aparelho: grava no aluno por fora, e a versão anda. */
+    gravarPorFora: (alunoId: string, valores: Linha) => {
+      const linha = (tabelas.alunos ?? []).find((a) => a.id === alunoId);
+      if (linha) Object.assign(linha, valores, { versao: (linha.versao as number) + 1 });
+    },
     /** troca quem está logado, ou desloga com `null` */
     logar: (usuario: string | null) => {
       estado.usuario = usuario;

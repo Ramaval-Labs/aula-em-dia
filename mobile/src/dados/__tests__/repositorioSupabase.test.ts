@@ -1,11 +1,12 @@
 /**
  * Repositório do Supabase (SCRUM-20), contra o Supabase simulado em memória.
  *
- * Cobra o contrato da Parte 4: as seis leituras com cache, a gravação de cada
- * ação direta na tabela e nas colunas certas, a recusa das ações que mexem em
- * saldo (Parte 5) e a falha que não pode sumir — sem rede, ou um `update`
- * que a RLS deixou sem linha. O SQL de verdade é provado pelo pgTAP e pela
- * ponta a ponta contra o banco local (docs/backend/PLANO-BACKEND.md, Parte 4).
+ * Cobra o contrato das Partes 4 e 5: as seis leituras com cache, a gravação de
+ * cada ação direta na tabela e nas colunas certas, as que mexem em saldo pela
+ * RPC com a trava de versão, e a falha que não pode sumir — sem rede, um
+ * `update` que a RLS deixou sem linha, ou outro aparelho que gravou antes. O
+ * SQL de verdade é provado pelo pgTAP e pela ponta a ponta contra o banco
+ * local (docs/backend/PLANO-BACKEND.md, Partes 4 e 5).
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,7 +17,8 @@ import { criarSupabaseFalso, SEM_REDE, type Consulta, type SupabaseFalso } from 
 import { tabelasDoPersistido } from '../__simulados__/linhas';
 import type { Mudanca, Persistido } from '../repositorio';
 import {
-  AindaNaoGravaNoBanco,
+  ConflitoDeVersao,
+  ehConflitoDeVersao,
   ErroDoBanco,
   marcarOnboardingConcluido,
   onboardingConcluido,
@@ -56,6 +58,8 @@ const filtro = (c: Consulta, coluna: string) => c.filtros.find((f) => f.coluna =
 beforeEach(async () => {
   jest.clearAllMocks();
   await AsyncStorage.clear();
+  // Esquece as versões que o teste anterior leu.
+  await repo.apagar();
 });
 
 describe('carregar — seis leituras em paralelo e o cache', () => {
@@ -77,10 +81,14 @@ describe('carregar — seis leituras em paralelo e o cache', () => {
     }
   });
 
-  it('o que veio do banco vai para o cache, com o id do professor', async () => {
+  it('o que veio do banco vai para o cache, com o id do professor e as versões', async () => {
     comSemente();
     const gravado = await repo.carregar();
-    expect(await emCache()).toEqual({ professorId: 'prof-a', gravado });
+    expect(await emCache()).toEqual({
+      professorId: 'prof-a',
+      gravado,
+      versoes: { val: 0, raf: 0, mar: 0, bea: 0 },
+    });
   });
 
   it('sem sessão não há o que carregar, e nada vai à rede', async () => {
@@ -295,32 +303,6 @@ describe('registrar — o que não mexe em saldo vai para o banco', () => {
 describe('registrar — o que não pode passar em silêncio', () => {
   const e = semente();
   const val = e.alunos.find((a) => a.id === 'val')!;
-  const lancamento = e.extratos.val[0];
-
-  it.each<Mudanca>([
-    { tipo: 'registrarAula', aluno: val, lancamento, desfecho: 'realizada' },
-    { tipo: 'marcarReposicao', aluno: val, lancamento },
-    { tipo: 'receberPagamento', aluno: val, lancamento },
-    { tipo: 'registrarPagamentoCom', aluno: val, lancamento },
-    { tipo: 'estenderValidade', aluno: val, lancamento },
-    { tipo: 'criarPacote', aluno: val, lancamento },
-    { tipo: 'renovarPacote', aluno: val, lancamento },
-    { tipo: 'criarPacoteCom', aluno: val, lancamento },
-    { tipo: 'enviarProposta', aluno: val, lancamento },
-    { tipo: 'responderProposta', aluno: val, lancamento: null, status: 'recusada' },
-  ])('$tipo mexe em saldo: rejeita até a Parte 5, sem gravar nada', async (mudanca) => {
-    comSemente();
-    await expect(repo.registrar(mudanca, e)).rejects.toBeInstanceOf(AindaNaoGravaNoBanco);
-    expect(falso.gravacoes()).toEqual([]);
-  });
-
-  it('atualizarAluno que mexe no saldo também é da Parte 5', async () => {
-    comSemente();
-    await expect(
-      repo.registrar({ tipo: 'atualizarAluno', aluno: { ...val, usadas: 0 }, campos: ['usadas'] }, e),
-    ).rejects.toBeInstanceOf(AindaNaoGravaNoBanco);
-    expect(falso.gravacoes()).toEqual([]);
-  });
 
   it('um update que não alcança linha nenhuma (a RLS, ou um id que não existe) rejeita', async () => {
     comSemente();
@@ -391,5 +373,206 @@ describe('onboarding concluído (0004)', () => {
     comOnboarding(false);
     await marcarOnboardingConcluido();
     expect(falso.tabelas.professores[0].onboarding_concluido).toBe(true);
+  });
+});
+
+describe('registrar — o que mexe em saldo vai pela RPC (Parte 5)', () => {
+  const e = semente();
+  const val = e.alunos.find((a) => a.id === 'val')!;
+  const raf = e.alunos.find((a) => a.id === 'raf')!;
+  const lancamento = e.extratos.val[0];
+
+  /** Lê o banco primeiro: é o que enche o mapa de versões. */
+  const carregado = async (extra: Parameters<typeof criarSupabaseFalso>[0] = {}) => {
+    comSemente(extra);
+    await repo.carregar();
+    falso.consultas.length = 0;
+  };
+  const chamadas = () => falso.consultas.filter((c) => c.operacao === 'rpc');
+  const args = (i = 0) => chamadas()[i].valores as Record<string, any>;
+
+  it.each<[Mudanca, string | null, Record<string, unknown> | null]>([
+    [{ tipo: 'registrarAula', aluno: val, lancamento, desfecho: 'realizada' }, 'aula', null],
+    [{ tipo: 'registrarAula', aluno: val, lancamento, desfecho: 'avisada' }, 'falta_avisada', null],
+    [{ tipo: 'registrarAula', aluno: val, lancamento, desfecho: 'sem_aviso' }, 'falta_sem_aviso', null],
+    [
+      { tipo: 'registrarAula', aluno: val, lancamento, desfecho: 'cancelada_professor' },
+      'cancelada_professor',
+      null,
+    ],
+    [{ tipo: 'marcarReposicao', aluno: val, lancamento }, 'reposicao', { status: 'recusada' }],
+    [{ tipo: 'receberPagamento', aluno: val, lancamento }, 'pagamento', null],
+    [{ tipo: 'registrarPagamentoCom', aluno: val, lancamento }, 'pagamento', null],
+    [{ tipo: 'estenderValidade', aluno: val, lancamento }, 'validade', null],
+    [{ tipo: 'criarPacote', aluno: val, lancamento }, 'pacote', null],
+    [{ tipo: 'renovarPacote', aluno: val, lancamento }, 'pacote', null],
+    [{ tipo: 'criarPacoteCom', aluno: val, lancamento }, 'pacote', null],
+    [
+      { tipo: 'responderProposta', aluno: val, lancamento, status: 'aceita' },
+      'reposicao',
+      { status: 'aceita' },
+    ],
+    [
+      { tipo: 'responderProposta', aluno: val, lancamento: null, status: 'recusada' },
+      null,
+      { status: 'recusada' },
+    ],
+  ])('%#: $tipo vai numa chamada só, com o tipo do lançamento e a proposta', async (mudanca, tipo, proposta) => {
+    await carregado();
+    await repo.registrar(mudanca, e);
+
+    expect(falso.gravacoes()).toHaveLength(1);
+    const a = args();
+    expect(chamadas()[0].tabela).toBe('aplicar_movimento');
+    expect(a.p_versao).toBe(0);
+    expect(a.p_aluno).toMatchObject({ id: 'val', usadas: val.usadas });
+    expect(a.p_lancamento?.tipo ?? null).toBe(tipo);
+    expect(a.p_proposta ?? null).toEqual(proposta);
+  });
+
+  it('enviarProposta leva a proposta nova, e a aberta de antes fecha', async () => {
+    await carregado();
+    const nova = {
+      janela: { dia: 'Sexta, 30/10', hora: '17h' },
+      enviadaEm: e.extratos.raf[0].d,
+      status: 'enviada' as const,
+      alternativas: [],
+    };
+    await repo.registrar(
+      { tipo: 'enviarProposta', aluno: { ...raf, proposta: nova }, lancamento: e.extratos.raf[0] },
+      e,
+    );
+
+    expect(args().p_proposta).toMatchObject({ status: 'enviada', janela: nova.janela });
+    const abertas = falso.tabelas.propostas.filter((p) => p.status === 'enviada');
+    expect(abertas.map((p) => (p.janela as { dia: string }).dia)).toEqual(['Sexta, 30/10']);
+  });
+
+  it('o lançamento vai com o professor e o aluno da linha, e o tipo da ação', async () => {
+    await carregado();
+    const antes = falso.tabelas.lancamentos.length;
+    await repo.registrar({ tipo: 'registrarAula', aluno: { ...val, usadas: 3 }, lancamento, desfecho: 'realizada' }, e);
+
+    expect(falso.tabelas.lancamentos).toHaveLength(antes + 1);
+    expect(falso.tabelas.lancamentos.at(-1)).toMatchObject({
+      aluno_id: 'val',
+      professor_id: 'prof-a',
+      tipo: 'aula',
+      titulo: lancamento.t,
+    });
+    expect(falso.tabelas.alunos.find((a) => a.id === 'val')).toMatchObject({ usadas: 3, versao: 1 });
+  });
+
+  it('a versão que a RPC devolve é a da próxima chamada', async () => {
+    await carregado();
+    await repo.registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e);
+    await repo.registrar({ tipo: 'estenderValidade', aluno: val, lancamento }, e);
+
+    expect([args(0).p_versao, args(1).p_versao]).toEqual([0, 1]);
+  });
+
+  it('duas seguidas do mesmo aluno saem uma depois da outra, sem conflito consigo mesmas', async () => {
+    await carregado();
+    await Promise.all([
+      repo.registrar({ tipo: 'registrarAula', aluno: val, lancamento, desfecho: 'realizada' }, e),
+      repo.registrar({ tipo: 'marcarReposicao', aluno: val, lancamento }, e),
+    ]);
+
+    expect([args(0).p_versao, args(1).p_versao]).toEqual([0, 1]);
+  });
+
+  it('outro aparelho gravou antes: ConflitoDeVersao, e nada muda', async () => {
+    await carregado();
+    falso.gravarPorFora('val', { usadas: 5 });
+    const antes = falso.tabelas.lancamentos.length;
+
+    const erro = await repo
+      .registrar({ tipo: 'registrarAula', aluno: val, lancamento, desfecho: 'realizada' }, e)
+      .catch((x: unknown) => x);
+
+    expect(erro).toBeInstanceOf(ConflitoDeVersao);
+    expect(ehConflitoDeVersao(erro)).toBe(true);
+    expect(falso.tabelas.alunos.find((a) => a.id === 'val')?.usadas).toBe(5);
+    expect(falso.tabelas.lancamentos).toHaveLength(antes);
+  });
+
+  it('depois do conflito, a recarga traz a versão nova e a gravação passa', async () => {
+    await carregado();
+    falso.gravarPorFora('val', { usadas: 5 });
+    await expect(repo.registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e)).rejects.toThrow();
+
+    await repo.carregar();
+    await expect(repo.registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e)).resolves.toBeUndefined();
+  });
+
+  it('aluno sem versão conhecida é conflito, sem ir ao banco: só a recarga prova o que se leu', async () => {
+    comSemente();
+    const erro = await repo
+      .registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e)
+      .catch((x: unknown) => x);
+
+    expect(erro).toBeInstanceOf(ConflitoDeVersao);
+    expect(chamadas()).toEqual([]);
+  });
+
+  it('o aluno criado neste aparelho já tem versão: o primeiro movimento passa', async () => {
+    comSemente();
+    const novo = { ...val, id: repo.novoIdDeAluno(), name: 'Ana' };
+    await repo.registrar({ tipo: 'criarAluno', aluno: novo }, e);
+    await repo.registrar({ tipo: 'criarPacote', aluno: { ...novo, total: 8 }, lancamento }, e);
+
+    expect(args().p_versao).toBe(0);
+  });
+
+  it('rede caída na RPC é falha comum, não conflito', async () => {
+    await carregado({ falhar: (c) => (c.operacao === 'rpc' ? SEM_REDE : null) });
+    const erro = await repo
+      .registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e)
+      .catch((x: unknown) => x);
+
+    expect(erro).toBeInstanceOf(ErroDoBanco);
+    expect(ehConflitoDeVersao(erro)).toBe(false);
+  });
+
+  it('o lançamento recusado pelo banco desfaz o aluno (o rollback da transação)', async () => {
+    await carregado();
+    await expect(
+      repo.registrar(
+        {
+          tipo: 'registrarAula',
+          aluno: { ...val, usadas: 9 },
+          lancamento: { ...lancamento, saldo: -1 },
+          desfecho: 'realizada',
+        },
+        e,
+      ),
+    ).rejects.toThrow('check');
+    expect(falso.tabelas.alunos.find((a) => a.id === 'val')).toMatchObject({ usadas: val.usadas, versao: 0 });
+  });
+
+  it('atualizarAluno com saldo vai pela RPC, e o resto do patch direto', async () => {
+    await carregado();
+    await repo.registrar(
+      { tipo: 'atualizarAluno', aluno: { ...val, usadas: 0, name: 'Val K.' }, campos: ['usadas', 'name'] },
+      e,
+    );
+
+    expect(falso.gravacoes().map((c) => c.operacao)).toEqual(['rpc', 'update']);
+    expect(falso.gravacoes()[1].valores).toEqual({ nome: 'Val K.' });
+    expect(falso.tabelas.alunos.find((a) => a.id === 'val')).toMatchObject({ usadas: 0, nome: 'Val K.' });
+  });
+
+  it('as versões vão no cache: aberto sem rede, o app ainda sabe o que leu', async () => {
+    await carregado();
+    await repo.registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e);
+    expect((await emCache()).versoes.val).toBe(1);
+  });
+
+  it('apagar esquece as versões junto com o cache', async () => {
+    await carregado();
+    await repo.apagar();
+    await expect(repo.registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e)).rejects.toBeInstanceOf(
+      ConflitoDeVersao,
+    );
   });
 });
