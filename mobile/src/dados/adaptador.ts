@@ -10,9 +10,27 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CHAVE_ESTADO } from './armazenamento';
-import type { Gravado, Repositorio } from './repositorio';
+import type { Gravado, Persistido, Repositorio } from './repositorio';
+
+/**
+ * Só os campos persistidos, um a um, porque `estado` chega como a store
+ * inteira. O cache do modo supabase guarda a mesma forma.
+ */
+export function soPersistido(estado: Persistido): Persistido {
+  return {
+    alunos: estado.alunos,
+    extratos: estado.extratos,
+    politicas: estado.politicas,
+    perfil: estado.perfil,
+    disponibilidade: estado.disponibilidade,
+    pacotePadrao: estado.pacotePadrao,
+    preferenciasDeAviso: estado.preferenciasDeAviso,
+  };
+}
 
 export const repositorioLocal: Repositorio = {
+  remoto: false,
+
   async carregar() {
     const bruto = await AsyncStorage.getItem(CHAVE_ESTADO);
     if (!bruto) return null;
@@ -22,22 +40,17 @@ export const repositorioLocal: Repositorio = {
     return null;
   },
 
-  // O local não olha a mudança: grava tudo, como sempre fez. Os campos são
-  // escolhidos um a um porque `estado` chega como a store inteira.
+  // O local não olha a mudança: grava tudo, como sempre fez.
   async registrar(_mudanca, estado) {
-    const bruto = JSON.stringify({
-      alunos: estado.alunos,
-      extratos: estado.extratos,
-      politicas: estado.politicas,
-      perfil: estado.perfil,
-      disponibilidade: estado.disponibilidade,
-      pacotePadrao: estado.pacotePadrao,
-      preferenciasDeAviso: estado.preferenciasDeAviso,
-    });
-    await AsyncStorage.setItem(CHAVE_ESTADO, bruto);
+    await AsyncStorage.setItem(CHAVE_ESTADO, JSON.stringify(soPersistido(estado)));
   },
 
   async apagar() {
     await AsyncStorage.removeItem(CHAVE_ESTADO);
+  },
+
+  // O mesmo formato de sempre: quem já tem alunos `al…` no aparelho segue igual.
+  novoIdDeAluno() {
+    return `al${Date.now().toString(36)}`;
   },
 };
