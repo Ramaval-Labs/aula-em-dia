@@ -14,7 +14,9 @@
  *   `CHAVE_SESSAO`, para não pedir login toda vez;
  * - **supabase**: entrar, criar conta e sair são de verdade, pelo Supabase
  *   Auth. Quem lembra do login é a sessão do supabase-js, e `CHAVE_SESSAO`
- *   não é usada.
+ *   não é usada. Quem lembra do onboarding é o banco
+ *   (`professores.onboarding_concluido`, Parte 4): quem fechou o app no meio
+ *   dele volta para o passo 1, e não para dentro do app.
  *
  * Nos dois, nenhuma senha é guardada. As fases não mudam:
  * `carregando → entrada → onboarding → app`.
@@ -24,8 +26,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { CHAVE_SESSAO } from '../dados/armazenamento';
+import { marcarOnboardingConcluido, onboardingConcluido } from '../dados/repositorioSupabase';
 import { clienteSupabase, usaSupabase } from '../dados/supabase';
 import { ERRO, validarAcesso } from '../dominio/validacao';
+import { useDados } from './dados';
 
 /** Em qual das três máquinas o app está. */
 export type Fase = 'carregando' | 'entrada' | 'onboarding' | 'app';
@@ -103,6 +107,15 @@ function avisarEmDesenvolvimento(onde: string, erro: unknown) {
   if (__DEV__) console.warn(`[sessao] ${onde} falhou no modo supabase.`, erro);
 }
 
+/**
+ * Com sessão no modo supabase: para o app, ou de volta ao onboarding se ele
+ * não terminou. Sem rede não dá para saber, e aí vale o app, que abre pelo
+ * cache: quem já usava não fica preso fora dele.
+ */
+async function faseDoLogado(): Promise<Extract<Fase, 'app' | 'onboarding'>> {
+  return (await onboardingConcluido()) === false ? 'onboarding' : 'app';
+}
+
 function gravar(p: Persistido) {
   AsyncStorage.setItem(CHAVE_SESSAO, JSON.stringify(p)).catch(() => {
     // Sessão é conveniência: falhar aqui não pode derrubar a tela.
@@ -121,7 +134,12 @@ export const useSessao = create<Sessao>((set, get) => ({
       try {
         const { data, error } = await clienteSupabase().auth.getSession();
         if (!error && data.session) {
-          set({ fase: 'app', email: data.session.user.email ?? null });
+          const email = data.session.user.email ?? null;
+          if ((await faseDoLogado()) === 'onboarding') {
+            set({ fase: 'onboarding', passo: 1, email, contaNova: true });
+            return;
+          }
+          set({ fase: 'app', email });
           return;
         }
       } catch (erro) {
@@ -166,7 +184,13 @@ export const useSessao = create<Sessao>((set, get) => ({
         password: senha as string,
       });
       if (error) return fraseDoErroDeAcesso(error);
-      set({ fase: 'app', email: data.user?.email ?? email, contaNova: false });
+      const doLogin = data.user?.email ?? email;
+      // Conta criada noutro aparelho, e o onboarding parou no meio: termina aqui.
+      if ((await faseDoLogado()) === 'onboarding') {
+        set({ fase: 'onboarding', passo: 1, email: doLogin, contaNova: true });
+        return null;
+      }
+      set({ fase: 'app', email: doLogin, contaNova: false });
       return null;
     } catch (erro) {
       avisarEmDesenvolvimento('Entrar', erro);
@@ -234,8 +258,15 @@ export const useSessao = create<Sessao>((set, get) => ({
   concluirOnboarding() {
     const email = get().email;
     set({ fase: 'app' });
-    // No modo supabase quem lembra do login é o supabase-js.
-    if (!usaSupabase()) gravar({ fase: 'app', email });
+    if (!usaSupabase()) {
+      gravar({ fase: 'app', email });
+      return;
+    }
+    // No modo supabase quem lembra do login é o supabase-js, e do onboarding,
+    // o banco. Se a marca não for gravada, o pior caso é refazer os passos.
+    marcarOnboardingConcluido().catch((erro) =>
+      avisarEmDesenvolvimento('Concluir o onboarding', erro),
+    );
   },
 
   async sair() {
@@ -245,6 +276,8 @@ export const useSessao = create<Sessao>((set, get) => ({
       AsyncStorage.removeItem(CHAVE_SESSAO).catch(() => {});
       return;
     }
+    // Os alunos são da conta: quem entrar depois neste aparelho não os vê.
+    useDados.getState().esquecer();
     try {
       // Sem rede o servidor não fica sabendo, mas o supabase-js apaga a sessão
       // do aparelho mesmo assim: reabrir o app não volta logado.

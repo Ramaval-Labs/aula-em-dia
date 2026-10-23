@@ -12,17 +12,27 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CHAVE_SESSAO } from '../../dados/armazenamento';
+import { marcarOnboardingConcluido, onboardingConcluido } from '../../dados/repositorioSupabase';
 import { clienteSupabase, usaSupabase } from '../../dados/supabase';
 import { ERRO } from '../../dominio/validacao';
+import { useDados } from '../dados';
 import { fraseDoErroDeAcesso, loginReal, useSessao } from '../sessao';
 
 jest.mock('../../dados/supabase', () => ({
   usaSupabase: jest.fn(() => false),
   clienteSupabase: jest.fn(),
 }));
+// A marca de onboarding mora no banco (0004); a suíte do repositório cobra a
+// leitura e a gravação. Aqui só importa o que a sessão faz com a resposta.
+jest.mock('../../dados/repositorioSupabase', () => ({
+  onboardingConcluido: jest.fn(),
+  marcarOnboardingConcluido: jest.fn(),
+}));
 
 const modoSupabase = usaSupabase as jest.MockedFunction<typeof usaSupabase>;
 const cliente = clienteSupabase as jest.MockedFunction<typeof clienteSupabase>;
+const concluido = onboardingConcluido as jest.MockedFunction<typeof onboardingConcluido>;
+const marcar = marcarOnboardingConcluido as jest.MockedFunction<typeof marcarOnboardingConcluido>;
 
 const EMAIL = 'professor@exemplo.test';
 const SENHA = 'aulaemdia-local';
@@ -58,6 +68,8 @@ const assentar = () => new Promise<void>((pronto) => setImmediate(pronto));
 beforeEach(async () => {
   jest.clearAllMocks();
   modoSupabase.mockReturnValue(false);
+  concluido.mockResolvedValue(true);
+  marcar.mockResolvedValue();
   await AsyncStorage.clear();
   useSessao.setState({
     fase: 'entrada',
@@ -107,6 +119,15 @@ describe('modo local, como sempre foi', () => {
     await s().carregar();
 
     expect(s()).toMatchObject({ fase: 'entrada', tela: 'boasVindas' });
+  });
+
+  it('no modo local, o onboarding não vai ao banco', async () => {
+    useSessao.setState({ fase: 'onboarding', passo: 4, email: EMAIL });
+    s().concluirOnboarding();
+    await s().sair();
+
+    expect(marcar).not.toHaveBeenCalled();
+    expect(concluido).not.toHaveBeenCalled();
   });
 
   it('concluir o onboarding grava a fase', async () => {
@@ -280,6 +301,68 @@ describe('modo supabase', () => {
 
     expect(s().fase).toBe('app');
     expect(await gravado()).toBeNull();
+  });
+
+  it('quem parou no meio do onboarding volta para o passo 1, e não para o app', async () => {
+    simularCliente().getSession.mockResolvedValue({ data: { session: sessaoDe() }, error: null });
+    concluido.mockResolvedValue(false);
+
+    await s().carregar();
+
+    expect(s()).toMatchObject({ fase: 'onboarding', passo: 1, email: EMAIL, contaNova: true });
+  });
+
+  it('entrar com o onboarding pela metade (conta criada noutro aparelho) também volta a ele', async () => {
+    simularCliente().signInWithPassword.mockResolvedValue({
+      data: { user: usuario(), session: sessaoDe() },
+      error: null,
+    });
+    concluido.mockResolvedValue(false);
+
+    await expect(s().entrar(EMAIL, SENHA)).resolves.toBeNull();
+    expect(s()).toMatchObject({ fase: 'onboarding', passo: 1, contaNova: true });
+  });
+
+  it('sem rede para saber do onboarding, vale o app, que abre pelo cache', async () => {
+    simularCliente().getSession.mockResolvedValue({ data: { session: sessaoDe() }, error: null });
+    concluido.mockResolvedValue(null);
+
+    await s().carregar();
+
+    expect(s().fase).toBe('app');
+  });
+
+  it('concluir o onboarding grava a marca no banco', async () => {
+    useSessao.setState({ fase: 'onboarding', passo: 4, email: EMAIL });
+
+    s().concluirOnboarding();
+
+    expect(s().fase).toBe('app');
+    expect(marcar).toHaveBeenCalledTimes(1);
+  });
+
+  it('a marca que não grava não segura ninguém fora do app', async () => {
+    const aviso = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    marcar.mockRejectedValue(new Error('sem rede'));
+    useSessao.setState({ fase: 'onboarding', passo: 4, email: EMAIL });
+
+    s().concluirOnboarding();
+    await assentar();
+
+    expect(s().fase).toBe('app');
+    expect(aviso).toHaveBeenCalledTimes(1);
+    aviso.mockRestore();
+  });
+
+  it('sair esquece os alunos da conta: quem entrar depois não os vê', async () => {
+    simularCliente();
+    const esquecer = jest.spyOn(useDados.getState(), 'esquecer');
+    useSessao.setState({ fase: 'app', email: EMAIL });
+
+    await s().sair();
+
+    expect(esquecer).toHaveBeenCalledTimes(1);
+    esquecer.mockRestore();
   });
 
   it('variável faltando: a falha genérica, e o motivo no console', async () => {
