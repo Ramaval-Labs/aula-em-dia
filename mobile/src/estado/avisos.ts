@@ -59,4 +59,9 @@ export const avisos = {
   // Gravar no banco falhou (Parte 4). A store recarrega do banco logo depois,
   // então o aviso pede outra tentativa em vez de dizer o que se perdeu.
   falhaAoSalvar: 'Não deu para salvar. Confira a conexão e tente de novo.',
+  // A pergunta de importar (Parte 4). Se falhar, nada fica pela metade no
+  // banco, então tentar de novo é seguro e o aviso pode pedir isso.
+  importacaoFeita: (n: number) =>
+    `${plural(n, 'aluno levado', 'alunos levados')} para a conta.`,
+  importacaoFalhou: 'Não deu para levar os alunos. Confira a conexão e tente de novo.',
 };

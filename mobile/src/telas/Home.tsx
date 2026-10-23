@@ -12,9 +12,14 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CartaoVidro, EstadoVazio } from '../componentes/Blocos';
+import { BlocoStatus, CartaoVidro, EstadoVazio } from '../componentes/Blocos';
 import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
-import { BotaoPrimario, BotaoSecundario, Segmentado } from '../componentes/Controles';
+import {
+  BotaoPrimario,
+  BotaoSecundario,
+  BotaoTexto,
+  Segmentado,
+} from '../componentes/Controles';
 import { LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { dataPorExtenso } from '../dominio/datas';
 import { plural, unidade } from '../dominio/formato';
@@ -26,6 +31,7 @@ import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
 import { faixaDaLinha, linhaDeHorario } from './comum/aluno';
+import { usePerguntaDeImportar } from './comum/perguntaDeImportar';
 
 const FILTROS: { valor: Filtro; rotulo: Filtro }[] = [
   { valor: 'Urgência', rotulo: 'Urgência' },
@@ -38,6 +44,7 @@ export function Home() {
   const alunos = useDados((s) => s.alunos);
   const { filtro, definirFiltro, ir } = useNavegacao();
   const reiniciarRascunho = useFormularios((s) => s.substituir);
+  const importar = usePerguntaDeImportar();
 
   const ativos = useMemo(() => alunos.filter((a) => !a.arquivado), [alunos]);
   const lista = useMemo(() => ordenar(ativos, filtro), [ativos, filtro]);
@@ -98,6 +105,30 @@ export function Home() {
           </View>
         }
       />
+
+      {/* Só no primeiro login de um aparelho que já tinha alunos (Parte 4).
+          A ação do bloco é inline, não primária: o primário segue sendo
+          "Registrar aula". */}
+      {importar.aberta ? (
+        <View style={estilos.importar}>
+          <BlocoStatus
+            titulo="Levar seus alunos para a conta?"
+            texto="Vão os alunos que você cadastrou neste aparelho, com o extrato de cada um. Nada é apagado do aparelho."
+            acao={{
+              rotulo: importar.levando ? 'Levando…' : 'Levar alunos',
+              aoTocar: () => void importar.levar(),
+              variante: 'tint',
+            }}
+            vivo
+          />
+          <BotaoTexto
+            rotulo="Agora não"
+            rotuloAcessivel="Agora não, continuar sem levar os alunos"
+            aoTocar={importar.agoraNao}
+            desabilitado={importar.levando}
+          />
+        </View>
+      ) : null}
 
       <Segmentado
         opcoes={FILTROS}
@@ -164,6 +195,7 @@ export function Home() {
 
 const estilos = StyleSheet.create({
   contagem: { alignItems: 'flex-end', paddingBottom: 4 },
+  importar: { marginTop: 18, gap: 2 },
   filtros: { marginTop: 18 },
   lista: { marginTop: 16 },
   acoes: { gap: 10 },
