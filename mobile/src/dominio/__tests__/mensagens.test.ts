@@ -10,9 +10,10 @@
  * não têm tabela em `spec/casos-de-teste.md` nem texto no handoff; aqui elas
  * ficam travadas como estão no ar.
  *
- * Os `it.failing` são defeitos encontrados escrevendo a suíte. O módulo não foi
- * tocado: cada um diz o que deveria sair e passa a falhar no dia em que for
- * corrigido, que é o aviso para tirar o `.failing`.
+ * Os defeitos que a suíte achou foram deixados como `it.failing` e corrigidos
+ * no SCRUM-64: a máscara com DDI e a cobrança de quem ainda não venceu ou não
+ * tem data. Um defeito novo entra do mesmo jeito, como `it.failing`, até ser
+ * corrigido.
  */
 
 import {
@@ -225,7 +226,7 @@ describe('mensagemDeCobranca(aluno, tom, chavePix)', () => {
         'Olá, Valentin. Espero que esteja bem.',
         '',
         'Consta em aberto o valor de R$ 480,00, referente ao pacote de 6 aulas, ' +
-          'com vencimento em 16/08.',
+          'vencido em 16/08.',
         '',
         'Minha chave Pix é caio@exemplo.test.',
         '',
@@ -299,20 +300,32 @@ describe('mensagemDeCobranca(aluno, tom, chavePix)', () => {
     );
   });
 
-  // Defeito latente: nos tons cordial e direto o texto diz "que venceu em",
-  // mesmo quando a data ainda não chegou. Hoje a tela só abre o lembrete para
-  // quem está em atraso, então não aparece; a função aceita qualquer aluno.
-  it.failing('pagamento a vencer não é cobrado como vencido', () => {
+  // Frases aprovadas pelo PO em 23/10 (SCRUM-64): o atraso diz que venceu, o
+  // que ainda não venceu diz quando vence, e sem data a frase acaba no valor.
+  it('pagamento a vencer não é cobrado como vencido', () => {
     const aberto = alunoBase({ pagamento: { status: 'aberto', vence: '12/09' } });
 
     expect(mensagemDeCobranca(aberto, 'cordial')).not.toContain('que venceu em');
+    expect(mensagemDeCobranca(aberto, 'cordial').split('\n')[2]).toBe(
+      'Passando pra lembrar do pacote de 6 aulas: R$ 480,00, que vence em 12/09.',
+    );
   });
 
-  // Defeito latente: sem data de vencimento, a mensagem sai com "undefined".
-  it.failing.each(TONS)('aluno sem vencimento, tom %s: não escreve "undefined"', (tom) => {
+  it.each(TONS)('aluno sem vencimento, tom %s: não escreve "undefined"', (tom) => {
     const semData = alunoBase({ pagamento: { status: 'sem' } });
 
     expect(mensagemDeCobranca(semData, tom)).not.toContain('undefined');
+  });
+
+  it('sem vencimento, a frase termina no valor', () => {
+    const semData = alunoBase({ pagamento: { status: 'sem' } });
+    const corpo = (tom: TomDeMensagem) => mensagemDeCobranca(semData, tom).split('\n')[2];
+
+    expect(corpo('cordial')).toBe('Passando pra lembrar do pacote de 6 aulas: R$ 480,00.');
+    expect(corpo('direto')).toBe(corpo('cordial'));
+    expect(corpo('formal')).toBe(
+      'Consta em aberto o valor de R$ 480,00, referente ao pacote de 6 aulas.',
+    );
   });
 });
 

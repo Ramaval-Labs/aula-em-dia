@@ -85,12 +85,19 @@ export function mensagemDeCobranca(
 ): string {
   const nome = primeiroNome(aluno.name);
   const valor = dinheiro(valorPacote(aluno));
-  const vencimento = aluno.pagamento.venceu ?? aluno.pagamento.vence;
+  const pacote = `pacote de ${aluno.total} aulas`;
+  // `venceu` é do atraso, `vence` é do que ainda não venceu, e quem não tem
+  // nenhum dos dois fica sem data: a frase termina no valor (PO, 23/10).
+  const { venceu, vence } = aluno.pagamento;
 
   const corpo =
     tom === 'formal'
-      ? `Consta em aberto o valor de ${valor}, referente ao pacote de ${aluno.total} aulas, com vencimento em ${vencimento}.`
-      : `Passando pra lembrar do pacote de ${aluno.total} aulas: ${valor}, que venceu em ${vencimento}.`;
+      ? `Consta em aberto o valor de ${valor}, referente ao ${pacote}${
+          venceu ? `, vencido em ${venceu}` : vence ? `, com vencimento em ${vence}` : ''
+        }.`
+      : `Passando pra lembrar do ${pacote}: ${valor}${
+          venceu ? `, que venceu em ${venceu}` : vence ? `, que vence em ${vence}` : ''
+        }.`;
 
   const pix = chavePix
     ? `Minha chave Pix é ${chavePix}.`
