@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro e os cards atribuídos. Até agora foram seis janelas: uma semana de
-preparação e cinco sprints de uma semana.
+com as três pessoas dentro e os cards atribuídos. Até agora foram sete janelas: uma semana de
+preparação e seis sprints de uma semana.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -235,11 +235,36 @@ camadas e os três donos de uma vez; e fica mais caro a cada parte do backend, p
 coluna no banco), os cards de plataforma e publicação, e as Partes 5 a 8 do backend, que dependem em
 fila.
 
-### Sprint 5 · 21/10 a 28/10 · **ativa** · 14 pontos
+### Sprint 5 · 21/10 a 23/10 · **fechada, 5 de 5, 14 pontos**
 
-Esta é a sprint que está no quadro agora. O tema é a **Parte 4**: com `EXPO_PUBLIC_BACKEND=supabase`,
-o app lê e grava no banco o que não mexe em saldo. Junto vão os defeitos que os testes deixaram como
-`it.failing`, e dois deles saem para o aluno pelo WhatsApp.
+O tema foi a **Parte 4**: com `EXPO_PUBLIC_BACKEND=supabase`, o app lê e grava no banco o que não
+mexe em saldo. Junto foram os defeitos que os testes deixaram como `it.failing`, e dois deles saem
+para o aluno pelo WhatsApp. Fechou em 23/10, a dois dias de começar. A suíte foi de 695 para
+**811 testes**, e nenhum `it.failing` sobrou.
+
+**Como fechou, para registro:**
+
+- **A ordem obrigatória não foi seguida.** O `SCRUM-20` mesclou antes do `SCRUM-65` e do commit
+  de abertura do `SCRUM-64`. Não deu conflito, e o Rafael fechou o `SCRUM-65` em cima.
+- **O `SCRUM-64` foi marcado "Concluído" com os commits fora da `main`.** Eles estavam numa branch
+  sem merge, e o PR não podia mesclar até o `SCRUM-65` tirar o `it.failing` do `fluxo.test.tsx`.
+  Para cumprir o prazo, o Rafael mesclou a branch junto com o `SCRUM-65` e terminou o que faltava:
+  a frase de cobrança aprovada, o § 7 do `CONTRIBUTING.md` e a contagem de testes.
+- **A Parte A do `SCRUM-67` rodou contra o banco local**, depois de instalar o Docker Desktop na
+  máquina do Rafael. Do A2 ao A8, tudo passou.
+- **Duas sobras viraram card:** o "Agora não" definitivo da pergunta de importar (`SCRUM-68`) e,
+  ainda sem card, a frase para a carga que falha sem cache.
+
+**Decisões de PO de 23/10:**
+
+- A cobrança de quem ainda vai vencer diz "que vence em", e a de quem não tem data termina no
+  valor. No formal, o atraso diz "vencido em" e o "a vencer" mantém "com vencimento em". O
+  fechamento do tom direto fica igual nos dois casos.
+- "Alterar senha" com o login de verdade: "Ainda não disponível".
+- A pergunta "Levar seus alunos para a conta?" é um bloco no topo da tela de Alunos, e não uma
+  tela nova.
+
+O que foi planejado, como estava no quadro:
 
 | Dono | Cards | Pts |
 |---|---|---|
@@ -288,6 +313,50 @@ Parte 4 desceu de L759 para L836 com as decisões da Parte 3) e ganhou dois iten
 
 **Fora da sprint, de propósito:** `SCRUM-31`, `SCRUM-66`, os outros cards de plataforma e
 publicação, e as Partes 5 a 8 do backend, que esperam a Parte 4.
+
+### Sprint 6 · 23/10 a 30/10 · **ativa** · 10 pontos
+
+Esta é a sprint que está no quadro agora. O tema é a **Parte 5**: com o modo supabase, aula, falta,
+reposição, pagamento e pacote gravam aluno + lançamento juntos, por uma RPC transacional com trava
+de versão. Junto vai o acabamento do que a Sprint 5 deixou.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Valentin | `SCRUM-21` — Parte 5, RPC `aplicar_movimento` (8) | 8 |
+| Valentin e Rafael | `SCRUM-68` — "Agora não" vale de vez (1) | 1 |
+| Rafael | `SCRUM-66` — splash no `app.json` (1) + o commit de abertura do `SCRUM-21` | 1 |
+| Mauro | revisão do `SCRUM-21`: a RPC grava o que o `dominio/` calculou e não pode discordar dele | — |
+
+**10 pontos, com um card só de 8.** É a entrega final, e a Parte 5 é o card de maior risco que
+sobrou na fila: SQL transacional, o ramo da proposta, que no plano ainda é um stub, e a trava de
+versão. O PO escolheu levá-la mesmo assim, para o modo supabase ficar completo. O resto é pequeno
+de propósito.
+
+**Ordem:**
+
+- o commit de abertura do `SCRUM-21` (Rafael: a frase do conflito de versão em `avisos.ts`) no
+  primeiro dia, depois da resposta do PO
+- o commit 1 do `SCRUM-68` (Valentin: `dispensarImportacao()`) antes do commit 2 (Rafael: o
+  "Agora não" chama a função)
+- o `SCRUM-21` e o `SCRUM-68` mexem os dois em `mobile/src/dados/`, então o Valentin faz um de
+  cada vez
+
+**Decisão de PO no caminho:** a frase do conflito de versão (`SCRUM-21`, § 4). Proposta: "Este
+aluno mudou em outro aparelho. Recarreguei os dados: confira e faça de novo."
+
+**Fora da Parte 5, de propósito:** a regra do plano gratuito (trigger de limite de alunos), porque
+o limite não foi decidido.
+
+**Revisado antes de abrir**, contra a `main` de 23/10:
+
+- o `SCRUM-21` subiu do formato curto para o template de nove seções. As linhas do plano estavam
+  velhas: a Parte 5 desceu de L539 para L983. O card ganhou a frase do conflito como commit de
+  abertura e o pgTAP de rollback como critério.
+- o `SCRUM-68` nasceu no template.
+- o `SCRUM-66` confere sem mudança.
+
+**Fora da sprint, de propósito:** `SCRUM-31`; as Partes 6 a 8, que esperam a Parte 5; `SCRUM-39`,
+`SCRUM-40` e `SCRUM-41` (acabamento de design); e os cards de plataforma e publicação.
 
 ---
 
