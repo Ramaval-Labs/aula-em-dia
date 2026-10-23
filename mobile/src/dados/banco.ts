@@ -155,7 +155,9 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "aplicar_movimento":
+{ Args: { "p_aluno": Json,"p_lancamento"?: Json,"p_proposta"?: Json,"p_versao": number }; Returns: number
+                           }
           }
           Enums: {
             "faixa_de_alunos": "1–5"|"6–15"|"16+","plano": "gratuito"|"pago","status_pagamento": "pago"|"aberto"|"atraso"|"sem","status_proposta": "enviada"|"aceita"|"recusada"|"confirmadaPeloProfessor","tipo_lancamento": "aula"|"falta_avisada"|"falta_sem_aviso"|"cancelada_professor"|"reposicao"|"pagamento"|"pacote"|"validade"|"proposta"|"legado"
