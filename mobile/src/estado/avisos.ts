@@ -64,4 +64,9 @@ export const avisos = {
   importacaoFeita: (n: number) =>
     `${plural(n, 'aluno levado', 'alunos levados')} para a conta.`,
   importacaoFalhou: 'Não deu para levar os alunos. Confira a conexão e tente de novo.',
+  // Conflito de versão (Parte 5): outro aparelho gravou o mesmo aluno antes.
+  // Não é falha de conexão, então não serve o falhaAoSalvar; a store já
+  // recarregou quando este aviso aparece (PO, 23/10).
+  alunoMudouEmOutroLugar:
+    'Este aluno mudou em outro aparelho. Recarreguei os dados: confira e faça de novo.',
 };
