@@ -22,7 +22,19 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "backgroundColor": "#E9EEF7",
+          "dark": {
+            "image": "./assets/splash-icon-escuro.png",
+            "backgroundColor": "#06080F"
+          }
+        }
+      ]
     ],
     "backgroundColor": "#E9EEF7",
     "locale": "pt-BR"
