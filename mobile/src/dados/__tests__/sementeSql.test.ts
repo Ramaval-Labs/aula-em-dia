@@ -7,11 +7,13 @@
  * divergir do app em silêncio.
  *
  * O SQL em si é exercitado contra o Postgres pelo pgTAP
- * (`supabase/tests/database/rls.test.sql`), que não roda no CI.
+ * (`supabase/tests/database/rls.test.sql`), no job "RLS do banco" do CI
+ * desde o SCRUM-60.
  */
 
+import { tipoPorTitulo } from '../conversor';
 import { SEMENTE_NA_NOTACAO } from '../semente';
-import { gerarSeedSql, ID_DO_ALUNO, PROFESSOR_DE_TESTE, tipoPorTitulo } from '../sementeSql';
+import { gerarSeedSql, ID_DO_ALUNO, PROFESSOR_DE_TESTE } from '../sementeSql';
 
 // O projeto não tem os tipos do Node, e este é o único teste que lê arquivo:
 // o `fs` vem pelo jest, e a raiz do repositório sai do caminho deste arquivo

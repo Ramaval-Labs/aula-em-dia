@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { repositorioLocal } from '../adaptador';
 import { CHAVE_ESTADO } from '../armazenamento';
 import { escolherRepositorio, type Mudanca, type Persistido } from '../repositorio';
+import { repositorioSupabase } from '../repositorioSupabase';
 import { estadoInicial } from '../semente';
 
 const estado = (): Persistido => estadoInicial();
@@ -120,12 +121,31 @@ describe('escolha do repositório por EXPO_PUBLIC_BACKEND', () => {
     expect(escolherRepositorio('local')).toBe(repositorioLocal);
   });
 
+  it('`supabase` é o repositório do banco (Parte 4)', () => {
+    expect(escolherRepositorio('supabase')).toBe(repositorioSupabase);
+  });
+
   it('um valor sem implementação cai no local e avisa em desenvolvimento', () => {
     const aviso = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
-    expect(escolherRepositorio('supabase')).toBe(repositorioLocal);
+    expect(escolherRepositorio('firebase')).toBe(repositorioLocal);
     expect(aviso).toHaveBeenCalledTimes(1);
 
     aviso.mockRestore();
+  });
+
+  it('os testes rodam no local, sem .env', () => {
+    expect(escolherRepositorio().remoto).toBe(false);
+  });
+});
+
+describe('repositório local — o resto do contrato', () => {
+  it('não é remoto e não tem cache: o disco já é o aparelho', () => {
+    expect(repositorioLocal.remoto).toBe(false);
+    expect(repositorioLocal.lerCache).toBeUndefined();
+  });
+
+  it('o id do aluno novo segue no formato `al…` de sempre', () => {
+    expect(repositorioLocal.novoIdDeAluno()).toMatch(/^al[0-9a-z]+$/);
   });
 });

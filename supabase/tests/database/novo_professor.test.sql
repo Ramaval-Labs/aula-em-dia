@@ -1,4 +1,5 @@
--- O trigger da 0003: criar o login cria o professor (SCRUM-19).
+-- O trigger da 0003: criar o login cria o professor (SCRUM-19). E a marca de
+-- onboarding da 0004 (SCRUM-20).
 --
 -- Como rodar, na raiz do repositório, com o Supabase local no ar:
 --   npx supabase db reset
@@ -10,7 +11,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(14);
+select plan(16);
 
 -- ── o trigger existe ─────────────────────────────────────────────────────────
 
@@ -54,6 +55,12 @@ select is(
   0,
   'e nenhum aluno: o trigger não semeia nada'
 );
+select is(
+  (select onboarding_concluido from public.professores
+    where id = '00000000-0000-4000-8000-0000000000c1'),
+  false,
+  'o onboarding nasce por fazer: quem fecha o app no meio volta ao passo 1 (0004)'
+);
 
 -- ── usuário sem e-mail não derruba o cadastro ────────────────────────────────
 
@@ -89,6 +96,12 @@ select is(
     where professor_id = '00000000-0000-4000-8000-000000000001'),
   13,
   'e a disponibilidade do seed, não a vazia do trigger'
+);
+select is(
+  (select onboarding_concluido from public.professores
+    where id = '00000000-0000-4000-8000-000000000001'),
+  true,
+  'e o onboarding dele já está concluído: o login de teste entra direto no app'
 );
 
 -- ── apagar o login leva o professor junto ────────────────────────────────────

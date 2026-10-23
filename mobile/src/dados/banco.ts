@@ -111,14 +111,14 @@ isOneToOne: true
                   ]
                 },"professores": {
                   Row: {
-                    "chave_pix": string | null,"criado_em": string,"disciplinas": (string)[],"email": string,"faixa_de_alunos": Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais": string,"nome": string,"pacote_padrao": Json | null,"plano": Database["public"]['Enums']["plano"],"preferencias_aviso": Json | null
+                    "chave_pix": string | null,"criado_em": string,"disciplinas": (string)[],"email": string,"faixa_de_alunos": Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais": string,"nome": string,"onboarding_concluido": boolean,"pacote_padrao": Json | null,"plano": Database["public"]['Enums']["plano"],"preferencias_aviso": Json | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email": string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais"?: string,"nome"?: string,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null
+                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email": string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais"?: string,"nome"?: string,"onboarding_concluido"?: boolean,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null
                   }
                   Update: {
-                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email"?: string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id"?: string,"iniciais"?: string,"nome"?: string,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null
+                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email"?: string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id"?: string,"iniciais"?: string,"nome"?: string,"onboarding_concluido"?: boolean,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null
                   }
                   Relationships: [
                     

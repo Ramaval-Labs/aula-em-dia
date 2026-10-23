@@ -8,7 +8,8 @@
  *
  * `Mudanca` tem um caso por ação da store que grava, com o mesmo nome da ação
  * (Apêndice A de docs/backend/PLANO-BACKEND.md). O repositório local ignora o
- * caso e grava o estado inteiro; o remoto vai gravar só o que o caso traz.
+ * caso e grava o estado inteiro; o do Supabase (Parte 4) grava só o que o
+ * caso traz.
  */
 
 import type {
@@ -22,6 +23,7 @@ import type {
   StatusDaProposta,
 } from '../dominio/tipos';
 import { repositorioLocal } from './adaptador';
+import { repositorioSupabase } from './repositorioSupabase';
 import type { EstadoPersistivel } from './semente';
 
 /**
@@ -74,7 +76,8 @@ export type Mudanca =
   | DoAluno<'alternarPausa'>
   | DoAluno<'enviarLembrete'>
   | DoAluno<'criarAluno'>
-  | DoAluno<'atualizarAluno'>
+  // Os campos que a tela mudou: o remoto grava só as colunas deles.
+  | (DoAluno<'atualizarAluno'> & { campos: (keyof Aluno)[] })
   | DoAluno<'arquivarAluno'>
   | DoAluno<'salvarDisponibilidadeDoAluno'>
   | { tipo: 'cobrarTodosEmAtraso'; alunos: Aluno[] }
@@ -85,22 +88,37 @@ export type Mudanca =
   | { tipo: 'salvarPreferenciasDeAviso'; preferenciasDeAviso: PreferenciasDeAviso };
 
 export interface Repositorio {
+  /**
+   * `true` quando os dados moram fora do aparelho. A store decide por aqui o
+   * ponto de partida (a semente ou o estado vazio) e o que fazer numa falha.
+   */
+  readonly remoto: boolean;
   /** O que está gravado, ou `null` quando não há nada que se reconheça. */
   carregar(): Promise<Gravado | null>;
+  /**
+   * O último estado guardado no aparelho, sem ir à rede: a store mostra isto
+   * primeiro e atualiza quando `carregar()` responder. Só o remoto tem.
+   */
+  lerCache?(): Promise<Gravado | null>;
   /**
    * Chamado depois de cada ação, com o que mudou e o estado como ficou.
    * Rejeita quando não consegue gravar: quem decide o que fazer é a store.
    */
   registrar(mudanca: Mudanca, estado: Persistido): Promise<void>;
-  /** "Zerar dados de demonstração": só faz sentido no modo local. */
+  /**
+   * Local: "zerar dados de demonstração". Remoto: esquece o cache do aparelho,
+   * e nada no banco é apagado.
+   */
   apagar(): Promise<void>;
+  /** O id do aluno novo, no formato que a gravação aceita. */
+  novoIdDeAluno(): string;
 }
 
 export type Backend = 'local' | 'supabase';
 
-/** `supabase` entra aqui na Parte 4. */
-const IMPLEMENTACOES: Partial<Record<Backend, Repositorio>> = {
+const IMPLEMENTACOES: Record<Backend, Repositorio> = {
   local: repositorioLocal,
+  supabase: repositorioSupabase,
 };
 
 /**
@@ -113,7 +131,7 @@ export function escolherRepositorio(
   const escolhido = IMPLEMENTACOES[backend as Backend];
   if (escolhido) return escolhido;
   if (backend && __DEV__) {
-    console.warn(`EXPO_PUBLIC_BACKEND="${backend}" ainda não tem repositório; usando o local.`);
+    console.warn(`EXPO_PUBLIC_BACKEND="${backend}" não tem repositório; usando o local.`);
   }
   return repositorioLocal;
 }

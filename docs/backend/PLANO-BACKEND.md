@@ -160,7 +160,7 @@ original, a diferença e a razão estão em [Decisões tomadas na Parte 1](#deci
 4. A escolha da implementação sai de `EXPO_PUBLIC_BACKEND` (`local` ou `supabase`), com `local` como
    padrão. Um valor sem implementação cai no local. Os testes rodam sempre no local.
 5. **Conversor de fronteira** (`mobile/src/dados/conversor.ts`), usado só pelo repositório remoto.
-   **Fica para a Parte 4**, quando houver banco para receber. Ele converte entre o formato do app e o
+   **Feito na Parte 4** (`SCRUM-20`), quando houve banco para receber. Ele converte entre o formato do app e o
    do banco, para as telas não mudarem, e segue esta tabela:
 
    | No app hoje | No banco | Regra do conversor |
@@ -815,7 +815,7 @@ o trigger cria as três linhas e o seed grava o perfil por cima.
 
 - No modo `supabase`, quem fecha o app no meio do onboarding volta direto para o app, porque a
   sessão existe e o onboarding não deixa marca no banco. A Parte 4 pode guardar "onboarding
-  concluído" no professor.
+  concluído" no professor. **Respondido na Parte 4, decisão 9:** guarda, na `0004`.
 - Os dados continuam no aparelho mesmo no modo `supabase`: o repositório remoto é a Parte 4, e
   até lá `escolherRepositorio` cai no local com um aviso.
 
@@ -862,6 +862,116 @@ não mexem em saldo.
    antigos entram com `tipo = 'legado'`.
 5. Falha de rede: o toast existente mostra "Não deu para salvar. Confira a conexão e tente de novo." e
    a store recarrega do banco.
+
+### Decisões tomadas na Parte 4
+
+**Feita no `SCRUM-20`.** O que foi construído: `mobile/src/dados/conversor.ts` (app ↔ banco, puro),
+`repositorioSupabase.ts` (`carregar` e `registrar`), `importacao.ts` (`importarDadosLocais`) e a
+migração `0004_onboarding.sql`. `escolherRepositorio('supabase')` devolve o repositório do banco, e
+`local` continua o padrão. Nenhuma tela mudou.
+
+**1. As ações que mexem em saldo rejeitam até a Parte 5.** Aula, falta, reposição, pagamento,
+pacote, validade e proposta gravam aluno e lançamento juntos, e isso é a RPC. Até lá o repositório
+rejeita com `AindaNaoGravaNoBanco`, e a store trata como qualquer falha (decisão 3): a tela volta
+ao que o banco tem. Gravar só o aluno deixaria saldo sem extrato; ignorar em silêncio faria a ação
+sumir na próxima carga sem ninguém saber. `atualizarAluno` que mexa em `total` ou `usadas` cai na
+mesma regra.
+
+**2. O `update` grava só as colunas que a ação mudou, e um `update` sem linha é erro.** A tabela
+`CAMPOS_DA_ACAO` diz o que cada ação muda (`alternarPausa` → `pausado`, `enviarLembrete` →
+`lembretes` e `ultimo_lembrete`, …). Gravar a linha inteira levaria junto o saldo que está só na
+memória. Para `atualizarAluno` não havia como saber, e a interface da Parte 1 estava incompleta: a
+`Mudanca` passou a levar `campos`, as chaves do patch. Com RLS, um `update` que não alcança linha
+nenhuma volta sem erro; por isso todo `update` pede a linha de volta (`select`) e, sem ela, rejeita.
+
+**3. Falha de gravação: o toast e a recarga do banco.** No remoto, `aoFalharNaPersistencia` mostra
+`avisos.falhaAoSalvar` (do `SCRUM-61`) e recarrega, uma vez só por rajada de falhas. No local nada
+muda. Falha de *carga* é outra coisa: só o console, porque a frase "não deu para salvar" não serve
+para ela, e recarregar seria ler de novo o que acabou de falhar.
+
+**4. Online com cache, sem fila (D4).** O cache é `aulaemdia.cache.v1`, com o id do professor
+junto. A store mostra o cache primeiro (`lerCache`) e atualiza quando o banco responder. O cache é
+regravado a cada carga e a cada gravação aceita. Sem rede, `carregar` devolve o cache, e o de outra
+conta não serve. `carregar` espera as gravações que estão no ar: no fim do onboarding o app abre e
+lê o banco logo depois do último passo, e a leitura não pode chegar antes do aluno recém-criado.
+Alunos e extrato vêm em páginas de 1000, que é o `max_rows` da API: ela corta sem avisar.
+
+**5. O ponto de partida do modo supabase é a conta vazia, não a semente.** `estadoVazio()` tem os
+padrões das colunas (política 24h/devolve/3/60, perfil e disponibilidade vazios). O professor de
+verdade não pode ver os alunos de demonstração como se fossem dele, nem gravá-los. "Sair" esvazia
+a memória e apaga o cache (`useDados.esquecer`): quem entrar depois no aparelho não vê a conta
+anterior.
+
+**6. O que volta do banco diferente do que foi.** A ida e volta (`conversor.test.ts`) cobra o
+resto como idêntico, e uma segunda volta igual à primeira. As diferenças são estas, todas iguais
+para a tela:
+
+| No app | Volta do banco como |
+|---|---|
+| `hoje: true` escrito à mão na semente | derivado do dia fixo: tem aula quando uma palavra de `dia` é o dia de hoje ("terça e quinta", "ter e qui") |
+| `pausado: false`, `lembretes: 0`, `pendencia: null` e afins | ausentes, como a semente escreve |
+| `validade` ausente com `semPacote` | `''`, como `criarAluno` grava (Parte 2, decisão 3) |
+| `criadoEm` | o dia em que a linha nasceu no banco (no `criarAluno`, é o mesmo) |
+| `perfil.email` | o e-mail do login; o `update` não grava e-mail, que é assunto do Supabase Auth |
+| proposta respondida | ausente: só a aberta (`status = 'enviada'`) volta para dentro do aluno |
+
+`pendencia.dias` e `pagamento.dias` são contados até hoje a partir da data com ano, sem inferir.
+
+**7. O id do aluno novo é do repositório.** `Repositorio.novoIdDeAluno()`: o local segue com
+`al…`, e o do Supabase usa `randomUUID()` do `expo-crypto`, que é o que a coluna `uuid` aceita.
+
+**8. A importação leva os alunos, e nada sai do aparelho.** `importarDadosLocais()` lê
+`aulaemdia.app.v4` e leva os alunos com o extrato e a proposta. Perfil, política e disponibilidade
+ficam: a conta já tem os seus, do onboarding.
+
+- **Os alunos da semente não vão.** São demonstração.
+- **Cada aluno ganha um uuid novo, não os fixos de `ID_DO_ALUNO`.** Esses são do professor de
+  teste, e duas contas importando o mesmo aluno colidiriam na chave primária.
+- **O lançamento antigo leva o tipo pelo título, e o que não casar vira `legado`.** O card dizia
+  `legado` para todos. Vale a decisão 1 da Parte 1, que é mais nova e guarda mais informação.
+- **O ano de cada data do extrato sai do lançamento de cima.** Inferido a partir de hoje, um
+  histórico de oito meses cairia no ano que vem.
+- **Sem transação entre chamadas, o desfazer é à mão.** Se o extrato falha, os alunos que entraram
+  são apagados (o `on delete cascade` leva o resto), e tentar de novo não duplica ninguém.
+- **A marca `aulaemdia.importacao.v1` impede de importar duas vezes, inclusive para outra conta.**
+  A pergunta "Levar seus alunos para a conta?" é do `SCRUM-61`. `temDadosLocaisParaImportar()`
+  diz se ela deve aparecer. Quem chama recarrega a store depois.
+
+**9. "Onboarding concluído" fica no banco, e responde o que estava em aberto na Parte 3.** A
+`0004` cria `professores.onboarding_concluido` (padrão `false`; quem já existia vira `true`). A
+sessão consulta a marca ao restaurar e ao entrar, e manda de volta ao passo 1 quem não terminou,
+inclusive quem criou a conta noutro aparelho. O último passo grava `true`. Sem rede para saber,
+vale o app, que abre pelo cache. O professor de teste do seed nasce com `true`. A alternativa,
+deduzir do perfil vazio, confundiria quem parou no passo 2 com quem terminou.
+
+**10. `plano` continua sendo gravado pelo app.** A tela Conta tem o "assinar" de demonstração, que
+salva `plano: 'pago'`, e o `update` leva o valor. Quando houver cobrança de verdade, `plano` sai do
+`update` e o banco passa a protegê-lo (privilégio de coluna ou trigger); até lá, quem quiser se dá
+o plano pago pela API.
+
+**Onde foi testado.** Em 23/10/2026, com Supabase CLI 2.120.0 e PostgreSQL 17.11:
+
+- as suítes do conversor, do repositório (contra um Supabase simulado em memória), da importação,
+  da store e da sessão;
+- os 46 casos pgTAP, com os dois novos da `0004`;
+- a ponta a ponta no Expo Web contra o banco local, com duas abas e 20 conferências:
+  - a política editada numa aba aparece na outra, e o aluno criado, pausado e editado também;
+  - registrar aula mostra o aviso e a tela volta ao saldo do banco;
+  - sem rede, o app abre pelo cache e salvar avisa;
+  - a conta nova abre sem nenhum aluno de demonstração;
+  - fechar no meio do onboarding volta ao passo 1;
+  - sair e entrar com outra conta não mostra a anterior;
+- a importação contra o banco de verdade: o tipo pelo título, `legado` no que não casa, a proposta
+  de volta dentro do aluno, e a RLS recusando com `42501` o insert para outro professor.
+
+**O que fica em aberto.**
+
+- A pergunta de importar, na tela: o segundo commit do `SCRUM-61`.
+- Carga que falha sem cache abre a conta vazia sem aviso: falta uma frase de carga em `avisos.ts`.
+- Uma gravação feita enquanto uma carga está no ar pode ser coberta na tela pela resposta da carga.
+  O banco fica certo, e a próxima carga mostra.
+- Abrir sem rede depois de o token vencer (1 hora) não foi testado: depende de o supabase-js
+  manter a sessão quando a renovação falha.
 
 ### Pronto quando
 

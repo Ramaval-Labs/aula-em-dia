@@ -1,5 +1,5 @@
 /**
- * A store e o repositório (SCRUM-17).
+ * A store e o repositório (SCRUM-17; o remoto, SCRUM-20).
  *
  * A regra de cada ação é do `dominio/` e tem suíte própria. Aqui se cobra o
  * contrato da persistência: toda ação avisa o repositório uma vez, com a
@@ -13,10 +13,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CHAVE_ESTADO } from '../../dados/armazenamento';
-import { repositorio, type Mudanca } from '../../dados/repositorio';
+import { estadoVazio } from '../../dados/conversor';
+import { repositorio, type Gravado, type Mudanca, type Repositorio } from '../../dados/repositorio';
 import { estadoInicial } from '../../dados/semente';
 import type { ConfigPacote } from '../../dominio/tipos';
+import { avisos } from '../avisos';
 import { useDados } from '../dados';
+import { useToast } from '../toast';
 
 const d = () => useDados.getState();
 const registrar = jest.spyOn(repositorio, 'registrar');
@@ -297,5 +300,151 @@ describe('carregar e zerar', () => {
 
     expect(await emDisco()).toBeNull();
     expect(persistido()).toEqual(semente);
+  });
+});
+
+describe('o que a Parte 4 acrescentou ao contrato', () => {
+  it('o id do aluno novo vem do repositório, no formato que ele grava', () => {
+    const novoId = jest.spyOn(repositorio, 'novoIdDeAluno').mockReturnValueOnce('id-do-repositorio');
+
+    expect(d().criarAluno(NOVO_ALUNO)).toBe('id-do-repositorio');
+    expect(d().alunoPor('id-do-repositorio')?.name).toBe('Aluno Novo');
+    novoId.mockRestore();
+  });
+
+  it('atualizarAluno leva os campos que a tela mudou', () => {
+    d().atualizarAluno('mar', { hora: '19h', name: 'Mateus A.' });
+
+    expect(registrar.mock.calls[0][0]).toEqual({
+      tipo: 'atualizarAluno',
+      aluno: d().alunoPor('mar'),
+      campos: ['hora', 'name'],
+    });
+  });
+
+  it('no modo local, falha ao gravar não vira toast', async () => {
+    const aviso = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    registrar.mockRejectedValueOnce(new Error('disco cheio'));
+
+    d().alternarPausa('mar');
+    await assentar();
+
+    expect(useToast.getState().mensagem).toBeNull();
+    aviso.mockRestore();
+  });
+
+  it('no modo local, esquecer não faz nada: os dados são do aparelho', () => {
+    const antes = persistido();
+    d().esquecer();
+    expect(persistido()).toEqual(antes);
+  });
+});
+
+/**
+ * O repositório remoto, pelo contrato: aqui a store não sabe de Supabase, só
+ * de `remoto`, de `lerCache` e das promessas. Quem fala com o banco tem a
+ * suíte dele (dados/__tests__/repositorioSupabase.test.ts).
+ */
+describe('com um repositório remoto', () => {
+  const remoto = repositorio as { -readonly [K in keyof Repositorio]: Repositorio[K] };
+  const carregarDoBanco = jest.spyOn(repositorio, 'carregar');
+
+  /** Uma promessa que o teste resolve quando quiser: o banco "respondendo". */
+  function resposta<T>() {
+    let resolver!: (v: T) => void;
+    const promessa = new Promise<T>((r) => (resolver = r));
+    return { promessa, resolver };
+  }
+
+  const doBanco = (): Gravado => ({ ...estadoInicial(), alunos: estadoInicial().alunos.slice(0, 2) });
+
+  beforeEach(() => {
+    remoto.remoto = true;
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    remoto.remoto = false;
+    delete remoto.lerCache;
+    carregarDoBanco.mockReset();
+    (console.warn as jest.Mock).mockRestore();
+    useToast.getState().limpar();
+  });
+
+  afterAll(() => carregarDoBanco.mockRestore());
+
+  it('falha ao gravar: o toast de falha, e a tela volta ao que o banco tem', async () => {
+    carregarDoBanco.mockResolvedValue(doBanco());
+    registrar.mockRejectedValueOnce(new Error('sem rede'));
+
+    d().alternarPausa('mar');
+    expect(d().alunoPor('mar')?.pausado).toBe(true);
+    await assentar();
+
+    expect(useToast.getState().mensagem).toBe(avisos.falhaAoSalvar);
+    expect(carregarDoBanco).toHaveBeenCalledTimes(1);
+    expect(d().alunos).toHaveLength(2);
+    expect(d().alunoPor('mar')).toBeUndefined();
+  });
+
+  it('uma rajada de falhas pede uma recarga só', async () => {
+    const banco = resposta<Gravado>();
+    carregarDoBanco.mockReturnValue(banco.promessa);
+    for (let i = 0; i < 3; i++) registrar.mockRejectedValueOnce(new Error('sem rede'));
+
+    d().alternarPausa('mar');
+    d().enviarLembrete('val');
+    d().arquivarAluno('bea');
+    await assentar();
+    banco.resolver(doBanco());
+    await assentar();
+
+    expect(carregarDoBanco).toHaveBeenCalledTimes(1);
+  });
+
+  it('carregar mostra o cache primeiro, e o banco quando responder', async () => {
+    const banco = resposta<Gravado>();
+    remoto.lerCache = jest.fn().mockResolvedValue({ ...estadoInicial(), alunos: [] });
+    carregarDoBanco.mockReturnValue(banco.promessa);
+    useDados.setState({ ...estadoVazio(), carregado: false });
+
+    const carregando = d().carregar();
+    await assentar();
+    expect(d().carregado).toBe(true);
+    expect(d().alunos).toEqual([]);
+
+    banco.resolver(doBanco());
+    await carregando;
+    expect(d().alunos).toHaveLength(2);
+  });
+
+  it('carga que falha não vira toast nem pede outra carga', async () => {
+    carregarDoBanco.mockRejectedValue(new Error('sem rede e sem cache'));
+
+    await d().carregar();
+
+    expect(d().carregado).toBe(true);
+    expect(useToast.getState().mensagem).toBeNull();
+    expect(carregarDoBanco).toHaveBeenCalledTimes(1);
+  });
+
+  it('o ponto de partida é a conta vazia, nunca a semente', async () => {
+    carregarDoBanco.mockResolvedValue({ alunos: [], extratos: {}, politicas: estadoVazio().politicas });
+
+    await d().carregar();
+
+    expect(d().alunos).toEqual([]);
+    expect(d().perfil).toEqual(estadoVazio().perfil);
+  });
+
+  it('esquecer volta à conta vazia, sem carregado, e esquece o cache', async () => {
+    const apagar = jest.spyOn(repositorio, 'apagar');
+
+    d().esquecer();
+
+    expect(apagar).toHaveBeenCalledTimes(1);
+    expect(d().alunos).toEqual([]);
+    expect(d().carregado).toBe(false);
+    apagar.mockRestore();
   });
 });

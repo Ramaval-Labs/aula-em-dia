@@ -5,7 +5,9 @@
  *
  * A gravação fica atrás de `dados/repositorio.ts`: cada ação calcula, faz
  * `set()`, devolve o resultado na hora e só então avisa o repositório, sem
- * esperar por ele. As telas dependem de a resposta vir no mesmo instante.
+ * esperar por ele. As telas dependem de a resposta vir no mesmo instante. O
+ * mesmo vale com o Supabase (Parte 4): a ação é otimista, e quem conserta a
+ * tela quando o banco recusa é `aoFalharNaPersistencia`.
  */
 
 import { create } from 'zustand';
@@ -16,7 +18,8 @@ import {
   type Persistido,
   type PreferenciasDeAviso,
 } from '../dados/repositorio';
-import { estadoInicial } from '../dados/semente';
+import { estadoVazio } from '../dados/conversor';
+import { estadoInicial, type EstadoPersistivel } from '../dados/semente';
 import { hoje, somarDias } from '../dominio/datas';
 import {
   estenderValidade as regraEstenderValidade,
@@ -41,6 +44,8 @@ import type {
   Politicas,
   StatusDaProposta,
 } from '../dominio/tipos';
+import { avisos } from './avisos';
+import { useToast } from './toast';
 
 /** Pacote padrão vendido pelo app (README: 8 aulas a R$ 80). */
 const AULAS_DO_PACOTE = 8;
@@ -63,6 +68,12 @@ type Dados = Persistido & {
 
   carregar: () => Promise<void>;
   zerar: () => void;
+  /**
+   * "Sair" no modo supabase: a memória volta ao vazio e o cache do aparelho é
+   * esquecido, para a próxima conta não ver os alunos da anterior. No modo
+   * local não faz nada: os dados são do aparelho, não da conta.
+   */
+  esquecer: () => void;
 
   alunoPor: (id: string | null) => Aluno | undefined;
 
@@ -115,7 +126,7 @@ export interface NovoAluno {
 /** Toda ação que muda o que vai para o disco: o resto é campo, carga ou leitura. */
 type AcaoQueGrava = Exclude<
   keyof Dados,
-  keyof Persistido | 'carregado' | 'carregar' | 'zerar' | 'alunoPor'
+  keyof Persistido | 'carregado' | 'carregar' | 'zerar' | 'esquecer' | 'alunoPor'
 >;
 type Iguais<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 type Exige<T extends true> = T;
@@ -125,18 +136,46 @@ type Exige<T extends true> = T;
 type TodaAcaoTemMudanca = Exige<Iguais<AcaoQueGrava, Mudanca['tipo']>>;
 
 /**
- * Falha ao gravar, ler ou apagar: a decisão mora aqui, num lugar só.
+ * O ponto de partida antes de qualquer carga: a semente no modo local, e o
+ * estado de uma conta nova no remoto, que nunca mostra aluno de demonstração.
+ */
+const partida = (): EstadoPersistivel => (repositorio.remoto ? estadoVazio() : estadoInicial());
+
+/** A recarga do banco que já está no ar: uma rajada de falhas pede uma só. */
+let recarregando: Promise<void> | null = null;
+
+/**
+ * Falha ao gravar ou apagar: a decisão mora aqui, num lugar só.
  *
  * No modo local a tela segue como está. A memória é o que a pessoa vê, e
- * recarregar de um disco que acabou de falhar jogaria fora o que ela fez.
- * O erro deixou de ser engolido — chega até aqui e aparece no console em
- * desenvolvimento — mas ainda não vira aviso na tela: o texto do toast é de
- * `estado/avisos.ts`. Com o repositório remoto (Parte 4), é neste ponto que
- * entram a recarga e o toast previstos no plano.
+ * recarregar de um disco que acabou de falhar jogaria fora o que ela fez. O
+ * erro aparece no console em desenvolvimento.
+ *
+ * No remoto o banco é a fonte: o toast avisa que não salvou, e a store
+ * recarrega do banco, para a tela não seguir mostrando o que não foi gravado.
+ * Sem rede, a recarga cai no cache, que é o último estado que o banco aceitou.
  */
 function aoFalharNaPersistencia(erro: unknown) {
   if (__DEV__) {
-    console.warn('[dados] a persistência falhou; o app segue com o estado em memória.', erro);
+    console.warn('[dados] a persistência falhou.', erro);
+  }
+  if (!repositorio.remoto) return;
+  useToast.getState().avisar(avisos.falhaAoSalvar);
+  recarregando ??= useDados
+    .getState()
+    .carregar()
+    .finally(() => {
+      recarregando = null;
+    });
+}
+
+/**
+ * Falha ao ler: só o console. Aqui não cabe a recarga (seria ler de novo o
+ * que acabou de falhar) nem o aviso de "não deu para salvar".
+ */
+function aoFalharNaCarga(erro: unknown) {
+  if (__DEV__) {
+    console.warn('[dados] a carga falhou; o app segue com o que tem na memória.', erro);
   }
 }
 
@@ -174,26 +213,36 @@ export const useDados = create<Dados>((set, get) => {
   };
 
   return {
-    ...estadoInicial(),
+    ...partida(),
     carregado: false,
 
     async carregar() {
+      // O remoto mostra o cache primeiro, e o banco atualiza quando responder.
+      const doCache = await repositorio.lerCache?.().catch(() => null);
+      if (doCache) set({ ...partida(), ...doCache, carregado: true });
       try {
         const gravado = await repositorio.carregar();
-        // Espalhar sobre a semente, e não substituir campo a campo: o
-        // estado persistido cresce a cada fase, e um payload gravado por
+        // Espalhar sobre o ponto de partida, e não substituir campo a campo:
+        // o estado persistido cresce a cada fase, e um payload gravado por
         // uma versão anterior deixaria os campos novos indefinidos.
-        if (gravado) set({ ...estadoInicial(), ...gravado });
+        if (gravado) set({ ...partida(), ...gravado });
       } catch (erro) {
-        // Estado corrompido ou ilegível: segue com a semente.
-        aoFalharNaPersistencia(erro);
+        // Estado corrompido ou ilegível, ou banco fora sem cache: segue com
+        // o que tem.
+        aoFalharNaCarga(erro);
       }
       set({ carregado: true });
     },
 
     zerar() {
       repositorio.apagar().catch(aoFalharNaPersistencia);
-      set({ ...estadoInicial() });
+      set({ ...partida() });
+    },
+
+    esquecer() {
+      if (!repositorio.remoto) return;
+      repositorio.apagar().catch(aoFalharNaCarga);
+      set({ ...partida(), carregado: false });
     },
 
     alunoPor(id) {
@@ -361,7 +410,7 @@ export const useDados = create<Dados>((set, get) => {
     },
 
     criarAluno(dados) {
-      const id = `al${Date.now().toString(36)}`;
+      const id = repositorio.novoIdDeAluno();
       const novo: Aluno = {
         id,
         name: dados.nome.trim(),
@@ -385,7 +434,8 @@ export const useDados = create<Dados>((set, get) => {
 
     atualizarAluno(id, patch) {
       mutar(id, (a) => ({ ...a, ...patch }));
-      persistirAluno(id, (aluno) => ({ tipo: 'atualizarAluno', aluno }));
+      const campos = Object.keys(patch) as (keyof Aluno)[];
+      persistirAluno(id, (aluno) => ({ tipo: 'atualizarAluno', aluno, campos }));
     },
 
     arquivarAluno(id) {

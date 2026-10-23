@@ -16,10 +16,8 @@
 
 import { DIAS } from '../dominio/disponibilidade';
 import type { Aluno, DiaDaSemana, Lancamento } from '../dominio/tipos';
-import type { Database } from './banco';
+import { tipoPorTitulo } from './conversor';
 import { lerNotacao, SEMENTE_NA_NOTACAO } from './semente';
-
-type TipoDeLancamento = Database['public']['Enums']['tipo_lancamento'];
 
 /** O professor de teste (SCRUM-50). SOMENTE banco local, nunca produção. */
 export const PROFESSOR_DE_TESTE = {
@@ -41,27 +39,6 @@ export const ID_DO_ALUNO: Record<string, string> = {
 
 /** O "hoje" do banco é o do Brasil: o contêiner roda em UTC e viraria o dia às 21h. */
 export const FUSO = 'America/Sao_Paulo';
-
-/**
- * Título → tipo, para lançamento que nasceu antes do banco (Parte 1,
- * decisão 1). Lançamento novo tira o tipo da `Mudanca`, não daqui.
- */
-const TIPO_POR_TITULO: Record<string, TipoDeLancamento> = {
-  'Aula realizada': 'aula',
-  'Falta avisada': 'falta_avisada',
-  'Falta sem aviso': 'falta_sem_aviso',
-  'Aula cancelada por você': 'cancelada_professor',
-  'Reposição marcada': 'reposicao',
-  'Reposição realizada': 'reposicao',
-  'Pagamento recebido': 'pagamento',
-  'Validade estendida': 'validade',
-  'Proposta de reposição enviada': 'proposta',
-};
-
-export function tipoPorTitulo(titulo: string): TipoDeLancamento {
-  if (/^Pacote de \d+ aulas$/.test(titulo)) return 'pacote';
-  return TIPO_POR_TITULO[titulo] ?? 'legado';
-}
 
 // --- SQL, peça por peça ----------------------------------------------------
 
@@ -240,11 +217,12 @@ function professor(): string {
   const disciplinas = `array[${perfil.disciplinas.map(texto).join(', ')}]::text[]`;
 
   return `-- O e-mail é o do login, não o de demonstração que o app mostra no perfil.
+-- O onboarding fica concluído (0004): o professor de teste já entra no app.
 insert into public.professores (
-  id, nome, iniciais, email, disciplinas, faixa_de_alunos, chave_pix, plano
+  id, nome, iniciais, email, disciplinas, faixa_de_alunos, chave_pix, plano, onboarding_concluido
 ) values (
   ${PROFESSOR}, ${texto(perfil.nome)}, ${texto(perfil.iniciais)}, ${texto(PROFESSOR_DE_TESTE.email)},
-  ${disciplinas}, ${texto(perfil.faixaDeAlunos)}, ${textoOuNulo(perfil.chavePix)}, ${texto(perfil.plano)}
+  ${disciplinas}, ${texto(perfil.faixaDeAlunos)}, ${textoOuNulo(perfil.chavePix)}, ${texto(perfil.plano)}, true
 )
 on conflict (id) do update set
   nome = excluded.nome,
@@ -253,7 +231,8 @@ on conflict (id) do update set
   disciplinas = excluded.disciplinas,
   faixa_de_alunos = excluded.faixa_de_alunos,
   chave_pix = excluded.chave_pix,
-  plano = excluded.plano;
+  plano = excluded.plano,
+  onboarding_concluido = excluded.onboarding_concluido;
 
 insert into public.politicas (
   professor_id, aviso_horas, avisada_devolve, limite_reposicoes, validade_dias

@@ -71,11 +71,12 @@ insert into auth.identities (
 on conflict (provider_id, provider) do nothing;
 
 -- O e-mail é o do login, não o de demonstração que o app mostra no perfil.
+-- O onboarding fica concluído (0004): o professor de teste já entra no app.
 insert into public.professores (
-  id, nome, iniciais, email, disciplinas, faixa_de_alunos, chave_pix, plano
+  id, nome, iniciais, email, disciplinas, faixa_de_alunos, chave_pix, plano, onboarding_concluido
 ) values (
   '00000000-0000-4000-8000-000000000001', 'Caio Torres', 'CT', 'professor@exemplo.test',
-  array['Matemática', 'Violão', 'Inglês']::text[], '1–5', null, 'gratuito'
+  array['Matemática', 'Violão', 'Inglês']::text[], '1–5', null, 'gratuito', true
 )
 on conflict (id) do update set
   nome = excluded.nome,
@@ -84,7 +85,8 @@ on conflict (id) do update set
   disciplinas = excluded.disciplinas,
   faixa_de_alunos = excluded.faixa_de_alunos,
   chave_pix = excluded.chave_pix,
-  plano = excluded.plano;
+  plano = excluded.plano,
+  onboarding_concluido = excluded.onboarding_concluido;
 
 insert into public.politicas (
   professor_id, aviso_horas, avisada_devolve, limite_reposicoes, validade_dias
