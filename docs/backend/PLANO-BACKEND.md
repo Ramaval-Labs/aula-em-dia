@@ -1187,7 +1187,7 @@ Todas as ações de [mobile/src/estado/dados.ts](../../mobile/src/estado/dados.t
 | `zerar` | — | só no modo local (demonstração) |
 | `alunoPor` | — | leitura em memória |
 | `registrarAula` | 5 | RPC `aplicar_movimento` (aluno + lançamento) |
-| `marcarReposicao` | 5 | RPC |
+| `marcarReposicao` | 5 | RPC (aluno + lançamento; fecha a proposta aberta do aluno) |
 | `receberPagamento`, `registrarPagamentoCom` | 5 | RPC (lançamento com `dinheiro = true`) |
 | `estenderValidade` | 5 | RPC |
 | `criarPacote`, `renovarPacote`, `criarPacoteCom` | 5 | RPC |

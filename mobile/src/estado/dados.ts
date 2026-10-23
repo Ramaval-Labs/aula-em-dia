@@ -525,8 +525,9 @@ export const useDados = create<Dados>((set, get) => {
       }
 
       // Aceita ou confirmada pelo professor: vira reposição marcada de fato.
+      // O domínio já devolve o aluno sem a proposta aberta.
       const { aluno, lancamento } = regraMarcarReposicao(atual, janela, hoje());
-      mutar(id, () => ({ ...aluno, proposta: null }));
+      mutar(id, () => aluno);
       lancar(id, lancamento);
       persistirAluno(id, (marcado) => ({
         tipo: 'responderProposta',

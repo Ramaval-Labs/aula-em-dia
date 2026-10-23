@@ -399,12 +399,12 @@ describe('confirmar reposição', () => {
     expect(app.queryByText(`${primeira.dia} · ${primeira.hora}`)).toBeNull();
   });
 
-  // Defeito encontrado escrevendo este fluxo, em `estado/dados.ts`: marcar a
-  // reposição direto ("Agendar sem avisar") não desfaz a proposta que estava
-  // aberta. A ficha fica com "Reposição confirmada" e "Proposta aguardando
-  // aceite" ao mesmo tempo, e aceitar a proposta depois conta uma segunda
-  // reposição para a mesma falta. O Rafael da semente tem proposta aberta.
-  it.failing('agendar direto não deixa a proposta antiga pendurada na ficha', async () => {
+  // Marcar a reposição direto ("Agendar sem avisar") fecha a proposta que
+  // estava aberta (SCRUM-64 e SCRUM-65). Sem isso, a ficha ficava com
+  // "Reposição confirmada" e "Proposta aguardando aceite" ao mesmo tempo, e
+  // aceitar a proposta depois contava uma segunda reposição para a mesma
+  // falta. O Rafael da semente tem proposta aberta.
+  it('agendar direto não deixa a proposta antiga pendurada na ficha', async () => {
     const aluno = alunoDaSemente('raf');
     const app = await abrirOApp();
     await abrirAFichaDe(app, aluno);
