@@ -12,9 +12,11 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `migrations/0002_rls.sql` | RLS nas 6 tabelas, com política em todas |
 | `migrations/0003_novo_professor.sql` | Trigger: criar o login cria o professor, a política e a disponibilidade |
 | `migrations/0004_onboarding.sql` | `professores.onboarding_concluido`: quem fecha o app no meio do onboarding volta a ele |
+| `migrations/0005_aplicar_movimento.sql` | A RPC `aplicar_movimento`: aluno + lançamento (+ proposta) juntos, ou nada, com trava de versão |
 | `seed.sql` | Os dados de demonstração. **Gerado**: não edite à mão |
 | `tests/database/rls.test.sql` | Teste de RLS com dois professores, em pgTAP |
 | `tests/database/novo_professor.test.sql` | Teste do trigger da `0003` e da marca da `0004`, em pgTAP |
+| `tests/database/aplicar_movimento.test.sql` | Teste da RPC da `0005`: rollback, conflito de versão, proposta e RLS |
 
 ## Para rodar
 
@@ -70,7 +72,7 @@ O arquivo pode rodar mais de uma vez e termina sempre no mesmo estado.
 
 `db reset` passar não prova a segurança. Com RLS ligada e **sem** política, o `select` volta vazio e
 o `update` não afeta linha nenhuma, **sem erro**. O que prova é um professor não enxergar o que é do
-outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 16 do trigger da `0003` e da marca da `0004`):
+outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 16 do trigger da `0003` e da marca da `0004`, e 24 da RPC da `0005`):
 
 - RLS ligada nas seis tabelas e política em todas (`lancamentos` tem duas: ler e inserir);
 - o professor A, do seed, vê os 4 alunos dele e nenhum do professor B;
@@ -149,13 +151,15 @@ Criar conta pelo app passa pelo trigger da `0003`, que cria a linha em `professo
 (`enable_confirmations = false` no `config.toml`), então o cadastro segue direto para o
 onboarding. O professor de teste do seed entra com a senha `aulaemdia-local`.
 
-O que o modo `supabase` faz desde a Parte 4:
+O que o modo `supabase` faz desde as Partes 4 e 5:
 
 - **Carrega tudo do banco**, mostrando antes o cache do aparelho, que também é o que abre sem rede.
 - **Grava o que não mexe em saldo**: perfil, política, disponibilidade, pacote padrão, avisos, aluno
   novo, edição, pausa, arquivo e lembretes.
-- **O que mexe em saldo ainda não grava**: aula, falta, reposição, pagamento, pacote e proposta. É a
-  Parte 5, por RPC. Até lá a ação mostra "Não deu para salvar…" e a tela volta ao que o banco tem.
+- **Grava o que mexe em saldo pela RPC `aplicar_movimento`** (a `0005`): aula, falta, reposição,
+  pagamento, pacote e proposta, com o aluno e o lançamento juntos, ou nada.
+- **Dois aparelhos no mesmo aluno não se sobrescrevem.** Quem gravar com a versão velha vê "Este
+  aluno mudou em outro aparelho…", e a tela recarrega.
 - **Quem parou no meio do onboarding volta ao passo 1** (a `0004`).
 
 Para ver a política editada num lugar aparecer no outro, sem celular: `npx expo start --web` em
@@ -186,10 +190,9 @@ falhar no bloco do professor de teste depois de uma atualização, é por aí.
 
 ## O que ainda não está aqui
 
-- **A RPC `aplicar_movimento` (Parte 5).** Está no plano (Parte 5 § A função) com o ramo da proposta
-  como stub literal. Virar migração agora seria versionar um stub.
+- **A regra do plano gratuito** (limite de alunos): o limite não foi decidido.
 - **Migração aplicada não se edita.** Se o seed revelar um problema no esquema, crie a próxima
-  (`0005`).
+  (`0006`).
 
 ## Divergência conhecida no plano
 
