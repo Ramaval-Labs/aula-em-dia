@@ -126,12 +126,15 @@ describe('mascararTelefone(telefone)', () => {
     expect(mascararTelefone(telefone)).toBe('sem telefone cadastrado');
   });
 
-  // Defeito: com o 55 na frente, a função lê o DDI como DDD e devolve
-  // "+55 55 5•••• 4182". O botão do WhatsApp (SCRUM-25) já entende o número com
-  // país; a máscara ao lado dele mostra outro destino.
-  it.failing('com DDI, o DDD mostrado é o do número, não o 55', () => {
+  // Era "+55 55 5•••• 4182": a função lia o DDI como DDD. O botão do WhatsApp
+  // (SCRUM-25) já entendia o número com país. Corrigido no SCRUM-64.
+  it('com DDI, o DDD mostrado é o do número, não o 55', () => {
     expect(mascararTelefone('5551999994182')).toBe('+55 51 9•••• 4182');
     expect(mascararTelefone('+55 51 99999-4182')).toBe('+55 51 9•••• 4182');
+  });
+
+  it('sem DDI, o DDD 55 (Santa Maria) continua sendo DDD', () => {
+    expect(mascararTelefone('55999994182')).toBe('+55 55 9•••• 4182');
   });
 });
 

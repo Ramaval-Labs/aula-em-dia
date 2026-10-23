@@ -30,9 +30,16 @@ export function comoOAlunoVaiLer(p: Politicas, comValidade = true): string {
   return `${prazo}${limite}.${validade}`;
 }
 
-/** "+55 51 9•••• 4182" — como o handoff mostra o destino da mensagem. */
+/**
+ * "+55 51 9•••• 4182" — como o handoff mostra o destino da mensagem.
+ *
+ * Com 12 ou 13 dígitos começando por 55, o 55 é o DDI e sai antes de ler o
+ * DDD. Só pelo tamanho: com 10 ou 11 dígitos, um 55 na frente é o DDD de Santa
+ * Maria (RS) e fica.
+ */
 export function mascararTelefone(telefone?: string): string {
-  const d = (telefone ?? '').replace(/\D/g, '');
+  let d = (telefone ?? '').replace(/\D/g, '');
+  if ((d.length === 12 || d.length === 13) && d.startsWith('55')) d = d.slice(2);
   if (d.length < 10) return 'sem telefone cadastrado';
   const ddd = d.slice(0, 2);
   const resto = d.slice(2);
