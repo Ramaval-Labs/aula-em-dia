@@ -389,8 +389,8 @@ describe('candidatos — pontuação', () => {
   });
 
   // Mesma regra de plural que o resto da copy segue ("1 bloco", "1 bloco
-  // marcado"). Hoje sai "Acontece 1 dias antes". Registrado no SCRUM-32.
-  it.failing('um dia antes do vencimento a razão fica no singular', () => {
+  // marcado"). Corrigido no SCRUM-64.
+  it('um dia antes do vencimento a razão fica no singular', () => {
     const lista = candidatos(com({ validade: '05/09' }), [aluno], ABERTA, HOJE);
     const vespera = lista.find((c) => c.data === '04/09');
     expect(vespera?.razoes).toContain('Acontece 1 dia antes do pacote vencer, em 05/09.');
@@ -550,8 +550,8 @@ describe('motivosDaFalta', () => {
     expect(diasEntre(HOJE, '30/10')).toBe(ATE_A_VALIDADE);
   });
 
-  // Mesmo plural da razão de prazo. Hoje sai "daqui a 1 dias".
-  it.failing('um dia antes do vencimento fica no singular', () => {
+  // Mesmo plural da razão de prazo (era "daqui a 1 dias", corrigido no SCRUM-64).
+  it('um dia antes do vencimento fica no singular', () => {
     const razoes = motivosDaFalta(com({ validade: '29/08' }), [aluno], DISPONIBILIDADE, HOJE);
     expect(razoes[0]).toBe('O pacote vence em 29/08, daqui a 1 dia.');
   });
