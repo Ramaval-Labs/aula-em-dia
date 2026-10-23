@@ -12,6 +12,7 @@
 
 import { diaDaSemanaDe, DIAS, duracaoDaFaixa, emFolga, FAIXAS, temBloco } from './disponibilidade';
 import { diasEntre, formatarDdMm, lerDdMm, somarDias } from './datas';
+import { plural } from './formato';
 import type {
   Aluno,
   BlocoSemanal,
@@ -165,7 +166,7 @@ export function candidatos(
       }
       const faltam = diasEntre(data, ate);
       if (faltam !== null && faltam >= 0) {
-        razoes.push(`Acontece ${faltam} dias antes do pacote vencer, em ${ate}.`);
+        razoes.push(`Acontece ${plural(faltam, 'dia', 'dias')} antes do pacote vencer, em ${ate}.`);
       }
 
       saida.push({
@@ -225,7 +226,7 @@ export function motivosDaFalta(
   const dias = diasEntre(hoje, aluno.validade) ?? 0;
 
   if (aluno.validade && dias >= 0) {
-    razoes.push(`O pacote vence em ${ate}, daqui a ${dias} dias.`);
+    razoes.push(`O pacote vence em ${ate}, daqui a ${plural(dias, 'dia', 'dias')}.`);
   }
   if (disponibilidade.blocos.length === 0) {
     razoes.push('Você ainda não marcou nenhum bloco na sua disponibilidade.');

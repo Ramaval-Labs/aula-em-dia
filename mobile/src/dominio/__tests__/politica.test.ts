@@ -224,6 +224,21 @@ describe('marcarReposicao', () => {
     expect(lancamento.delta).toBe(0);
   });
 
+  it('marcar a reposição fecha a proposta que estava aberta', () => {
+    const comProposta: Aluno = {
+      ...alunoPor('raf'),
+      proposta: {
+        janela: { dia: 'Quinta, 28/08', hora: '19h' },
+        enviadaEm: HOJE,
+        status: 'enviada',
+        alternativas: [],
+      },
+    };
+    const { aluno } = marcarReposicao(comProposta, janela, HOJE);
+    expect(aluno.proposta).toBeNull();
+    expect(aluno.agendada).toEqual(janela);
+  });
+
   it('26 — texto do toast', () => {
     const a = alunoPor('raf');
     const primeiro = a.name.split(' ')[0];
