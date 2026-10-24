@@ -135,7 +135,7 @@ rollback;
 Como A aparecem os quatro alunos da semente; como B, só "Aluno do B". Os dois também entram pela
 API com a senha `aulaemdia-local`.
 
-## O app no modo supabase (Partes 3 e 4)
+## O app no modo supabase (Partes 3 a 5)
 
 Com o banco local no ar, o app pode entrar, criar conta e ler e gravar no banco. Em `mobile/.env` (copie de
 [`.env.example`](../.env.example)):
@@ -167,8 +167,76 @@ Para ver a política editada num lugar aparecer no outro, sem celular: `npx expo
 política numa, recarregue a outra.
 
 As decisões estão em
-[`PLANO-BACKEND.md`, Parte 3](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-3) e
-[Parte 4](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-4).
+[`PLANO-BACKEND.md`, Parte 3](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-3),
+[Parte 4](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-4) e
+[Parte 5](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-5).
+
+## Rodar no celular com o banco local
+
+O Expo Go precisa alcançar duas portas do computador: a do Metro (`8081`), que entrega o app, e a
+da API do banco (`54321`). Por isso **o celular e o computador precisam estar na mesma rede**, e no
+`.env` vai o endereço do computador nessa rede, nunca `127.0.0.1` (no celular, isso é o próprio
+celular).
+
+### Num Wi-Fi comum
+
+Computador no Wi-Fi ou no cabo, celular no Wi-Fi do **mesmo roteador**, fora da rede de convidados,
+que isola os aparelhos:
+
+```bash
+ipconfig getifaddr $(route -n get default | awk '/interface/ {print $2}')   # o IP do Mac, ex.: 192.168.0.15
+```
+
+No `mobile/.env`, `EXPO_PUBLIC_SUPABASE_URL=http://192.168.0.15:54321`, e o app sobe com
+`npx expo start -c`. O `-c` limpa o cache: sem ele, o Expo segue com o `.env` antigo.
+
+### No hotspot do celular (rede só IPv6)
+
+Testado em 24/10/2026, com o Mac no Acesso Pessoal de um iPhone na Vivo 5G. Nessa rede o Mac recebe
+o IPv4 `192.0.0.2`, que o celular não alcança: a operadora só entrega IPv6, e esse endereço é
+interno do Mac. Dá para ver com `ifconfig en0 | grep inet`: aparece `inet 192.0.0.2` e endereços
+`inet6 2804:…`, sem nenhum `172.20.10.x`.
+
+**O que dá errado, e por quê:**
+
+| Sintoma | Causa |
+|---|---|
+| O Expo Go carrega sem fim | O Metro não está rodando, ou o `.env` ainda tem o endereço de outra conexão. **Cada vez que o Mac reconecta no hotspot, o IPv6 muda.** |
+| O Expo Go tenta abrir e fecha sozinho | O endereço usa o IPv6 entre colchetes (`exp://[2804:…]:8081`). O Safari entende, mas a parte nativa do React Native no Expo Go separa host e porta pelo `:`, e um IPv6 cheio de `:` a quebra. |
+
+**A solução é dar um nome ao IPv6.** O serviço público [sslip.io](https://sslip.io) responde
+qualquer nome no formato `2804-18-105-….sslip.io` com o IPv6 que está escrito nele, sem cadastro.
+Com um nome no lugar do IPv6 literal, não há colchetes e o Expo Go abre normalmente. O `sslip.io`
+só traduz o nome: os dados vão direto do celular para o Mac, pela mesma rede.
+
+Com o Docker Desktop aberto e o banco no ar (`npx supabase@2.120.0 start` na raiz):
+
+```bash
+cd mobile
+# o IPv6 de agora vira o nome (troca os ":" por "-")
+NOME="$(ifconfig en0 | awk '/inet6 2804/ && /autoconf secured/ {print $2; exit}' | tr ':' '-').sslip.io"
+# o app no celular fala com o banco pelo mesmo nome
+sed -i '' "s#^EXPO_PUBLIC_SUPABASE_URL=.*#EXPO_PUBLIC_SUPABASE_URL=http://$NOME:54321#" .env
+# o QR Code leva o nome, não o IPv6
+REACT_NATIVE_PACKAGER_HOSTNAME="$NOME" npx expo start --lan -c
+```
+
+Rode os três comandos a cada nova conexão no hotspot: o nome sai do IPv6 do momento.
+
+- **O `2804` é o prefixo da Vivo.** Em outra operadora o IPv6 começa diferente. Troque o
+  `/inet6 2804/` do `awk` pelo começo do endereço que o `ifconfig` mostrar (a linha que tem
+  `autoconf secured`).
+- **Se não abrir, teste a rede antes do app.** No Safari do celular, abra
+  `http://<NOME>:8081/status`. Se aparecer `packager-status:running`, a rede está certa e o problema
+  é no app ou no `.env`. Se não abrir, o celular não alcança o Mac.
+- **Feche o Expo Go de vez entre uma tentativa e outra,** deslizando para cima no seletor de apps.
+  Ele guarda o último endereço.
+
+**Celular no 5G e computador em outra rede (no cabo de casa, por exemplo):** os dois não se
+enxergam. Ou o celular entra no Wi-Fi do mesmo roteador, ou o Metro vai por túnel
+(`npx expo start --tunnel`) e o banco precisa de um túnel à parte, que deixa o banco local
+acessível pela internet enquanto estiver aberto. Para mostrar o app sem banco nenhum, ponha
+`EXPO_PUBLIC_BACKEND=local` e use só o `--tunnel`.
 
 ## Tipos do banco
 
