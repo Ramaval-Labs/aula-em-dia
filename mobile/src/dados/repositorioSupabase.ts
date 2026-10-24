@@ -1,5 +1,5 @@
 /**
- * Repositório do Supabase (Parte 4 do backend).
+ * Repositório do Supabase (Partes 4 e 5 do backend).
  *
  * `carregar()` faz as seis consultas em paralelo e o conversor de fronteira
  * monta o mesmo `Persistido` que a store já espera; o resultado fica no
@@ -7,9 +7,11 @@
  * ações que não mexem em saldo, uma tabela e só as colunas que a ação mudou.
  *
  * As que mexem em saldo (aula, falta, reposição, pagamento, pacote, proposta)
- * gravam aluno e lançamento juntos, e por isso são da Parte 5, por RPC. Até
- * lá elas rejeitam com `AindaNaoGravaNoBanco`, e a store trata como qualquer
- * outra falha: avisa e recarrega do banco.
+ * gravam aluno e lançamento juntos, ou nada, pela RPC `aplicar_movimento`
+ * (0005). A RPC tem trava otimista: o repositório guarda a `versao` de cada
+ * aluno num mapa, preenchido no `carregar()` e atualizado com o que a RPC
+ * devolve, e o `dominio/` nunca fica sabendo dela. Se outro aparelho gravou
+ * antes, a RPC recusa com `ConflitoDeVersao`, e a store avisa e recarrega.
  *
  * Online com cache, não offline-first (decisão D4): não há fila de gravações.
  * O cliente é o preguiçoso de `supabase.ts`; importar este arquivo não abre
@@ -19,19 +21,23 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { randomUUID } from 'expo-crypto';
 
-import type { Aluno } from '../dominio/tipos';
+import type { Aluno, Desfecho, Lancamento } from '../dominio/tipos';
 import { soPersistido } from './adaptador';
 import { CHAVE_CACHE } from './armazenamento';
-import type { TablesUpdate } from './banco';
+import type { Json, TablesUpdate } from './banco';
 import {
   alunoParaBanco,
+  CAMPOS_DO_MOVIMENTO,
   colunasDoAluno,
   disponibilidadeParaBanco,
+  lancamentoDoMovimento,
   montarPersistido,
   pacotePadraoParaBanco,
   perfilParaBanco,
   politicasParaBanco,
   preferenciasParaBanco,
+  propostaDoMovimento,
+  type TipoDeLancamento,
 } from './conversor';
 import type { Gravado, Mudanca, Persistido, Repositorio } from './repositorio';
 import { clienteSupabase } from './supabase';
@@ -46,10 +52,25 @@ export class ErroDoBanco extends Error {
   }
 }
 
-/** Ação que mexe em saldo, recebida antes de a Parte 5 existir. */
+/**
+ * Outro aparelho gravou o aluno antes: a `versao` que este leu ficou velha. A
+ * store mostra `avisos.alunoMudouEmOutroLugar` e recarrega.
+ */
+export class ConflitoDeVersao extends ErroDoBanco {
+  constructor(oQue: string, causa: { message?: string } | null = null) {
+    super(oQue, causa ?? { message: 'conflito_de_versao' });
+    this.name = 'ConflitoDeVersao';
+  }
+}
+
+/** Para a store decidir o aviso sem conhecer as classes do repositório. */
+export const ehConflitoDeVersao = (erro: unknown): boolean =>
+  erro instanceof ConflitoDeVersao;
+
+/** Ação sem caminho no banco. Só o `default` do `switch` lança: um caso novo de `Mudanca`. */
 export class AindaNaoGravaNoBanco extends Error {
   constructor(acao: Mudanca['tipo'] | string) {
-    super(`[banco] "${acao}" mexe em saldo e só grava no banco pela RPC da Parte 5.`);
+    super(`[banco] "${acao}" não tem caminho no banco.`);
     this.name = 'AindaNaoGravaNoBanco';
   }
 }
@@ -84,6 +105,14 @@ export async function exigirProfessor(): Promise<string> {
   if (!id) throw new ErroDoBanco('identificar o professor', { message: 'sem sessão' });
   return id;
 }
+
+// --- Versões ---------------------------------------------------------------------
+
+/**
+ * A `versao` de cada aluno, como o banco a mandou na última leitura ou na
+ * última RPC. É o que a RPC compara para saber se outro aparelho gravou antes.
+ */
+const versoes = new Map<string, number>();
 
 // --- Leitura ----------------------------------------------------------------------
 
@@ -137,6 +166,9 @@ async function lerDoBanco(professorId: string): Promise<Persistido> {
       c.from('propostas').select('*').eq('professor_id', professorId).eq('status', 'enviada'),
     ]);
 
+  versoes.clear();
+  for (const a of alunos) versoes.set(a.id, a.versao);
+
   return montarPersistido({
     professor: exigir(professor, 'ler o perfil'),
     politicas: exigir(politicas, 'ler a política'),
@@ -152,10 +184,16 @@ async function lerDoBanco(professorId: string): Promise<Persistido> {
 interface Cache {
   professorId: string;
   gravado: Persistido;
+  /** As versões vão junto: quem abre pelo cache e grava antes da rede responder precisa delas. */
+  versoes?: Record<string, number>;
 }
 
 async function guardarCache(professorId: string, gravado: Persistido): Promise<void> {
-  const cache: Cache = { professorId, gravado: soPersistido(gravado) };
+  const cache: Cache = {
+    professorId,
+    gravado: soPersistido(gravado),
+    versoes: Object.fromEntries(versoes),
+  };
   await AsyncStorage.setItem(CHAVE_CACHE, JSON.stringify(cache));
 }
 
@@ -166,6 +204,10 @@ async function lerCacheDe(professorId: string): Promise<Gravado | null> {
     if (!bruto) return null;
     const cache = JSON.parse(bruto) as Partial<Cache> | null;
     if (cache?.professorId !== professorId || !cache.gravado) return null;
+    // Só completa o mapa: uma versão que já veio do banco é mais nova que a do cache.
+    for (const [id, v] of Object.entries(cache.versoes ?? {})) {
+      if (!versoes.has(id)) versoes.set(id, v);
+    }
     return cache.gravado;
   } catch {
     // Cache ilegível é cache ausente: a rede ainda pode responder.
@@ -189,10 +231,87 @@ const CAMPOS_DA_ACAO = {
 } as const satisfies Partial<Record<Mudanca['tipo'], readonly (keyof Aluno)[]>>;
 
 /**
- * Campos que só mudam junto com um lançamento no extrato. Editar um deles pela
- * ficha deixaria saldo sem histórico: é a Parte 5.
+ * Campos de saldo. Mudá-los pela ficha (`atualizarAluno`) passa pela RPC, com a
+ * trava de versão, como qualquer movimento.
  */
 const CAMPOS_DE_SALDO: readonly (keyof Aluno)[] = ['total', 'usadas'];
+
+/** O tipo do lançamento sai da ação, não do título (Parte 1, decisão 1). */
+const TIPO_DO_DESFECHO: Record<Desfecho, TipoDeLancamento> = {
+  realizada: 'aula',
+  avisada: 'falta_avisada',
+  sem_aviso: 'falta_sem_aviso',
+  cancelada_professor: 'cancelada_professor',
+};
+
+const TIPO_DA_ACAO = {
+  marcarReposicao: 'reposicao',
+  responderProposta: 'reposicao',
+  receberPagamento: 'pagamento',
+  registrarPagamentoCom: 'pagamento',
+  estenderValidade: 'validade',
+  criarPacote: 'pacote',
+  renovarPacote: 'pacote',
+  criarPacoteCom: 'pacote',
+  enviarProposta: 'proposta',
+} as const satisfies Partial<Record<Mudanca['tipo'], TipoDeLancamento>>;
+
+/**
+ * As gravações pela RPC de um mesmo aluno, uma depois da outra. Não é fila
+ * offline (D4): é para a segunda ler a versão que a primeira devolveu. Duas
+ * seguidas no mesmo aparelho (registrar a aula e marcar a reposição) dariam
+ * conflito consigo mesmas se saíssem juntas.
+ */
+const filaDoAluno = new Map<string, Promise<unknown>>();
+
+function emSequencia<T>(alunoId: string, tarefa: () => Promise<T>): Promise<T> {
+  const anterior = filaDoAluno.get(alunoId) ?? Promise.resolve();
+  const atual = anterior.catch(() => {}).then(tarefa);
+  filaDoAluno.set(alunoId, atual);
+  atual
+    .catch(() => {})
+    .finally(() => {
+      if (filaDoAluno.get(alunoId) === atual) filaDoAluno.delete(alunoId);
+    });
+  return atual;
+}
+
+/** O que a RPC recebe além do aluno. */
+interface Movimento {
+  lancamento?: { lancamento: Lancamento; tipo: TipoDeLancamento } | null;
+  proposta?: Json | null;
+}
+
+/**
+ * Aluno + lançamento (+ proposta) numa chamada só, que grava tudo ou nada. A
+ * versão nova volta para o mapa. Sem versão conhecida (o aluno não veio de
+ * nenhuma leitura), o app não tem como provar que leu o último estado: é
+ * conflito, e a recarga traz a versão.
+ */
+function mover(aluno: Aluno, movimento: Movimento, oQue: string): Promise<void> {
+  return emSequencia(aluno.id, async () => {
+    const versao = versoes.get(aluno.id);
+    if (versao === undefined) throw new ConflitoDeVersao(oQue);
+    const { data, error } = await clienteSupabase().rpc('aplicar_movimento', {
+      p_aluno: alunoParaBanco(aluno) as unknown as Json,
+      p_versao: versao,
+      ...(movimento.lancamento
+        ? {
+            p_lancamento: lancamentoDoMovimento(
+              movimento.lancamento.lancamento,
+              movimento.lancamento.tipo,
+            ),
+          }
+        : {}),
+      ...(movimento.proposta ? { p_proposta: movimento.proposta } : {}),
+    });
+    if (error) {
+      if (error.message === 'conflito_de_versao') throw new ConflitoDeVersao(oQue, error);
+      throw new ErroDoBanco(oQue, error);
+    }
+    versoes.set(aluno.id, data as number);
+  });
+}
 
 async function atualizarProfessor(valores: TablesUpdate<'professores'>, oQue: string) {
   const id = await exigirProfessor();
@@ -247,16 +366,24 @@ async function gravar(mudanca: Mudanca): Promise<void> {
     // O id vem do app (`novoIdDeAluno`), e `professor_id` fica com o padrão
     // do banco, `auth.uid()`: o app não tem como gravar aluno para outro.
     case 'criarAluno':
-      return exigirLinha(
+      exigirLinha(
         await clienteSupabase().from('alunos').insert(alunoParaBanco(mudanca.aluno)).select('id'),
         'criar o aluno',
       );
+      // A versão inicial da coluna: o primeiro movimento do aluno novo já tem com o que comparar.
+      versoes.set(mudanca.aluno.id, 0);
+      return;
 
-    case 'atualizarAluno':
-      if (mudanca.campos.some((c) => CAMPOS_DE_SALDO.includes(c))) {
-        throw new AindaNaoGravaNoBanco('atualizarAluno com saldo');
+    case 'atualizarAluno': {
+      if (!mudanca.campos.some((c) => CAMPOS_DE_SALDO.includes(c))) {
+        return atualizarAluno(mudanca.aluno, mudanca.campos, 'atualizar o aluno');
       }
-      return atualizarAluno(mudanca.aluno, mudanca.campos, 'atualizar o aluno');
+      // Saldo pela RPC; o que não é do movimento (o nome, por exemplo) vai direto depois.
+      await mover(mudanca.aluno, {}, 'atualizar o saldo do aluno');
+      const doMovimento: readonly (keyof Aluno)[] = CAMPOS_DO_MOVIMENTO;
+      const resto = mudanca.campos.filter((c) => !doMovimento.includes(c));
+      return atualizarAluno(mudanca.aluno, resto, 'atualizar o aluno');
+    }
     case 'alternarPausa':
     case 'enviarLembrete':
     case 'arquivarAluno':
@@ -272,16 +399,56 @@ async function gravar(mudanca: Mudanca): Promise<void> {
       return;
 
     case 'registrarAula':
+      return mover(
+        mudanca.aluno,
+        { lancamento: { lancamento: mudanca.lancamento, tipo: TIPO_DO_DESFECHO[mudanca.desfecho] } },
+        'registrar a aula',
+      );
+    // Marcar a reposição direto encerra a proposta aberta sem aceite (SCRUM-65).
     case 'marcarReposicao':
+      return mover(
+        mudanca.aluno,
+        {
+          lancamento: { lancamento: mudanca.lancamento, tipo: TIPO_DA_ACAO.marcarReposicao },
+          proposta: { status: 'recusada' },
+        },
+        'marcar a reposição',
+      );
     case 'receberPagamento':
     case 'registrarPagamentoCom':
     case 'estenderValidade':
     case 'criarPacote':
     case 'renovarPacote':
     case 'criarPacoteCom':
-    case 'enviarProposta':
+      return mover(
+        mudanca.aluno,
+        { lancamento: { lancamento: mudanca.lancamento, tipo: TIPO_DA_ACAO[mudanca.tipo] } },
+        mudanca.tipo,
+      );
+    case 'enviarProposta': {
+      const proposta = mudanca.aluno.proposta;
+      if (!proposta) throw new ErroDoBanco('enviar a proposta', { message: 'aluno sem proposta' });
+      return mover(
+        mudanca.aluno,
+        {
+          lancamento: { lancamento: mudanca.lancamento, tipo: TIPO_DA_ACAO.enviarProposta },
+          proposta: propostaDoMovimento(proposta),
+        },
+        'enviar a proposta',
+      );
+    }
+    // Recusada não tem lançamento; aceita ou confirmada é a reposição marcada.
     case 'responderProposta':
-      throw new AindaNaoGravaNoBanco(mudanca.tipo);
+      return mover(
+        mudanca.aluno,
+        {
+          lancamento: mudanca.lancamento
+            ? { lancamento: mudanca.lancamento, tipo: TIPO_DA_ACAO.responderProposta }
+            : null,
+          proposta: { status: mudanca.status },
+        },
+        'responder a proposta',
+      );
 
     default: {
       // Caso novo em `Mudanca` sem decisão aqui não compila.
@@ -336,6 +503,7 @@ export const repositorioSupabase: Repositorio = {
   },
 
   async apagar() {
+    versoes.clear();
     await AsyncStorage.removeItem(CHAVE_CACHE);
   },
 

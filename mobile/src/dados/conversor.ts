@@ -427,6 +427,65 @@ export function colunasDoAluno(
   return saida as TablesUpdate<'alunos'>;
 }
 
+// --- Movimento (Parte 5) ----------------------------------------------------------
+
+/**
+ * Os campos que um movimento (aula, falta, reposição, pagamento, pacote) pode
+ * mudar no aluno, e que a RPC `aplicar_movimento` grava. O resto do aluno é
+ * gravado direto (Parte 4). A lista tem de bater com o `update` da
+ * `0005_aplicar_movimento.sql`, e um teste confere: campo novo aqui sem coluna
+ * lá seria perdido em silêncio.
+ */
+export const CAMPOS_DO_MOVIMENTO = [
+  'total',
+  'usadas',
+  'validade',
+  'validadeEstendida',
+  'semPacote',
+  'encerrado',
+  'valorPorAula',
+  'reposicoes',
+  'pendencia',
+  'agendada',
+  'pausado',
+  'pagamento',
+] as const satisfies readonly (keyof Aluno)[];
+
+/** As colunas desses campos, na ordem de `COLUNAS_DO_CAMPO`. */
+export const COLUNAS_DO_MOVIMENTO: readonly ColunaDoAluno[] = CAMPOS_DO_MOVIMENTO.flatMap(
+  (campo) => COLUNAS_DO_CAMPO[campo],
+);
+
+/**
+ * O lançamento para a RPC, com o tipo que a `Mudanca` diz (Parte 1, decisão
+ * 1). Aluno e professor a RPC tira da linha do aluno, e `criado_em` é `now()`.
+ */
+export function lancamentoDoMovimento(
+  l: Lancamento,
+  tipo: TipoDeLancamento,
+  referencia: Date = hojeComoData(),
+): Json {
+  return json({
+    tipo,
+    data: dataParaBanco(l.d, referencia),
+    titulo: l.t,
+    subtitulo: l.s,
+    delta: l.delta,
+    saldo_depois: l.saldo,
+    dinheiro: l.dinheiro ?? false,
+  });
+}
+
+/** Uma proposta nova para a RPC: `status: 'enviada'` é o que a faz inserir. */
+export function propostaDoMovimento(p: Proposta, referencia: Date = hojeComoData()): Json {
+  return json({
+    status: 'enviada',
+    janela: p.janela,
+    alternativas: p.alternativas,
+    enviada_em: dataParaBanco(p.enviadaEm, referencia),
+  });
+}
+
 /**
  * O extrato de um aluno como linhas, para lançamento que nasceu antes do banco:
  * tipo pelo título, `criado_em` pela posição.

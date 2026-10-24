@@ -14,14 +14,17 @@ import { criadoEmDoBanco, EMAIL_DO_LOGIN, linhasDoPersistido } from '../__simula
 import {
   alunoDoBanco,
   alunoParaBanco,
+  COLUNAS_DO_MOVIMENTO,
   colunasDoAluno,
   dataDoBanco,
   dataParaBanco,
   estadoVazio,
   extratoParaBanco,
+  lancamentoDoMovimento,
   montarPersistido,
   perfilDoBanco,
   perfilParaBanco,
+  propostaDoMovimento,
   temAulaHoje,
   tipoPorTitulo,
   type LinhaDoAluno,
@@ -342,5 +345,49 @@ describe('estadoVazio — a conta nova', () => {
   it('devolve um objeto novo a cada chamada', () => {
     expect(estadoVazio()).not.toBe(estadoVazio());
     expect(estadoVazio().alunos).not.toBe(estadoVazio().alunos);
+  });
+});
+
+describe('movimento (Parte 5): o que a RPC recebe', () => {
+  // Sem os tipos do Node, como no teste do seed: o `fs` vem pelo jest, e a raiz
+  // do repositório sai do caminho deste arquivo.
+  const { readFileSync } = jest.requireActual('fs') as {
+    readFileSync(arquivo: string, codificacao: 'utf8'): string;
+  };
+  const RAIZ = (expect.getState().testPath as string).split(/[\\/]/).slice(0, -5).join('/');
+  const migracao = readFileSync(`${RAIZ}/supabase/migrations/0005_aplicar_movimento.sql`, 'utf8');
+
+  it('as colunas do movimento são as do update da 0005, nem uma a mais, nem uma a menos', () => {
+    const set = /update public\.alunos a set([\s\S]*?)from jsonb_populate_record/.exec(migracao)?.[1] ?? '';
+    const colunas = [...set.matchAll(/^\s*(\w+)\s*=/gm)].map((m) => m[1]).filter((c) => c !== 'versao');
+    expect([...colunas].sort()).toEqual([...COLUNAS_DO_MOVIMENTO].sort());
+  });
+
+  it('o lançamento vai com o tipo da ação e a data com ano', () => {
+    expect(
+      lancamentoDoMovimento({ d: '23/10', t: 'Aula realizada', s: 'Sexta, 17h', delta: -1, saldo: 3 }, 'aula', QUINTA),
+    ).toEqual({
+      tipo: 'aula',
+      data: '2026-10-23',
+      titulo: 'Aula realizada',
+      subtitulo: 'Sexta, 17h',
+      delta: -1,
+      saldo_depois: 3,
+      dinheiro: false,
+    });
+  });
+
+  it("a proposta nova vai com status 'enviada', que é o que faz a RPC inserir", () => {
+    expect(
+      propostaDoMovimento(
+        { janela: { dia: 'Sexta, 30/10', hora: '17h' }, enviadaEm: '22/10', status: 'enviada', alternativas: [] },
+        QUINTA,
+      ),
+    ).toEqual({
+      status: 'enviada',
+      janela: { dia: 'Sexta, 30/10', hora: '17h' },
+      alternativas: [],
+      enviada_em: '2026-10-22',
+    });
   });
 });

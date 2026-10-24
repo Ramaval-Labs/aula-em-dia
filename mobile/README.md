@@ -24,7 +24,7 @@ build no navegador.
 ## Verificação
 
 ```bash
-npm test          # 811 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
+npm test          # 844 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
 npm run typecheck # tsc --noEmit
 ```
 
@@ -61,7 +61,7 @@ src/dominio/                 regras puras — sem UI, sem storage, sem rede
 src/dados/                   persistência: a semente (cópia de ../data/seed.json) e as chaves de storage
   repositorio.ts               a interface; EXPO_PUBLIC_BACKEND escolhe local ou supabase
   adaptador.ts                 o repositório local (AsyncStorage)
-  repositorioSupabase.ts       o do banco (Parte 4): leitura com cache, gravação do que não mexe em saldo
+  repositorioSupabase.ts       o do banco: leitura com cache, gravação direta (Parte 4) e pela RPC (Parte 5)
   conversor.ts                 app ↔ banco: dd/mm ↔ date, reais ↔ centavos, extrato ↔ linhas
   importacao.ts                leva os alunos do aparelho para a conta no primeiro login
 src/estado/                  dados persistidos, navegação (TIPO_DA_TELA), sessão, rascunhos, toast

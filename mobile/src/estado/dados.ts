@@ -19,6 +19,7 @@ import {
   type PreferenciasDeAviso,
 } from '../dados/repositorio';
 import { estadoVazio } from '../dados/conversor';
+import { ehConflitoDeVersao } from '../dados/repositorioSupabase';
 import { estadoInicial, type EstadoPersistivel } from '../dados/semente';
 import { hoje, somarDias } from '../dominio/datas';
 import {
@@ -154,13 +155,17 @@ let recarregando: Promise<void> | null = null;
  * No remoto o banco é a fonte: o toast avisa que não salvou, e a store
  * recarrega do banco, para a tela não seguir mostrando o que não foi gravado.
  * Sem rede, a recarga cai no cache, que é o último estado que o banco aceitou.
+ * Conflito de versão (Parte 5) não é falha de conexão: outro aparelho gravou o
+ * mesmo aluno antes, e o aviso diz isso. A recarga é a mesma.
  */
 function aoFalharNaPersistencia(erro: unknown) {
   if (__DEV__) {
     console.warn('[dados] a persistência falhou.', erro);
   }
   if (!repositorio.remoto) return;
-  useToast.getState().avisar(avisos.falhaAoSalvar);
+  useToast
+    .getState()
+    .avisar(ehConflitoDeVersao(erro) ? avisos.alunoMudouEmOutroLugar : avisos.falhaAoSalvar);
   recarregando ??= useDados
     .getState()
     .carregar()

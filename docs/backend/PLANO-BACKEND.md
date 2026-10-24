@@ -870,7 +870,8 @@ não mexem em saldo.
 migração `0004_onboarding.sql`. `escolherRepositorio('supabase')` devolve o repositório do banco, e
 `local` continua o padrão. Nenhuma tela mudou.
 
-**1. As ações que mexem em saldo rejeitam até a Parte 5.** Aula, falta, reposição, pagamento,
+**1. As ações que mexem em saldo rejeitam até a Parte 5.** (Superada no `SCRUM-21`: hoje elas
+gravam pela RPC; ver as Decisões da Parte 5.) Aula, falta, reposição, pagamento,
 pacote, validade e proposta gravam aluno e lançamento juntos, e isso é a RPC. Até lá o repositório
 rejeita com `AindaNaoGravaNoBanco`, e a store trata como qualquer falha (decisão 3): a tela volta
 ao que o banco tem. Gravar só o aluno deixaria saldo sem extrato; ignorar em silêncio faria a ação
@@ -987,6 +988,15 @@ supabase-js não abre transação pelo cliente, então a transação mora numa f
 
 ### A função
 
+**Feita no `SCRUM-21`.** O que roda é
+[`supabase/migrations/0005_aplicar_movimento.sql`](../../supabase/migrations/0005_aplicar_movimento.sql).
+O esboço abaixo ficou como estava antes. A `0005` difere dele em três pontos, explicados nas
+[decisões](#decisões-tomadas-na-parte-5):
+
+- tem o ramo da proposta escrito, no lugar do stub;
+- grava também `encerrado`;
+- só deixa chamar quem tem login.
+
 ```sql
 create function public.aplicar_movimento(
   p_aluno      jsonb,             -- o aluno inteiro, já calculado pelo dominio/ e convertido pelo conversor
@@ -1051,6 +1061,110 @@ professor). Em todas, o cálculo continua em `politica.ts` ou `pacote.ts` e a RP
 
 O Envio 01 limita o plano gratuito por número de alunos. Um trigger `before insert on alunos` recusa
 o aluno N+1 quando `plano = 'gratuito'`. O **limite ainda precisa ser decidido** com o time.
+
+### Decisões tomadas na Parte 5
+
+O que foi construído:
+
+- a migração `0005_aplicar_movimento.sql` e o teste `supabase/tests/database/aplicar_movimento.test.sql`;
+- no app, as dez ações que mexem em saldo passam a chamar a RPC, em `mobile/src/dados/repositorioSupabase.ts`;
+- a frase do conflito em `estado/dados.ts`, que é do commit de abertura do Rafael.
+
+Nenhuma tela mudou, e o modo local também não.
+
+**1. A RPC grava só as colunas de um movimento.** São estas:
+
+- o pacote: `total`, `usadas`, `validade`, `validade_estendida`, `sem_pacote`, `encerrado` e `valor_por_aula_centavos`;
+- a reposição: `reposicoes`, `pendencia_origem` e `agendada`;
+- o pagamento: `pausado` e as quatro colunas de `pagamento_*`.
+
+O app manda o aluno inteiro, mas o cadastro, o arquivo, os lembretes e a disponibilidade ficam de
+fora. São gravados direto pela Parte 4, e um movimento com a memória deste aparelho não pode
+desfazer o que outro aparelho editou neles.
+
+- **`pausado` entra porque receber o pagamento tira a pausa** (`registrarPagamento` em `politica.ts`).
+- **`encerrado` entra porque criar um pacote o limpa.** O esboço não tinha.
+- **Dois testes do app seguram a lista contra a deriva.** Um lê o `update` da `0005` e cobra que as
+  colunas sejam as de `CAMPOS_DO_MOVIMENTO` em `conversor.ts`. O outro roda cada movimento da store
+  e cobra que ele só mude esses campos (mais a proposta). Se uma regra do domínio passar a mudar
+  outro campo, o teste quebra, em vez de o campo se perder em silêncio no banco.
+
+**2. A versão mora num mapa do repositório, e o domínio não fica sabendo dela.**
+
+- **De onde ela vem:** o `carregar()` preenche o mapa, cada RPC devolve a versão nova, e o aluno
+  criado no aparelho começa na 0, o padrão da coluna.
+- **O mapa vai no cache.** Quem abre pelo cache e grava antes de a rede responder ainda sabe o que
+  leu.
+- **Sem versão conhecida, é conflito e o app nem chama o banco.** O app não tem como provar que leu
+  o último estado, e a recarga traz a versão.
+- **As gravações diretas da Parte 4 não mexem na versão.** As colunas delas e as do movimento não
+  se cruzam: nenhuma das duas desfaz a outra.
+
+**3. As RPCs de um mesmo aluno saem uma depois da outra.** Registrar a aula e logo marcar a
+reposição dariam conflito consigo mesmas se saíssem juntas, porque as duas leriam a mesma versão.
+Não é fila offline (D4): sem rede, a gravação falha na hora, como antes.
+
+**4. O ramo da proposta.** `p_proposta.status` diz o que fazer.
+
+| O que chega | O que a RPC faz |
+|---|---|
+| `'enviada'` | É uma proposta nova. Fecha a aberta, se houver, como `'recusada'`, e insere a nova. O índice `uma_proposta_aberta` só deixa uma aberta. |
+| outro status | Fecha a aberta com esse status: a resposta do aluno, ou a confirmação do professor. |
+
+Nos dois casos `respondida_em` é gravado. Sem proposta aberta não há o que fechar, e não é erro.
+
+Marcar a reposição direto (`marcarReposicao`, SCRUM-65) fecha a aberta como `'recusada'`. O enum
+não tem "substituída", e para o aluno é isto que aconteceu: a proposta deixou de valer sem que ele
+aceitasse. Acrescentar o valor mudaria o tipo `StatusDaProposta` do domínio, que é do Mauro.
+
+**5. O lançamento.** O tipo sai da ação (Parte 1, decisão 1): o desfecho da aula, ou a tabela
+`TIPO_DA_ACAO`. O aluno e o professor saem da linha que a RPC acabou de gravar, não do que o app
+mandou, e `criado_em` é `now()`. Proposta recusada não tem lançamento.
+
+**6. O conflito.** A RPC levanta `conflito_de_versao` (`P0001`) e o repositório rejeita com
+`ConflitoDeVersao`. A store mostra `avisos.alunoMudouEmOutroLugar`, a frase que o PO aprovou em
+23/10, e recarrega como em qualquer falha. Falha de rede continua com `falhaAoSalvar`.
+
+O aluno de outro professor também dá `conflito_de_versao`. Com `security invoker`, a RLS o deixa
+invisível e o `update` não acha a linha, então a função não tem como distinguir os dois casos. Em
+nenhum dos dois nada é gravado.
+
+**7. Só quem tem login chama a RPC.** O `execute` sai de `public` e de `anon` e fica com
+`authenticated`. Sem isso, o grant padrão deixaria qualquer um chamá-la. A RLS já devolveria
+conflito, mas assim a porta nem abre.
+
+**8. `atualizarAluno` com `total` ou `usadas` passa pela RPC, sem lançamento.** O resto do mesmo
+patch vai direto, numa segunda chamada. As duas não formam uma transação, mas hoje nenhuma tela
+muda saldo pela ficha.
+
+**9. A regra do plano gratuito ficou de fora.** O limite de alunos não foi decidido.
+
+**Onde foi testado.** Em 23/10/2026, com Supabase CLI 2.120.0 e PostgreSQL 17.11.
+
+- **pgTAP:** 24 casos novos, 70 no total. Cobrem:
+  - aluno e lançamento juntos;
+  - o cadastro que não é gravado;
+  - a versão velha dando conflito;
+  - o rollback provocado pelo `check (saldo_depois >= 0)`;
+  - a proposta nova fechando a anterior, a aceita fechando a aberta, e o fechar sem proposta aberta;
+  - a RLS barrando o professor B;
+  - o `execute` negado a quem não tem login.
+- **O repositório contra o Supabase simulado**, que agora responde à RPC com a mesma semântica.
+- **As duas guardas da decisão 1.**
+- **A ponta a ponta no Expo Web contra o banco local**, com duas abas e 12 de 12 conferências:
+  - registrar aula, receber pagamento e renovar pacote aparecem no banco, com aluno e lançamento
+    juntos;
+  - marcar a reposição direto fecha a proposta aberta;
+  - duas abas no mesmo aluno dão conflito, a frase aparece, a aba recarrega com o que a outra
+    gravou, a tentativa recusada não chega ao banco, e refeita ela passa;
+  - sem rede, o movimento mostra a frase de conexão.
+
+**O que fica em aberto.**
+
+- **O aluno respondendo pelo link** (Parte 6). A Edge Function deve chamar esta mesma RPC, com a
+  versão, para não sobrescrever um movimento do professor.
+- **As gravações diretas sem trava.** Editar o cadastro do mesmo aluno em dois aparelhos ainda vale
+  o último. Se isso pesar, elas passam a mandar a versão também.
 
 ### Pronto quando
 
@@ -1187,16 +1301,16 @@ Todas as ações de [mobile/src/estado/dados.ts](../../mobile/src/estado/dados.t
 | `zerar` | — | só no modo local (demonstração) |
 | `alunoPor` | — | leitura em memória |
 | `registrarAula` | 5 | RPC `aplicar_movimento` (aluno + lançamento) |
-| `marcarReposicao` | 5 | RPC (aluno + lançamento; fecha a proposta aberta do aluno) |
+| `marcarReposicao` | 5 | RPC (aluno + lançamento; fecha a proposta aberta do aluno como `recusada`) |
 | `receberPagamento`, `registrarPagamentoCom` | 5 | RPC (lançamento com `dinheiro = true`) |
 | `estenderValidade` | 5 | RPC |
 | `criarPacote`, `renovarPacote`, `criarPacoteCom` | 5 | RPC |
-| `enviarProposta` | 5 | RPC (aluno + lançamento + proposta) |
-| `responderProposta` | 5 / 6 | RPC pelo professor; Edge Function pelo aluno |
+| `enviarProposta` | 5 | RPC (aluno + lançamento + proposta; fecha a aberta antes) |
+| `responderProposta` | 5 / 6 | RPC pelo professor (fecha a aberta com o status); Edge Function pelo aluno |
 | `alternarPausa` | 4 | `update alunos` |
 | `enviarLembrete`, `cobrarTodosEmAtraso` | 4 | `update alunos` |
 | `criarAluno` | 4 | `insert alunos` |
-| `atualizarAluno`, `arquivarAluno` | 4 | `update alunos` |
+| `atualizarAluno`, `arquivarAluno` | 4 | `update alunos`; com `total` ou `usadas`, o saldo vai pela RPC (Parte 5) |
 | `salvarDisponibilidadeDoAluno` | 4 / 6 | `update alunos` pelo professor; Edge Function pelo aluno |
 | `salvarPerfil`, `salvarPacotePadrao`, `salvarPreferenciasDeAviso` | 4 | `update professores` |
 | `salvarPoliticas` | 4 | `update politicas` |
