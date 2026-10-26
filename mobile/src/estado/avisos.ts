@@ -69,4 +69,14 @@ export const avisos = {
   // recarregou quando este aviso aparece (PO, 23/10).
   alunoMudouEmOutroLugar:
     'Este aluno mudou em outro aparelho. Recarreguei os dados: confira e faça de novo.',
+  // O link do aluno (Parte 6). Como os avisos do WhatsApp, o app só copia: quem
+  // manda o link é o professor (PO, 26/10).
+  linkCopiado: 'Link copiado. Mande para o aluno pelo WhatsApp.',
+  // "Gerar novo link" revoga o anterior; o aviso diz isso, porque o aluno que
+  // ainda tem o velho vai cair na página de link inválido.
+  linkNovoGerado: 'Link novo gerado. O anterior parou de funcionar.',
+  // Não é toast: é a página pública quando o token não carrega. A Edge Function
+  // devolve o mesmo 404 para o token trocado e para o que nunca existiu, então a
+  // frase não afirma que o link já valeu um dia (PO, 26/10).
+  linkInvalido: 'Não encontramos esta página. Peça um novo link ao seu professor.',
 };
