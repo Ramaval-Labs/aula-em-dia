@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro e os cards atribuídos. Até agora foram sete janelas: uma semana de
-preparação e seis sprints de uma semana.
+com as três pessoas dentro e os cards atribuídos. Até agora foram oito janelas: uma semana de
+preparação e sete sprints de uma semana.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -314,11 +314,29 @@ Parte 4 desceu de L759 para L836 com as decisões da Parte 3) e ganhou dois iten
 **Fora da sprint, de propósito:** `SCRUM-31`, `SCRUM-66`, os outros cards de plataforma e
 publicação, e as Partes 5 a 8 do backend, que esperam a Parte 4.
 
-### Sprint 6 · 23/10 a 30/10 · **ativa** · 10 pontos
+### Sprint 6 · 23/10 a 26/10 · **fechada, 3 de 3, 10 pontos**
 
-Esta é a sprint que está no quadro agora. O tema é a **Parte 5**: com o modo supabase, aula, falta,
-reposição, pagamento e pacote gravam aluno + lançamento juntos, por uma RPC transacional com trava
-de versão. Junto vai o acabamento do que a Sprint 5 deixou.
+O tema foi a **Parte 5**: com o modo supabase, aula, falta, reposição, pagamento e pacote gravam
+aluno + lançamento juntos, por uma RPC transacional com trava de versão. Junto foi o acabamento do
+que a Sprint 5 deixou. Fechou em 26/10, quatro dias antes do fim previsto. A suíte foi de 811 para
+**850 testes**.
+
+**Como fechou, para registro:**
+
+- **A ordem obrigatória foi seguida.** O commit de abertura do `SCRUM-21` (`174b2b3`) entrou no
+  primeiro dia. O commit 1 do `SCRUM-68` (PR #23) mesclou antes do commit 2 (PR #24), e o Valentin
+  fez a Parte 5 (PR #21) antes do `SCRUM-68`.
+- **A revisão da Parte 5 não ficou com o Mauro.** A planning a previa para ele, porque a RPC grava
+  o que o `dominio/` calculou. O PR #21 foi aprovado pelo Rafael, e não há revisão do Mauro
+  registrada nele.
+- **O commit 2 do `SCRUM-68` foi feito pelo Valentin**, e não pelo Rafael. Ele mexe em
+  `telas/comum/perguntaDeImportar.ts`, que é da faixa de apresentação, e o Rafael aprovou o PR.
+- **Fora do quadro**, o PR #22 documentou como rodar no celular com o banco local, inclusive num
+  hotspot só IPv6.
+- **A Parte 5 deixou duas pontas**, registradas no plano: a Edge Function do aluno tem de chamar a
+  mesma RPC, com a versão (entrou no `SCRUM-22`), e as gravações diretas ainda não mandam versão.
+
+O que foi planejado, como estava no quadro:
 
 | Dono | Cards | Pts |
 |---|---|---|
@@ -357,6 +375,64 @@ o limite não foi decidido.
 
 **Fora da sprint, de propósito:** `SCRUM-31`; as Partes 6 a 8, que esperam a Parte 5; `SCRUM-39`,
 `SCRUM-40` e `SCRUM-41` (acabamento de design); e os cards de plataforma e publicação.
+
+### Sprint 7 · 26/10 a 02/11 · **ativa** · 10 pontos
+
+Esta é a sprint que está no quadro agora. O tema é a **Parte 6**: o professor copia o link do aluno
+na ficha, e o aluno abre no navegador do celular, sem conta e sem instalar nada. Ele vê o saldo, o
+extrato e a proposta de reposição, e responde. É o item do MVP que ainda não existia de forma
+nenhuma.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Mauro | `SCRUM-69` — o recorte do que o aluno vê (`dominio/paginaDoAluno.ts`) + a revisão do `SCRUM-22` | 2 |
+| Valentin | `SCRUM-22` — Parte 6 no servidor: Edge Function `aluno-publico`, a RPC do link novo, o bundle do domínio e o repositório público | 5 |
+| Rafael | `SCRUM-70` — Parte 6 na tela: a página em `/a/:token` e o link na ficha | 3 |
+
+**A Parte 6 foi partida em três, por faixa**, como a Parte 3. O `SCRUM-22` atravessava as três
+camadas: o recorte é regra, a Edge Function é persistência, e a página e o botão são apresentação.
+A peça que segura o resto é o recorte. A proposta do aluno hoje chama `candidatos()` com **todos**
+os alunos e a grade do professor, que não podem chegar ao navegador do aluno. Então o domínio
+calcula a página inteira, e a Edge Function e a prévia "Ver como o aluno vê" leem a mesma função. O
+que o professor confere na prévia é o que o aluno recebe.
+
+**Ordem obrigatória**, com os vínculos *blocks* no board:
+
+- o `SCRUM-69` no primeiro dia: ele bloqueia o `SCRUM-22` e o passo 1 do `SCRUM-70`
+- o `SCRUM-22` antes dos passos 3 a 5 do `SCRUM-70`. Antes disso, o Rafael adianta a troca da prévia
+  para o recorte e as frases
+- o commit do `bundle:dominio` sozinho, por causa do `mobile/package.json`
+
+**Decisões de PO para a planning** (propostas, a confirmar):
+
+- **O link não vence.** Ele é revogado por "Gerar novo link", que derruba o anterior, como prevê a
+  D5. Um token de 122 bits não se adivinha; o risco é o link repassado, e a resposta a isso é a
+  revogação.
+- **O que o aluno vê:** o primeiro nome dele, o saldo, a validade, o horário, a regra combinada, o
+  extrato dele (com os próprios pagamentos) e a proposta. Do professor, só o primeiro nome e a
+  disciplina. Não saem o telefone, o e-mail, o `valorPorAula` nem nada de outro aluno.
+- **A demonstração é contra o banco local**, com o celular na mesma rede, como na Parte 3. O projeto
+  na nuvem e a Vercel viraram o `SCRUM-71`.
+- **O limite de requisições por IP fica para a Parte 8** (`SCRUM-24`).
+- **As frases do `SCRUM-70`:** "Link copiado. Mande para o aluno pelo WhatsApp." · "Link novo
+  gerado. O anterior parou de funcionar." · "Este link não vale mais. Peça um novo ao seu professor."
+
+**Se a sua faixa esvaziar:** o `SCRUM-72` (a carga que falha sem cache avisa, 1 ponto), a sobra da
+Sprint 5 que estava sem card. O Rafael faz a frase antes, e o Valentin liga depois de terminar o
+`SCRUM-22`, porque os dois mexem em `estado/dados.ts`.
+
+**Revisado antes de abrir**, contra a `main` de 26/10:
+
+- o `SCRUM-22` subiu da profundidade média para o template de nove seções. As linhas do plano
+  estavam velhas: a Parte 6 desceu de L620 para L1185. O card ficou só com o servidor, e o recorte e
+  a tela viraram o `SCRUM-69` e o `SCRUM-70`, que nasceram no template.
+- **A revisão do Mauro vai no card**, e não só aqui. Na Sprint 6 ela ficou só na planning e não
+  aconteceu.
+
+**Fora da sprint, de propósito:** o `SCRUM-23` (Parte 7: o WhatsApp já sai desde o `SCRUM-25` e o
+`SCRUM-26`, e o push pede development build, o `SCRUM-47`); o `SCRUM-24` (Parte 8), que recebe o que
+a Parte 6 deixar; o `SCRUM-31`; o `SCRUM-39`, o `SCRUM-40` e o `SCRUM-41`; o `SCRUM-71`; e os outros
+cards de plataforma e publicação.
 
 ---
 
@@ -526,7 +602,12 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
 - **A operação de sprint saiu do conector da Atlassian** entre 14/10 e 21/10. O `manageJiraSprint`,
   que criou, iniciou e fechou as sprints até a 4, agora devolve "Unknown operation", e o `discover`
   não o lista mais. O conector ainda move card para uma sprint que já existe
-  (`transitionJiraIssue`), mas criar, iniciar e fechar sprint voltou a ser feito pelo navegador
+  (`transitionJiraIssue`), mas criar, iniciar e fechar sprint voltou a ser feito pelo navegador.
+  **Ele voltou em 23/10**: fechou a Sprint 5, abriu a 6 e, em 26/10, fechou a 6 e abriu a 7
+- **`SCRUM-69` a `SCRUM-72` criados** em 26/10, na abertura da Sprint 7. O `69` e o `70` são o
+  recorte e a tela da Parte 6, partida por faixa com o `SCRUM-22`. O `71` é a publicação do link
+  (Supabase na nuvem e Vercel), e o `72` é a frase da carga que falha sem cache, a sobra da Sprint 5
+  que estava sem card
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
