@@ -19,7 +19,8 @@ export const CHAVE_SESSAO = 'aulaemdia.sessao.v1';
 export const CHAVE_CACHE = 'aulaemdia.cache.v1';
 
 /**
- * Marca que os dados locais (`CHAVE_ESTADO`) já foram levados para uma conta.
- * Os dados ficam no aparelho; a marca é o que impede de importar duas vezes.
+ * Marca que os dados locais (`CHAVE_ESTADO`) já foram levados para uma conta,
+ * com o id do professor, ou que a pergunta foi dispensada (`'dispensada'`).
+ * Os dados ficam no aparelho; a marca é o que impede de perguntar de novo.
  */
 export const CHAVE_IMPORTACAO = 'aulaemdia.importacao.v1';
