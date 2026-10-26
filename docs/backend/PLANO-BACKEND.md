@@ -937,6 +937,13 @@ ficam: a conta já tem os seus, do onboarding.
 - **A marca `aulaemdia.importacao.v1` impede de importar duas vezes, inclusive para outra conta.**
   A pergunta "Levar seus alunos para a conta?" é do `SCRUM-61`. `temDadosLocaisParaImportar()`
   diz se ela deve aparecer. Quem chama recarrega a store depois.
+- **"Agora não" grava a mesma marca, com o valor `dispensada`** (`dispensarImportacao()`,
+  `SCRUM-68`). A pergunta não volta na próxima abertura, e a dispensa vale também para outra conta
+  que entre depois no aparelho, como a importação. Os alunos locais são do aparelho, não de uma
+  conta: perguntar de novo a cada login seria insistir com quem já respondeu. A função não rejeita
+  (a tela chama sem esperar) e não sobrescreve a marca de uma importação feita. Como
+  `importarDadosLocais()` não consulta a marca, levar os alunos depois, por outro caminho, continua
+  possível.
 
 **9. "Onboarding concluído" fica no banco, e responde o que estava em aberto na Parte 3.** A
 `0004` cria `professores.onboarding_concluido` (padrão `false`; quem já existia vira `true`). A
