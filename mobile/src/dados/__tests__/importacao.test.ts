@@ -1,7 +1,7 @@
 /**
  * Importar os dados locais para a conta (SCRUM-20).
  *
- * O "pronto quando" do card é que quem já usava não perde dado. Isso quer
+ * O "pronto quando" do SCRUM-20 é que quem já usava não perde dado. Isso quer
  * dizer três coisas, e cada uma tem teste: o que é do professor chega inteiro
  * ao banco, com os ids trocados uma vez só; nada fica pela metade quando a
  * rede cai no meio; e nada é apagado do aparelho.
@@ -13,7 +13,12 @@ import { hoje, somarDias } from '../../dominio/datas';
 import type { Aluno } from '../../dominio/tipos';
 import { criarSupabaseFalso, SEM_REDE, type SupabaseFalso } from '../__simulados__/supabaseFalso';
 import { CHAVE_ESTADO, CHAVE_IMPORTACAO } from '../armazenamento';
-import { importarDadosLocais, temDadosLocaisParaImportar } from '../importacao';
+import {
+  dispensarImportacao,
+  IMPORTACAO_DISPENSADA,
+  importarDadosLocais,
+  temDadosLocaisParaImportar,
+} from '../importacao';
 import type { Persistido } from '../repositorio';
 import { estadoInicial } from '../semente';
 import { clienteSupabase, usaSupabase } from '../supabase';
@@ -195,5 +200,57 @@ describe('importarDadosLocais', () => {
     usar({ usuario: null });
     await guardar(noAparelho([ANA]));
     await expect(importarDadosLocais()).rejects.toThrow('sem sessão');
+  });
+});
+
+describe('dispensarImportacao — "Agora não" vale de vez (SCRUM-68)', () => {
+  it('depois de dispensar, a pergunta não aparece mais', async () => {
+    await guardar(noAparelho([ANA]));
+    await dispensarImportacao();
+
+    expect(await temDadosLocaisParaImportar()).toBe(false);
+    expect(await AsyncStorage.getItem(CHAVE_IMPORTACAO)).toBe(IMPORTACAO_DISPENSADA);
+  });
+
+  it('vale também para outra conta que entre depois no mesmo aparelho', async () => {
+    await guardar(noAparelho([ANA]));
+    await dispensarImportacao();
+    falso.logar('prof-b');
+
+    expect(await temDadosLocaisParaImportar()).toBe(false);
+  });
+
+  it('nada sai do aparelho e nada vai ao banco', async () => {
+    const antes = noAparelho([ANA]);
+    await guardar(antes);
+    await dispensarImportacao();
+
+    expect(JSON.parse((await AsyncStorage.getItem(CHAVE_ESTADO)) as string)).toEqual(antes);
+    expect(falso.consultas).toEqual([]);
+  });
+
+  it('não apaga a marca de uma importação que já aconteceu', async () => {
+    await guardar(noAparelho([ANA]));
+    await importarDadosLocais();
+    await dispensarImportacao();
+
+    expect(await AsyncStorage.getItem(CHAVE_IMPORTACAO)).toBe('prof-a');
+  });
+
+  it('importar depois de dispensar continua possível, e a marca passa a ser a da conta', async () => {
+    await guardar(noAparelho([ANA]));
+    await dispensarImportacao();
+
+    expect(await importarDadosLocais()).toBe(1);
+    expect(await AsyncStorage.getItem(CHAVE_IMPORTACAO)).toBe('prof-a');
+  });
+
+  it('com o disco falhando, não rejeita: a tela chama sem esperar', async () => {
+    await guardar(noAparelho([ANA]));
+    (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('disco cheio'));
+
+    await expect(dispensarImportacao()).resolves.toBeUndefined();
+    // A marca não entrou: a pergunta volta, que é o pior caso combinado.
+    expect(await temDadosLocaisParaImportar()).toBe(true);
   });
 });

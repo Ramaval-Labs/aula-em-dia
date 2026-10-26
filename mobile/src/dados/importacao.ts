@@ -16,6 +16,10 @@
  *   título, e o que não casar vira `legado` (Parte 1, decisão 1).
  * - Nada é apagado do aparelho. Uma marca em `CHAVE_IMPORTACAO` impede de
  *   importar duas vezes, inclusive para outra conta.
+ * - "Agora não" grava a mesma marca, com o valor `dispensada`
+ *   (`dispensarImportacao`, SCRUM-68): a pergunta não volta na próxima
+ *   abertura, nem para outra conta. `importarDadosLocais()` não olha a marca,
+ *   então importar depois, por outro caminho, continua possível.
  *
  * Depois de importar, quem chamou recarrega a store (`useDados.carregar()`):
  * este arquivo é da camada de dados e não conhece a store.
@@ -31,6 +35,12 @@ import { SEMENTE_NA_NOTACAO } from './semente';
 import { clienteSupabase, usaSupabase } from './supabase';
 
 const DA_SEMENTE = new Set(SEMENTE_NA_NOTACAO.alunos.map((a) => a.id));
+
+/**
+ * O valor da marca quando a pergunta foi dispensada. Depois de importar, a
+ * marca guarda o id do professor que recebeu os alunos.
+ */
+export const IMPORTACAO_DISPENSADA = 'dispensada';
 
 /** O que o aparelho tem do professor: tudo menos os alunos de demonstração. */
 async function dadosLocais() {
@@ -54,6 +64,24 @@ export async function temDadosLocaisParaImportar(): Promise<boolean> {
     return ((await dadosLocais())?.alunos.length ?? 0) > 0;
   } catch {
     return false;
+  }
+}
+
+/**
+ * "Agora não": a pergunta deixa de aparecer neste aparelho, para esta conta e
+ * para as que entrarem depois, como a marca de importação. Os dados locais
+ * ficam onde estão (Parte 4, decisão 8).
+ *
+ * A tela chama sem esperar. Por isso não rejeita nunca: se o disco falhar, o
+ * pior caso é a pergunta voltar na próxima abertura. Uma importação que já
+ * aconteceu não é sobrescrita: ela diz mais que a dispensa.
+ */
+export async function dispensarImportacao(): Promise<void> {
+  try {
+    if (await AsyncStorage.getItem(CHAVE_IMPORTACAO)) return;
+    await AsyncStorage.setItem(CHAVE_IMPORTACAO, IMPORTACAO_DISPENSADA);
+  } catch {
+    // Ver acima: sem marca, a pergunta só volta.
   }
 }
 
