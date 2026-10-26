@@ -403,7 +403,7 @@ que o professor confere na prévia é o que o aluno recebe.
   para o recorte e as frases
 - o commit do `bundle:dominio` sozinho, por causa do `mobile/package.json`
 
-**Decisões de PO para a planning** (propostas, a confirmar):
+**Decisões de PO de 26/10**, tomadas na abertura:
 
 - **O link não vence.** Ele é revogado por "Gerar novo link", que derruba o anterior, como prevê a
   D5. Um token de 122 bits não se adivinha; o risco é o link repassado, e a resposta a isso é a
@@ -415,11 +415,15 @@ que o professor confere na prévia é o que o aluno recebe.
   na nuvem e a Vercel viraram o `SCRUM-71`.
 - **O limite de requisições por IP fica para a Parte 8** (`SCRUM-24`).
 - **As frases do `SCRUM-70`:** "Link copiado. Mande para o aluno pelo WhatsApp." · "Link novo
-  gerado. O anterior parou de funcionar." · "Este link não vale mais. Peça um novo ao seu professor."
+  gerado. O anterior parou de funcionar." · "Não encontramos esta página. Peça um novo link ao seu
+  professor." A terceira mudou em relação à proposta ("Este link não vale mais"). A Edge Function
+  devolve o mesmo 404 para o token trocado e para o que nunca existiu, de propósito, então a frase
+  não pode afirmar que o link já valeu um dia.
 
 **Se a sua faixa esvaziar:** o `SCRUM-72` (a carga que falha sem cache avisa, 1 ponto), a sobra da
 Sprint 5 que estava sem card. O Rafael faz a frase antes, e o Valentin liga depois de terminar o
-`SCRUM-22`, porque os dois mexem em `estado/dados.ts`.
+`SCRUM-22`, porque os dois mexem em `estado/dados.ts`. A frase foi decidida com as outras: "Não deu
+para carregar seus alunos. Confira a conexão e abra o app de novo."
 
 **Revisado antes de abrir**, contra a `main` de 26/10:
 
