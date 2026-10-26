@@ -6,13 +6,18 @@
  * (`dados/importacao.ts`); aqui mora só o estado da pergunta na tela.
  *
  * A resposta fica num módulo, e não num `useState`: a tela de Alunos desmonta
- * a cada navegação, e "Agora não" não pode voltar no primeiro "voltar". Morre
- * ao recarregar o app, como `telas/entrada/modoDeAcesso.ts`.
+ * a cada navegação, e "Agora não" não pode voltar no primeiro "voltar". O
+ * módulo morre ao recarregar o app; o que segura "Agora não" depois disso é a
+ * marca que `dispensarImportacao()` grava (SCRUM-68).
  */
 
 import { useEffect, useRef, useState } from 'react';
 
-import { importarDadosLocais, temDadosLocaisParaImportar } from '../../dados/importacao';
+import {
+  dispensarImportacao,
+  importarDadosLocais,
+  temDadosLocaisParaImportar,
+} from '../../dados/importacao';
 import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
 import { useToast } from '../../estado/toast';
@@ -66,6 +71,9 @@ export function usePerguntaDeImportar() {
   const agoraNao = () => {
     respondida = true;
     setAberta(false);
+    // Vale também nas próximas aberturas. Sem esperar: a função não rejeita, e
+    // se a gravação falhar, o pior caso é a pergunta voltar.
+    void dispensarImportacao();
   };
 
   return { aberta, levando, levar, agoraNao };

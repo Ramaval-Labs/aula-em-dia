@@ -1,5 +1,6 @@
 /**
- * A pergunta "Levar seus alunos para a conta?" na tela de Alunos (`SCRUM-61`).
+ * A pergunta "Levar seus alunos para a conta?" na tela de Alunos (`SCRUM-61`;
+ * o "Agora não" que vale de vez, `SCRUM-68`).
  * O que importa é da camada de dados e está simulado aqui: o teste cobra só o
  * que a tela faz com cada resposta.
  */
@@ -8,7 +9,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { importarDadosLocais, temDadosLocaisParaImportar } from '../../dados/importacao';
+import {
+  dispensarImportacao,
+  importarDadosLocais,
+  temDadosLocaisParaImportar,
+} from '../../dados/importacao';
 import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
@@ -20,10 +25,12 @@ import { Home } from '../Home';
 jest.mock('../../dados/importacao', () => ({
   temDadosLocaisParaImportar: jest.fn(),
   importarDadosLocais: jest.fn(),
+  dispensarImportacao: jest.fn(() => Promise.resolve()),
 }));
 
 const temDados = jest.mocked(temDadosLocaisParaImportar);
 const importar = jest.mocked(importarDadosLocais);
+const dispensar = jest.mocked(dispensarImportacao);
 
 const METRICA = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -66,6 +73,8 @@ it('"Agora não" esconde, e a pergunta não volta ao sair e voltar', async () =>
   await fireEvent.press(screen.getByRole('button', { name: /Agora não/ }));
   expect(screen.queryByText(PERGUNTA)).toBeNull();
   expect(importar).not.toHaveBeenCalled();
+  // E grava a dispensa: a pergunta também não volta na próxima abertura (SCRUM-68).
+  expect(dispensar).toHaveBeenCalledTimes(1);
 
   await t.unmount();
   temDados.mockClear();
@@ -90,4 +99,6 @@ it('levar: se falha, avisa e a pergunta fica; se dá certo, avisa, recarrega e s
   await waitFor(() => expect(carregar).toHaveBeenCalledTimes(1));
   expect(avisar).toHaveBeenLastCalledWith('3 alunos levados para a conta.');
   expect(screen.queryByText(PERGUNTA)).toBeNull();
+  // Levar não é dispensar: quem marca a importação é a própria importarDadosLocais.
+  expect(dispensar).not.toHaveBeenCalled();
 });
