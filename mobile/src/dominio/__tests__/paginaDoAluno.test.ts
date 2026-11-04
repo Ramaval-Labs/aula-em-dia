@@ -478,6 +478,47 @@ describe('a proposta', () => {
   });
 });
 
+describe('a janela que outro aluno ocupou sai da página (SCRUM-83)', () => {
+  const lista = () => candidatos(alunoPor('val'), semente.alunos, semente.disponibilidade, HOJE);
+  /** O recorte do val com a proposta dada, e outro aluno com a reposição marcada. */
+  const comOcupada = (proposta: Proposta, agendada: { dia: string; hora: string }, extra: Partial<Aluno> = {}) => {
+    const val: Aluno = { ...alunoPor('val'), proposta };
+    const outro: Aluno = { ...alunoPor('mar'), agendada, ...extra };
+    const alunos = semente.alunos.map((a) => (a.id === 'val' ? val : a.id === 'mar' ? outro : a));
+    return paginaDoAluno(val, [], semente.perfil, semente.politicas, alunos, semente.disponibilidade, HOJE);
+  };
+
+  it('a alternativa ocupada sai, e as livres ficam', () => {
+    const [a, b, c] = lista();
+    const j = (x: typeof a) => ({ dia: x.dia, hora: x.hora });
+    const alt = (x: typeof a) => ({ ...j(x), motivo: x.motivo });
+    const p = comOcupada(propostaEm(j(a), { alternativas: [alt(b), alt(c)] }), j(b)).proposta;
+
+    expect(p?.principal).toMatchObject(j(a));
+    expect(p?.alternativas.map((x) => x.dia + x.hora)).toEqual([c.dia + c.hora]);
+  });
+
+  it('a principal ocupada cede o lugar à primeira alternativa livre', () => {
+    const [a, b] = lista();
+    const j = (x: typeof a) => ({ dia: x.dia, hora: x.hora });
+    const p = comOcupada(propostaEm(j(a), { alternativas: [{ ...j(b), motivo: b.motivo }] }), j(a)).proposta;
+
+    expect(p?.principal).toMatchObject(j(b));
+    expect(p?.alternativas).toEqual([]);
+  });
+
+  it('com tudo ocupado, não há o que responder: a proposta é null', () => {
+    const [a] = lista();
+    expect(comOcupada(propostaEm({ dia: a.dia, hora: a.hora }), { dia: a.dia, hora: a.hora }).proposta).toBeNull();
+  });
+
+  it('o aluno arquivado não ocupa a janela', () => {
+    const [a] = lista();
+    const j = { dia: a.dia, hora: a.hora };
+    expect(comOcupada(propostaEm(j), j, { arquivado: true }).proposta?.principal).toMatchObject(j);
+  });
+});
+
 describe('é pura', () => {
   it('não altera nada do que recebe', () => {
     const a = alunoPor('raf');

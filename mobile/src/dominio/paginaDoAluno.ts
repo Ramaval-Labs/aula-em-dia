@@ -70,7 +70,7 @@ function propostaDaPagina(
   alunos: Aluno[],
   disponibilidade: Disponibilidade,
   referencia: string,
-): PropostaDaPagina {
+): PropostaDaPagina | null {
   const todas = candidatos(aluno, alunos, disponibilidade, referencia);
   const janelaDaPagina = ({ dia, hora }: { dia: string; hora: string }): JanelaDaPagina => ({
     dia,
@@ -82,11 +82,23 @@ function propostaDaPagina(
   const sugeridas = (): Candidata[] =>
     melhores(todas.filter((c) => c.dia !== janela.dia || c.hora !== janela.hora));
 
+  // A janela que outro aluno já ocupou com a reposição dele sai da página: um
+  // horário aceita uma reposição só (SCRUM-83). Se a principal saiu, a
+  // primeira alternativa livre toma o lugar dela.
+  const ocupada = (j: { dia: string; hora: string }) =>
+    alunos.some(
+      (o) => o.id !== aluno.id && !o.arquivado && o.agendada?.dia === j.dia && o.agendada?.hora === j.hora,
+    );
+  // Lista vazia é o que o professor enviou, e fica vazia. Só proposta gravada
+  // sem o campo cai nas sugestões, como em AlunoProposta.
+  const alternativas = (proposta.alternativas ?? sugeridas()).slice(0, ALTERNATIVAS);
+  const livres = [janela, ...alternativas].filter((j) => !ocupada(j));
+  if (livres.length === 0) return null;
+  const [principal, ...resto] = livres;
+
   return {
-    principal: janelaDaPagina(janela),
-    // Lista vazia é o que o professor enviou, e fica vazia. Só proposta gravada
-    // sem o campo cai nas sugestões, como em AlunoProposta.
-    alternativas: (proposta.alternativas ?? sugeridas()).slice(0, ALTERNATIVAS).map(janelaDaPagina),
+    principal: janelaDaPagina(principal),
+    alternativas: resto.slice(0, ALTERNATIVAS).map(janelaDaPagina),
   };
 }
 
