@@ -74,6 +74,14 @@ export const avisos = {
   // recarregou quando este aviso aparece (PO, 23/10).
   alunoMudouEmOutroLugar:
     'Este aluno mudou em outro aparelho. Recarreguei os dados: confira e faça de novo.',
+  // Apagar a conta (Parte 8) apaga na hora, sem lixeira: o subtítulo da linha
+  // diz o tamanho do estrago antes do primeiro toque, e o segundo toque repete
+  // "tudo". Propostas da planning de 04/11, a confirmar com o PO.
+  apagarContaSubtitulo: 'Apaga você e todos os seus alunos. Não dá para desfazer.',
+  apagarContaConfirmar: 'Toque de novo para apagar tudo',
+  // A sessão só sai depois de o servidor confirmar; sem a confirmação, o
+  // professor continua na tela e pode tentar de novo.
+  apagarContaFalhou: 'Não deu para apagar a conta. Confira a conexão e tente de novo.',
   // O link do aluno (Parte 6). Como os avisos do WhatsApp, o app só copia: quem
   // manda o link é o professor (PO, 26/10).
   linkCopiado: 'Link copiado. Mande para o aluno pelo WhatsApp.',
