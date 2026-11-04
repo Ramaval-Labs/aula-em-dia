@@ -157,6 +157,9 @@ isOneToOne: false
           Functions: {
             "aplicar_movimento":
 { Args: { "p_aluno": Json,"p_lancamento"?: Json,"p_proposta"?: Json,"p_versao": number }; Returns: number
+                           },
+"novo_link_do_aluno":
+{ Args: { "p_aluno": string }; Returns: string
                            }
           }
           Enums: {
