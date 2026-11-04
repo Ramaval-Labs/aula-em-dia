@@ -64,6 +64,11 @@ export const avisos = {
   importacaoFeita: (n: number) =>
     `${plural(n, 'aluno levado', 'alunos levados')} para a conta.`,
   importacaoFalhou: 'Não deu para levar os alunos. Confira a conexão e tente de novo.',
+  // A carga falhou e não havia cache (Parte 4): sem o aviso, a conta abre vazia
+  // e parece que os alunos sumiram. Com cache o app abre e fica calado. Pede
+  // para abrir de novo, e não "tente de novo", porque não há botão de tentar
+  // (PO, 26/10).
+  cargaSemCache: 'Não deu para carregar seus alunos. Confira a conexão e abra o app de novo.',
   // Conflito de versão (Parte 5): outro aparelho gravou o mesmo aluno antes.
   // Não é falha de conexão, então não serve o falhaAoSalvar; a store já
   // recarregou quando este aviso aparece (PO, 23/10).
