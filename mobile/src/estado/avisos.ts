@@ -79,4 +79,13 @@ export const avisos = {
   // devolve o mesmo 404 para o token trocado e para o que nunca existiu, então a
   // frase não afirma que o link já valeu um dia (PO, 26/10).
   linkInvalido: 'Não encontramos esta página. Peça um novo link ao seu professor.',
+  // A página do aluno não abriu por falta de rede (o 404 é o linkInvalido). Não
+  // estava entre as frases do PO de 26/10: pede confirmação.
+  paginaNaoAbriu: 'Não deu para abrir a página. Confira a conexão e tente de novo.',
+  // As respostas do aluno, na prévia e no link: a mesma página, o mesmo aviso.
+  alunoAceitou: (janela: { dia: string; hora: string }) =>
+    `Reposição confirmada em ${janela.dia}, ${janela.hora}. O professor foi avisado.`,
+  alunoRecusou: 'Recusado. Informe sua disponibilidade para novas sugestões.',
+  alunoEnviouDisponibilidade: (professor: string) =>
+    `${professor} recebeu sua disponibilidade e vai propor até três horários.`,
 };
