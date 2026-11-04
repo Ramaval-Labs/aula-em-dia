@@ -16,13 +16,14 @@
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { BackHandler, Platform, StyleSheet, View } from 'react-native';
+import { AppState, BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Catalogo } from './src/componentes/__catalogo__/Catalogo';
 import { TabBar } from './src/componentes/TabBar';
 import { Toast } from './src/componentes/Toast';
 import { AlvoDeDesfoque, FundoRefracao, ProvedorDeDesfoque } from './src/componentes/Vidro';
+import { repositorio } from './src/dados/repositorio';
 import { useDados } from './src/estado/dados';
 import { exporParaDepuracao, useCatalogo } from './src/estado/depuracao';
 import {
@@ -53,6 +54,24 @@ const CAMINHO_DO_ALUNO =
     ? window.location.pathname
     : null;
 
+/**
+ * O aluno responde pelo link com o app do professor em segundo plano: ao
+ * voltar ao primeiro plano, o app relê o banco para mostrar a resposta (Parte
+ * 6, "No app do professor"). Só no remoto: no local os dados são do aparelho,
+ * e não há o que reler. O Realtime fica para depois.
+ */
+export function useRecarregarAoVoltar(recarregar: () => void, remoto: boolean = repositorio.remoto) {
+  useEffect(() => {
+    if (!remoto) return;
+    let anterior = AppState.currentState;
+    const sub = AppState.addEventListener('change', (estado) => {
+      if (anterior !== 'active' && estado === 'active') recarregar();
+      anterior = estado;
+    });
+    return () => sub.remove();
+  }, [recarregar, remoto]);
+}
+
 export function App() {
   const { carregado: temaCarregado } = useTema();
   const tela = useNavegacao((s) => s.tela);
@@ -66,6 +85,7 @@ export function App() {
   useEffect(() => {
     carregarDados();
   }, [carregarDados]);
+  useRecarregarAoVoltar(carregarDados);
 
   // Botão voltar do Android segue a mesma pilha da navegação da tela. Com um
   // sheet aberto, o próprio painel intercepta antes e só fecha.
