@@ -213,6 +213,45 @@ describe('o que não é mudança não chega ao repositório', () => {
   });
 });
 
+/**
+ * O link do aluno (Parte 6) não é estado da store: ela só repassa ao
+ * repositório. Montar a URL e trocar o token é da suíte do repositório remoto.
+ */
+describe('o link do aluno', () => {
+  const comLink = repositorio as { -readonly [K in keyof Repositorio]: Repositorio[K] };
+
+  afterEach(() => {
+    delete comLink.linkDoAluno;
+    delete comLink.gerarNovoLink;
+  });
+
+  it('no modo local não há link, e gerar um novo rejeita sem gravar nada', async () => {
+    const antes = persistido();
+    expect(d().linkDoAluno('val')).toBeNull();
+    await expect(d().gerarNovoLink('val')).rejects.toThrow(/modo supabase/);
+    expect(registrar).not.toHaveBeenCalled();
+    expect(persistido()).toEqual(antes);
+  });
+
+  it('no remoto, repassa ao repositório, e o estado não muda', async () => {
+    comLink.linkDoAluno = jest.fn((id: string) => `http://aluno.test/a/token-${id}`);
+    comLink.gerarNovoLink = jest.fn(async (id: string) => `http://aluno.test/a/novo-${id}`);
+    const antes = persistido();
+
+    expect(d().linkDoAluno('val')).toBe('http://aluno.test/a/token-val');
+    expect(await d().gerarNovoLink('val')).toBe('http://aluno.test/a/novo-val');
+    expect(comLink.gerarNovoLink).toHaveBeenCalledWith('val');
+    expect(registrar).not.toHaveBeenCalled();
+    expect(persistido()).toEqual(antes);
+  });
+
+  it('a falha do banco ao trocar chega à tela, que decide o que dizer', async () => {
+    comLink.gerarNovoLink = jest.fn().mockRejectedValue(new Error('sem rede'));
+    await expect(d().gerarNovoLink('val')).rejects.toThrow('sem rede');
+    expect(useToast.getState().mensagem).toBeNull();
+  });
+});
+
 describe('a tela não espera o disco', () => {
   it('a ação devolve o resultado e muda a memória antes de o repositório responder', () => {
     registrar.mockReturnValueOnce(new Promise(() => {}));

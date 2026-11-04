@@ -3,8 +3,9 @@
  *
  * Responde ao pedaço do supabase-js que o app usa — `auth.getSession`,
  * `from(tabela)` com `select`, `insert`, `update`, `delete`, `eq`, `in`,
- * `order`, `range` e `single`, e `rpc('aplicar_movimento')` com a mesma
- * semântica da 0005 — sobre tabelas que o teste preenche. Tem a forma
+ * `order`, `range` e `single`, e `rpc('aplicar_movimento')` e
+ * `rpc('novo_link_do_aluno')` com a mesma semântica da 0005 e da 0006 — sobre
+ * tabelas que o teste preenche. Tem a forma
  * da resposta de verdade (`{ data, error }`, sem lançar) e guarda cada consulta,
  * para o teste conferir tabela, filtro e valores.
  *
@@ -76,12 +77,13 @@ export function criarSupabaseFalso(opcoes: OpcoesDoFalso = {}) {
     switch (consulta.operacao) {
       case 'insert': {
         // Os padrões que o app conta com o banco para pôr: o professor é
-        // `auth.uid()`, `criado_em` é `now()`, e o aluno nasce na versão 0.
+        // `auth.uid()`, `criado_em` é `now()`, e o aluno nasce na versão 0,
+        // com o token do link.
         const novas = ([] as Linha[])
           .concat(consulta.valores as Linha | Linha[])
           .map((l) => ({
             ...(consulta.tabela === 'professores' ? {} : { professor_id: estado.usuario }),
-            ...(consulta.tabela === 'alunos' ? { versao: 0 } : {}),
+            ...(consulta.tabela === 'alunos' ? { versao: 0, token_publico: `token-${l.id}` } : {}),
             criado_em: new Date().toISOString(),
             ...l,
           }));
@@ -166,6 +168,25 @@ export function criarSupabaseFalso(opcoes: OpcoesDoFalso = {}) {
     return { data: linha.versao, error: null };
   }
 
+  /**
+   * A `novo_link_do_aluno` da 0006: troca o token do aluno do professor
+   * logado. O de outro professor não acha linha, como com a RLS.
+   */
+  let links = 0;
+  function novoLinkDoAluno(args: Record<string, unknown>): RespostaFalsa {
+    const linha = (tabelas.alunos ?? []).find(
+      (a) => a.id === args.p_aluno && a.professor_id === estado.usuario,
+    );
+    if (!linha) return { data: null, error: { message: 'aluno_nao_encontrado', code: 'P0001' } };
+    linha.token_publico = `token-${args.p_aluno}-novo-${++links}`;
+    return { data: linha.token_publico, error: null };
+  }
+
+  const FUNCOES: Record<string, (args: Record<string, unknown>) => RespostaFalsa> = {
+    aplicar_movimento: aplicarMovimento,
+    novo_link_do_aluno: novoLinkDoAluno,
+  };
+
   function rpc(nome: string, args: Record<string, unknown>) {
     const consulta: Consulta = {
       tabela: nome,
@@ -182,10 +203,9 @@ export function criarSupabaseFalso(opcoes: OpcoesDoFalso = {}) {
             consultas.push(consulta);
             const erro = opcoes.falhar?.(consulta) ?? null;
             if (erro) return { data: null, error: erro };
-            if (nome !== 'aplicar_movimento') {
-              return { data: null, error: { message: `função ${nome} não existe` } };
-            }
-            return aplicarMovimento(args);
+            const funcao = FUNCOES[nome];
+            if (!funcao) return { data: null, error: { message: `função ${nome} não existe` } };
+            return funcao(args);
           })
           .then(ok, falha),
     };
