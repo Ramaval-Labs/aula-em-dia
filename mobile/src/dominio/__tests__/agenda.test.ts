@@ -21,6 +21,7 @@ import {
   melhores,
   motivosDaFalta,
   porSemana,
+  reposicaoMarcada,
   type Candidata,
 } from '../agenda';
 import { diasEntre, somarDias } from '../datas';
@@ -238,6 +239,34 @@ describe('candidatos — descarte', () => {
     const arquivado = com({ id: 'b', dia: 'segunda', hora: '15h', arquivado: true });
     const segTarde: BlocoSemanal = { dia: 'seg', faixa: 'tarde' };
     expect(temJanela(candidatos(aluno, [aluno, arquivado], ABERTA, HOJE), segTarde)).toBe(true);
+  });
+
+  it('reposição marcada de outro aluno ocupa a data e a faixa dela (SCRUM-83)', () => {
+    const livre = candidatos(aluno, [aluno], ABERTA, HOJE);
+    const alvo = livre.find((c) => c.data === '02/09' && c.bloco.faixa === 'fimTarde');
+    expect(alvo).toBeDefined();
+
+    const outro = com({ id: 'b', dia: 'sem horário fixo', hora: '', agendada: { dia: alvo!.dia, hora: '18h' } });
+    const lista = candidatos(aluno, [aluno, outro], ABERTA, HOJE);
+
+    expect(lista.some((c) => c.data === '02/09' && c.bloco.faixa === 'fimTarde')).toBe(false);
+    // Só aquela data: a mesma faixa na semana seguinte segue livre.
+    expect(lista.some((c) => c.data === '09/09' && c.bloco.faixa === 'fimTarde')).toBe(true);
+    // E as outras faixas do mesmo dia também.
+    expect(lista.some((c) => c.data === '02/09' && c.bloco.faixa === 'tarde')).toBe(true);
+  });
+
+  it('a reposição marcada do próprio aluno, ou de arquivado, não ocupa nada', () => {
+    const livre = candidatos(aluno, [aluno], ABERTA, HOJE);
+    const alvo = livre.find((c) => c.data === '02/09' && c.bloco.faixa === 'fimTarde')!;
+    const agendada = { dia: alvo.dia, hora: '18h' };
+
+    const proprio = com({ agendada });
+    const arquivado = com({ id: 'b', dia: 'sem horário fixo', hora: '', agendada, arquivado: true });
+    for (const todos of [[proprio], [aluno, arquivado]]) {
+      const lista = candidatos(todos[0], todos, ABERTA, HOJE);
+      expect(lista.some((c) => c.data === '02/09' && c.bloco.faixa === 'fimTarde')).toBe(true);
+    }
   });
 
   it('aluno que declarou disponibilidade só recebe janela dentro dela', () => {
@@ -564,5 +593,20 @@ describe('horasLivres', () => {
 
   it('sem bloco, zero hora', () => {
     expect(horasLivres([])).toBe(0);
+  });
+});
+
+describe('reposicaoMarcada', () => {
+  it('lê a data do fim do rótulo e a faixa da hora', () => {
+    expect(reposicaoMarcada(com({ agendada: { dia: 'Terça, 10/11', hora: '17h' } }))).toEqual({
+      data: '10/11',
+      faixa: faixaDaHora(17),
+    });
+  });
+
+  it('sem reposição, ou com rótulo ou hora que não se lê, é null', () => {
+    expect(reposicaoMarcada(aluno)).toBeNull();
+    expect(reposicaoMarcada(com({ agendada: { dia: 'Sexta', hora: '17h' } }))).toBeNull();
+    expect(reposicaoMarcada(com({ agendada: { dia: 'Sexta, 30/10', hora: 'à tarde' } }))).toBeNull();
   });
 });

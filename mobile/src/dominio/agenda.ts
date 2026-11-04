@@ -72,6 +72,19 @@ export function blocosDaAulaFixa(a: Aluno): BlocoSemanal[] {
   return diasDoAluno(a).map((dia) => ({ dia, faixa }));
 }
 
+/**
+ * A reposição já marcada de um aluno, como data e faixa. `agendada.dia` é o
+ * rótulo "Terça, 10/11", e a data é o fim dele. `null` quando não há
+ * reposição, ou quando o rótulo ou a hora não se deixam ler.
+ */
+export function reposicaoMarcada(a: Aluno): { data: string; faixa: FaixaHoraria } | null {
+  if (!a.agendada) return null;
+  const data = /(\d{2}\/\d{2})\s*$/.exec(a.agendada.dia)?.[1];
+  const hora = /(\d{1,2})\s*h/.exec(a.agendada.hora)?.[1];
+  const faixa = hora === undefined ? null : faixaDaHora(Number(hora));
+  return data && faixa ? { data, faixa } : null;
+}
+
 // --- candidatas -----------------------------------------------------------
 
 export interface Candidata extends Janela {
@@ -116,9 +129,13 @@ export function candidatos(
   const inicio = lerDdMm(hoje);
   if (!inicio) return [];
 
-  const ocupados: BlocoSemanal[] = todos
-    .filter((o) => o.id !== aluno.id && !o.arquivado)
-    .flatMap(blocosDaAulaFixa);
+  const outros = todos.filter((o) => o.id !== aluno.id && !o.arquivado);
+  const ocupados: BlocoSemanal[] = outros.flatMap(blocosDaAulaFixa);
+  // A reposição marcada de outro aluno ocupa aquela data, não a semana toda
+  // (SCRUM-83, P2-2 da revisão da Parte 6).
+  const marcadas = outros
+    .map(reposicaoMarcada)
+    .filter((m): m is { data: string; faixa: FaixaHoraria } => m !== null);
 
   const preferida = horaDoAluno(aluno);
   const blocosDoAluno = blocosDaAulaFixa(aluno);
@@ -144,6 +161,9 @@ export function candidatos(
 
       // choque com aula fixa de outro aluno
       if (temBloco(ocupados, bloco)) continue;
+
+      // choque com reposição já marcada de outro aluno, nesta data
+      if (marcadas.some((m) => m.data === data && m.faixa === faixa.chave)) continue;
 
       // o aluno declarou disponibilidade e este bloco não está nela
       if (dispDoAluno.length > 0 && !temBloco(dispDoAluno, bloco)) continue;
