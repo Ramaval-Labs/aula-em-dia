@@ -8,18 +8,22 @@
  * A tab bar aparece em toda tela **não-sheet** e some com o painel aberto; o
  * sheet sobe sobre a última tela não-sheet da pilha, que continua desenhada
  * atrás dele (spec/navegacao.md, "Semântica de sheet").
+ *
+ * No Expo Web, o caminho `/a/<token>` não abre nada disto: abre a página do
+ * aluno (`telas/aluno/AppDoAluno.tsx`), ver `PortaoDoAluno`.
  */
 
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import { AppState, BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Catalogo } from './src/componentes/__catalogo__/Catalogo';
 import { TabBar } from './src/componentes/TabBar';
 import { Toast } from './src/componentes/Toast';
 import { AlvoDeDesfoque, FundoRefracao, ProvedorDeDesfoque } from './src/componentes/Vidro';
+import { repositorio } from './src/dados/repositorio';
 import { useDados } from './src/estado/dados';
 import { exporParaDepuracao, useCatalogo } from './src/estado/depuracao';
 import {
@@ -29,6 +33,7 @@ import {
   useNavegacao,
 } from './src/estado/navegacao';
 import { useSessao } from './src/estado/sessao';
+import { AppDoAluno, tokenDoCaminho } from './src/telas/aluno/AppDoAluno';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
 import { telaDe } from './src/telas/registro';
 import { TemaProvider, useTema } from './src/tema/TemaProvider';
@@ -36,6 +41,36 @@ import { ARQUIVOS_DE_FONTE } from './src/tema/tipografia';
 
 // Só no Expo Web em desenvolvimento: deixa o script de screenshots navegar.
 exporParaDepuracao();
+
+/**
+ * O link do aluno (`/a/<token>`, Parte 6): no Expo Web, esse caminho abre a
+ * página pública no lugar do app do professor, sem sessão e sem carregar os
+ * dados dele. No nativo não há caminho, e nada muda.
+ */
+const CAMINHO_DO_ALUNO =
+  Platform.OS === 'web' &&
+  typeof window !== 'undefined' &&
+  window.location?.pathname?.startsWith('/a/')
+    ? window.location.pathname
+    : null;
+
+/**
+ * O aluno responde pelo link com o app do professor em segundo plano: ao
+ * voltar ao primeiro plano, o app relê o banco para mostrar a resposta (Parte
+ * 6, "No app do professor"). Só no remoto: no local os dados são do aparelho,
+ * e não há o que reler. O Realtime fica para depois.
+ */
+export function useRecarregarAoVoltar(recarregar: () => void, remoto: boolean = repositorio.remoto) {
+  useEffect(() => {
+    if (!remoto) return;
+    let anterior = AppState.currentState;
+    const sub = AppState.addEventListener('change', (estado) => {
+      if (anterior !== 'active' && estado === 'active') recarregar();
+      anterior = estado;
+    });
+    return () => sub.remove();
+  }, [recarregar, remoto]);
+}
 
 export function App() {
   const { carregado: temaCarregado } = useTema();
@@ -50,6 +85,7 @@ export function App() {
   useEffect(() => {
     carregarDados();
   }, [carregarDados]);
+  useRecarregarAoVoltar(carregarDados);
 
   // Botão voltar do Android segue a mesma pilha da navegação da tela. Com um
   // sheet aberto, o próprio painel intercepta antes e só fecha.
@@ -106,9 +142,34 @@ export default function Raiz() {
   return (
     <SafeAreaProvider>
       <TemaProvider>
-        <Portao fontesProntas={fontesProntas} />
+        {CAMINHO_DO_ALUNO !== null ? (
+          <PortaoDoAluno fontesProntas={fontesProntas} caminho={CAMINHO_DO_ALUNO} />
+        ) : (
+          <Portao fontesProntas={fontesProntas} />
+        )}
       </TemaProvider>
     </SafeAreaProvider>
+  );
+}
+
+/**
+ * A raiz do link do aluno. Só espera as fontes e o tema: sem `useSessao` e
+ * sem `carregarDados`, porque o aluno não tem conta e os dados do professor
+ * não chegam ao navegador dele. O fundo de refração e o toast são da própria
+ * página.
+ */
+function PortaoDoAluno({ fontesProntas, caminho }: { fontesProntas: boolean; caminho: string }) {
+  const { tema, carregado: temaCarregado } = useTema();
+
+  return (
+    <View style={styles.cheio}>
+      <StatusBar style={tema === 'escuro' ? 'light' : 'dark'} />
+      {fontesProntas && temaCarregado ? (
+        <AppDoAluno token={tokenDoCaminho(caminho)} />
+      ) : (
+        <FundoRefracao />
+      )}
+    </View>
   );
 }
 

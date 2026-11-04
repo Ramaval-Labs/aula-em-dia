@@ -69,4 +69,23 @@ export const avisos = {
   // recarregou quando este aviso aparece (PO, 23/10).
   alunoMudouEmOutroLugar:
     'Este aluno mudou em outro aparelho. Recarreguei os dados: confira e faça de novo.',
+  // O link do aluno (Parte 6). Como os avisos do WhatsApp, o app só copia: quem
+  // manda o link é o professor (PO, 26/10).
+  linkCopiado: 'Link copiado. Mande para o aluno pelo WhatsApp.',
+  // "Gerar novo link" revoga o anterior; o aviso diz isso, porque o aluno que
+  // ainda tem o velho vai cair na página de link inválido.
+  linkNovoGerado: 'Link novo gerado. O anterior parou de funcionar.',
+  // Não é toast: é a página pública quando o token não carrega. A Edge Function
+  // devolve o mesmo 404 para o token trocado e para o que nunca existiu, então a
+  // frase não afirma que o link já valeu um dia (PO, 26/10).
+  linkInvalido: 'Não encontramos esta página. Peça um novo link ao seu professor.',
+  // A página do aluno não abriu por falta de rede (o 404 é o linkInvalido). Não
+  // estava entre as frases do PO de 26/10: pede confirmação.
+  paginaNaoAbriu: 'Não deu para abrir a página. Confira a conexão e tente de novo.',
+  // As respostas do aluno, na prévia e no link: a mesma página, o mesmo aviso.
+  alunoAceitou: (janela: { dia: string; hora: string }) =>
+    `Reposição confirmada em ${janela.dia}, ${janela.hora}. O professor foi avisado.`,
+  alunoRecusou: 'Recusado. Informe sua disponibilidade para novas sugestões.',
+  alunoEnviouDisponibilidade: (professor: string) =>
+    `${professor} recebeu sua disponibilidade e vai propor até três horários.`,
 };

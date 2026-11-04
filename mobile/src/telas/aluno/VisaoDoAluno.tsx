@@ -1,15 +1,22 @@
 /**
- * Fluxo F — a visão do aluno, como pré-visualização dentro do app, no iOS
- * Glass (derivadas: o handoff novo não desenha estas telas).
+ * Fluxo F — a visão do aluno, no iOS Glass (derivadas: o handoff novo não
+ * desenha estas telas).
  *
- * O handoff antigo desenha isto como página web pública. Aqui são telas
- * nativas empilhadas, alcançáveis por "Ver como o aluno vê" na ficha — o
- * professor confere o que o aluno recebe sem precisar publicar nada. Toda
- * tela abre com a faixa "Prévia do que o aluno vê", para não haver dúvida de
- * que é o professor quem está olhando.
+ * Cada página existe uma vez só, como miolo: `PaginaSaldo`, `PaginaProposta` e
+ * `PaginaDisponibilidade` recebem o recorte do aluno (`PaginaDoAluno`, do
+ * `dominio/paginaDoAluno`) e as ações por prop, e não leem store nem
+ * navegação. Duas fontes as alimentam:
  *
- * A frase da regra combinada vem da MESMA função que alimenta o cartão-espelho
- * do onboarding: o que o professor declarou é o que o aluno lê.
+ * - a **prévia**, "Ver como o aluno vê" na ficha: telas empilhadas que montam
+ *   o recorte com `paginaDoAluno()` a partir da store e abrem com a faixa
+ *   "Prévia do que o aluno vê", para não haver dúvida de que é o professor
+ *   quem está olhando;
+ * - o **link** `/a/<token>` (`AppDoAluno.tsx`), que recebe o mesmo recorte da
+ *   Edge Function, sem faixa e sem tab bar.
+ *
+ * As duas leem a mesma função: o que o professor confere na prévia é o que o
+ * aluno recebe (SCRUM-70). A frase da regra combinada também é a mesma do
+ * cartão-espelho do onboarding: o que o professor declarou é o que o aluno lê.
  */
 
 import React, { useMemo, useState } from 'react';
@@ -33,9 +40,13 @@ import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
 import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
 import { plural, primeiroNome, unidade } from '../../dominio/formato';
-import { comoOAlunoVaiLer } from '../../dominio/mensagens';
-import { saldo, temPacote } from '../../dominio/politica';
-import type { Lancamento } from '../../dominio/tipos';
+import {
+  paginaDoAluno,
+  type JanelaDaPagina,
+  type PaginaDoAluno,
+} from '../../dominio/paginaDoAluno';
+import type { BlocoSemanal, Lancamento } from '../../dominio/tipos';
+import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
@@ -61,13 +72,89 @@ function FaixaPrevia({ texto: apoio }: { texto?: string }) {
   return <BlocoStatus tom="tint" titulo="Prévia do que o aluno vê" texto={apoio} />;
 }
 
-/** "Ana · Inglês" — o que o cabeçalho da página do aluno mostraria. */
+/** "Página de Ana · Inglês" — o que o cabeçalho da página do aluno mostra. */
+export function assinaturaDe(pagina: PaginaDoAluno): string {
+  return `Página de ${pagina.professor.nome} · ${pagina.professor.disciplina ?? ''}`;
+}
+
+/** A mesma assinatura, na prévia, antes de haver recorte (aluno não encontrado). */
 function useAssinatura(): string {
   const perfil = useDados((s) => s.perfil);
   return `Página de ${primeiroNome(perfil.nome)} · ${perfil.disciplinas[0] ?? ''}`;
 }
 
-/* ── Menu: qual das três páginas ──────────────────────────────────────── */
+/* ── A moldura: o que muda entre a prévia e o link ─────────────────────── */
+
+export interface Moldura {
+  /** o topo da página: a faixa da prévia, ou o cabeçalho do link */
+  topo?: React.ReactNode;
+  /** o voltar; sem ele, a página é a primeira do link e não tem para onde voltar */
+  voltar?: { rotulo: string; aoVoltar?: () => void };
+}
+
+function Chassi({
+  titulo,
+  moldura,
+  rodape,
+  children,
+}: {
+  titulo: string;
+  moldura: Moldura;
+  rodape?: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <TelaVidro
+      tipo={moldura.voltar ? 'empilhada' : 'raiz'}
+      titulo={titulo}
+      voltarPara={moldura.voltar?.rotulo}
+      aoVoltar={moldura.voltar?.aoVoltar}
+      rodape={rodape}
+    >
+      {moldura.topo}
+      {children}
+    </TelaVidro>
+  );
+}
+
+/** "Aluno não encontrado", na prévia: o aluno da navegação sumiu da store. */
+function SemAluno({ titulo }: { titulo: string }) {
+  const assinatura = useAssinatura();
+  return (
+    <TelaVidro tipo="empilhada" titulo={titulo} voltarPara={VOLTAR_PARA_PREVIA}>
+      <FaixaPrevia texto={assinatura} />
+      <CartaoVidro semPadding estilo={estilos.cartao}>
+        <EstadoVazio titulo="Aluno não encontrado." />
+      </CartaoVidro>
+    </TelaVidro>
+  );
+}
+
+/**
+ * O recorte do aluno da prévia, com o mesmo `paginaDoAluno` que a Edge
+ * Function chama no servidor. `null` sem aluno.
+ */
+function usePaginaDaPrevia() {
+  const alunoId = useNavegacao((s) => s.alunoId);
+  const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
+  // O `?? []` NAO pode ficar dentro do seletor: devolveria um array novo a cada
+  // chamada e o zustand entraria em loop de render. A constante e estavel.
+  const extrato =
+    useDados((s) => (alunoId ? s.extratos[alunoId] : undefined)) ?? SEM_LANCAMENTOS;
+  const perfil = useDados((s) => s.perfil);
+  const politicas = useDados((s) => s.politicas);
+  const alunos = useDados((s) => s.alunos);
+  const disponibilidade = useDados((s) => s.disponibilidade);
+
+  const pagina = useMemo(
+    () =>
+      aluno ? paginaDoAluno(aluno, extrato, perfil, politicas, alunos, disponibilidade, hoje()) : null,
+    [aluno, extrato, perfil, politicas, alunos, disponibilidade],
+  );
+  return { aluno, pagina };
+}
+
+/* ── Menu da prévia: qual das três páginas ────────────────────────────── */
 
 export function VerComoAluno() {
   const { alunoId, ir } = useNavegacao();
@@ -110,62 +197,30 @@ export function VerComoAluno() {
 
 // --- F1, meu saldo --------------------------------------------------------
 
-export function AlunoSaldo() {
+export function PaginaSaldo({
+  pagina,
+  moldura,
+  rodape,
+}: {
+  pagina: PaginaDoAluno;
+  moldura: Moldura;
+  rodape?: React.ReactNode;
+}) {
   const { cores } = useCores();
-  const alunoId = useNavegacao((s) => s.alunoId);
-  const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
-  // O `?? []` NAO pode ficar dentro do seletor: devolveria um array novo a cada
-  // chamada e o zustand entraria em loop de render. A constante e estavel.
-  const extrato =
-    useDados((s) => (alunoId ? s.extratos[alunoId] : undefined)) ?? SEM_LANCAMENTOS;
-  const politicas = useDados((s) => s.politicas);
-  const nomeDoProfessor = useDados((s) => s.perfil.nome);
-  const avisar = useToast((s) => s.avisar);
-  const assinatura = useAssinatura();
-
-  if (!aluno) {
-    return (
-      <TelaVidro tipo="empilhada" titulo="Meu saldo" voltarPara={VOLTAR_PARA_PREVIA}>
-        <FaixaPrevia texto={assinatura} />
-        <CartaoVidro semPadding estilo={estilos.cartao}>
-          <EstadoVazio titulo="Aluno não encontrado." />
-        </CartaoVidro>
-      </TelaVidro>
-    );
-  }
-
-  const restam = saldo(aluno);
-  const com = temPacote(aluno);
+  const { saldo: restam, temPacote: com, total } = pagina;
+  // O recorte não traz `usadas`. Com o `check (usadas <= total)` do banco, o
+  // saldo é exatamente o total menos as usadas, e a conta inversa é exata.
+  const usadas = total - restam;
 
   return (
-    <TelaVidro
-      tipo="empilhada"
-      titulo="Meu saldo"
-      voltarPara={VOLTAR_PARA_PREVIA}
-      rodape={
-        <View style={estilos.acoes}>
-          <BotaoPrimario
-            rotulo="Avisar que não posso ir"
-            aoTocar={() => avisar('O professor recebeu o aviso da falta.')}
-          />
-          <BotaoSecundario
-            rotulo={`Falar com ${primeiroNome(nomeDoProfessor)}`}
-            aoTocar={() => avisar('Conversa aberta com o professor.')}
-          />
-        </View>
-      }
-    >
-      <FaixaPrevia texto={assinatura} />
-
+    <Chassi titulo="Meu saldo" moldura={moldura} rodape={rodape}>
       <CartaoVidro estilo={estilos.cartaoGrande}>
         <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo</Text>
         <View
           accessible
           // Por inteiro, como pede spec/acessibilidade.md ("4 aulas restantes de 6").
           accessibilityLabel={
-            com
-              ? `${plural(restam, 'aula restante', 'aulas restantes')} de ${aluno.total}`
-              : 'sem pacote'
+            com ? `${plural(restam, 'aula restante', 'aulas restantes')} de ${total}` : 'sem pacote'
           }
           style={estilos.numeroDoSaldo}
         >
@@ -185,11 +240,11 @@ export function AlunoSaldo() {
           style={[comEspaco(texto(13, 500, { altura: 1.45 }), { topo: 10 }), { color: cores.tinta2 }]}
         >
           {com
-            ? `Pacote de ${plural(aluno.total, 'aula', 'aulas')}, ${aluno.usadas} já ${unidade(
-                aluno.usadas,
+            ? `Pacote de ${plural(total, 'aula', 'aulas')}, ${usadas} já ${unidade(
+                usadas,
                 'usada',
                 'usadas',
-              )}. Válido até ${aluno.validade}.`
+              )}. Válido até ${pagina.validade}.`
             : 'Sem pacote ativo no momento.'}
         </Text>
       </CartaoVidro>
@@ -197,12 +252,12 @@ export function AlunoSaldo() {
       <CabecalhoGrupo titulo="Próximas aulas" estilo={estilos.tituloGrupo} />
       <ListaAgrupada estilo={estilos.lista}>
         <LinhaLista
-          titulo={aluno.hora ? `${aluno.dia}, ${aluno.hora}` : 'Sem horário fixo'}
+          titulo={pagina.hora ? `${pagina.dia}, ${pagina.hora}` : 'Sem horário fixo'}
           subtitulo="Aula fixa"
         />
-        {aluno.agendada ? (
+        {pagina.agendada ? (
           <LinhaLista
-            titulo={`${aluno.agendada.dia} · ${aluno.agendada.hora}`}
+            titulo={`${pagina.agendada.dia} · ${pagina.agendada.hora}`}
             subtitulo="Reposição marcada"
           />
         ) : null}
@@ -216,16 +271,18 @@ export function AlunoSaldo() {
             { color: cores.tinta2 },
           ]}
         >
-          {comoOAlunoVaiLer(politicas, false)}
+          {pagina.regra}
         </Text>
       </CartaoVidro>
 
       <CabecalhoGrupo titulo="Extrato do pacote" estilo={estilos.tituloGrupo} />
       <ListaAgrupada estilo={estilos.lista}>
-        {extrato.length === 0 ? (
+        {pagina.extrato.length === 0 ? (
           <EstadoVazio titulo="Nenhum lançamento ainda." />
         ) : (
-          extrato.map((l, i) => <LinhaDoExtrato key={`${l.d}-${l.t}-${i}`} lancamento={l} />)
+          pagina.extrato.map((l, i) => (
+            <LinhaDoExtrato key={`${l.d}-${l.t}-${i}`} lancamento={l} />
+          ))
         )}
       </ListaAgrupada>
 
@@ -238,104 +295,116 @@ export function AlunoSaldo() {
       >
         Esta página é atualizada pelo professor. Não precisa instalar nada.
       </Text>
-    </TelaVidro>
+    </Chassi>
+  );
+}
+
+export function AlunoSaldo() {
+  const { pagina } = usePaginaDaPrevia();
+  const avisar = useToast((s) => s.avisar);
+  const assinatura = useAssinatura();
+
+  if (!pagina) return <SemAluno titulo="Meu saldo" />;
+
+  return (
+    <PaginaSaldo
+      pagina={pagina}
+      moldura={{ topo: <FaixaPrevia texto={assinatura} />, voltar: { rotulo: VOLTAR_PARA_PREVIA } }}
+      rodape={
+        <View style={estilos.acoes}>
+          <BotaoPrimario
+            rotulo="Avisar que não posso ir"
+            aoTocar={() => avisar('O professor recebeu o aviso da falta.')}
+          />
+          <BotaoSecundario
+            rotulo={`Falar com ${pagina.professor.nome}`}
+            aoTocar={() => avisar('Conversa aberta com o professor.')}
+          />
+        </View>
+      }
+    />
   );
 }
 
 // --- F2, proposta de reposição -------------------------------------------
 
-export function AlunoProposta() {
-  const { cores } = useCores();
-  const { alunoId, ir } = useNavegacao();
-  const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
-  const alunos = useDados((s) => s.alunos);
-  const disponibilidade = useDados((s) => s.disponibilidade);
-  const perfil = useDados((s) => s.perfil);
-  const responderProposta = useDados((s) => s.responderProposta);
-  const avisar = useToast((s) => s.avisar);
-  const assinatura = useAssinatura();
+/**
+ * Uma janela como a página mostra. `motivo` só existe na pré-visualização sem
+ * proposta, que sai do motor; o recorte não leva o texto gravado, que pode
+ * citar outro aluno (SCRUM-69).
+ */
+type JanelaDaTela = JanelaDaPagina & { motivo?: string };
 
+export interface PropostaDaTela {
+  principal: JanelaDaTela;
+  alternativas: JanelaDaTela[];
+}
+
+export function PaginaProposta({
+  pagina,
+  moldura,
+  propostaDePrevia,
+  ocupado = false,
+  aoAceitar,
+  aoRecusar,
+}: {
+  pagina: PaginaDoAluno;
+  moldura: Moldura;
+  /**
+   * Só a prévia: sem proposta enviada, as sugestões do motor aparecem com os
+   * botões apagados, para o professor ver a página sem confirmar nada de mentira.
+   */
+  propostaDePrevia?: PropostaDaTela | null;
+  /** a resposta está a caminho: os botões esperam */
+  ocupado?: boolean;
+  aoAceitar: (janela: { dia: string; hora: string }) => void;
+  aoRecusar: () => void;
+}) {
+  const { cores } = useCores();
   // Qual janela o aluno marcou: morre com a tela, então é useState.
   const [escolhida, setEscolhida] = useState(0);
 
-  const todas = useMemo(
-    () => (aluno ? candidatos(aluno, alunos, disponibilidade, hoje()) : []),
-    [aluno, alunos, disponibilidade],
-  );
-  const sugeridas = melhores(todas, 3);
+  const proposta: PropostaDaTela | null = pagina.proposta ?? propostaDePrevia ?? null;
+  const emPrevia = !pagina.proposta;
 
-  const proposta = aluno?.proposta;
-  const principal = proposta?.janela ?? sugeridas[0];
-  // Sem proposta em aberto, a página é só a prévia do que o aluno veria:
-  // aceitar e recusar ficam apagados, para não confirmar nada de mentira.
-  const emPrevia = !proposta;
-
-  if (!aluno || !principal) {
+  if (!proposta) {
     return (
-      <TelaVidro tipo="empilhada" titulo="Proposta" voltarPara={VOLTAR_PARA_PREVIA}>
-        <FaixaPrevia texto={assinatura} />
+      <Chassi titulo="Proposta" moldura={moldura}>
         <CartaoVidro semPadding estilo={estilos.cartao}>
           <EstadoVazio
             titulo="Nenhuma proposta em aberto."
             nota="Quando o professor sugerir um horário, ele aparece aqui."
           />
         </CartaoVidro>
-      </TelaVidro>
+      </Chassi>
     );
   }
 
-  const alternativas = proposta?.alternativas ?? sugeridas.slice(1);
-
-  // Os motivos são os da janela proposta, não os da primeira sugestão do
-  // motor — a proposta pode ter saído da lista completa (C4).
-  const razoes = (
-    proposta
-      ? todas.find((c) => c.dia === principal.dia && c.hora === principal.hora)
-      : sugeridas[0]
-  )?.razoes;
+  const { principal, alternativas } = proposta;
+  const razoes = principal.razoes;
 
   // A proposta e as alternativas viram cartões de escolha (modelo H§5); o
   // primário aceita a que estiver marcada.
-  const janelas: { dia: string; hora: string; motivo?: string }[] = [
-    { dia: principal.dia, hora: principal.hora },
-    ...alternativas,
-  ];
+  const janelas: JanelaDaTela[] = [principal, ...alternativas];
   const marcada = janelas[Math.min(escolhida, janelas.length - 1)];
 
-  const aceitar = (j: { dia: string; hora: string }) => {
-    responderProposta(aluno.id, 'aceita', { dia: j.dia, hora: j.hora });
-    avisar(`Reposição confirmada em ${j.dia}, ${j.hora}. O professor foi avisado.`);
-    ir('aluno', { alunoId: aluno.id });
-  };
-
   return (
-    <TelaVidro
-      tipo="empilhada"
+    <Chassi
       titulo="Proposta"
-      voltarPara={VOLTAR_PARA_PREVIA}
+      moldura={moldura}
       rodape={
         <View style={estilos.acoes}>
           <BotaoPrimario
             rotulo={`Aceitar ${marcada.dia}, ${marcada.hora}`}
-            desabilitado={emPrevia}
-            aoTocar={() => aceitar(marcada)}
+            desabilitado={emPrevia || ocupado}
+            aoTocar={() => aoAceitar({ dia: marcada.dia, hora: marcada.hora })}
           />
-          <BotaoTexto
-            rotulo="Recusar"
-            desabilitado={emPrevia}
-            aoTocar={() => {
-              responderProposta(aluno.id, 'recusada');
-              avisar('Recusado. Informe sua disponibilidade para novas sugestões.');
-              ir('alunoDisponibilidade');
-            }}
-          />
+          <BotaoTexto rotulo="Recusar" desabilitado={emPrevia || ocupado} aoTocar={aoRecusar} />
         </View>
       }
     >
-      <FaixaPrevia texto={assinatura} />
-
       <TituloDeConteudo
-        acima={`${primeiroNome(perfil.nome)} propôs uma reposição`}
+        acima={`${pagina.professor.nome} propôs uma reposição`}
         titulo={`${principal.dia}\nàs ${principal.hora}`}
         estilo={estilos.titulo}
       />
@@ -344,13 +413,11 @@ export function AlunoProposta() {
         <BlocoStatus
           estilo={estilos.cartao}
           titulo="Pré-visualização"
-          texto={`Ainda não há proposta enviada para ${primeiroNome(
-            aluno.name,
-          )}. Os botões funcionam quando você enviar um horário.`}
+          texto={`Ainda não há proposta enviada para ${pagina.nome}. Os botões funcionam quando você enviar um horário.`}
         />
       ) : null}
 
-      {razoes?.length ? (
+      {razoes.length ? (
         <CartaoVidro estilo={estilos.cartao}>
           <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Por que esse horário</Text>
           <View style={estilos.razoes}>
@@ -393,11 +460,9 @@ export function AlunoProposta() {
       <CartaoVidro estilo={estilos.cartao}>
         <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo hoje</Text>
         <View style={estilos.numeroDoSaldo}>
-          <Text style={[TIPO.saldoCartao, { color: cores.tinta }]}>
-            {String(saldo(aluno))}
-          </Text>
+          <Text style={[TIPO.saldoCartao, { color: cores.tinta }]}>{String(pagina.saldo)}</Text>
           <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
-            {unidade(saldo(aluno), 'aula', 'aulas')}
+            {unidade(pagina.saldo, 'aula', 'aulas')}
           </Text>
         </View>
         <Text
@@ -411,52 +476,84 @@ export function AlunoProposta() {
         estilo={estilos.cartao}
         tom="ambar"
         titulo="Se nenhum horário servir"
-        texto={`Você pode recusar e marcar de novo quando puder. ${primeiroNome(
-          perfil.nome,
-        )} recebe o aviso.`}
+        texto={`Você pode recusar e marcar de novo quando puder. ${pagina.professor.nome} recebe o aviso.`}
       />
-    </TelaVidro>
+    </Chassi>
+  );
+}
+
+export function AlunoProposta() {
+  const { ir } = useNavegacao();
+  const { aluno, pagina } = usePaginaDaPrevia();
+  const alunos = useDados((s) => s.alunos);
+  const disponibilidade = useDados((s) => s.disponibilidade);
+  const responderProposta = useDados((s) => s.responderProposta);
+  const avisar = useToast((s) => s.avisar);
+  const assinatura = useAssinatura();
+
+  // Sem proposta enviada, a prévia mostra o que o motor sugeriria. É só aqui:
+  // no link, sem proposta, a página diz que não há nenhuma.
+  const propostaDePrevia = useMemo((): PropostaDaTela | null => {
+    if (!aluno || aluno.proposta) return null;
+    const [primeira, ...resto] = melhores(candidatos(aluno, alunos, disponibilidade, hoje()), 3);
+    if (!primeira) return null;
+    const janela = ({ dia, hora, razoes, motivo }: JanelaDaTela) => ({ dia, hora, razoes, motivo });
+    return { principal: janela(primeira), alternativas: resto.map(janela) };
+  }, [aluno, alunos, disponibilidade]);
+
+  if (!aluno || !pagina) return <SemAluno titulo="Proposta" />;
+
+  return (
+    <PaginaProposta
+      pagina={pagina}
+      moldura={{ topo: <FaixaPrevia texto={assinatura} />, voltar: { rotulo: VOLTAR_PARA_PREVIA } }}
+      propostaDePrevia={propostaDePrevia}
+      aoAceitar={(j) => {
+        responderProposta(aluno.id, 'aceita', j);
+        avisar(avisos.alunoAceitou(j));
+        ir('aluno', { alunoId: aluno.id });
+      }}
+      aoRecusar={() => {
+        responderProposta(aluno.id, 'recusada');
+        avisar(avisos.alunoRecusou);
+        ir('alunoDisponibilidade');
+      }}
+    />
   );
 }
 
 // --- F3, informar disponibilidade ----------------------------------------
 
-export function AlunoDisponibilidade() {
+export function PaginaDisponibilidade({
+  pagina,
+  moldura,
+  blocos,
+  aoMudar,
+  aoEnviar,
+  ocupado = false,
+}: {
+  pagina: PaginaDoAluno;
+  moldura: Moldura;
+  /** o que está marcado na grade; quem guarda é quem monta a página */
+  blocos: BlocoSemanal[];
+  aoMudar: (blocos: BlocoSemanal[]) => void;
+  aoEnviar: () => void;
+  ocupado?: boolean;
+}) {
   const { cores } = useCores();
-  const { alunoId, concluir } = useNavegacao();
-  const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
-  const perfil = useDados((s) => s.perfil);
-  const salvar = useDados((s) => s.salvarDisponibilidadeDoAluno);
-  const avisar = useToast((s) => s.avisar);
-  const assinatura = useAssinatura();
-
-  const [blocos, , substituir] = useRascunho(
-    'disponibilidadeAluno',
-    aluno?.disponibilidade ?? [],
-  );
 
   return (
-    <TelaVidro
-      tipo="empilhada"
+    <Chassi
       titulo="Disponibilidade"
-      voltarPara={VOLTAR_PARA_PREVIA}
+      moldura={moldura}
       rodape={
         <BotaoPrimario
           rotulo="Enviar disponibilidade"
-          desabilitado={blocos.length === 0}
-          aoTocar={() => {
-            if (!aluno) return;
-            salvar(aluno.id, blocos);
-            avisar(
-              `${primeiroNome(perfil.nome)} recebeu sua disponibilidade e vai propor até três horários.`,
-            );
-            concluir('aluno', aluno.id);
-          }}
+          desabilitado={blocos.length === 0 || ocupado}
+          aoTocar={aoEnviar}
         />
       }
     >
-      <FaixaPrevia texto={assinatura} />
-
       <TituloDeConteudo
         titulo="Quando você pode repor?"
         abaixo="Marque os blocos possíveis. Nada é agendado agora."
@@ -469,7 +566,7 @@ export function AlunoDisponibilidade() {
           dias={DIAS_UTEIS}
           rotuloDaFaixa="nome"
           alturaDaCelula={52}
-          aoAlternar={(b) => substituir(alternarBloco(blocos, b))}
+          aoAlternar={(b) => aoMudar(alternarBloco(blocos, b))}
         />
         <RodapeDaGrade esquerda={resumoMarcados(blocos)} direita="Toque para marcar" />
       </CartaoVidro>
@@ -481,9 +578,39 @@ export function AlunoDisponibilidade() {
           { color: cores.tinta2 },
         ]}
       >
-        {`${primeiroNome(perfil.nome)} recebe o aviso e propõe até três horários.`}
+        {`${pagina.professor.nome} recebe o aviso e propõe até três horários.`}
       </Text>
-    </TelaVidro>
+    </Chassi>
+  );
+}
+
+export function AlunoDisponibilidade() {
+  const concluir = useNavegacao((s) => s.concluir);
+  const { aluno, pagina } = usePaginaDaPrevia();
+  const salvar = useDados((s) => s.salvarDisponibilidadeDoAluno);
+  const avisar = useToast((s) => s.avisar);
+  const assinatura = useAssinatura();
+
+  // Rascunho de assistente: sobrevive ao chassi desmontar a tela ao navegar.
+  const [blocos, , substituir] = useRascunho(
+    'disponibilidadeAluno',
+    aluno?.disponibilidade ?? [],
+  );
+
+  if (!aluno || !pagina) return <SemAluno titulo="Disponibilidade" />;
+
+  return (
+    <PaginaDisponibilidade
+      pagina={pagina}
+      moldura={{ topo: <FaixaPrevia texto={assinatura} />, voltar: { rotulo: VOLTAR_PARA_PREVIA } }}
+      blocos={blocos}
+      aoMudar={substituir}
+      aoEnviar={() => {
+        salvar(aluno.id, blocos);
+        avisar(avisos.alunoEnviouDisponibilidade(pagina.professor.nome));
+        concluir('aluno', aluno.id);
+      }}
+    />
   );
 }
 

@@ -8,10 +8,12 @@
  * 8"; "Renovar pacote" entra como secundário quando o saldo está baixo.
  *
  * A lista "MAIS" guarda as ações que o handoff não desenha (ver como o aluno
- * vê, editar, pacote), como manda o mapa de telas — sem repetir a ação que já
- * está no rodapé.
+ * vê, o link do aluno, editar, pacote), como manda o mapa de telas — sem
+ * repetir a ação que já está no rodapé. O link (`/a/<token>`, Parte 6) só
+ * existe no modo supabase.
  */
 
+import * as Clipboard from 'expo-clipboard';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -25,6 +27,7 @@ import {
 import { TelaVidro } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoSecundario } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
+import { useDoisToques } from '../componentes/useDoisToques';
 import { dinheiro, plural, primeiroNome, unidade } from '../dominio/formato';
 import { podeRegistrar, saldo, saldoBaixo, temPacote, valorPacote } from '../dominio/politica';
 import type { Aluno, Lancamento } from '../dominio/tipos';
@@ -51,7 +54,19 @@ export function AlunoDetalhe() {
     useDados((s) => (alunoId ? s.extratos[alunoId] : undefined)) ?? SEM_LANCAMENTOS;
   const politicas = useDados((s) => s.politicas);
   const alternarPausa = useDados((s) => s.alternarPausa);
+  const linkDoAluno = useDados((s) => s.linkDoAluno);
+  const gerarNovoLink = useDados((s) => s.gerarNovoLink);
   const avisar = useToast((s) => s.avisar);
+
+  // O link anterior para de funcionar na hora: dois toques. O aviso só sai
+  // depois que o banco trocou o token.
+  const gerarLink = useDoisToques(() => {
+    if (!aluno) return;
+    gerarNovoLink(aluno.id).then(
+      () => avisar(avisos.linkNovoGerado),
+      () => avisar(avisos.falhaAoSalvar),
+    );
+  });
 
   if (!aluno) {
     return (
@@ -67,6 +82,9 @@ export function AlunoDetalhe() {
   const restam = saldo(aluno);
   const baixo = saldoBaixo(aluno);
   const emAtraso = aluno.pagamento.status === 'atraso';
+  // Só no modo supabase há link: no local, a store devolve `null` e as duas
+  // linhas não aparecem.
+  const temLink = linkDoAluno(aluno.id) !== null;
 
   const validadeTexto = `validade ${aluno.validade || '—'}${
     aluno.validadeEstendida ? ' · estendida' : ''
@@ -259,6 +277,24 @@ export function AlunoDetalhe() {
           subtitulo="A página que ele abre pelo link"
           aoTocar={() => ir('verComoAluno')}
         />
+        {temLink ? (
+          <LinhaLista
+            titulo="Copiar link do aluno"
+            subtitulo="Para mandar pelo WhatsApp"
+            aoTocar={() => {
+              // Lido no toque: depois de "Gerar novo link", já é o novo.
+              const link = linkDoAluno(aluno.id);
+              if (link) void Clipboard.setStringAsync(link).then(() => avisar(avisos.linkCopiado));
+            }}
+          />
+        ) : null}
+        {temLink ? (
+          <LinhaLista
+            titulo={gerarLink.armado ? 'Tocar de novo para gerar' : 'Gerar novo link'}
+            subtitulo="O link anterior para de funcionar"
+            aoTocar={gerarLink.tocar}
+          />
+        ) : null}
         <LinhaLista
           titulo="Editar dados do aluno"
           subtitulo="Nome, disciplina, horário e telefone"
