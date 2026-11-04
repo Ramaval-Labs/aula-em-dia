@@ -15,6 +15,10 @@ escrita fora do aluno do token.
 Há 5 achados P2 e 6 P3. Três deles gravam dado errado, mas sempre no próprio aluno do token: a
 proposta vencida, a janela dupla e o ano das datas.
 
+**Desde a revisão:** o P3-3 foi resolvido em `f00c6b8`. O P2-2 e o P2-3 estão no `SCRUM-83` (PR #31, ainda
+aberto), e o PO decidiu que dois alunos não ficam com reposição no mesmo horário. Os achados abaixo
+descrevem o código revisado.
+
 **A revisão não está completa.** Esta máquina não tem Docker, então a função não rodou contra o banco
 real. Três conferências continuam abertas e estão em [O que falta conferir](#o-que-falta-conferir).
 Sem P0, o `SCRUM-74` pode seguir, mas elas precisam estar feitas antes de o link ir para um aluno de
@@ -200,7 +204,7 @@ do navegador da vítima. Veja o P3-4.
 |---|---|---|---|---|
 | P3-1 | `janela: null` dá 500 em vez de 400, e escreve `Cannot read properties of null` no log. Nada é gravado e o token não aparece. | `index.ts:172-176` | conferir o tipo antes de comparar | Valentin |
 | P3-2 | O token vai na query do `GET` (decisão 14). O log da função está limpo, mas o do gateway não foi visto. Quem lê esse log já tem acesso à service role. O caminho `/a/<token>` também passa pela Vercel, então o `POST` não eliminaria o token de todos os logs. | `index.ts:239` | conferir na nuvem e manter, se só a equipe vê | Valentin |
-| P3-3 | O `noindex` só existe depois que o JavaScript roda, e o `index.html` exportado não o tem. O `SCRUM-74` pede o `noindex` "no HTML publicado", o que hoje não passaria. O `vercel.json` de `5e199ae` não tem esses cabeçalhos. | `AppDoAluno.tsx:66-75` | no `vercel.json`, para `/a/(.*)`: `X-Robots-Tag: noindex` e `Referrer-Policy: no-referrer` | Rafael |
+| P3-3 | O `noindex` só existe depois que o JavaScript roda, e o `index.html` exportado não o tem. O `SCRUM-74` pede o `noindex` "no HTML publicado", o que hoje não passaria. **Resolvido em `f00c6b8`:** o `vercel.json` passou a mandar esses cabeçalhos em `/a/(.*)`. | `AppDoAluno.tsx:66-75` | no `vercel.json`, para `/a/(.*)`: `X-Robots-Tag: noindex` e `Referrer-Policy: no-referrer` | Rafael |
 | P3-4 | CORS aberto a qualquer origem (item 7). | `index.ts:43` | restringir quando o domínio da Vercel existir, sem esquecer o Expo Web local | Valentin |
 | P3-5 | Professor B consegue criar proposta no aluno do A, se souber o UUID dele, e o índice `uma_proposta_aberta` passa a travar o A. O id não sai no recorte. Conclusão só por leitura. | `0002:36-43`, `0001:116` | adotar a variante estrita que a própria `0002` descreve | Valentin |
 | P3-6 | Quem usa o link velho nos milissegundos entre a leitura e a RPC ainda grava uma última resposta, porque a RPC não confere o token e a troca não muda a versão. Vale o mesmo para o arquivamento. | `0005:58`, `0006:13` | aceitar o risco | — |
