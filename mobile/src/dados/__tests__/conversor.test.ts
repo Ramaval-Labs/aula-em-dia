@@ -18,6 +18,7 @@ import {
   colunasDoAluno,
   dataDoBanco,
   dataParaBanco,
+  datasDoBanco,
   estadoVazio,
   extratoParaBanco,
   lancamentoDoMovimento,
@@ -389,5 +390,67 @@ describe('movimento (Parte 5): o que a RPC recebe', () => {
       alternativas: [],
       enviada_em: '2026-10-22',
     });
+  });
+});
+
+describe('a data atravessa com o ano (SCRUM-83, P2-3 da revisão da Parte 6)', () => {
+  // O caso do relatório: o banco tem datas a mais de meio ano de 04/11/2026.
+  const HOJE = dia(2026, 11, 4);
+  const LINHA = { pagamento_em: '2026-02-07', encerrado: '2026-04-18', validade: '2027-08-31' };
+  const aluno: Aluno = {
+    id: 'x',
+    name: 'Ana',
+    disciplina: 'Piano',
+    dia: 'quarta',
+    hora: '17h',
+    hoje: false,
+    total: 8,
+    usadas: 2,
+    validade: '31/08',
+    encerrado: '18/04',
+    reposicoes: 0,
+    pagamento: { status: 'pago', em: '07/02', meio: 'Pix' },
+  };
+
+  it('sem as datas lidas, o ano é inferido de novo e erra: é o defeito', () => {
+    const linha = alunoParaBanco(aluno, HOJE);
+    expect([linha.pagamento_em, linha.encerrado, linha.validade]).toEqual([
+      '2027-02-07',
+      '2027-04-18',
+      '2026-08-31',
+    ]);
+  });
+
+  it('com as datas lidas, cada uma volta com o ano que tinha', () => {
+    const linha = alunoParaBanco(aluno, HOJE, datasDoBanco(LINHA));
+    expect([linha.pagamento_em, linha.encerrado, linha.validade]).toEqual([
+      '2026-02-07',
+      '2026-04-18',
+      '2027-08-31',
+    ]);
+  });
+
+  it('a data que mudou tem o ano inferido: quem muda é uma ação de hoje', () => {
+    const pagoHoje = { ...aluno, pagamento: { status: 'pago' as const, em: '04/11', meio: 'Pix' as const } };
+    expect(alunoParaBanco(pagoHoje, HOJE, datasDoBanco(LINHA)).pagamento_em).toBe('2026-11-04');
+  });
+
+  it('a data apagada vira null, mesmo havendo uma lida', () => {
+    const semEncerrar = { ...aluno, encerrado: undefined };
+    expect(alunoParaBanco(semEncerrar, HOJE, datasDoBanco(LINHA)).encerrado).toBeNull();
+  });
+
+  it('o update direto também mantém o ano', () => {
+    expect(colunasDoAluno(aluno, ['pagamento'], HOJE, datasDoBanco(LINHA)).pagamento_em).toBe('2026-02-07');
+  });
+
+  it('datasDoBanco pega só as colunas de data, e o timestamp vira data', () => {
+    expect(datasDoBanco({ ...LINHA, nome: 'Ana', pendencia_origem: null } as never)).toEqual({
+      ...LINHA,
+      pendencia_origem: null,
+    });
+    expect(
+      alunoParaBanco(aluno, HOJE, { pagamento_em: '2026-02-07T00:00:00+00:00' }).pagamento_em,
+    ).toBe('2026-02-07');
   });
 });

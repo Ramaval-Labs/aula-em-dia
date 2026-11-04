@@ -81,15 +81,18 @@ describe('carregar — seis leituras em paralelo e o cache', () => {
     }
   });
 
-  it('o que veio do banco vai para o cache, com o id do professor, as versões e os tokens', async () => {
+  it('o que veio do banco vai para o cache, com o id do professor, as versões, os tokens e as datas', async () => {
     comSemente();
     const gravado = await repo.carregar();
-    expect(await emCache()).toEqual({
+    const cache = await emCache();
+    expect(cache).toEqual({
       professorId: 'prof-a',
       gravado,
       versoes: { val: 0, raf: 0, mar: 0, bea: 0 },
       tokens: { val: 'token-val', raf: 'token-raf', mar: 'token-mar', bea: 'token-bea' },
+      datas: expect.any(Object),
     });
+    expect(Object.keys(cache.datas).sort()).toEqual(['bea', 'mar', 'raf', 'val']);
   });
 
   it('sem sessão não há o que carregar, e nada vai à rede', async () => {
@@ -652,5 +655,62 @@ describe('o link do aluno (Parte 6)', () => {
     await carregado();
     await repo.apagar();
     expect(repo.linkDoAluno?.('val')).toBeNull();
+  });
+});
+
+describe('as datas antigas voltam com o ano (SCRUM-83)', () => {
+  const e = semente();
+  const lancamento = e.extratos.val[0];
+  /** Uma data a mais de meio ano de hoje, no formato do banco. */
+  const haDias = (n: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    const dd = (x: number) => String(x).padStart(2, '0');
+    return `${d.getFullYear()}-${dd(d.getMonth() + 1)}-${dd(d.getDate())}`;
+  };
+  const ANTIGA = haDias(240);
+
+  async function carregadoComDataAntiga() {
+    const tabelas = tabelasDoPersistido(semente(), 'prof-a');
+    const mar = tabelas.alunos.find((a) => a.id === 'mar')!;
+    mar.pagamento_em = ANTIGA;
+    usar({ tabelas });
+    const gravado = await repo.carregar();
+    falso.consultas.length = 0;
+    return gravado!.alunos.find((a) => a.id === 'mar')!;
+  }
+
+  it('um movimento pela RPC devolve a data antiga como ela estava', async () => {
+    const mar = await carregadoComDataAntiga();
+    await repo.registrar({ tipo: 'registrarAula', aluno: { ...mar, usadas: mar.usadas + 1 }, lancamento, desfecho: 'realizada' }, e);
+
+    const rpc = falso.consultas.find((c) => c.operacao === 'rpc')!;
+    expect((rpc.valores as { p_aluno: { pagamento_em: string } }).p_aluno.pagamento_em).toBe(ANTIGA);
+    expect(falso.tabelas.alunos.find((a) => a.id === 'mar')?.pagamento_em).toBe(ANTIGA);
+  });
+
+  it('o update direto também', async () => {
+    const mar = await carregadoComDataAntiga();
+    await repo.registrar({ tipo: 'atualizarAluno', aluno: mar, campos: ['pagamento'] }, e);
+
+    expect((falso.gravacoes()[0].valores as { pagamento_em: string }).pagamento_em).toBe(ANTIGA);
+  });
+
+  it('a segunda gravação seguida ainda tem a data certa', async () => {
+    const mar = await carregadoComDataAntiga();
+    await repo.registrar({ tipo: 'estenderValidade', aluno: mar, lancamento }, e);
+    await repo.registrar({ tipo: 'alternarPausa', aluno: { ...mar, pausado: true } }, e);
+    await repo.registrar({ tipo: 'receberPagamento', aluno: { ...mar, pausado: false }, lancamento }, e);
+
+    const rpcs = falso.consultas.filter((c) => c.operacao === 'rpc');
+    expect(rpcs.map((c) => (c.valores as { p_aluno: { pagamento_em: string } }).p_aluno.pagamento_em)).toEqual([
+      ANTIGA,
+      ANTIGA,
+    ]);
+  });
+
+  it('as datas vão no cache, como as versões', async () => {
+    await carregadoComDataAntiga();
+    expect((await emCache()).datas.mar.pagamento_em).toBe(ANTIGA);
   });
 });

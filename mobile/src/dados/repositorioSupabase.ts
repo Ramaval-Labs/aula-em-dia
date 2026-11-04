@@ -34,6 +34,7 @@ import {
   alunoParaBanco,
   CAMPOS_DO_MOVIMENTO,
   colunasDoAluno,
+  datasDoBanco,
   disponibilidadeParaBanco,
   lancamentoDoMovimento,
   montarPersistido,
@@ -42,6 +43,7 @@ import {
   politicasParaBanco,
   preferenciasParaBanco,
   propostaDoMovimento,
+  type DatasDoBanco,
   type TipoDeLancamento,
 } from './conversor';
 import type { Gravado, Mudanca, Persistido, Repositorio } from './repositorio';
@@ -120,6 +122,18 @@ export async function exigirProfessor(): Promise<string> {
  */
 const versoes = new Map<string, number>();
 
+/**
+ * As datas de cada aluno como o banco as tem, com o ano, pelo mesmo caminho
+ * das versões. O app guarda data em `dd/mm`, e sem isto cada gravação
+ * inferiria o ano de novo e estragaria as datas antigas (SCRUM-83).
+ */
+const datas = new Map<string, DatasDoBanco>();
+
+/** Depois de gravar, as datas enviadas passam a ser as que o banco tem. */
+function lembrarDatas(id: string, linha: Record<string, unknown>) {
+  datas.set(id, { ...datas.get(id), ...datasDoBanco(linha) });
+}
+
 // --- Link do aluno ------------------------------------------------------------------
 
 /**
@@ -192,9 +206,11 @@ async function lerDoBanco(professorId: string): Promise<Persistido> {
 
   versoes.clear();
   tokens.clear();
+  datas.clear();
   for (const a of alunos) {
     versoes.set(a.id, a.versao);
     tokens.set(a.id, a.token_publico);
+    datas.set(a.id, datasDoBanco(a));
   }
 
   return montarPersistido({
@@ -216,6 +232,8 @@ interface Cache {
   versoes?: Record<string, number>;
   /** E os tokens, para copiar o link do aluno com o app aberto sem rede. */
   tokens?: Record<string, string>;
+  /** E as datas com o ano, pela mesma razão das versões. */
+  datas?: Record<string, DatasDoBanco>;
 }
 
 async function guardarCache(professorId: string, gravado: Persistido): Promise<void> {
@@ -224,6 +242,7 @@ async function guardarCache(professorId: string, gravado: Persistido): Promise<v
     gravado: soPersistido(gravado),
     versoes: Object.fromEntries(versoes),
     tokens: Object.fromEntries(tokens),
+    datas: Object.fromEntries(datas),
   };
   await AsyncStorage.setItem(CHAVE_CACHE, JSON.stringify(cache));
 }
@@ -257,6 +276,9 @@ async function lerCacheDe(professorId: string): Promise<Gravado | null> {
     }
     for (const [id, t] of Object.entries(cache.tokens ?? {})) {
       if (!tokens.has(id)) tokens.set(id, t);
+    }
+    for (const [id, d] of Object.entries(cache.datas ?? {})) {
+      if (!datas.has(id)) datas.set(id, d);
     }
     return cache.gravado;
   } catch {
@@ -342,8 +364,9 @@ function mover(aluno: Aluno, movimento: Movimento, oQue: string): Promise<void> 
   return emSequencia(aluno.id, async () => {
     const versao = versoes.get(aluno.id);
     if (versao === undefined) throw new ConflitoDeVersao(oQue);
+    const linha = alunoParaBanco(aluno, undefined, datas.get(aluno.id));
     const { data, error } = await clienteSupabase().rpc('aplicar_movimento', {
-      p_aluno: alunoParaBanco(aluno) as unknown as Json,
+      p_aluno: linha as unknown as Json,
       p_versao: versao,
       ...(movimento.lancamento
         ? {
@@ -360,6 +383,7 @@ function mover(aluno: Aluno, movimento: Movimento, oQue: string): Promise<void> 
       throw new ErroDoBanco(oQue, error);
     }
     versoes.set(aluno.id, data as number);
+    lembrarDatas(aluno.id, linha);
   });
 }
 
@@ -372,13 +396,14 @@ async function atualizarProfessor(valores: TablesUpdate<'professores'>, oQue: st
 }
 
 async function atualizarAluno(aluno: Aluno, campos: readonly (keyof Aluno)[], oQue: string) {
-  const valores = colunasDoAluno(aluno, campos);
+  const valores = colunasDoAluno(aluno, campos, undefined, datas.get(aluno.id));
   // Nenhuma coluna do banco mudou (um campo derivado, por exemplo): nada a gravar.
   if (Object.keys(valores).length === 0) return;
   exigirLinha(
     await clienteSupabase().from('alunos').update(valores).eq('id', aluno.id).select('id'),
     oQue,
   );
+  lembrarDatas(aluno.id, valores);
 }
 
 async function gravar(mudanca: Mudanca): Promise<void> {
@@ -418,13 +443,12 @@ async function gravar(mudanca: Mudanca): Promise<void> {
     // O id vem do app (`novoIdDeAluno`), e `professor_id` fica com o padrão
     // do banco, `auth.uid()`: o app não tem como gravar aluno para outro.
     case 'criarAluno': {
+      const novo = alunoParaBanco(mudanca.aluno);
       const [criado] = exigirLinha(
-        await clienteSupabase()
-          .from('alunos')
-          .insert(alunoParaBanco(mudanca.aluno))
-          .select('id, token_publico'),
+        await clienteSupabase().from('alunos').insert(novo).select('id, token_publico'),
         'criar o aluno',
       );
+      lembrarDatas(mudanca.aluno.id, novo);
       // A versão inicial da coluna: o primeiro movimento do aluno novo já tem com o que comparar.
       versoes.set(mudanca.aluno.id, 0);
       // O token é o padrão da coluna: o link do aluno novo já sai sem recarregar.
@@ -563,6 +587,7 @@ export const repositorioSupabase: Repositorio = {
   async apagar() {
     versoes.clear();
     tokens.clear();
+    datas.clear();
     await AsyncStorage.removeItem(CHAVE_CACHE);
   },
 
