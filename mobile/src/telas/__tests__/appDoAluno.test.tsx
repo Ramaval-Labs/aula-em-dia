@@ -106,6 +106,14 @@ describe('abrir o link', () => {
     expect(screen.queryByText('Prévia do que o aluno vê')).toBeNull();
   });
 
+  it('o pacote sem prazo não diz "Válido até sem prazo"', async () => {
+    carregar.mockResolvedValue({ ...PAGINA, validade: 'sem prazo' });
+    await montar();
+
+    expect(await screen.findByText('Pacote de 8 aulas, 6 já usadas. Sem prazo de validade.')).toBeTruthy();
+    expect(screen.queryByText(/Válido até sem prazo/)).toBeNull();
+  });
+
   it('o token inválido mostra a frase do link, e nada mais', async () => {
     carregar.mockRejectedValue(new LinkInvalido('abrir a página'));
     await montar();

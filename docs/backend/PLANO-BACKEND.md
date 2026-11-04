@@ -1364,6 +1364,62 @@ erro, só a mensagem. O log de acesso do gateway pode ter a URL. Se isso pesar, 
 - **O extrato com mais de 1000 lançamentos.** A função lê o extrato numa página só, e o `max_rows`
   corta os mais antigos. Para um aluno, isso é anos de aula.
 
+### Correções da revisão de segurança (SCRUM-83)
+
+A revisão do `SCRUM-73` (`docs/backend/revisoes/parte-6.md`) não achou P0 nem P1. Dois P2 gravavam
+dado errado no próprio aluno, e foram corrigidos aqui. O PO decidiu, em 04/11, que um horário aceita
+uma reposição só.
+
+**1. A data atravessa com o ano (P2-3).** O app guarda data em `dd/mm`, e cada gravação inferia o
+ano de novo, a partir de hoje (±183 dias). Qualquer movimento reescrevia as datas antigas ou
+distantes: um `pagamento_em` de oito meses atrás ia para o ano que vem. Bastava o aluno recusar uma
+proposta pelo link.
+
+- **O conversor:** `alunoParaBanco` recebe as datas que o banco tinha (`DatasDoBanco`). Se o
+  `dd/mm` não mudou, a data volta exatamente como estava, com o ano. Só a data que mudou tem o ano
+  inferido, e essa é sempre recente, porque quem a muda é uma ação de hoje.
+- **No app:** o repositório guarda as datas de cada aluno num mapa, como as versões. O
+  `carregar()` preenche, cada gravação atualiza, e o mapa vai no cache.
+- **No link:** a Edge Function usa as datas da linha que acabou de ler.
+- **A alternativa recusada:** gravar só as colunas que o movimento mudou exigiria comparar o aluno
+  de antes e o de depois em cada ação. A data com o ano resolve na fronteira, que é onde o defeito
+  nasce.
+
+**2. Um horário aceita uma reposição só (P2-2).** A mesma janela proposta a dois alunos era aceita
+pelos dois. A correção tem três camadas:
+
+- **O motor** (`agenda.ts`): a reposição marcada de outro aluno ocupa aquela data e faixa, e o motor
+  não sugere mais o horário. Só aquela data: a mesma faixa na semana seguinte segue livre.
+- **O recorte** (`paginaDoAluno.ts`): a página do aluno não oferece janela que outro aluno já
+  ocupou. Se a principal foi ocupada, a primeira alternativa livre toma o lugar dela. Se todas
+  foram, a proposta vem `null`.
+- **O banco** (`0007_horario_ocupado.sql`): a `aplicar_movimento` recusa o **aceite** com
+  `horario_ocupado` quando outro aluno do professor, não arquivado, já tem reposição no mesmo dia
+  e hora.
+  - **Os aceites simultâneos:** os de um mesmo professor passam por uma trava de transação
+    (`pg_advisory_xact_lock`). O segundo espera o primeiro terminar e enxerga a reposição dele.
+    Foi provado com duas sessões do Postgres: a segunda esperou 2,1 s e foi recusada.
+  - **Só o aceite é conferido.** O professor marcando a reposição direto, ou confirmando por conta
+    própria, decide sabendo da agenda e não é bloqueado.
+  - **Na página:** `horario_ocupado` dá 409, como o conflito. A página relê e já não oferece o
+    horário.
+  - **No app do professor:** é falha comum (`falhaAoSalvar` e recarga). A frase de conflito de
+    versão, "mudou em outro aparelho", seria falsa nesse caso.
+
+**Onde foi testado.** Em 04/11/2026, no banco local:
+
+- **pgTAP:** 14 casos novos em `horario_ocupado.test.sql`, 96 no total.
+- **A corrida:** as duas sessões em paralelo, como descrito acima.
+- **A Edge Function servida localmente:**
+  - recusar a proposta pelo link manteve uma data de oito meses atrás;
+  - depois do aceite do primeiro aluno, a página do segundo deixou de oferecer o horário, e
+    insistir nele deu 400.
+- **No app:** 19 testes novos, no conversor, no repositório, no motor e no recorte.
+
+**O que fica em aberto.** O rótulo de `agendada` ("Terça, 10/11") não tem ano. Uma reposição antiga
+que nunca foi limpa ocuparia o mesmo rótulo no ano em que a data cair no mesmo dia da semana, o que
+acontece a cada cinco ou seis anos.
+
 ### Pronto quando
 
 - O link aberto no navegador do celular mostra o saldo certo.
@@ -1430,6 +1486,97 @@ Esta parte não tem fim: cada parte anterior deixa aqui o que precisa.
   - Conferir os números atuais no site do Supabase antes de citar.
 - **Backup:** o plano free não tem backup automático com restauração no tempo. Um `pg_dump` semanal
   pelo Actions resolve no MVP.
+
+### Subir o projeto na nuvem
+
+Feito no `SCRUM-71`. É o passo a passo para criar o projeto do zero, ou recriá-lo se ele for
+apagado. Rode tudo na raiz do repositório, com a CLI na versão em que o resto foi testado
+(`npx supabase@2.120.0`). O que só a pessoa dona da conta pode fazer está marcado.
+
+1. **Criar o projeto (dona da conta, no painel).** Em <https://supabase.com/dashboard>, na
+   organização do time: plano free, região **South America (São Paulo)**. A senha do banco que o
+   painel pede é segredo: guarde num gerenciador de senhas, nunca no git nem no grupo. O
+   *project ref* é o trecho da URL do painel (`/project/<ref>`) e também está em Settings → General.
+2. **Entrar e ligar a pasta ao projeto.**
+   ```bash
+   npx supabase@2.120.0 login                        # interativo: abre o navegador (dona da conta)
+   npx supabase@2.120.0 link --project-ref <ref>     # pede a senha do banco
+   ```
+   O `link` grava só o ref em `supabase/.temp/`, que o git ignora.
+3. **Aplicar as migrações, e não o seed.**
+   ```bash
+   npx supabase@2.120.0 db push --dry-run   # lista o que vai entrar: 0001 a 0006 num projeto novo
+   npx supabase@2.120.0 db push
+   ```
+   O `db push` só aplica `supabase/migrations/`. **Nunca use `--include-seed` nem rode o
+   `seed.sql` na nuvem**: ele cria o professor de teste com uma senha que está no repositório, num
+   projeto acessível pela internet. No painel, em Database → Migrations, as 6 aparecem; em
+   Authentication → Policies, as 6 tabelas estão com RLS ligada.
+4. **Segredos.** O `[edge_runtime.secrets]` do `config.toml` só vale no local:
+   ```bash
+   npx supabase@2.120.0 secrets set TZ=America/Sao_Paulo
+   ```
+   `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` a nuvem já entrega às funções. A service role
+   **não** é copiada para lugar nenhum: nem `.env`, nem `EXPO_PUBLIC_*`, nem Vercel, nem git.
+5. **A Edge Function.** O bundle do domínio fica fora do git (Parte 6, decisão 10), então é
+   gerado na hora:
+   ```bash
+   (cd mobile && npm run bundle:dominio)
+   npx supabase@2.120.0 functions deploy aluno-publico --no-verify-jwt
+   ```
+   O `--no-verify-jwt` é o `[functions.aluno-publico] verify_jwt = false` do `config.toml`: o aluno
+   não tem login, e o token do link é a credencial.
+6. **Auth no painel**, em Authentication → Sign In / Providers e URL Configuration, igual ao
+   `config.toml`:
+   - **Confirm email desligado** (`enable_confirmations = false`). Ligado, o cadastro cria o
+     usuário sem sessão e o app recusa (Parte 3, decisão 7).
+   - **Site URL** e a lista de redirecionamento: hoje o app não usa link por e-mail, então o valor
+     só importa quando houver (recuperar senha, por exemplo). Quando a Vercel existir
+     (`SCRUM-74`), vira o endereço dela.
+7. **Conferir com `curl`.**
+   ```bash
+   curl -s -i "https://<ref>.supabase.co/functions/v1/aluno-publico?token=00000000-0000-4000-8000-000000000000"
+   ```
+   Um token qualquer dá **404 sem corpo**. Depois, pelo app: crie uma conta, cadastre um aluno,
+   copie o link, e o mesmo `curl` com o token dele devolve o recorte.
+8. **O app apontado para a nuvem.** Em `mobile/.env`, a URL `https://<ref>.supabase.co` e a chave
+   **publicável** (Settings → API Keys). As duas são públicas por desenho: o que protege os dados é
+   a RLS. A URL e a chave vão para o Rafael (Vercel, `SCRUM-74`), e a connection string do banco
+   para o Mauro (backup, `SCRUM-24`), **pelo grupo, nunca pelo git**.
+
+**Para mudar o banco depois**: migração nova em `supabase/migrations/`, testada no local
+(`db reset` e `test db`), e então `db push`. Migração aplicada na nuvem não se edita.
+**Mudou a função**: `bundle:dominio` e `functions deploy` de novo.
+
+**A pausa do plano free.** Depois de 7 dias sem uso o projeto pausa, e o link do aluno para de
+abrir. O backup semanal do `SCRUM-24` também mantém o projeto acordado. Antes da banca, abra o
+painel ou faça um pedido.
+
+**Onde foi feito e testado.** Em 04/11/2026, no projeto `aula-em-dia` da organização do time
+(plano free, `sa-east-1`, Postgres 17.11), com a CLI 2.120.0.
+
+- **`db push`:** o `--dry-run` listou só as 6 migrações, sem seed. Depois do push, conferido no
+  banco da nuvem:
+  - RLS ligada nas 6 tabelas, com política em todas (`lancamentos` com duas);
+  - o trigger `ao_criar_usuario` em `auth.users`;
+  - as funções `aplicar_movimento`, `novo_link_do_aluno` e `criar_professor`.
+
+  A `rls_auto_enable` que aparece junto é do próprio Supabase, que liga a RLS sozinho em tabela
+  nova.
+- **`TZ` e a função:** o segredo entrou, e a `aluno-publico` foi publicada com `--use-api`, que
+  dispensa o Docker. Um token qualquer e um malformado deram 404 sem corpo.
+- **Auth:** o projeto novo nasceu com **Confirm email ligado** (`mailer_autoconfirm: false` em
+  `/auth/v1/settings`), e foi desligado no painel. Confere-se sem login:
+  ```bash
+  curl -s "https://<ref>.supabase.co/auth/v1/settings" -H "apikey: <chave publicável>"
+  ```
+- **O app apontado para a nuvem** (Expo Web, com `EXPO_PUBLIC_URL_DO_ALUNO` local):
+  - criou a conta, que abriu o onboarding, e gravou o perfil e o primeiro aluno;
+  - criou o pacote e registrou a aula pela RPC;
+  - ao reabrir, o saldo (1 de 8 usadas) e o extrato vieram do banco;
+  - gerou o link do aluno, e sair e entrar de novo levou direto ao app.
+- **A função com o token desse aluno:** HTTP 200 e `cache-control: no-store`, com o recorte da
+  Parte 6. Só o primeiro nome do aluno e do professor, o saldo e o extrato, sem o e-mail do professor.
 
 ---
 

@@ -244,7 +244,13 @@ export function PaginaSaldo({
                 usadas,
                 'usada',
                 'usadas',
-              )}. Válido até ${pagina.validade}.`
+              )}. ${
+                // Pacote sem prazo chega como 'sem prazo' (dominio/pacote.ts) ou
+                // vazio: "Válido até sem prazo" não é frase.
+                !pagina.validade || pagina.validade === 'sem prazo'
+                  ? 'Sem prazo de validade.'
+                  : `Válido até ${pagina.validade}.`
+              }`
             : 'Sem pacote ativo no momento.'}
         </Text>
       </CartaoVidro>

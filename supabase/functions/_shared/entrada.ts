@@ -22,6 +22,7 @@ export { hoje } from '../../../mobile/src/dominio/datas';
 export { DIAS, FAIXAS_HORARIAS } from '../../../mobile/src/dominio/disponibilidade';
 export {
   alunoParaBanco,
+  datasDoBanco,
   lancamentoDoMovimento,
   montarPersistido,
 } from '../../../mobile/src/dados/conversor';
