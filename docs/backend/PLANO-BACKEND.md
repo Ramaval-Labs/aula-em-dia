@@ -1232,6 +1232,138 @@ sequenceDiagram
 4. Proteção básica: token é UUID v4 (impossível de adivinhar na prática); limite de requisições por
    IP na Edge Function; o link não aparece em buscadores (`noindex`).
 
+### Decisões tomadas na Parte 6
+
+A Parte 6 foi partida em três cards, por faixa: o recorte no domínio (`SCRUM-69`), o servidor e o
+repositório (`SCRUM-22`) e a tela (`SCRUM-70`). Estas são as decisões do `SCRUM-22`. Em 04/11 o
+card passou do Valentin para o Rafael, por decisão de PO, porque o Valentin estava indisponível.
+
+O que foi construído:
+
+- a migração `0006_link_do_aluno.sql` e o teste `supabase/tests/database/link_do_aluno.test.sql`;
+- a Edge Function `supabase/functions/aluno-publico/` e o bundle do domínio (`npm run bundle:dominio`);
+- no app, `mobile/src/dados/repositorioPublico.ts`, e o link na store (`linkDoAluno` e `gerarNovoLink`).
+
+Nenhuma tela mudou, e o modo local também não.
+
+**Decisões de PO de 26/10, que valem para os três cards:**
+
+- **O link não vence.** Ele é revogado por "Gerar novo link", que derruba o anterior (D5).
+- **O aluno vê só o recorte do `SCRUM-69`.** Não saem telefone, e-mail, `valorPorAula` nem nada de
+  outro aluno.
+- **A demonstração é contra o banco local.** A nuvem é o `SCRUM-71`.
+- **O limite por IP fica para a Parte 8.**
+
+**1. O token é a única barreira.** A função usa a service role, e com ela a RLS não filtra nada.
+
+- A primeira consulta é pelo `token_publico`. As outras saem da linha que ela achou: o professor,
+  a política, a grade, os outros alunos e o extrato deste aluno.
+- Os outros alunos e a grade servem só para o motor calcular as janelas da proposta. Nada deles sai
+  na resposta, porque o `paginaDoAluno` escolhe campo a campo.
+- A gravação da disponibilidade filtra pelo token no próprio `update`.
+
+**2. O 404 é sem corpo e é o mesmo para tudo.** Cai nele o token trocado, o que nunca existiu, o
+mal formado (que nem chega ao banco) e o do aluno arquivado. A página não tem como dizer que o
+link já valeu um dia, e a frase do `SCRUM-70` foi escrita para casar com isso. O aluno arquivado
+entra aqui porque, para o professor, ele saiu da lista.
+
+**3. A função não calcula regra (D3).**
+
+- O recorte é o `paginaDoAluno`.
+- A reposição aceita é o `marcarReposicao`, a mesma conta da `responderProposta` da store.
+- A gravação é a `aplicar_movimento` da Parte 5, com a versão lida. Fecha o "O que fica em aberto"
+  de lá: uma resposta do aluno não sobrescreve um movimento que o professor gravou no meio.
+
+**4. O que a função confere é a entrada, não a regra.**
+
+- A janela aceita tem de ser uma das que a página ofereceu, a principal ou uma alternativa. Sem
+  isso, o aluno marcaria o horário que quisesse.
+- O status é `aceita` ou `recusada`. `confirmadaPeloProfessor` é do professor.
+- Os blocos de disponibilidade são `{ dia, faixa }`, com os valores do domínio e sem repetidos.
+
+O que não passa vira 400.
+
+**5. Duas respostas seguidas não duplicam a reposição.**
+
+- **Em sequência:** a segunda não acha proposta aberta e recebe 409.
+- **Ao mesmo tempo:** as duas leem a mesma versão, a RPC deixa passar uma, e a outra recebe 409.
+
+As duas situações foram conferidas contra o banco local.
+
+**6. A recusa passa pela mesma RPC**, sem lançamento, como a do professor. A versão anda, e o
+aparelho do professor que gravar depois com a versão velha recarrega antes.
+
+**7. A disponibilidade é gravação direta**, como a `salvarDisponibilidadeDoAluno` da Parte 4: não é
+movimento e não mexe na versão.
+
+**8. A resposta do POST é a página como ficou.** A tela do aluno não precisa ler de novo.
+
+**9. O fuso.** O `hoje()` do domínio lê a hora local, e o runtime roda em UTC: das 21h à meia-noite
+de Brasília, a reposição aceita sairia com a data de amanhã. O `config.toml` põe
+`TZ = "America/Sao_Paulo"` em `[edge_runtime.secrets]`. Foi conferido com uma função descartável:
+`Intl` e `Date` passam a responder no fuso de Brasília. Na nuvem, o mesmo valor vai por
+`supabase secrets set` (`SCRUM-71`).
+
+**10. O bundle do domínio fica fora do git.** O `npm run bundle:dominio` gera
+`supabase/functions/_shared/dominio.js` (18 KB, sem React Native). Sem ele a função não sobe, o que
+é melhor do que subir com uma regra velha. A entrada é `functions/_shared/entrada.ts`, e o
+esbuild 0.28.2 entrou como `devDependency` exata, num commit sozinho.
+
+**11. O token mora num mapa do repositório, como a versão.** Ele não entra no tipo `Aluno`, que é
+contrato do domínio.
+
+- O mapa é preenchido no `carregar()`, e o aluno criado no aparelho já pega o token no `insert`.
+- O mapa vai no cache, e o "Gerar novo link" atualiza o cache na hora. Sem isso, o app aberto sem
+  rede copiaria o link que acabou de cair.
+- `linkDoAluno` monta `${EXPO_PUBLIC_URL_DO_ALUNO}/a/<token>`. Sem a variável, não há link.
+- `gerarNovoLink` confere a variável **antes** de chamar a RPC: senão, o link velho cairia sem
+  haver um novo para mandar.
+
+**12. A `novo_link_do_aluno` não mexe na versão.** O token não é dado de movimento, e trocar o link
+não pode fazer o outro aparelho do professor dar conflito.
+
+**13. Na store, as duas ações não são `Mudanca`.** O token não é estado da store, então as ações
+ficam fora de `AcaoQueGrava` e não passam por `registrar`. `gerarNovoLink` não é otimista nem mostra
+aviso: a tela decide o que dizer, com as frases do `SCRUM-70`.
+
+**14. O `GET` leva o token na query, como o card pede.** A função não o escreve em log nenhum: no
+erro, só a mensagem. O log de acesso do gateway pode ter a URL. Se isso pesar, a leitura vira um
+`POST` na Parte 8.
+
+**Onde foi testado.** Em 04/11/2026, com Supabase CLI 2.121.0, PostgreSQL 17.11 e `edge-runtime`
+1.77.4.
+
+- **pgTAP:** 12 casos novos, 82 no total. Cobrem:
+  - o token que muda, e o velho que não acha mais ninguém;
+  - a versão parada;
+  - o professor B recusado;
+  - o `execute` negado a quem não tem login;
+  - a service role podendo chamar a `aplicar_movimento`.
+- **`curl` contra a função no banco local:**
+  - o recorte sem telefone, e-mail nem valor;
+  - 404 sem corpo para o token desconhecido, o mal formado, o ausente, o velho depois de "Gerar novo
+    link" e o do aluno arquivado;
+  - 400 para a janela que não foi oferecida, o status inválido, o bloco inválido e a ação
+    desconhecida;
+  - o aceite gravando o aluno, a proposta `aceita` e o lançamento `reposicao` com a data de hoje;
+  - 409 na segunda resposta, e uma de duas simultâneas passando;
+  - a recusa sem lançamento;
+  - a disponibilidade sem campo a mais nem repetido;
+  - nenhum token no log da função.
+- **Jest:** 21 casos.
+  - `repositorioPublico.ts` por `fetch` simulado: 200, 404, 409, 500 e rede caída.
+  - O link no repositório contra o Supabase simulado, que agora responde à `novo_link_do_aluno`.
+  - As duas ações da store.
+
+**O que fica em aberto.**
+
+- **A tela.** O `AppDoAluno`, o desvio em `/a/` e os dois botões da ficha são o `SCRUM-70`. A ponta
+  a ponta pelo navegador do celular também.
+- **A nuvem.** É o `SCRUM-71`, com o `TZ` por `supabase secrets set`.
+- **O limite por IP.** Fica na Parte 8.
+- **O extrato com mais de 1000 lançamentos.** A função lê o extrato numa página só, e o `max_rows`
+  corta os mais antigos. Para um aluno, isso é anos de aula.
+
 ### Pronto quando
 
 - O link aberto no navegador do celular mostra o saldo certo.
@@ -1275,6 +1407,9 @@ Esta parte não tem fim: cada parte anterior deixa aqui o que precisa.
     - RLS: o professor B não lê nem grava nada do professor A;
     - `aplicar_movimento` faz rollback quando o lançamento falha e dá conflito com versão velha;
     - a Edge Function só devolve o aluno do token.
+- **Limite de requisições por IP na `aluno-publico`** (decisão de PO de 26/10, `SCRUM-24`). O token
+  não se adivinha, mas a função hoje responde a quantos pedidos chegarem. Junto, decidir se a
+  leitura vira `POST`, para o token sair da URL e do log de acesso do gateway (Parte 6, decisão 14).
   - O conversor de fronteira tem testes de ida e volta: app → banco → app devolve o mesmo objeto.
 - **CI (GitHub Actions):** `npm test` + `npm run typecheck` a cada push. Com a Parte 2, entram também
   `supabase db lint` e os testes de integração (a Supabase CLI roda no Actions com Docker).

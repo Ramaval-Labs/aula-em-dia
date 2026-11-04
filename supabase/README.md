@@ -13,10 +13,14 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `migrations/0003_novo_professor.sql` | Trigger: criar o login cria o professor, a política e a disponibilidade |
 | `migrations/0004_onboarding.sql` | `professores.onboarding_concluido`: quem fecha o app no meio do onboarding volta a ele |
 | `migrations/0005_aplicar_movimento.sql` | A RPC `aplicar_movimento`: aluno + lançamento (+ proposta) juntos, ou nada, com trava de versão |
+| `migrations/0006_link_do_aluno.sql` | A RPC `novo_link_do_aluno`: troca o `token_publico`, e o link anterior para de funcionar |
+| `functions/aluno-publico/` | A Edge Function do link do aluno: lê o recorte e grava a resposta pelo token, sem login |
+| `functions/_shared/entrada.ts` | O que a função usa do domínio do app; o `dominio.js` ao lado é **gerado** e fica fora do git |
 | `seed.sql` | Os dados de demonstração. **Gerado**: não edite à mão |
 | `tests/database/rls.test.sql` | Teste de RLS com dois professores, em pgTAP |
 | `tests/database/novo_professor.test.sql` | Teste do trigger da `0003` e da marca da `0004`, em pgTAP |
 | `tests/database/aplicar_movimento.test.sql` | Teste da RPC da `0005`: rollback, conflito de versão, proposta e RLS |
+| `tests/database/link_do_aluno.test.sql` | Teste da RPC da `0006`: o token muda, o professor B não troca, sem login não chama |
 
 ## Para rodar
 
@@ -72,7 +76,7 @@ O arquivo pode rodar mais de uma vez e termina sempre no mesmo estado.
 
 `db reset` passar não prova a segurança. Com RLS ligada e **sem** política, o `select` volta vazio e
 o `update` não afeta linha nenhuma, **sem erro**. O que prova é um professor não enxergar o que é do
-outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 16 do trigger da `0003` e da marca da `0004`, e 24 da RPC da `0005`):
+outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 16 do trigger da `0003` e da marca da `0004`, 24 da RPC da `0005` e 12 da `0006`):
 
 - RLS ligada nas seis tabelas e política em todas (`lancamentos` tem duas: ler e inserir);
 - o professor A, do seed, vê os 4 alunos dele e nenhum do professor B;
@@ -171,6 +175,28 @@ As decisões estão em
 [Parte 4](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-4) e
 [Parte 5](../docs/backend/PLANO-BACKEND.md#decisões-tomadas-na-parte-5).
 
+## O link do aluno: a Edge Function (Parte 6)
+
+O aluno abre `/a/<token>` sem login, e a página lê e grava pela função `aluno-publico`. Ela roda
+no `edge-runtime` local, que é mais uma imagem: o `supabase start` a baixa se ela não estiver
+no `-x`. Na raiz do repositório, com o banco no ar:
+
+```bash
+(cd mobile && npm run bundle:dominio)   # gera functions/_shared/dominio.js; refaça quando o domínio mudar
+npx supabase functions serve            # serve a função em http://127.0.0.1:54321/functions/v1/aluno-publico
+```
+
+O `config.toml` já desliga o JWT dessa função (`verify_jwt = false`: o token do link é a
+credencial) e põe o fuso de Brasília no runtime (`TZ`), porque o `hoje()` do domínio lê a hora
+local. Para conferir à mão, com um token lido do banco (`select token_publico from alunos`):
+
+```bash
+curl "http://127.0.0.1:54321/functions/v1/aluno-publico?token=<token>"      # 200 e o recorte
+curl -i "http://127.0.0.1:54321/functions/v1/aluno-publico?token=<outro>"   # 404 sem corpo
+```
+
+Sem o `dominio.js`, a função não sobe. É de propósito: melhor do que rodar com uma regra velha.
+
 ## Rodar no celular com o banco local
 
 O Expo Go precisa alcançar duas portas do computador: a do Metro (`8081`), que entrega o app, e a
@@ -252,7 +278,8 @@ lançamento, então um enum que mude no banco aparece no `npm run typecheck`.
 ## Versões em que isto foi testado
 
 Em 08/10/2026, e de novo em 23/10/2026 com a `0004`: Supabase CLI 2.120.0, PostgreSQL 17.11,
-Auth (GoTrue) v2.197.0. O `npx supabase`
+Auth (GoTrue) v2.197.0. A `0006` e a Edge Function, em 04/11/2026: CLI 2.121.0 e
+`edge-runtime` 1.77.4 (Deno 2.1.4). O `npx supabase`
 não fixa versão, e a forma de `auth.users` muda entre versões do CLI: se o `db reset` começar a
 falhar no bloco do professor de teste depois de uma atualização, é por aí.
 
@@ -260,7 +287,10 @@ falhar no bloco do professor de teste depois de uma atualização, é por aí.
 
 - **A regra do plano gratuito** (limite de alunos): o limite não foi decidido.
 - **Migração aplicada não se edita.** Se o seed revelar um problema no esquema, crie a próxima
-  (`0006`).
+  (`0007`).
+- **A função na nuvem** e o Expo Web publicado com `/a/*`: é o `SCRUM-71`. Lá o fuso vai por
+  `supabase secrets set TZ=America/Sao_Paulo`, porque o `config.toml` só vale no local.
+- **O limite de requisições por IP** na função fica para a Parte 8 (`SCRUM-24`), por decisão de PO.
 
 ## Divergência conhecida no plano
 
