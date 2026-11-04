@@ -4,7 +4,8 @@ Revisão da Edge Function `aluno-publico` antes de o link do aluno sair para a i
 
 - **Autor:** Mauro, que não escreveu a função. Escreveu o recorte `paginaDoAluno`, então esse módulo foi
   conferido por quem o fez.
-- **Data e versão:** 04/11/2026, na `main` em `3dc6402`.
+- **Data e versão:** 04/11/2026, na `main` em `3dc6402`. Até `5e199ae` (`SCRUM-71`, `SCRUM-74`), nada mudou
+  em `supabase/`, `mobile/src/dados/` nem `mobile/src/dominio/`, então os achados continuam valendo.
 
 ## Resultado
 
@@ -16,7 +17,8 @@ proposta vencida, a janela dupla e o ano das datas.
 
 **A revisão não está completa.** Esta máquina não tem Docker, então a função não rodou contra o banco
 real. Três conferências continuam abertas e estão em [O que falta conferir](#o-que-falta-conferir).
-O `SCRUM-74` pode seguir, mas elas precisam estar feitas antes de o link ir para um aluno de verdade.
+Sem P0, o `SCRUM-74` pode seguir, mas elas precisam estar feitas antes de o link ir para um aluno de
+verdade.
 
 ## Como foi conferido
 
@@ -198,7 +200,7 @@ do navegador da vítima. Veja o P3-4.
 |---|---|---|---|---|
 | P3-1 | `janela: null` dá 500 em vez de 400, e escreve `Cannot read properties of null` no log. Nada é gravado e o token não aparece. | `index.ts:172-176` | conferir o tipo antes de comparar | Valentin |
 | P3-2 | O token vai na query do `GET` (decisão 14). O log da função está limpo, mas o do gateway não foi visto. Quem lê esse log já tem acesso à service role. O caminho `/a/<token>` também passa pela Vercel, então o `POST` não eliminaria o token de todos os logs. | `index.ts:239` | conferir na nuvem e manter, se só a equipe vê | Valentin |
-| P3-3 | O `noindex` só existe depois que o JavaScript roda, e o `index.html` exportado não o tem. O `SCRUM-74` pede o `noindex` "no HTML publicado", o que hoje não passaria. | `AppDoAluno.tsx:66-75` | no `vercel.json`, para `/a/(.*)`: `X-Robots-Tag: noindex` e `Referrer-Policy: no-referrer` | Rafael |
+| P3-3 | O `noindex` só existe depois que o JavaScript roda, e o `index.html` exportado não o tem. O `SCRUM-74` pede o `noindex` "no HTML publicado", o que hoje não passaria. O `vercel.json` de `5e199ae` não tem esses cabeçalhos. | `AppDoAluno.tsx:66-75` | no `vercel.json`, para `/a/(.*)`: `X-Robots-Tag: noindex` e `Referrer-Policy: no-referrer` | Rafael |
 | P3-4 | CORS aberto a qualquer origem (item 7). | `index.ts:43` | restringir quando o domínio da Vercel existir, sem esquecer o Expo Web local | Valentin |
 | P3-5 | Professor B consegue criar proposta no aluno do A, se souber o UUID dele, e o índice `uma_proposta_aberta` passa a travar o A. O id não sai no recorte. Conclusão só por leitura. | `0002:36-43`, `0001:116` | adotar a variante estrita que a própria `0002` descreve | Valentin |
 | P3-6 | Quem usa o link velho nos milissegundos entre a leitura e a RPC ainda grava uma última resposta, porque a RPC não confere o token e a troca não muda a versão. Vale o mesmo para o arquivamento. | `0005:58`, `0006:13` | aceitar o risco | — |
@@ -218,8 +220,9 @@ Estas decisões não foram reabertas. Fica registrado o que cada uma implica:
 
 ## O que falta conferir
 
-Precisam do Supabase rodando. Dá para fazer localmente, com Docker, ou nos passos 3 e 4 do `SCRUM-71`, com
-a função na nuvem:
+A função já está na nuvem (`SCRUM-71`), então dá para conferir lá, antes do teste no 4G do `SCRUM-74`. O
+`curl` registrado no `SCRUM-71` já cobre em parte o item 4: 200, `no-store`, só primeiros nomes e sem o
+e-mail do professor. Esta revisão não repetiu essa chamada. Falta:
 
 1. **O JSON real (item 4).** Compare a resposta com a lista de chaves deste documento:
    ```bash
