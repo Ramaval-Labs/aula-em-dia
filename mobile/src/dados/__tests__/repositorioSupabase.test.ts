@@ -528,6 +528,16 @@ describe('registrar — o que mexe em saldo vai pela RPC (Parte 5)', () => {
     expect(args().p_versao).toBe(0);
   });
 
+  it('horário ocupado (0007) é falha comum: a frase de outro aparelho seria falsa', async () => {
+    await carregado({ falhar: (c) => (c.operacao === 'rpc' ? { message: 'horario_ocupado', code: 'P0001' } : null) });
+    const erro = await repo
+      .registrar({ tipo: 'responderProposta', aluno: val, lancamento, status: 'aceita' }, e)
+      .catch((x: unknown) => x);
+
+    expect(erro).toBeInstanceOf(ErroDoBanco);
+    expect(ehConflitoDeVersao(erro)).toBe(false);
+  });
+
   it('rede caída na RPC é falha comum, não conflito', async () => {
     await carregado({ falhar: (c) => (c.operacao === 'rpc' ? SEM_REDE : null) });
     const erro = await repo

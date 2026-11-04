@@ -148,7 +148,11 @@ async function mover(
     p_versao: linha.versao,
     ...extra,
   });
-  if (error?.message === 'conflito_de_versao') throw new Recusa(CONFLITO);
+  // O horário ocupado (0007) também é 409: a página relê, e o recorte já não
+  // oferece a janela que outro aluno pegou.
+  if (error?.message === 'conflito_de_versao' || error?.message === 'horario_ocupado') {
+    throw new Recusa(CONFLITO);
+  }
   if (error) throw new Error(`[aluno-publico] gravar a resposta: ${error.message}`);
 }
 
