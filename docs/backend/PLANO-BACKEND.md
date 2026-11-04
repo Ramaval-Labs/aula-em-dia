@@ -1364,6 +1364,62 @@ erro, só a mensagem. O log de acesso do gateway pode ter a URL. Se isso pesar, 
 - **O extrato com mais de 1000 lançamentos.** A função lê o extrato numa página só, e o `max_rows`
   corta os mais antigos. Para um aluno, isso é anos de aula.
 
+### Correções da revisão de segurança (SCRUM-83)
+
+A revisão do `SCRUM-73` (`docs/backend/revisoes/parte-6.md`) não achou P0 nem P1. Dois P2 gravavam
+dado errado no próprio aluno, e foram corrigidos aqui. O PO decidiu, em 04/11, que um horário aceita
+uma reposição só.
+
+**1. A data atravessa com o ano (P2-3).** O app guarda data em `dd/mm`, e cada gravação inferia o
+ano de novo, a partir de hoje (±183 dias). Qualquer movimento reescrevia as datas antigas ou
+distantes: um `pagamento_em` de oito meses atrás ia para o ano que vem. Bastava o aluno recusar uma
+proposta pelo link.
+
+- **O conversor:** `alunoParaBanco` recebe as datas que o banco tinha (`DatasDoBanco`). Se o
+  `dd/mm` não mudou, a data volta exatamente como estava, com o ano. Só a data que mudou tem o ano
+  inferido, e essa é sempre recente, porque quem a muda é uma ação de hoje.
+- **No app:** o repositório guarda as datas de cada aluno num mapa, como as versões. O
+  `carregar()` preenche, cada gravação atualiza, e o mapa vai no cache.
+- **No link:** a Edge Function usa as datas da linha que acabou de ler.
+- **A alternativa recusada:** gravar só as colunas que o movimento mudou exigiria comparar o aluno
+  de antes e o de depois em cada ação. A data com o ano resolve na fronteira, que é onde o defeito
+  nasce.
+
+**2. Um horário aceita uma reposição só (P2-2).** A mesma janela proposta a dois alunos era aceita
+pelos dois. A correção tem três camadas:
+
+- **O motor** (`agenda.ts`): a reposição marcada de outro aluno ocupa aquela data e faixa, e o motor
+  não sugere mais o horário. Só aquela data: a mesma faixa na semana seguinte segue livre.
+- **O recorte** (`paginaDoAluno.ts`): a página do aluno não oferece janela que outro aluno já
+  ocupou. Se a principal foi ocupada, a primeira alternativa livre toma o lugar dela. Se todas
+  foram, a proposta vem `null`.
+- **O banco** (`0007_horario_ocupado.sql`): a `aplicar_movimento` recusa o **aceite** com
+  `horario_ocupado` quando outro aluno do professor, não arquivado, já tem reposição no mesmo dia
+  e hora.
+  - **Os aceites simultâneos:** os de um mesmo professor passam por uma trava de transação
+    (`pg_advisory_xact_lock`). O segundo espera o primeiro terminar e enxerga a reposição dele.
+    Foi provado com duas sessões do Postgres: a segunda esperou 2,1 s e foi recusada.
+  - **Só o aceite é conferido.** O professor marcando a reposição direto, ou confirmando por conta
+    própria, decide sabendo da agenda e não é bloqueado.
+  - **Na página:** `horario_ocupado` dá 409, como o conflito. A página relê e já não oferece o
+    horário.
+  - **No app do professor:** é falha comum (`falhaAoSalvar` e recarga). A frase de conflito de
+    versão, "mudou em outro aparelho", seria falsa nesse caso.
+
+**Onde foi testado.** Em 04/11/2026, no banco local:
+
+- **pgTAP:** 14 casos novos em `horario_ocupado.test.sql`, 96 no total.
+- **A corrida:** as duas sessões em paralelo, como descrito acima.
+- **A Edge Function servida localmente:**
+  - recusar a proposta pelo link manteve uma data de oito meses atrás;
+  - depois do aceite do primeiro aluno, a página do segundo deixou de oferecer o horário, e
+    insistir nele deu 400.
+- **No app:** 19 testes novos, no conversor, no repositório, no motor e no recorte.
+
+**O que fica em aberto.** O rótulo de `agendada` ("Terça, 10/11") não tem ano. Uma reposição antiga
+que nunca foi limpa ocuparia o mesmo rótulo no ano em que a data cair no mesmo dia da semana, o que
+acontece a cada cinco ou seis anos.
+
 ### Pronto quando
 
 - O link aberto no navegador do celular mostra o saldo certo.
