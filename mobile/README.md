@@ -24,7 +24,7 @@ build no navegador.
 ## Verificação
 
 ```bash
-npm test          # 923 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
+npm test          # 949 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
 npm run typecheck # tsc --noEmit
 ```
 
@@ -77,7 +77,7 @@ src/telas/                   as 35 telas
   comum/                       adaptadores de domínio de várias telas (extrato, frases do aluno)
   entrada/                     login e onboarding (Fluxo A), com o chassi TelaDeEntrada
   reposicao/                   assistente de 3 passos (Fluxo C)
-  aluno/                       visão do aluno (Fluxo F)
+  aluno/                       visão do aluno (Fluxo F): a prévia e a página do link /a/:token
   ajustes/                     sub-telas de configuração (Fluxo E)
   registro.ts                  o mapa tela → componente
 scripts/capturar.mjs         screenshots no Expo Web (390 × 844)
