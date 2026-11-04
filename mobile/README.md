@@ -36,7 +36,12 @@ Screenshot de qualquer tela sem celular: `npm run capturar -- --tela <chave> [--
 O aluno abre `/a/<token>` no navegador, e quem serve essa página é o Expo Web publicado na
 Vercel. O `vercel.json` desta pasta diz como montar (`npx expo export --platform web`, saída em
 `dist/`) e manda todo caminho para o `index.html`. Sem essa rewrite, `/a/<token>` dá o 404 da
-Vercel em vez de abrir o app.
+Vercel em vez de abrir o app. Para `/a/*`, ele também manda `X-Robots-Tag: noindex` e
+`Referrer-Policy: no-referrer`: o `noindex` da página só existe depois que o JavaScript roda, e o
+token não deve sair no `Referer` de um link aberto a partir dela (P3-3 de
+`docs/backend/revisoes/parte-6.md`).
+
+Produção: **https://aula-em-dia-three.vercel.app**, no projeto `aula-em-dia` da Vercel.
 
 O projeto na Vercel usa `mobile/` como raiz e tem estas variáveis:
 
