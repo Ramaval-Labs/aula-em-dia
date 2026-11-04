@@ -31,6 +31,36 @@ npm run typecheck # tsc --noEmit
 Screenshot de qualquer tela sem celular: `npm run capturar -- --tela <chave> [--aluno raf]`
 (opções no topo de `scripts/capturar.mjs`).
 
+## Publicar a página do aluno (Vercel)
+
+O aluno abre `/a/<token>` no navegador, e quem serve essa página é o Expo Web publicado na
+Vercel. O `vercel.json` desta pasta diz como montar (`npx expo export --platform web`, saída em
+`dist/`) e manda todo caminho para o `index.html`. Sem essa rewrite, `/a/<token>` dá o 404 da
+Vercel em vez de abrir o app.
+
+O projeto na Vercel usa `mobile/` como raiz e tem estas variáveis:
+
+| Variável | Valor |
+|---|---|
+| `EXPO_PUBLIC_BACKEND` | `supabase` |
+| `EXPO_PUBLIC_SUPABASE_URL` | a URL do projeto Supabase na nuvem |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | a chave **pública** (`sb_publishable_…`) |
+| `EXPO_PUBLIC_URL_DO_ALUNO` | o próprio domínio da Vercel, sem barra no fim |
+
+**Tudo que começa com `EXPO_PUBLIC_` vai dentro do bundle e é público.** A service role nunca
+entra aqui, nem na Vercel, nem no `.env`: ela só existe nas Edge Functions.
+
+Com o repositório ligado, cada push na `main` publica de novo. Para conferir o build antes, sem
+publicar:
+
+```bash
+npx expo export --platform web --clear   # lê o .env; o dist/ fica fora do git
+```
+
+Sirva o `dist/` com uma regra que devolva o `index.html` para caminho desconhecido, e abra
+`/a/<token>`: com um token qualquer, a página mostra "Não encontramos esta página. Peça um novo
+link ao seu professor."
+
 ## Stack e por quê
 
 | Escolha | Motivo |
