@@ -14,6 +14,7 @@ import { CartaoVidro, MedidorPacote } from '../../componentes/Blocos';
 import { BotaoPrimario, BotaoSecundario, BotaoTexto } from '../../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { useDoisToques } from '../../componentes/useDoisToques';
+import { alunosAtivos, atingiuOLimite, LIMITE_GRATUITO } from '../../dominio/plano';
 import { useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { loginReal, useSessao } from '../../estado/sessao';
@@ -23,7 +24,6 @@ import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { estilos } from './estilos';
 import { TelaDeAjuste } from './pecas';
 
-const LIMITE_GRATUITO = 5;
 const BENEFICIOS = [
   'Alunos ilimitados',
   'Link público do aluno personalizado',
@@ -55,7 +55,7 @@ export function Conta() {
     avisar('Dados copiados para a área de transferência.');
   };
 
-  const ativos = alunos.filter((a) => !a.arquivado).length;
+  const ativos = alunosAtivos(alunos).length;
   const pago = perfil.plano === 'pago';
   const ocupadas = Math.min(ativos, LIMITE_GRATUITO);
 
@@ -110,7 +110,7 @@ export function Conta() {
               variante="progresso"
               total={LIMITE_GRATUITO}
               usadas={ocupadas}
-              baixo={ativos >= LIMITE_GRATUITO}
+              baixo={atingiuOLimite(alunos, perfil.plano)}
               estilo={proprios.medidor}
             />
             <Text
