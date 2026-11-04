@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro e os cards atribuídos. Até agora foram oito janelas: uma semana de
-preparação e sete sprints de uma semana.
+com as três pessoas dentro e os cards atribuídos. Até agora foram nove janelas: uma semana de
+preparação e oito sprints de uma semana.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -376,12 +376,33 @@ o limite não foi decidido.
 **Fora da sprint, de propósito:** `SCRUM-31`; as Partes 6 a 8, que esperam a Parte 5; `SCRUM-39`,
 `SCRUM-40` e `SCRUM-41` (acabamento de design); e os cards de plataforma e publicação.
 
-### Sprint 7 · 26/10 a 02/11 · **ativa** · 10 pontos
+### Sprint 7 · 26/10 a 04/11 · **fechada, 3 de 3, 10 pontos**
 
-Esta é a sprint que está no quadro agora. O tema é a **Parte 6**: o professor copia o link do aluno
-na ficha, e o aluno abre no navegador do celular, sem conta e sem instalar nada. Ele vê o saldo, o
-extrato e a proposta de reposição, e responde. É o item do MVP que ainda não existia de forma
-nenhuma.
+O tema foi a **Parte 6**: o professor copia o link do aluno na ficha, e o aluno abre no navegador do
+celular, sem conta e sem instalar nada. Ele vê o saldo, o extrato e a proposta de reposição, e
+responde. Fechou em 04/11, dois dias depois do fim previsto, com os três PRs (#25, #26 e #27)
+mesclados no mesmo dia. A suíte foi de 850 para **949 testes**.
+
+**Como fechou, para registro:**
+
+- **A ordem obrigatória foi seguida:** `SCRUM-69` → `SCRUM-22` → `SCRUM-70`, e a frase do link
+  entrou antes, em 26/10.
+- **O `SCRUM-22` foi feito pelo Rafael**, e não pelo Valentin. É a faixa de persistência. O card foi
+  reatribuído no quadro.
+- **Nenhum dos três PRs teve revisão registrada.** Os três foram mesclados pelo Rafael, inclusive os
+  dois dele. A revisão do Mauro, que desta vez estava escrita no card, de novo não aconteceu. Como a
+  Edge Function usa a service role, ela virou o `SCRUM-73`, que precisa terminar antes de o link ir
+  para a internet.
+- **A ponta a ponta foi no Chrome, pelo IP da rede, com 18 de 18 conferências.** O celular de verdade
+  ficou para o `SCRUM-74`, no 4G.
+- **O PR #27 deixou quatro pontos para o PO:** o rodapé do saldo no link (troca os dois botões da
+  prévia por "Ver a proposta de reposição" e "Informar disponibilidade"); a frase de sem rede ("Não
+  deu para abrir a página. Confira a conexão e tente de novo."); o `usadas` calculado na tela como
+  `total − saldo`; e o 409 (proposta já respondida), que recarrega sem aviso.
+- **O plano registra duas pontas da Parte 6:** o `GET` leva o token na query, e o log do gateway pode
+  ter a URL; e o extrato com mais de 1000 lançamentos é cortado.
+
+O que foi planejado, como estava no quadro:
 
 | Dono | Cards | Pts |
 |---|---|---|
@@ -437,6 +458,74 @@ para carregar seus alunos. Confira a conexão e abra o app de novo."
 `SCRUM-26`, e o push pede development build, o `SCRUM-47`); o `SCRUM-24` (Parte 8), que recebe o que
 a Parte 6 deixar; o `SCRUM-31`; o `SCRUM-39`, o `SCRUM-40` e o `SCRUM-41`; o `SCRUM-71`; e os outros
 cards de plataforma e publicação.
+
+### Sprint 8 · 04/11 a 11/11 · **ativa** · 15 pontos
+
+Esta é a sprint que está no quadro agora. O tema é **o link sai de casa, com segurança e com saída**.
+O banco vai para a nuvem e o Expo Web para a Vercel, e o aluno abre o link no 4G. Antes disso, alguém
+que não escreveu a Edge Function a revisa. Junto vai o que a Parte 8 cobra antes de publicar:
+apagar a conta de verdade e backup do banco.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Mauro | `SCRUM-73` — revisão de segurança da Parte 6 (2) + `SCRUM-77` — o limite gratuito no domínio, commit 1 (1) + `SCRUM-24` — backup semanal pelo Actions (2) | 5 |
+| Valentin | `SCRUM-71` — Supabase na nuvem (3) + `SCRUM-75` — apagar a conta, servidor (3) + `SCRUM-72` — a carga sem cache avisa (1) | 7 |
+| Rafael | `SCRUM-74` — a Vercel e o link no 4G (2) + `SCRUM-76` — apagar a conta, tela (1) + as frases do `SCRUM-72` e o commit 2 do `SCRUM-77` | 3 |
+
+**15 pontos em 8 cards: mais cards, e menores.** A média das três últimas sprints foi de 11 pontos.
+Os cards de 1 ponto são quase todos um commit de abertura e um de ligação. O risco está no
+`SCRUM-71`, que é ação externa e segura dois outros cards.
+
+**A revisão é card, e não linha na planning.** Nas Sprints 6 e 7, a revisão do Mauro estava prevista
+e não aconteceu. Agora ela tem pontos, entrega um arquivo (`docs/backend/revisoes/parte-6.md`) e
+bloqueia a publicação.
+
+**Ordem obrigatória**, com os vínculos *blocks* no board:
+
+- `SCRUM-71` antes do `SCRUM-74` e do `SCRUM-24`
+- `SCRUM-73` sem P0 antes do `SCRUM-74`: o link só vai para a internet depois da revisão
+- `SCRUM-75` antes do passo 2 do `SCRUM-76`
+- o commit 1 do `SCRUM-77` (Mauro) antes do commit 2 (Rafael)
+- o Valentin faz o `SCRUM-75` antes do `SCRUM-72`: os dois mexem em `estado/`
+- o Rafael abre `Conta.tsx` em dois cards (`SCRUM-77` e `SCRUM-76`), um de cada vez
+
+**Ordem cronológica, por dia:**
+
+| Quando | Mauro | Valentin | Rafael |
+|---|---|---|---|
+| **Dia 1** (qua 04/11) | `SCRUM-77` commit 1 (`dominio/plano.ts`), push no mesmo dia. Começa o `SCRUM-73`. | Confirma com o PO e cria o projeto do `SCRUM-71`: `link`, `db push`, `secrets`. | As frases: `SCRUM-72` e `SCRUM-76` passo 1, um commit cada. |
+| **Dia 2** (qui 05/11) | `SCRUM-73`: os 7 itens e o relatório. P0 ou P1 vira comentário no `SCRUM-71`. | `SCRUM-71`: bundle, deploy da função, conta de teste pelo app. Passa a URL e a chave pública ao Rafael e a connection string ao Mauro. | `SCRUM-77` commit 2 (`Conta.tsx` lê o domínio). Revisa o PR do Mauro. |
+| **Dia 3** (sex 06/11) | Revisa o PR do `SCRUM-71`. Começa o `SCRUM-24` com a connection string. | Corrige o que o `SCRUM-73` achar. Começa o `SCRUM-75`: o pgTAP do cascade. | `SCRUM-74` passos 2 e 3: `vercel.json`, `serve dist` local, projeto na Vercel. |
+| **Dia 4** (seg 09/11) | `SCRUM-24`: o primeiro backup na mão e a restauração no banco local. | `SCRUM-75`: a Edge Function `apagar-conta` e a sessão. Push e aviso ao Rafael. | `SCRUM-74` passos 4 e 5: o link no 4G (só sem P0 no `SCRUM-73`). |
+| **Dia 5** (ter 10/11) | Revisa o PR do `SCRUM-75`. | `SCRUM-72` (o `catch` da carga) e a restauração no plano (`SCRUM-24`). | `SCRUM-76` passo 2: dois toques e o teste. Revisa o PR do `SCRUM-72`. |
+| **Dia 6** (qua 11/11) | Review: demo no 4G. | Review. | Review e fechamento da sprint. |
+
+**Decisões de PO para a planning** (propostas, a confirmar):
+
+- **Criar o projeto Supabase na nuvem**, no plano free e na região de São Paulo, sem rodar o
+  `seed.sql`, porque ele cria uma conta de teste com senha conhecida.
+- **Apagar a conta apaga na hora**, sem carência e sem lixeira, porque a tela pede dois toques.
+- **As frases do `SCRUM-76`:** "Apaga você e todos os seus alunos. Não dá para desfazer." · "Toque
+  de novo para apagar tudo" · "Não deu para apagar a conta. Confira a conexão e tente de novo."
+- **Os quatro pontos do PR #27.** Proposta: aceitar o rodapé e a frase de sem rede como estão; levar
+  o `usadas` para o `paginaDoAluno` quando o Mauro mexer no domínio de novo; e o 409 avisar "Esta
+  proposta já foi respondida." em vez de recarregar calado.
+
+**Revisado antes de abrir**, contra a `main` de 04/11:
+
+- o `SCRUM-71` perdeu a Vercel, que virou o `SCRUM-74`, e ficou só com a nuvem. Subiu para o
+  template, com a regra de não rodar o `seed.sql` e de gerar o bundle antes do deploy.
+- o `SCRUM-24` saiu da profundidade média e ficou só com o backup. Ele passou para o Mauro, porque é
+  `.github/`. O resto da tabela dele já é critério de pronto de outros cards.
+- o `SCRUM-72` subiu para o template.
+- o `SCRUM-73`, o `SCRUM-74`, o `SCRUM-75`, o `SCRUM-76` e o `SCRUM-77` nasceram no template.
+- **Achado na abertura:** `LIMITE_GRATUITO = 5` estava em `telas/ajustes/Conta.tsx`, uma regra de
+  negócio na tela (regra 7 do `CLAUDE.md`). Virou o `SCRUM-77`.
+
+**Fora da sprint, de propósito:** o limite por IP na Edge Function (espera o tamanho do risco que o
+`SCRUM-73` medir); o bloqueio do 6º aluno no plano gratuito e o trigger no banco (espera o
+`SCRUM-77`); o `SCRUM-23` (o push pede o `SCRUM-47`); o `SCRUM-31`; o `SCRUM-39`, o `SCRUM-40` e o
+`SCRUM-41`; e o `SCRUM-56`.
 
 ---
 
@@ -612,6 +701,10 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   recorte e a tela da Parte 6, partida por faixa com o `SCRUM-22`. O `71` é a publicação do link
   (Supabase na nuvem e Vercel), e o `72` é a frase da carga que falha sem cache, a sobra da Sprint 5
   que estava sem card
+- **`SCRUM-73` a `SCRUM-77` criados** em 04/11, na abertura da Sprint 8: a revisão de segurança da
+  Parte 6 (`73`), a Vercel separada do `SCRUM-71` (`74`), apagar a conta no servidor e na tela (`75`
+  e `76`), e o limite gratuito no domínio (`77`). O `SCRUM-24` encolheu para o backup e passou para o
+  Mauro
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
