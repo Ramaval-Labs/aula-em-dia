@@ -13,6 +13,11 @@
  * devolve, e o `dominio/` nunca fica sabendo dela. Se outro aparelho gravou
  * antes, a RPC recusa com `ConflitoDeVersao`, e a store avisa e recarrega.
  *
+ * O link do aluno (Parte 6) segue o mesmo desenho: o `token_publico` de cada
+ * aluno mora noutro mapa, e "Gerar novo link" é a RPC `novo_link_do_aluno`
+ * (0006). O que o aluno faz pelo link não passa por aqui: é a Edge Function,
+ * por `repositorioPublico.ts`.
+ *
  * Online com cache, não offline-first (decisão D4): não há fila de gravações.
  * O cliente é o preguiçoso de `supabase.ts`; importar este arquivo não abre
  * conexão, e o modo local nunca chama nada daqui.
@@ -87,11 +92,12 @@ export function exigir<T>(resposta: Resposta<T>, oQue: string): T {
  * id que não existe) volta sem erro. O `select` depois do `update` é o que
  * deixa ver isso, e aqui a gravação vazia vira falha em vez de sumir.
  */
-function exigirLinha(resposta: Resposta<unknown[]>, oQue: string): void {
+function exigirLinha<T>(resposta: Resposta<T[]>, oQue: string): T[] {
   const linhas = exigir(resposta, oQue);
   if (!linhas || linhas.length === 0) {
     throw new ErroDoBanco(oQue, { message: 'nenhuma linha foi gravada' });
   }
+  return linhas;
 }
 
 /** O id do professor logado, lido da sessão guardada no aparelho (sem rede). */
@@ -113,6 +119,24 @@ export async function exigirProfessor(): Promise<string> {
  * última RPC. É o que a RPC compara para saber se outro aparelho gravou antes.
  */
 const versoes = new Map<string, number>();
+
+// --- Link do aluno ------------------------------------------------------------------
+
+/**
+ * O `token_publico` de cada aluno, como o de versões (Parte 6). Fica aqui e
+ * não no `Aluno`: o tipo é contrato do domínio, e o token é credencial do
+ * banco, não regra.
+ */
+const tokens = new Map<string, string>();
+
+/**
+ * `/a/<token>` sobre `EXPO_PUBLIC_URL_DO_ALUNO`, o endereço do Expo Web que o
+ * aluno abre. Sem ele não há link para mandar.
+ */
+function montarLink(token: string): string | null {
+  const base = process.env.EXPO_PUBLIC_URL_DO_ALUNO;
+  return base ? `${base.replace(/\/+$/, '')}/a/${token}` : null;
+}
 
 // --- Leitura ----------------------------------------------------------------------
 
@@ -167,7 +191,11 @@ async function lerDoBanco(professorId: string): Promise<Persistido> {
     ]);
 
   versoes.clear();
-  for (const a of alunos) versoes.set(a.id, a.versao);
+  tokens.clear();
+  for (const a of alunos) {
+    versoes.set(a.id, a.versao);
+    tokens.set(a.id, a.token_publico);
+  }
 
   return montarPersistido({
     professor: exigir(professor, 'ler o perfil'),
@@ -186,6 +214,8 @@ interface Cache {
   gravado: Persistido;
   /** As versões vão junto: quem abre pelo cache e grava antes da rede responder precisa delas. */
   versoes?: Record<string, number>;
+  /** E os tokens, para copiar o link do aluno com o app aberto sem rede. */
+  tokens?: Record<string, string>;
 }
 
 async function guardarCache(professorId: string, gravado: Persistido): Promise<void> {
@@ -193,8 +223,25 @@ async function guardarCache(professorId: string, gravado: Persistido): Promise<v
     professorId,
     gravado: soPersistido(gravado),
     versoes: Object.fromEntries(versoes),
+    tokens: Object.fromEntries(tokens),
   };
   await AsyncStorage.setItem(CHAVE_CACHE, JSON.stringify(cache));
+}
+
+/**
+ * Só os tokens, depois de "Gerar novo link": sem isto, o app aberto sem rede
+ * copiaria o link que acabou de parar de funcionar.
+ */
+async function guardarTokensNoCacheSemFalhar(): Promise<void> {
+  try {
+    const bruto = await AsyncStorage.getItem(CHAVE_CACHE);
+    if (!bruto) return;
+    const cache = JSON.parse(bruto) as Cache;
+    cache.tokens = Object.fromEntries(tokens);
+    await AsyncStorage.setItem(CHAVE_CACHE, JSON.stringify(cache));
+  } catch {
+    // O cache é conveniência, como em guardarCacheSemFalhar.
+  }
 }
 
 /** O cache, só se for deste professor: quem entra com outra conta não vê o anterior. */
@@ -204,9 +251,12 @@ async function lerCacheDe(professorId: string): Promise<Gravado | null> {
     if (!bruto) return null;
     const cache = JSON.parse(bruto) as Partial<Cache> | null;
     if (cache?.professorId !== professorId || !cache.gravado) return null;
-    // Só completa o mapa: uma versão que já veio do banco é mais nova que a do cache.
+    // Só completa os mapas: o que já veio do banco é mais novo que o do cache.
     for (const [id, v] of Object.entries(cache.versoes ?? {})) {
       if (!versoes.has(id)) versoes.set(id, v);
+    }
+    for (const [id, t] of Object.entries(cache.tokens ?? {})) {
+      if (!tokens.has(id)) tokens.set(id, t);
     }
     return cache.gravado;
   } catch {
@@ -342,7 +392,7 @@ async function gravar(mudanca: Mudanca): Promise<void> {
 
     case 'salvarPoliticas': {
       const id = await exigirProfessor();
-      return exigirLinha(
+      exigirLinha(
         await clienteSupabase()
           .from('politicas')
           .update(politicasParaBanco(mudanca.politicas))
@@ -350,10 +400,11 @@ async function gravar(mudanca: Mudanca): Promise<void> {
           .select('professor_id'),
         'salvar a política',
       );
+      return;
     }
     case 'salvarDisponibilidade': {
       const id = await exigirProfessor();
-      return exigirLinha(
+      exigirLinha(
         await clienteSupabase()
           .from('disponibilidades')
           .update(disponibilidadeParaBanco(mudanca.disponibilidade))
@@ -361,18 +412,25 @@ async function gravar(mudanca: Mudanca): Promise<void> {
           .select('professor_id'),
         'salvar a disponibilidade',
       );
+      return;
     }
 
     // O id vem do app (`novoIdDeAluno`), e `professor_id` fica com o padrão
     // do banco, `auth.uid()`: o app não tem como gravar aluno para outro.
-    case 'criarAluno':
-      exigirLinha(
-        await clienteSupabase().from('alunos').insert(alunoParaBanco(mudanca.aluno)).select('id'),
+    case 'criarAluno': {
+      const [criado] = exigirLinha(
+        await clienteSupabase()
+          .from('alunos')
+          .insert(alunoParaBanco(mudanca.aluno))
+          .select('id, token_publico'),
         'criar o aluno',
       );
       // A versão inicial da coluna: o primeiro movimento do aluno novo já tem com o que comparar.
       versoes.set(mudanca.aluno.id, 0);
+      // O token é o padrão da coluna: o link do aluno novo já sai sem recarregar.
+      tokens.set(mudanca.aluno.id, criado.token_publico);
       return;
+    }
 
     case 'atualizarAluno': {
       if (!mudanca.campos.some((c) => CAMPOS_DE_SALDO.includes(c))) {
@@ -504,11 +562,30 @@ export const repositorioSupabase: Repositorio = {
 
   async apagar() {
     versoes.clear();
+    tokens.clear();
     await AsyncStorage.removeItem(CHAVE_CACHE);
   },
 
   novoIdDeAluno() {
     return randomUUID();
+  },
+
+  linkDoAluno(id) {
+    const token = tokens.get(id);
+    return token ? montarLink(token) : null;
+  },
+
+  // A RPC da 0006. A base do link é conferida antes: sem ela, o token seria
+  // trocado e o link velho cairia sem haver um novo para mandar.
+  async gerarNovoLink(id) {
+    const oQue = 'gerar o link do aluno';
+    if (!process.env.EXPO_PUBLIC_URL_DO_ALUNO) {
+      throw new ErroDoBanco(oQue, { message: 'falta EXPO_PUBLIC_URL_DO_ALUNO' });
+    }
+    const token = exigir(await clienteSupabase().rpc('novo_link_do_aluno', { p_aluno: id }), oQue);
+    tokens.set(id, token);
+    await guardarTokensNoCacheSemFalhar();
+    return montarLink(token) as string;
   },
 };
 

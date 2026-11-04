@@ -81,13 +81,14 @@ describe('carregar — seis leituras em paralelo e o cache', () => {
     }
   });
 
-  it('o que veio do banco vai para o cache, com o id do professor e as versões', async () => {
+  it('o que veio do banco vai para o cache, com o id do professor, as versões e os tokens', async () => {
     comSemente();
     const gravado = await repo.carregar();
     expect(await emCache()).toEqual({
       professorId: 'prof-a',
       gravado,
       versoes: { val: 0, raf: 0, mar: 0, bea: 0 },
+      tokens: { val: 'token-val', raf: 'token-raf', mar: 'token-mar', bea: 'token-bea' },
     });
   });
 
@@ -574,5 +575,82 @@ describe('registrar — o que mexe em saldo vai pela RPC (Parte 5)', () => {
     await expect(repo.registrar({ tipo: 'receberPagamento', aluno: val, lancamento }, e)).rejects.toBeInstanceOf(
       ConflitoDeVersao,
     );
+  });
+});
+
+describe('o link do aluno (Parte 6)', () => {
+  const e = semente();
+  const URL_ORIGINAL = process.env.EXPO_PUBLIC_URL_DO_ALUNO;
+
+  beforeEach(() => {
+    // Com a barra no fim: o link não pode sair com `//a/`.
+    process.env.EXPO_PUBLIC_URL_DO_ALUNO = 'http://192.168.0.10:8081/';
+  });
+  afterAll(() => {
+    process.env.EXPO_PUBLIC_URL_DO_ALUNO = URL_ORIGINAL;
+  });
+
+  const carregado = async () => {
+    comSemente();
+    await repo.carregar();
+    falso.consultas.length = 0;
+  };
+
+  it('monta /a/<token> com o token que veio na leitura, sem ir à rede', async () => {
+    await carregado();
+    expect(repo.linkDoAluno?.('val')).toBe('http://192.168.0.10:8081/a/token-val');
+    expect(falso.consultas).toEqual([]);
+  });
+
+  it('sem leitura, ou sem a base do link no ambiente, não há link', async () => {
+    comSemente();
+    expect(repo.linkDoAluno?.('val')).toBeNull();
+    await repo.carregar();
+    delete process.env.EXPO_PUBLIC_URL_DO_ALUNO;
+    expect(repo.linkDoAluno?.('val')).toBeNull();
+  });
+
+  it('o aluno criado neste aparelho já tem link: o token é o padrão da coluna', async () => {
+    await carregado();
+    const aluno = { ...e.alunos[0], id: repo.novoIdDeAluno(), name: 'Ana' };
+    await repo.registrar({ tipo: 'criarAluno', aluno }, e);
+    expect(repo.linkDoAluno?.(aluno.id)).toBe(`http://192.168.0.10:8081/a/token-${aluno.id}`);
+  });
+
+  it('gerarNovoLink chama a RPC da 0006, e o link passa a ser o novo', async () => {
+    await carregado();
+    const novo = await repo.gerarNovoLink?.('val');
+
+    const [chamada] = falso.consultas;
+    expect(chamada).toMatchObject({ tabela: 'novo_link_do_aluno', operacao: 'rpc', valores: { p_aluno: 'val' } });
+    expect(novo).toBe('http://192.168.0.10:8081/a/token-val-novo-1');
+    expect(repo.linkDoAluno?.('val')).toBe(novo);
+    expect(falso.tabelas.alunos.find((a) => a.id === 'val')?.token_publico).toBe('token-val-novo-1');
+  });
+
+  it('o token novo vai para o cache: aberto sem rede, o app não copia o link que caiu', async () => {
+    await carregado();
+    await repo.gerarNovoLink?.('val');
+    expect((await emCache()).tokens.val).toBe('token-val-novo-1');
+  });
+
+  it('o aluno de outro professor não troca: a RPC recusa, e o link segue o mesmo', async () => {
+    await carregado();
+    falso.logar('prof-b');
+    await expect(repo.gerarNovoLink?.('val')).rejects.toBeInstanceOf(ErroDoBanco);
+    expect(repo.linkDoAluno?.('val')).toBe('http://192.168.0.10:8081/a/token-val');
+  });
+
+  it('sem a base do link, rejeita antes de trocar o token: o link velho não cai sem um novo', async () => {
+    await carregado();
+    delete process.env.EXPO_PUBLIC_URL_DO_ALUNO;
+    await expect(repo.gerarNovoLink?.('val')).rejects.toThrow(/EXPO_PUBLIC_URL_DO_ALUNO/);
+    expect(falso.consultas).toEqual([]);
+  });
+
+  it('apagar esquece os tokens junto com o cache', async () => {
+    await carregado();
+    await repo.apagar();
+    expect(repo.linkDoAluno?.('val')).toBeNull();
   });
 });

@@ -113,6 +113,17 @@ type Dados = Persistido & {
     status: StatusDaProposta,
     janela?: { dia: string; hora: string },
   ) => void;
+
+  /**
+   * O link `/a/<token>` que o professor manda ao aluno (Parte 6). `null` no
+   * modo local, que não tem link, e no remoto enquanto o token não veio do banco.
+   */
+  linkDoAluno: (id: string) => string | null;
+  /**
+   * Troca o token e devolve o link novo; o anterior para de funcionar. No modo
+   * local, rejeita. Não mexe no estado: o aluno é o mesmo, só o link mudou.
+   */
+  gerarNovoLink: (id: string) => Promise<string>;
 };
 
 /** O que a tela de cadastro entrega. */
@@ -124,10 +135,21 @@ export interface NovoAluno {
   telefone?: string;
 }
 
-/** Toda ação que muda o que vai para o disco: o resto é campo, carga ou leitura. */
+/**
+ * Toda ação que muda o que vai para o disco: o resto é campo, carga ou leitura.
+ * O link do aluno também fica de fora: o token não é estado da store, e
+ * "Gerar novo link" vai direto ao repositório.
+ */
 type AcaoQueGrava = Exclude<
   keyof Dados,
-  keyof Persistido | 'carregado' | 'carregar' | 'zerar' | 'esquecer' | 'alunoPor'
+  | keyof Persistido
+  | 'carregado'
+  | 'carregar'
+  | 'zerar'
+  | 'esquecer'
+  | 'alunoPor'
+  | 'linkDoAluno'
+  | 'gerarNovoLink'
 >;
 type Iguais<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 type Exige<T extends true> = T;
@@ -540,6 +562,19 @@ export const useDados = create<Dados>((set, get) => {
         lancamento,
         status,
       }));
+    },
+
+    linkDoAluno(id) {
+      return repositorio.linkDoAluno?.(id) ?? null;
+    },
+
+    // Sem otimismo nem aviso: a tela só mostra o link novo quando o banco
+    // trocou o token, e decide o que dizer se falhar.
+    gerarNovoLink(id) {
+      if (!repositorio.gerarNovoLink) {
+        return Promise.reject(new Error('[dados] o link do aluno só existe no modo supabase.'));
+      }
+      return repositorio.gerarNovoLink(id);
     },
   };
 });

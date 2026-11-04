@@ -112,6 +112,14 @@ export interface Repositorio {
   apagar(): Promise<void>;
   /** O id do aluno novo, no formato que a gravação aceita. */
   novoIdDeAluno(): string;
+  /**
+   * O link `/a/<token>` que o professor manda ao aluno (Parte 6), ou `null`
+   * quando não há como montá-lo: o token ainda não veio de nenhuma leitura, ou
+   * falta `EXPO_PUBLIC_URL_DO_ALUNO`. Só o remoto tem.
+   */
+  linkDoAluno?(id: string): string | null;
+  /** Troca o token e devolve o link novo: o anterior para de funcionar. Só o remoto tem. */
+  gerarNovoLink?(id: string): Promise<string>;
 }
 
 export type Backend = 'local' | 'supabase';
