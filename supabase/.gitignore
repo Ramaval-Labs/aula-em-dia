@@ -6,3 +6,6 @@
 .env.keys
 .env.local
 .env.*.local
+
+# Gerado por `npm run bundle:dominio` (em mobile/): o domínio do app para as Edge Functions
+functions/_shared/dominio.js
