@@ -63,7 +63,7 @@ locação de equipamentos, não pode construir essa regra.
 
 ## Capabilities and Constraints
 
-- React Native + Expo SDK 57 + TypeScript, rodando no Expo Go, sem código nativo customizado.
+- React Native + Expo SDK 58 + TypeScript, rodando no Expo Go, sem código nativo customizado.
   Também roda no navegador pelo Expo Web, usado para conferência visual.
 - 35 telas implementadas (7 de entrada e onboarding, 28 no app), temas claro e noturno.
 - Regras de negócio são módulos puros e testados em `mobile/src/dominio/` e não moram na UI.
