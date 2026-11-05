@@ -394,6 +394,11 @@ TZ = "America/Sao_Paulo"
 [functions.aluno-publico]
 verify_jwt = false
 
+# Apagar a conta (Parte 8, LGPD). Ao contrário do link do aluno, só o próprio
+# professor chama: o gateway exige o JWT dele, e a função apaga quem o token diz.
+[functions.apagar-conta]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
