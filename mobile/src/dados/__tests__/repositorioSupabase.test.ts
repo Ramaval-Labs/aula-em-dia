@@ -17,6 +17,7 @@ import { criarSupabaseFalso, SEM_REDE, type Consulta, type SupabaseFalso } from 
 import { tabelasDoPersistido } from '../__simulados__/linhas';
 import type { Mudanca, Persistido } from '../repositorio';
 import {
+  apagarConta,
   ConflitoDeVersao,
   ehConflitoDeVersao,
   ErroDoBanco,
@@ -722,5 +723,32 @@ describe('as datas antigas voltam com o ano (SCRUM-83)', () => {
   it('as datas vão no cache, como as versões', async () => {
     await carregadoComDataAntiga();
     expect((await emCache()).datas.mar.pagamento_em).toBe(ANTIGA);
+  });
+});
+
+describe('apagarConta (SCRUM-75)', () => {
+  it('chama a apagar-conta, por POST e sem id nenhum: quem sai é o dono do token', async () => {
+    comSemente();
+    await apagarConta();
+
+    const chamadas = falso.consultas.filter((c) => c.operacao === 'funcao');
+    expect(chamadas).toHaveLength(1);
+    expect(chamadas[0].tabela).toBe('apagar-conta');
+    expect(chamadas[0].valores).toEqual({ method: 'POST' });
+    // O banco simulado faz o cascade: nada do professor sobra.
+    expect(falso.tabelas.alunos.filter((a) => a.professor_id === 'prof-a')).toEqual([]);
+    expect(falso.tabelas.professores).toEqual([]);
+  });
+
+  it('sem sessão, rejeita sem chamar a função', async () => {
+    comSemente({ usuario: null });
+    await expect(apagarConta()).rejects.toThrow('sem sessão');
+    expect(falso.consultas.filter((c) => c.operacao === 'funcao')).toEqual([]);
+  });
+
+  it('sem rede, rejeita com o que se tentava, e nada foi apagado', async () => {
+    comSemente({ falhar: (c) => (c.operacao === 'funcao' ? SEM_REDE : null) });
+    await expect(apagarConta()).rejects.toThrow('[banco] apagar a conta');
+    expect(falso.tabelas.alunos.filter((a) => a.professor_id === 'prof-a')).toHaveLength(4);
   });
 });

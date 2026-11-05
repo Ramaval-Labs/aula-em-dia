@@ -25,7 +25,7 @@ export type RespostaFalsa = { data: unknown; error: Erro | null };
 
 export interface Consulta {
   tabela: string;
-  operacao: 'select' | 'insert' | 'update' | 'delete' | 'rpc';
+  operacao: 'select' | 'insert' | 'update' | 'delete' | 'rpc' | 'funcao';
   valores?: unknown;
   filtros: { coluna: string; valor: unknown; em?: boolean }[];
   ordem: { coluna: string; crescente: boolean }[];
@@ -241,6 +241,33 @@ export function criarSupabaseFalso(opcoes: OpcoesDoFalso = {}) {
     },
     from: (tabela: string) => construtor(tabela),
     rpc,
+    functions: {
+      /**
+       * A `apagar-conta` (SCRUM-75): apaga o professor do token e tudo que é
+       * dele, como o cascade. Sem sessão, 401, como o gateway.
+       */
+      invoke: async (nome: string, opcoesDoPedido?: { method?: string; body?: unknown }) => {
+        const consulta: Consulta = {
+          tabela: nome,
+          operacao: 'funcao',
+          valores: opcoesDoPedido,
+          filtros: [],
+          ordem: [],
+          unica: false,
+        };
+        consultas.push(consulta);
+        const erro = opcoes.falhar?.(consulta) ?? null;
+        if (erro) return { data: null, error: erro };
+        if (!estado.usuario) return { data: null, error: { message: 'HTTP 401' } };
+        if (nome !== 'apagar-conta') return { data: null, error: { message: `função ${nome} não existe` } };
+        const dono = estado.usuario;
+        tabelas.professores = (tabelas.professores ?? []).filter((l) => l.id !== dono);
+        for (const t of ['politicas', 'disponibilidades', 'alunos', 'lancamentos', 'propostas']) {
+          tabelas[t] = (tabelas[t] ?? []).filter((l) => l.professor_id !== dono);
+        }
+        return { data: null, error: null };
+      },
+    },
   };
 
   return {
