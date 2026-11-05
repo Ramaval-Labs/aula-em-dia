@@ -38,12 +38,22 @@
  */
 
 import { BlurView, BlurTargetView } from 'expo-blur';
-import React, { createContext, useContext, useMemo, useRef, type RefObject } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  type ComponentRef,
+  type RefObject,
+} from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { useCores } from '../tema/TemaProvider';
 import { FUNDO_REFRACAO, TAMANHO, type Material } from '../tema/tokens';
+
+/** O elemento nativo por trás de uma `View`: desde o React Native 0.88 a ref não é mais a classe. */
+type ElementoDeView = ComponentRef<typeof View>;
 
 /* ── Modo do material ─────────────────────────────────────────────────── */
 
@@ -70,7 +80,7 @@ export function blurLigado(modo: ModoVidro = MODO_VIDRO): boolean {
 /* ── Alvo de desfoque (Android) ───────────────────────────────────────── */
 
 type ValorDeDesfoque = {
-  alvo: RefObject<View | null> | null;
+  alvo: RefObject<ElementoDeView | null> | null;
   /** true para quem está dentro do conteúdo que o alvo desfoca */
   dentroDoAlvo: boolean;
 };
@@ -82,7 +92,7 @@ const ContextoDeDesfoque = createContext<ValorDeDesfoque>({ alvo: null, dentroDo
  * (barras, tab bar, sheet). Envolve o alvo e as superfícies juntos.
  */
 export function ProvedorDeDesfoque({ children }: { children: React.ReactNode }) {
-  const alvo = useRef<View | null>(null);
+  const alvo = useRef<ElementoDeView | null>(null);
   const valor = useMemo(() => ({ alvo, dentroDoAlvo: false }), []);
   return <ContextoDeDesfoque.Provider value={valor}>{children}</ContextoDeDesfoque.Provider>;
 }
@@ -100,7 +110,7 @@ export function AlvoDeDesfoque({
   style?: StyleProp<ViewStyle>;
 }) {
   const acima = useContext(ContextoDeDesfoque);
-  const proprio = useRef<View | null>(null);
+  const proprio = useRef<ElementoDeView | null>(null);
   const alvo = acima.alvo ?? proprio;
   const valor = useMemo(() => ({ alvo, dentroDoAlvo: true }), [alvo]);
 
@@ -283,7 +293,7 @@ function CamadaDeDesfoque({
   canto,
 }: {
   material: Material;
-  alvo: RefObject<View | null> | null;
+  alvo: RefObject<ElementoDeView | null> | null;
   modo?: ModoVidro;
   canto: ViewStyle;
 }) {

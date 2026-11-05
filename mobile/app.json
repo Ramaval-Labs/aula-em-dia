@@ -34,7 +34,8 @@
             "backgroundColor": "#06080F"
           }
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "backgroundColor": "#E9EEF7",
     "locale": "pt-BR"

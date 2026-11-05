@@ -70,7 +70,7 @@ link ao seu professor."
 
 | Escolha | Motivo |
 |---|---|
-| **Expo (SDK 57) + React Native + TypeScript** | é a stack declarada no Envio 01 e roda no Expo Go sem build nativa |
+| **Expo (SDK 58) + React Native + TypeScript** | é a stack declarada no Envio 01 e roda no Expo Go sem build nativa |
 | **Zustand** | lojas pequenas (dados, navegação, sessão, rascunhos, toast) sem o boilerplate de reducers |
 | **Navegação própria** | `spec/navegacao.md` define um contrato curto e específico (trocar de aba zera a pilha, concluir substitui a pilha, sheet troca de conteúdo em vez de empilhar). São poucas linhas testáveis, contra configurar um navegador inteiro |
 | **expo-blur** | o material de vidro do iOS Glass: `BlurView` nativo no iOS e no Android 12+, `backdrop-filter` no web, sempre pela primitiva `SuperficieVidro` |
@@ -212,6 +212,22 @@ conteúdo e comportamento é o histórico em `../docs/design/historico/tinta-cha
   lista em `../PROXIMOS-PASSOS.md`.
 
 ## Se o Expo Go não abrir o projeto
+
+### "Project is incompatible with this version of Expo Go"
+
+O Expo Go só roda **um SDK por vez**, sempre o mais novo, e no iPhone não dá para instalar uma
+versão antiga. Em 05/11/2026 o Expo Go da App Store passou para o **SDK 58**, e o projeto, ainda no
+57, abria e fechava sozinho ou mostrava esta mensagem. O projeto subiu para o SDK 58 no
+`SCRUM-85`.
+
+1. Atualize o Expo Go na App Store ou na Play Store.
+2. Depois de `git pull`, rode **`npm install`** em `mobile/`: as versões do Expo, do React Native e
+   do React mudaram juntas.
+3. Rode `npx expo start -c`. O `-c` descarta o bundle montado com as versões antigas.
+
+Quando o Expo lançar o próximo SDK, o mesmo vai acontecer de novo. A subida é
+`npx expo install expo@^<versão>` e depois `npx expo install --fix`, numa branch, com `npm test`,
+`npm run typecheck` e `npx expo-doctor` antes do merge.
 
 ### "You need to be signed in to Expo Go and Expo CLI"
 
