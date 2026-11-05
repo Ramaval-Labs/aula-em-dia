@@ -27,6 +27,7 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.1
 
 import {
   alunoParaBanco,
+  datasDoBanco,
   DIAS,
   FAIXAS_HORARIAS,
   hoje,
@@ -137,15 +138,21 @@ async function ler(banco: Banco, token: string) {
 async function mover(
   banco: Banco,
   aluno: unknown,
-  versao: number,
+  linha: { versao: number },
   extra: { p_lancamento?: unknown; p_proposta: unknown },
 ) {
   const { error } = await banco.rpc('aplicar_movimento', {
-    p_aluno: alunoParaBanco(aluno),
-    p_versao: versao,
+    // As datas da linha lida voltam com o ano que tinham: inferir de novo
+    // estragaria as antigas (SCRUM-83).
+    p_aluno: alunoParaBanco(aluno, undefined, datasDoBanco(linha)),
+    p_versao: linha.versao,
     ...extra,
   });
-  if (error?.message === 'conflito_de_versao') throw new Recusa(CONFLITO);
+  // O horário ocupado (0007) também é 409: a página relê, e o recorte já não
+  // oferece a janela que outro aluno pegou.
+  if (error?.message === 'conflito_de_versao' || error?.message === 'horario_ocupado') {
+    throw new Recusa(CONFLITO);
+  }
   if (error) throw new Error(`[aluno-publico] gravar a resposta: ${error.message}`);
 }
 
@@ -163,7 +170,7 @@ async function responder(banco: Banco, token: string, corpo: Record<string, unkn
 
   if (status === 'recusada') {
     // Só fecha a proposta: o aluno não muda e não há lançamento.
-    return mover(banco, aluno, linha.versao, { p_proposta: { status: 'recusada' } });
+    return mover(banco, aluno, linha, { p_proposta: { status: 'recusada' } });
   }
 
   // A janela tem de ser uma das que a página ofereceu, e não uma qualquer.
@@ -177,7 +184,7 @@ async function responder(banco: Banco, token: string, corpo: Record<string, unkn
   if (!escolhida) throw new Recusa(PEDIDO_INVALIDO);
 
   const marcado = marcarReposicao(aluno, { dia: escolhida.dia, hora: escolhida.hora }, hoje());
-  return mover(banco, marcado.aluno, linha.versao, {
+  return mover(banco, marcado.aluno, linha, {
     p_lancamento: lancamentoDoMovimento(marcado.lancamento, 'reposicao'),
     p_proposta: { status: 'aceita' },
   });

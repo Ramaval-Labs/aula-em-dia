@@ -336,13 +336,50 @@ export function montarPersistido(linhas: Linhas, referencia: Date = hojeComoData
 
 const json = (valor: unknown): NonNullable<Json> => valor as NonNullable<Json>;
 
-/** O aluno inteiro como linha. `professor_id` e `criado_em` ficam com o padrão do banco. */
+/** As colunas de data do aluno, as que o `dd/mm` do app faz perder o ano. */
+export const COLUNAS_DE_DATA = [
+  'validade',
+  'encerrado',
+  'pendencia_origem',
+  'ultimo_lembrete',
+  'pagamento_em',
+  'pagamento_vencimento',
+] as const;
+export type ColunaDeData = (typeof COLUNAS_DE_DATA)[number];
+
+/** As datas de um aluno como o banco as tem, com o ano. */
+export type DatasDoBanco = Partial<Record<ColunaDeData, string | null>>;
+
+/** As datas de uma linha de `alunos`, lida do banco ou acabada de gravar. */
+export function datasDoBanco(linha: Partial<Record<ColunaDeData, string | null | undefined>>): DatasDoBanco {
+  const datas: DatasDoBanco = {};
+  for (const coluna of COLUNAS_DE_DATA) {
+    if (coluna in linha) datas[coluna] = linha[coluna] ?? null;
+  }
+  return datas;
+}
+
+/**
+ * O aluno inteiro como linha. `professor_id` e `criado_em` ficam com o padrão do banco.
+ *
+ * `lidas` são as datas que o banco tinha quando o aluno foi lido. A data volta
+ * do banco como `dd/mm`, e inferir o ano de novo, a partir de hoje, erra com
+ * qualquer data a mais de meio ano: um pagamento de oito meses atrás iria para
+ * o ano que vem (P2-3 da revisão da Parte 6, SCRUM-83). Por isso a data que o
+ * `dd/mm` não mudou atravessa com o ano que tinha; só a que mudou tem o ano
+ * inferido, e essa sempre é recente, porque quem a muda é uma ação de hoje.
+ */
 export function alunoParaBanco(
   a: Aluno,
   referencia: Date = hojeComoData(),
+  lidas: DatasDoBanco = {},
 ): TablesInsert<'alunos'> & { id: string } {
   const p = a.pagamento;
-  const data = (valor: string | undefined) => dataParaBanco(valor, referencia);
+  const data = (valor: string | undefined, coluna: ColunaDeData) => {
+    const lida = lidas[coluna];
+    if (valor && lida && dataDoBanco(lida) === valor) return lida.slice(0, 10);
+    return dataParaBanco(valor, referencia);
+  };
   return {
     id: a.id,
     nome: a.name,
@@ -353,24 +390,24 @@ export function alunoParaBanco(
     email: a.email ?? null,
     total: a.total,
     usadas: a.usadas,
-    validade: data(a.validade),
+    validade: data(a.validade, 'validade'),
     validade_estendida: a.validadeEstendida ?? false,
     sem_pacote: a.semPacote ?? false,
-    encerrado: data(a.encerrado),
+    encerrado: data(a.encerrado, 'encerrado'),
     // reais no app, centavos no banco
     valor_por_aula_centavos: a.valorPorAula === undefined ? null : Math.round(a.valorPorAula * 100),
     reposicoes: a.reposicoes,
-    pendencia_origem: data(a.pendencia?.origem),
+    pendencia_origem: data(a.pendencia?.origem, 'pendencia_origem'),
     agendada: a.agendada ? json(a.agendada) : null,
     disponibilidade: a.disponibilidade ? json(a.disponibilidade) : null,
     pausado: a.pausado ?? false,
     lembretes: a.lembretes ?? 0,
-    ultimo_lembrete: data(a.ultimoLembrete),
+    ultimo_lembrete: data(a.ultimoLembrete, 'ultimo_lembrete'),
     atrasos_historicos: a.atrasosHistoricos ?? 0,
     pagamento_status: p.status,
-    pagamento_em: data(p.em),
+    pagamento_em: data(p.em, 'pagamento_em'),
     pagamento_meio: p.meio ?? null,
-    pagamento_vencimento: data(p.vence ?? p.venceu),
+    pagamento_vencimento: data(p.vence ?? p.venceu, 'pagamento_vencimento'),
     arquivado: a.arquivado ?? false,
   };
 }
@@ -417,8 +454,9 @@ export function colunasDoAluno(
   a: Aluno,
   campos: readonly (keyof Aluno)[],
   referencia: Date = hojeComoData(),
+  lidas: DatasDoBanco = {},
 ): TablesUpdate<'alunos'> {
-  const linha = alunoParaBanco(a, referencia) as Record<string, unknown>;
+  const linha = alunoParaBanco(a, referencia, lidas) as Record<string, unknown>;
   const saida: Record<string, unknown> = {};
   for (const campo of campos) {
     const colunas = (COLUNAS_DO_CAMPO as Partial<Record<keyof Aluno, ColunaDoAluno[]>>)[campo];
