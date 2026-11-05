@@ -583,6 +583,17 @@ sexta, PR pode abrir mas não entra, e nenhuma Edge Function é publicada na nuv
 - o Mauro abre `dominio/` em dois cards (`SCRUM-84` em `agenda.ts`, `SCRUM-79` em
   `paginaDoAluno.ts`): arquivos diferentes, sem ordem entre eles
 
+**Ordem cronológica, por dia** (escrita em 05/11, na abertura):
+
+| Quando | Mauro | Valentin | Rafael |
+|---|---|---|---|
+| **Dia 1** (qui 05/11, noite) | Começa o `SCRUM-81` numa branch: o script com as sentinelas, rodando no banco local, e a prova de que ele falha sem o `where token_publico`. Sem merge. | Último ensaio da apresentação na sua máquina. Nenhum deploy de função. | Abre o link do aluno no celular, no 4G, e confere que a página carrega. A conferência 3 do `SCRUM-73` e a branch `scrum-85-sdk57-alinhado`. |
+| **Dia 2** (sex 06/11) | Apresentação. **Depois da aula:** abre o PR do `SCRUM-81`, com o job no `ci.yml`. | Apresentação. **Depois da aula:** revisa o PR #38 (`SCRUM-88`). | Apresentação. **Depois da aula:** atualiza o PR #38 sobre a `main` do SDK 58, roda testes e tipos, e põe 1007 testes nos READMEs. |
+| **Dia 3** (seg 09/11) | `SCRUM-79` commit 1: o teste que falha e o recorte sem janela vencida. PR, com review do Rafael. | De manhã, revisa o PR do `SCRUM-81`: ele segura todo o resto da sua faixa. Depois, mede a cota de invocações do plano free (P2-4 do `SCRUM-82`), que não toca em código. | Mescla o PR #38 e testa no Expo Go: o aluno aceita no navegador, o professor puxa a ficha e vê "Reposição confirmada". Revisa o PR do `SCRUM-79` commit 1. |
+| **Dia 4** (ter 10/11) | `SCRUM-84`: o teste que falha, o descarte da aula fixa do próprio aluno e o bônus na mesma faixa de outro dia. O ajuste em `spec/casos-de-teste.md` é à mão. | `SCRUM-79` commit 2, com o commit 1 já na `main`: `npm run bundle:dominio` e o 409 no aceite vencido. PR; depois do merge, deploy da função. | `SCRUM-41`: a auditoria dos alvos entre 44 e 48, num comentário do card, e depois o token por plataforma. Revisa o PR do `SCRUM-79` commit 2. |
+| **Dia 5** (qua 11/11) | Revisa o PR do `SCRUM-82` e o do `SCRUM-41`. | `SCRUM-82`, com o `SCRUM-81` verde a cada passo: P3-1 e P3-4 com `curl`, a migração `0008` com o pgTAP (P3-5) e a decisão do limite no plano. PR. | `SCRUM-41` no Android, pelo Expo Go (lista, ficha e Registrar), e a linha nova em `spec/acessibilidade.md`, à mão. Revisa o PR do `SCRUM-84`. |
+| **Dia 6** (qui 12/11) | Review: demo do motor sem a aula fixa. | Mescla o `SCRUM-82` e publica a função. Confere o app do professor e o link no navegador, com o CORS novo. | Review e fechamento da sprint. |
+
 **Decisões de PO de 04/11**, tomadas na planning:
 
 - **`SCRUM-79`:** a proposta vencida **some** para o aluno, e o professor vê a pendência de volta.
