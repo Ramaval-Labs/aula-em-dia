@@ -326,6 +326,8 @@ describe('carregar e zerar', () => {
     expect(persistido()).toEqual(semente);
     expect(d().carregado).toBe(true);
     expect(aviso).toHaveBeenCalledTimes(1);
+    // No modo local, nada muda (SCRUM-72): a frase é da carga do banco.
+    expect(useToast.getState().mensagem).toBeNull();
     aviso.mockRestore();
   });
 
@@ -469,14 +471,42 @@ describe('com um repositório remoto', () => {
     expect(d().alunos).toHaveLength(2);
   });
 
-  it('carga que falha não vira toast nem pede outra carga', async () => {
+  it('carga que falha sem cache avisa, uma vez, sem pedir outra carga (SCRUM-72)', async () => {
     carregarDoBanco.mockRejectedValue(new Error('sem rede e sem cache'));
 
     await d().carregar();
 
     expect(d().carregado).toBe(true);
-    expect(useToast.getState().mensagem).toBeNull();
+    expect(useToast.getState().mensagem).toBe(avisos.cargaSemCache);
+    // Não é falha de gravação: nem a frase de salvar, nem a recarga dela.
     expect(carregarDoBanco).toHaveBeenCalledTimes(1);
+  });
+
+  it('carga que falha com cache segue calada: o app abriu pelo cache', async () => {
+    remoto.lerCache = jest.fn().mockResolvedValue({ ...estadoInicial(), alunos: [] });
+    carregarDoBanco.mockRejectedValue(new Error('banco fora do ar'));
+
+    await d().carregar();
+
+    expect(d().carregado).toBe(true);
+    expect(useToast.getState().mensagem).toBeNull();
+  });
+
+  it('cache ilegível conta como sem cache: avisa', async () => {
+    remoto.lerCache = jest.fn().mockRejectedValue(new Error('cache corrompido'));
+    carregarDoBanco.mockRejectedValue(new Error('sem rede'));
+
+    await d().carregar();
+
+    expect(useToast.getState().mensagem).toBe(avisos.cargaSemCache);
+  });
+
+  it('carga que dá certo não avisa nada', async () => {
+    carregarDoBanco.mockResolvedValue(doBanco());
+
+    await d().carregar();
+
+    expect(useToast.getState().mensagem).toBeNull();
   });
 
   it('o ponto de partida é a conta vazia, nunca a semente', async () => {
