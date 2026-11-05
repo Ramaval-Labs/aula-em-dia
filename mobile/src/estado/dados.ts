@@ -257,6 +257,10 @@ export const useDados = create<Dados>((set, get) => {
         // Estado corrompido ou ilegível, ou banco fora sem cache: segue com
         // o que tem.
         aoFalharNaCarga(erro);
+        // Sem cache, a tela abriria a conta vazia, como se os alunos tivessem
+        // sumido (SCRUM-72). Com cache o app abriu, e o aviso só assustaria; no
+        // local não há rede a conferir. Uma vez só: sem tentar de novo em laço (D4).
+        if (repositorio.remoto && !doCache) useToast.getState().avisar(avisos.cargaSemCache);
       }
       set({ carregado: true });
     },

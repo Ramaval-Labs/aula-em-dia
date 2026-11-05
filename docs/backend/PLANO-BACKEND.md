@@ -975,7 +975,11 @@ o plano pago pela API.
 **O que fica em aberto.**
 
 - A pergunta de importar, na tela: o segundo commit do `SCRUM-61`.
-- Carga que falha sem cache abre a conta vazia sem aviso: falta uma frase de carga em `avisos.ts`.
+- ~~Carga que falha sem cache abre a conta vazia sem aviso.~~ **Resolvido no `SCRUM-72`:** no modo
+  supabase, a carga que falha sem nada no cache mostra `avisos.cargaSemCache` ("Não deu para carregar
+  seus alunos. Confira a conexão e abra o app de novo."), uma vez, sem tentar de novo sozinha (D4).
+  Com cache o app abriu, e segue calado. No modo local, nada muda. Cache ilegível conta como sem
+  cache.
 - Uma gravação feita enquanto uma carga está no ar pode ser coberta na tela pela resposta da carga.
   O banco fica certo, e a próxima carga mostra.
 - Abrir sem rede depois de o token vencer (1 hora) não foi testado: depende de o supabase-js
