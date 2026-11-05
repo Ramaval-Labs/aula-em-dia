@@ -527,6 +527,66 @@ bloqueia a publicação.
 `SCRUM-77`); o `SCRUM-23` (o push pede o `SCRUM-47`); o `SCRUM-31`; o `SCRUM-39`, o `SCRUM-40` e o
 `SCRUM-41`; e o `SCRUM-56`.
 
+**O que mudou durante a sprint (até 04/11, à noite):**
+
+- **Os oito cards planejados fecharam no primeiro dia, 04/11.** O `SCRUM-77` foi mesclado sem a revisão do
+  Mauro, por decisão do PO. O passo 3 do `SCRUM-76` foi feito na nuvem, e não no banco local:
+  apagou a conta de teste do `SCRUM-73` em produção.
+- **Entrou o `SCRUM-83`** (Valentin, 3 pontos): o ano das datas (P2-3) e o horário duplicado
+  (P2-2) da revisão. Ele resolveu o `SCRUM-78` e o `SCRUM-80`, que fecharam como duplicados.
+- **Entrou o `SCRUM-85`** (Rafael e Valentin, 3 pontos), com uma subtarefa para cada máquina
+  (`SCRUM-86` e `SCRUM-87`). É a apresentação em sala de sex 06/11, com o professor no Expo Go e o
+  aluno no navegador. O card só fecha quando as duas máquinas passarem.
+- **O teste no 5G do `SCRUM-74` achou o `SCRUM-84`:** o motor sugere a aula fixa do próprio aluno.
+  Foi para o backlog e entra na Sprint 9.
+- **Fica com o Rafael:** a conferência 3 do `SCRUM-73`, o log do gateway no painel do Supabase.
+
+### Sprint 9 · 05/11 a 12/11 · **planejada, não iniciada** · 13 pontos
+
+Está no quadro como sprint futura. **Abre quando o `SCRUM-85` fechar:** feche a Sprint 8 e inicie
+esta. O tema é **endurecer o que já está na internet e tirar o "saia e volte" da demonstração**.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Mauro | `SCRUM-81` — teste da `aluno-publico` no CI (2) + `SCRUM-84` — o motor não sugere a aula fixa do próprio aluno (2) + `SCRUM-79` commit 1 — o recorte não oferece janela vencida | 5 |
+| Valentin | `SCRUM-79` commit 2 — o aceite vencido dá 409 (2, com o Mauro) + `SCRUM-82` — limite, CORS e propostas estrita (3) | 4 |
+| Rafael | `SCRUM-88` — puxar para atualizar (2) + `SCRUM-41` — alvo de 48dp no Android (2) | 4 |
+
+**A main fica congelada até a apresentação de sex 06/11.** Os dois computadores servem a
+apresentação a partir da `main`, e a Vercel publica a cada merge. Então, até o fim da aula de
+sexta, PR pode abrir mas não entra, e nenhuma Edge Function é publicada na nuvem.
+
+**Ordem obrigatória**, com os vínculos *blocks* no board:
+
+- o `SCRUM-81` antes do `SCRUM-82`: o teste é a rede de segurança da função que vai mudar
+- o commit 1 do `SCRUM-79` (Mauro, domínio) antes do commit 2 (Valentin, função)
+- o commit 2 do `SCRUM-79` antes do `SCRUM-82`: os dois mexem em `aluno-publico/index.ts`
+- o Mauro abre `dominio/` em dois cards (`SCRUM-84` em `agenda.ts`, `SCRUM-79` em
+  `paginaDoAluno.ts`): arquivos diferentes, sem ordem entre eles
+
+**Decisões de PO de 04/11**, tomadas na planning:
+
+- **`SCRUM-79`:** a proposta vencida **some** para o aluno, e o professor vê a pendência de volta.
+  Não existe o estado "expirada".
+- **`SCRUM-84`:** o bônus de "mesmo horário" vale para a mesma faixa em **outro dia** da semana,
+  com a razão "No mesmo horário da aula dele.". A aula fixa do próprio aluno sai das sugestões.
+- **`SCRUM-41`:** piso por plataforma, 44pt no iOS e 48dp no Android. A linha em
+  `spec/acessibilidade.md` é escrita à mão.
+- **`SCRUM-88`:** puxar para atualizar, e **não** o Realtime, que deixa uma conexão aberta por
+  aparelho no plano gratuito.
+
+**Revisado antes de abrir**, contra a `main` de 04/11:
+
+- o `SCRUM-79`, o `SCRUM-81`, o `SCRUM-82` e o `SCRUM-41` subiram da profundidade média para o
+  template de nove seções. O `SCRUM-84` e o `SCRUM-88` nasceram nele.
+- o `SCRUM-78` e o `SCRUM-80` fecharam como duplicados do `SCRUM-83`.
+
+**Se a sua faixa esvaziar:** Rafael, o `SCRUM-40` (medidas soltas para token, por `/designer`).
+
+**Fora da sprint, de propósito:** o `SCRUM-23` (o push pede o `SCRUM-47`); o `SCRUM-31`; o
+`SCRUM-39`; o `SCRUM-56` e o `SCRUM-57`; o `SCRUM-62` e o `SCRUM-63` (fora por decisão de PO); e
+os cards de plataforma (`SCRUM-42`, `SCRUM-43`, `SCRUM-44`, `SCRUM-47`).
+
 ---
 
 ## 3. A decisão de datas (`SCRUM-13`)
@@ -705,6 +765,12 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   Parte 6 (`73`), a Vercel separada do `SCRUM-71` (`74`), apagar a conta no servidor e na tela (`75`
   e `76`), e o limite gratuito no domínio (`77`). O `SCRUM-24` encolheu para o backup e passou para o
   Mauro
+- **`SCRUM-78` a `SCRUM-82` criados** em 04/11, dos achados da revisão do `SCRUM-73`. O `78` e o
+  `80` fecharam no mesmo dia como duplicados do **`SCRUM-83`**, que o Valentin abriu e entregou na
+  Sprint 8
+- **`SCRUM-84` a `SCRUM-88` criados** em 04/11: o motor que sugere a aula fixa do próprio aluno
+  (`84`, achado no teste em 5G), a apresentação com dois celulares (`85`, com as subtarefas `86` e
+  `87`) e o puxar para atualizar (`88`, na planning da Sprint 9)
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
