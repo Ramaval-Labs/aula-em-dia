@@ -16,6 +16,7 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `migrations/0006_link_do_aluno.sql` | A RPC `novo_link_do_aluno`: troca o `token_publico`, e o link anterior para de funcionar |
 | `migrations/0007_horario_ocupado.sql` | A `aplicar_movimento` recusa o aceite num horário que outro aluno já ocupou, com trava para os aceites simultâneos |
 | `functions/aluno-publico/` | A Edge Function do link do aluno: lê o recorte e grava a resposta pelo token, sem login |
+| `functions/apagar-conta/` | A Edge Function de apagar a conta: com o JWT do professor, apaga o usuário do Auth, e o cascade leva o resto |
 | `functions/_shared/entrada.ts` | O que a função usa do domínio do app; o `dominio.js` ao lado é **gerado** e fica fora do git |
 | `seed.sql` | Os dados de demonstração. **Gerado**: não edite à mão |
 | `tests/database/rls.test.sql` | Teste de RLS com dois professores, em pgTAP |
@@ -23,6 +24,7 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `tests/database/aplicar_movimento.test.sql` | Teste da RPC da `0005`: rollback, conflito de versão, proposta e RLS |
 | `tests/database/link_do_aluno.test.sql` | Teste da RPC da `0006`: o token muda, o professor B não troca, sem login não chama |
 | `tests/database/horario_ocupado.test.sql` | Teste da `0007`: o segundo aceite no mesmo horário é recusado; o professor, o arquivado e o outro professor não bloqueiam |
+| `tests/database/apagar_conta.test.sql` | Apagar o usuário do Auth leva tudo do professor, e o professor B segue intacto |
 
 ## Para rodar
 
@@ -78,7 +80,7 @@ O arquivo pode rodar mais de uma vez e termina sempre no mesmo estado.
 
 `db reset` passar não prova a segurança. Com RLS ligada e **sem** política, o `select` volta vazio e
 o `update` não afeta linha nenhuma, **sem erro**. O que prova é um professor não enxergar o que é do
-outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 16 do trigger da `0003` e da marca da `0004`, 24 da RPC da `0005`, 12 da `0006` e 14 da `0007`):
+outro, e é isso que `npx supabase test db` confere, em 30 casos (mais 16 do trigger da `0003` e da marca da `0004`, 24 da RPC da `0005`, 12 da `0006`, 14 da `0007` e 12 do cascade de apagar a conta):
 
 - RLS ligada nas seis tabelas e política em todas (`lancamentos` tem duas: ler e inserir);
 - o professor A, do seed, vê os 4 alunos dele e nenhum do professor B;

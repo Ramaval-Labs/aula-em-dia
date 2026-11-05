@@ -1477,6 +1477,7 @@ Esta parte não tem fim: cada parte anterior deixa aqui o que precisa.
 - **LGPD:**
   - Coletar só o necessário.
   - "Excluir minha conta" em Ajustes apaga o usuário no Auth, e o `on delete cascade` leva todo o resto.
+    O servidor e a sessão são o `SCRUM-75` (ver "Apagar a conta", abaixo); a tela é o `SCRUM-76`.
   - "Exportar meus dados" gera um JSON.
   - Política de privacidade antes de publicar.
 - **Custos e limites:**
@@ -1486,6 +1487,60 @@ Esta parte não tem fim: cada parte anterior deixa aqui o que precisa.
   - Conferir os números atuais no site do Supabase antes de citar.
 - **Backup:** o plano free não tem backup automático com restauração no tempo. Um `pg_dump` semanal
   pelo Actions resolve no MVP.
+
+### Apagar a conta (SCRUM-75)
+
+O professor apaga a própria conta, e com ela vão os alunos, os extratos, as propostas e os links.
+
+**1. Apagar a conta é apagar o usuário do Auth; o resto é do banco.** Os `on delete cascade` da
+`0001` levam perfil, política, disponibilidade, alunos (e os links, porque o token mora na linha do
+aluno), extrato e propostas, numa transação só. O `apagar_conta.test.sql` prova isso antes de existir
+a função. O app não apaga nada linha por linha: com a rede caindo no meio, ficaria meia conta.
+
+**2. A Edge Function `apagar-conta`, com o JWT do professor.**
+
+- **O pedido:** só `POST`, com `verify_jwt = true` no `config.toml`. O gateway recusa quem chega
+  sem token.
+- **Quem é apagado:** a função confere o token com o Auth (`auth.getUser`) e apaga esse usuário
+  com a service role. A chave publicável no lugar do JWT passa pelo gateway, mas não é de usuário
+  nenhum, e dá 401 aqui.
+- **Nenhum id vem do corpo.** O teste com `curl` mandou o id do professor A no corpo, com o JWT do
+  B: só o B foi apagado.
+- **A conta não volta:** o JWT de quem já foi apagado dá 401, e o login com aquele e-mail falha.
+
+**3. A sessão: primeiro o servidor, depois a saída.**
+
+- **`apagarConta()`** chama o repositório e, só se o servidor confirmar, faz o mesmo que o
+  `sair()`: volta para as boas-vindas, esquece os dados e o cache do aparelho e apaga o login
+  guardado.
+- **Se a rede cair,** rejeita e a pessoa continua no app, com a conta inteira. Sair antes mostraria
+  como apagada uma conta que continua no banco.
+- **O `signOut` depois do apagar** pode falhar no servidor, porque o usuário já não existe. O
+  supabase-js apaga a sessão do aparelho mesmo assim (Parte 3, decisão 6).
+- **No modo local, rejeita:** lá não há conta. `podeApagarConta()` segue o critério do
+  `loginReal`, para a tela do `SCRUM-76` decidir o que mostrar.
+
+**4. Sem carência nem lixeira.** Era a proposta do card, e o PO confirma na planning: a tela pede
+dois toques, e o que foi confirmado é apagado na hora.
+
+**5. A marca de importação fica no aparelho.** `aulaemdia.importacao.v1` guarda o id do professor
+que recebeu os alunos locais. Com a conta apagada, a marca segue impedindo que a pergunta volte para
+outra conta, como na Parte 4, decisão 8. Os dados locais do modo de demonstração continuam onde
+estavam.
+
+**Onde foi testado.** Em 04/11/2026, no banco local:
+
+- **pgTAP:** 12 casos do cascade, 108 no total.
+- **A função servida localmente, por `curl`:** 11 conferências, as de cima e mais o 405 do `GET` e
+  o preflight do navegador.
+- **No app:** os testes do repositório (contra o Supabase simulado) e da sessão.
+- **Ponta a ponta no Expo Web:** o professor de teste apagou a conta. A sessão saiu para as
+  boas-vindas, o aparelho esqueceu memória, cache e login, nada dele sobrou no banco, e o B ficou
+  igual.
+
+**Na nuvem,** a função ainda não foi publicada. Os passos estão logo abaixo, em "Subir o projeto
+na nuvem", passo 5, trocando o nome da função e sem o `--no-verify-jwt`:
+`npx supabase functions deploy apagar-conta --use-api`.
 
 ### Subir o projeto na nuvem
 
