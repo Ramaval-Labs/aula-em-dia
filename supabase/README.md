@@ -268,6 +268,13 @@ enxergam. Ou o celular entra no Wi-Fi do mesmo roteador, ou o Metro vai por tún
 acessível pela internet enquanto estiver aberto. Para mostrar o app sem banco nenhum, ponha
 `EXPO_PUBLIC_BACKEND=local` e use só o `--tunnel`.
 
+## Backup
+
+O banco da nuvem tem um backup semanal cifrado, feito pelo Actions (`.github/workflows/backup.yml`,
+`SCRUM-24`): toda segunda às 06:00, ou na mão pela aba Actions. Para abrir e restaurar no banco local,
+em três comandos, veja [`PLANO-BACKEND.md`, "Restaurar um backup"](../docs/backend/PLANO-BACKEND.md#restaurar-um-backup-scrum-24).
+Sem a `BACKUP_SENHA`, nenhum backup abre.
+
 ## Tipos do banco
 
 `mobile/src/dados/banco.ts` é gerado a partir do banco local. Mudou o esquema? Com o banco no ar:

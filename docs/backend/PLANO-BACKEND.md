@@ -1486,7 +1486,66 @@ Esta parte não tem fim: cada parte anterior deixa aqui o que precisa.
     painel ou fazer uma requisição.
   - Conferir os números atuais no site do Supabase antes de citar.
 - **Backup:** o plano free não tem backup automático com restauração no tempo. Um `pg_dump` semanal
-  pelo Actions resolve no MVP.
+  pelo Actions resolve no MVP. É o `.github/workflows/backup.yml` do `SCRUM-24`, e como restaurar está
+  em "Restaurar um backup", abaixo.
+
+### Restaurar um backup (SCRUM-24)
+
+O `backup.yml` roda toda segunda, às 06:00 de Brasília, e também na mão (aba Actions → "Backup do
+banco" → *Run workflow*). Ele deixa um artefato chamado `backup`, guardado por 30 dias, com dois
+arquivos cifrados pela `BACKUP_SENHA`:
+
+| Arquivo | O que tem |
+|---|---|
+| `dados.sql.gpg` | os dados: `public` (professores, políticas, disponibilidades, alunos, extrato, propostas) e `auth` (os logins, com o hash das senhas, e as sessões ativas) |
+| `esquema.sql.gpg` | o esquema da nuvem: tabelas, funções, políticas e triggers |
+
+**A senha.** Sem a `BACKUP_SENHA`, nenhum backup abre, e o GitHub não mostra o valor de um segredo
+depois de criado. Ela fica num gerenciador de senhas, com o mesmo cuidado da senha do banco: o
+arquivo aberto traz os logins e as sessões dos professores.
+
+**Restaurar no banco local.** Com o Docker aberto e o Supabase local no ar
+(`npx supabase start`, na raiz). Uma vez só, o `gpg` (no Mac, `brew install gnupg`; no Windows, o
+Gpg4win). Baixe o artefato na execução do Actions, descompacte o `backup.zip`, e na pasta dele:
+
+```bash
+gpg --decrypt --output dados.sql dados.sql.gpg      # pede a BACKUP_SENHA
+npx supabase db reset --no-seed                     # o banco local só com as migrações
+docker exec -i supabase_db_aula-em-dia psql -U postgres -d postgres -v ON_ERROR_STOP=1 < dados.sql
+```
+
+- **O `--no-seed` importa.** Sem ele, o professor de teste do seed entraria junto com os dados do
+  backup.
+- **O banco local é apagado.** O `db reset` recria o banco local do zero antes de carregar o backup.
+- **Não precisa de `psql` no computador.** O último comando usa o que já existe dentro do contêiner
+  do banco, `supabase_db_<project_id>`, que aqui é `supabase_db_aula-em-dia`.
+- **No PowerShell, que não tem o `<`**, o terceiro comando vira dois:
+  `docker cp dados.sql supabase_db_aula-em-dia:/tmp/dados.sql` e
+  `docker exec supabase_db_aula-em-dia psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/dados.sql`.
+- **Os triggers ficam desligados durante a carga.** O dump começa com
+  `SET session_replication_role = replica`, então o trigger da `0003` não cria de novo o professor
+  que o backup já traz.
+- **O login volta junto.** Os professores entram com a senha que tinham, porque o hash dela está no
+  backup.
+- **Apague o `dados.sql` aberto no fim.** Fica só o `.gpg`.
+
+**O `esquema.sql` é para conferir, não para restaurar.** O esquema sai das migrações, que estão no
+git. Ele serve para comparar a nuvem com o repositório, se um dia alguém mexer no banco pelo painel:
+`gpg --decrypt --output esquema.sql esquema.sql.gpg`, e compare com um `npx supabase db dump --local`.
+
+**Restaurar na nuvem não foi testado, e não é passo a passo de rotina.** Seria o mesmo `psql` com a
+connection string da nuvem, sobre um banco que perdeu os dados. Decida com o time antes: a carga
+escreve por cima do que estiver lá.
+
+**Onde foi testado.** Em 04/11/2026, no banco local, com a CLI 2.120.0:
+
+- **O backup de teste** foi feito com os mesmos dois `supabase db dump` do workflow (`--local` no
+  lugar de `--db-url`) e cifrado com os mesmos parâmetros do `gpg` (AES-256, `--symmetric`). Saiu
+  no mesmo formato do artefato real da nuvem.
+- **Os três comandos:** do banco vazio depois do `db reset --no-seed` de volta a 1 usuário, 4
+  alunos, 13 lançamentos e 1 proposta, sem erro nem linha duplicada.
+- **Depois da carga:** o professor restaurado entrou com a senha dele; com o login, a API devolveu
+  os 4 alunos, e sem login, nenhum; os 108 casos de pgTAP passaram.
 
 ### Apagar a conta (SCRUM-75)
 
