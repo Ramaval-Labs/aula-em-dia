@@ -62,7 +62,8 @@ export function texto(tamanho: number, peso: Peso, o: Opcoes = {}): TextStyle {
   const linha = Math.max(caixa, arredonda(tamanho * TINTA_EM));
   const folga = arredonda((linha - caixa) / 2);
 
-  const estilo: TextStyle = {
+  // Montado de uma vez: desde o React Native 0.88 o `TextStyle` é só leitura.
+  return {
     fontFamily: FONTES[peso],
     fontSize: tamanho,
     lineHeight: linha,
@@ -70,15 +71,11 @@ export function texto(tamanho: number, peso: Peso, o: Opcoes = {}): TextStyle {
     // texto para baixo dentro de caixas centralizadas. Desligar iguala o
     // Android ao iOS e à web.
     includeFontPadding: false,
+    ...(folga > 0 ? { marginTop: -folga, marginBottom: -folga } : null),
+    ...(o.tracking ? { letterSpacing: arredonda(tamanho * o.tracking) } : null),
+    ...(o.maiuscula ? { textTransform: 'uppercase' as const } : null),
+    ...(o.tabular !== false ? { fontVariant: ['tabular-nums' as const] } : null),
   };
-  if (folga > 0) {
-    estilo.marginTop = -folga;
-    estilo.marginBottom = -folga;
-  }
-  if (o.tracking) estilo.letterSpacing = arredonda(tamanho * o.tracking);
-  if (o.maiuscula) estilo.textTransform = 'uppercase';
-  if (o.tabular !== false) estilo.fontVariant = ['tabular-nums'];
-  return estilo;
 }
 
 /**
