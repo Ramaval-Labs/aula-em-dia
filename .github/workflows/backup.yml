@@ -1,0 +1,85 @@
+name: Backup do banco
+
+# O backup semanal do banco da nuvem (SCRUM-24). O plano free do Supabase não tem
+# restauração no tempo, e pausa o projeto depois de 7 dias sem uso: a mesma execução
+# serve de uso.
+#
+# O repositório é público, e o artefato de um repositório público é baixável por quem
+# tem conta no GitHub. O dump traz os alunos e os hashes de senha dos professores, então
+# só sai daqui cifrado.
+#
+# Dois segredos do repositório, nunca neste arquivo:
+#   SUPABASE_DB_URL  a connection string do **Session pooler** (painel do Supabase,
+#                    botão Connect). A conexão direta (db.<ref>.supabase.co) só tem IPv6,
+#                    que o runner do GitHub não alcança.
+#   BACKUP_SENHA     a senha da cifragem, guardada também num gerenciador de senhas: sem
+#                    ela, o backup não abre.
+#
+# Abrir um backup baixado:
+#   gpg --decrypt --output dados.sql dados.sql.gpg
+
+on:
+  schedule:
+    # Segunda, 06:00 de Brasília.
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+# O job não usa o repositório: nem checkout, nem GITHUB_TOKEN.
+permissions: {}
+
+# Dois dumps ao mesmo tempo só pesam no banco.
+concurrency:
+  group: backup-do-banco
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Dump cifrado
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Um fork não tem os segredos nem o que copiar.
+    if: github.repository == 'Ramaval-Labs/aula-em-dia'
+
+    steps:
+      # A mesma versão do job de RLS: subir esta é decisão, não acidente.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
+
+      # Sem `set -x` e sem `--debug`: a connection string não pode ir para o log, que
+      # também é público.
+      - name: Fazer o dump
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_SENHA: ${{ secrets.BACKUP_SENHA }}
+        run: |
+          # Confere antes de tocar no banco: sem a senha, o dump não teria como sair.
+          : "${SUPABASE_DB_URL:?falta o segredo SUPABASE_DB_URL}"
+          : "${BACKUP_SENHA:?falta o segredo BACKUP_SENHA}"
+          umask 077
+          mkdir backup
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/esquema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" --data-only -f backup/dados.sql
+          # O esquema vazio é erro. Os dados não têm como ser conferidos assim, porque
+          # banco vazio também gera um arquivo com cabeçalho.
+          test -s backup/esquema.sql
+          test -s backup/dados.sql
+
+      - name: Cifrar
+        env:
+          BACKUP_SENHA: ${{ secrets.BACKUP_SENHA }}
+        run: |
+          for arquivo in backup/esquema.sql backup/dados.sql; do
+            printf '%s' "$BACKUP_SENHA" | gpg --batch --yes --pinentry-mode loopback \
+              --passphrase-fd 0 --symmetric --cipher-algo AES256 \
+              --output "$arquivo.gpg" "$arquivo"
+            rm "$arquivo"
+          done
+
+      # Só os .gpg: o caminho é o que garante que o .sql aberto nunca sobe.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup
+          path: backup/*.gpg
+          if-no-files-found: error
+          retention-days: 30
