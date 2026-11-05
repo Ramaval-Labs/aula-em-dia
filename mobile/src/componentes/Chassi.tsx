@@ -17,23 +17,27 @@
  * nunca cubra conteúdo.
  */
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
   KeyboardAvoidingView,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type RefreshControlProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { repositorio } from '../dados/repositorio';
+import { useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
@@ -303,6 +307,52 @@ export type PropsTelaVidro = {
   children: React.ReactNode;
 };
 
+/**
+ * Puxar para atualizar (SCRUM-88): no remoto, o professor puxa a tela e o app
+ * relê o banco. É assim que a resposta do aluno pelo link aparece sem sair do
+ * app. No local os dados são do aparelho, e não há o que reler. O Realtime
+ * fica para depois, como em `useRecarregarAoVoltar` (App.tsx).
+ *
+ * `deslocamento` põe o indicador abaixo do topo do conteúdo no Android; no iOS
+ * ele aparece no espaço que a própria rolagem abre.
+ */
+export function useAtualizarAoPuxar(
+  deslocamento: number,
+  remoto: boolean = repositorio.remoto,
+): React.ReactElement<RefreshControlProps> | undefined {
+  const { cores } = useCores();
+  const carregar = useDados((s) => s.carregar);
+  const [atualizando, setAtualizando] = useState(false);
+  const montada = useRef(true);
+
+  useEffect(() => {
+    montada.current = true;
+    return () => {
+      montada.current = false;
+    };
+  }, []);
+
+  const aoPuxar = useCallback(() => {
+    setAtualizando(true);
+    // `carregar` não rejeita: a falha vira aviso dentro da store. O indicador
+    // some quando ela termina, dê certo ou não.
+    void carregar().finally(() => {
+      if (montada.current) setAtualizando(false);
+    });
+  }, [carregar]);
+
+  if (!remoto) return undefined;
+  return (
+    <RefreshControl
+      refreshing={atualizando}
+      onRefresh={aoPuxar}
+      tintColor={cores.tint}
+      colors={[cores.tint]}
+      progressViewOffset={deslocamento}
+    />
+  );
+}
+
 export function TelaVidro({
   tipo,
   titulo,
@@ -314,11 +364,13 @@ export function TelaVidro({
 }: PropsTelaVidro) {
   const padTopo = usePadTopo(tipo);
   const { opacidade, aoRolar } = useBarraComRolagem();
+  const atualizarAoPuxar = useAtualizarAoPuxar(padTopo);
 
   const rolagem = (
     <ScrollView
       style={styles.cheio}
       onScroll={aoRolar}
+      refreshControl={atualizarAoPuxar}
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       // Com campo de texto: o toque num botão fecha o teclado *e* aciona o

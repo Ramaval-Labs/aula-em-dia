@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { dinheiro } from '../../dominio/formato';
 import type { BlocoSemanal } from '../../dominio/tipos';
@@ -28,6 +28,7 @@ import {
   type TamanhoDeAvatar,
 } from '../Blocos';
 import { CampoDeDinheiro, CampoDeTexto, useCampoDeDinheiro } from '../Campos';
+import { useAtualizarAoPuxar } from '../Chassi';
 import {
   BotaoCompacto,
   BotaoInline,
@@ -629,6 +630,26 @@ const BLOCOS: BlocoSemanal[] = [
   { dia: 'sex', faixa: 'fimTarde' },
 ];
 
+/**
+ * O puxar para atualizar da `TelaVidro`, ligado à força: no catálogo o
+ * repositório costuma ser o local, onde a tela não oferece o gesto.
+ */
+function AmostraAtualizarAoPuxar() {
+  const { cores } = useCores();
+  const atualizar = useAtualizarAoPuxar(0, true);
+  return (
+    <Amostra rotulo="puxar para atualizar · só no remoto">
+      <CartaoVidro>
+        <ScrollView style={estilos.puxar} refreshControl={atualizar}>
+          <Text style={[texto(13, 500, { altura: 1.4 }), { color: cores.tinta2 }]}>
+            Puxe para baixo: o app relê o banco.
+          </Text>
+        </ScrollView>
+      </CartaoVidro>
+    </Amostra>
+  );
+}
+
 function SecaoDerivados() {
   const [nome, setNome] = useState('Valentina Rocha');
   const [email, setEmail] = useState('valentina');
@@ -645,6 +666,7 @@ function SecaoDerivados() {
 
   return (
     <Secao titulo="Derivados">
+      <AmostraAtualizarAoPuxar />
       <Amostra rotulo="campo de texto · sem handoff">
         <CartaoVidro>
           <View style={estilos.colunaCampos}>
@@ -717,6 +739,7 @@ function SecaoDerivados() {
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   direita: { textAlign: 'right' },
+  puxar: { height: 96 },
   secao: { marginTop: 30 },
   amostra: { marginTop: 18 },
   coluna: { gap: 10 },
