@@ -424,6 +424,12 @@ function SecaoListas() {
             aoTocar={() => {}}
           />
           <LinhaLista
+            tom="destrutivo"
+            titulo="Apagar minha conta"
+            subtitulo="Apaga você e todos os seus alunos. Não dá para desfazer."
+            aoTocar={() => {}}
+          />
+          <LinhaLista
             porte="grande"
             titulo="Política de faltas"
             subtitulo="Aviso de 24h · devolve a aula · 2 reposições · 30 dias"

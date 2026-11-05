@@ -7,7 +7,7 @@
  */
 
 import * as Clipboard from 'expo-clipboard';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro, MedidorPacote } from '../../componentes/Blocos';
@@ -15,9 +15,10 @@ import { BotaoPrimario, BotaoSecundario, BotaoTexto } from '../../componentes/Co
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { useDoisToques } from '../../componentes/useDoisToques';
 import { alunosAtivos, atingiuOLimite, LIMITE_GRATUITO } from '../../dominio/plano';
+import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
-import { loginReal, useSessao } from '../../estado/sessao';
+import { loginReal, podeApagarConta, useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../../tema/tipografia';
@@ -39,13 +40,28 @@ export function Conta() {
   const politicas = useDados((s) => s.politicas);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
   const sair = useSessao((s) => s.sair);
+  const apagarConta = useSessao((s) => s.apagarConta);
   const avisar = useToast((s) => s.avisar);
   const real = loginReal();
+  const podeApagar = podeApagarConta();
+  // Enquanto o servidor não responde, a linha não arma de novo: um terceiro e
+  // um quarto toque mandariam um segundo pedido.
+  const [apagando, setApagando] = useState(false);
 
   // Sair leva de volta ao login: dois toques.
   const sairDaConta = useDoisToques(() => {
     void sair();
     avisar('Você saiu. Até logo!');
+  });
+
+  // Apagar também em dois toques. Quem sai é a sessão, só depois de o servidor
+  // confirmar; se ele falhar, a pessoa continua aqui com a conta inteira.
+  const apagarTudo = useDoisToques(() => {
+    setApagando(true);
+    apagarConta().catch(() => {
+      setApagando(false);
+      avisar(avisos.apagarContaFalhou);
+    });
   });
 
   const exportar = () => {
@@ -160,13 +176,24 @@ export function Conta() {
         />
       </ListaAgrupada>
 
-      {/* Linha sem ação, e não um bloco com cara de botão: nesta versão
-          nada é apagado, e a tela diz isso. */}
+      {/* Com login de verdade, a linha apaga em dois toques, em vermelho e sem
+          chevron: executa, não leva a outra tela. No local não há conta, e a
+          linha segue sem ação, dizendo isso. Nunca primário: a tela já tem o
+          dela. */}
       <ListaAgrupada estilo={estilos.bloco}>
-        <LinhaLista
-          titulo="Apagar minha conta"
-          subtitulo="Indisponível no protótipo: nesta versão nada é apagado."
-        />
+        {podeApagar ? (
+          <LinhaLista
+            tom="destrutivo"
+            titulo={apagarTudo.armado ? avisos.apagarContaConfirmar : 'Apagar minha conta'}
+            subtitulo={avisos.apagarContaSubtitulo}
+            aoTocar={apagando ? undefined : apagarTudo.tocar}
+          />
+        ) : (
+          <LinhaLista
+            titulo="Apagar minha conta"
+            subtitulo="Indisponível no protótipo: nesta versão nada é apagado."
+          />
+        )}
       </ListaAgrupada>
 
     </TelaDeAjuste>

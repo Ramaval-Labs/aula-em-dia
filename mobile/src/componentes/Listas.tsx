@@ -158,21 +158,28 @@ export function LinhaLista({
   chevron,
   direita,
   porte = 'padrao',
+  tom = 'neutro',
   rotuloAcessivel,
 }: {
   titulo: string;
   subtitulo?: string;
   aoTocar?: () => void;
-  /** por padrão aparece quando a linha é tocável */
+  /** por padrão aparece quando a linha é tocável e não é destrutiva */
   chevron?: boolean;
   /** controle embutido à direita (o segmentado de Aparência) */
   direita?: React.ReactNode;
   porte?: PorteDaLinha;
+  /**
+   * destrutivo: o título em `vermelhoTexto` e sem chevron, porque a linha
+   * executa em vez de levar a outra tela (apagar a conta).
+   */
+  tom?: 'neutro' | 'destrutivo';
   rotuloAcessivel?: string;
 }) {
   const { cores } = useCores();
   const grande = porte !== 'padrao';
-  const mostraChevron = chevron ?? (!!aoTocar && !direita);
+  const destrutivo = tom === 'destrutivo';
+  const mostraChevron = chevron ?? (!!aoTocar && !direita && !destrutivo);
 
   return (
     <Linha
@@ -193,7 +200,7 @@ export function LinhaLista({
             grande
               ? texto(15, 700, { altura: 1.3, tracking: -0.01 })
               : texto(14.5, 700, { altura: 1.3, tracking: -0.01 }),
-            { color: cores.tinta },
+            { color: destrutivo ? cores.vermelhoTexto : cores.tinta },
           ]}
         >
           {titulo}
