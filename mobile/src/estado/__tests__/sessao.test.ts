@@ -12,11 +12,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CHAVE_SESSAO } from '../../dados/armazenamento';
-import { marcarOnboardingConcluido, onboardingConcluido } from '../../dados/repositorioSupabase';
+import {
+  apagarConta as apagarContaNoBanco,
+  marcarOnboardingConcluido,
+  onboardingConcluido,
+} from '../../dados/repositorioSupabase';
 import { clienteSupabase, usaSupabase } from '../../dados/supabase';
 import { ERRO } from '../../dominio/validacao';
 import { useDados } from '../dados';
-import { fraseDoErroDeAcesso, loginReal, useSessao } from '../sessao';
+import { fraseDoErroDeAcesso, loginReal, podeApagarConta, useSessao } from '../sessao';
 
 jest.mock('../../dados/supabase', () => ({
   usaSupabase: jest.fn(() => false),
@@ -27,12 +31,14 @@ jest.mock('../../dados/supabase', () => ({
 jest.mock('../../dados/repositorioSupabase', () => ({
   onboardingConcluido: jest.fn(),
   marcarOnboardingConcluido: jest.fn(),
+  apagarConta: jest.fn(),
 }));
 
 const modoSupabase = usaSupabase as jest.MockedFunction<typeof usaSupabase>;
 const cliente = clienteSupabase as jest.MockedFunction<typeof clienteSupabase>;
 const concluido = onboardingConcluido as jest.MockedFunction<typeof onboardingConcluido>;
 const marcar = marcarOnboardingConcluido as jest.MockedFunction<typeof marcarOnboardingConcluido>;
+const apagarNoBanco = apagarContaNoBanco as jest.MockedFunction<typeof apagarContaNoBanco>;
 
 const EMAIL = 'professor@exemplo.test';
 const SENHA = 'aulaemdia-local';
@@ -70,6 +76,7 @@ beforeEach(async () => {
   modoSupabase.mockReturnValue(false);
   concluido.mockResolvedValue(true);
   marcar.mockResolvedValue();
+  apagarNoBanco.mockResolvedValue();
   await AsyncStorage.clear();
   useSessao.setState({
     fase: 'entrada',
@@ -395,5 +402,80 @@ describe('fraseDoErroDeAcesso — o erro do Supabase vira frase pelo código', (
 
   it('o texto em inglês da mensagem não decide nada', () => {
     expect(fraseDoErroDeAcesso({ message: 'Invalid login credentials' })).toBe(ERRO.falhaNoAcesso);
+  });
+});
+
+describe('apagar a conta (SCRUM-75)', () => {
+  it('no modo local, rejeita sem ir ao banco, e a pessoa fica no app', async () => {
+    useSessao.setState({ fase: 'app', email: EMAIL });
+
+    await expect(s().apagarConta()).rejects.toThrow('modo supabase');
+    expect(apagarNoBanco).not.toHaveBeenCalled();
+    expect(s().fase).toBe('app');
+    expect(podeApagarConta()).toBe(false);
+  });
+
+  describe('no modo supabase', () => {
+    beforeEach(() => modoSupabase.mockReturnValue(true));
+
+    it('podeApagarConta é verdadeiro, como loginReal', () => {
+      expect(podeApagarConta()).toBe(true);
+      expect(podeApagarConta()).toBe(loginReal());
+    });
+
+    it('apagou no servidor: sai da sessão e esquece os dados do aparelho', async () => {
+      const auth = simularCliente();
+      const esquecer = jest.spyOn(useDados.getState(), 'esquecer');
+      useSessao.setState({ fase: 'app', email: EMAIL });
+
+      await expect(s().apagarConta()).resolves.toBeUndefined();
+
+      expect(apagarNoBanco).toHaveBeenCalledTimes(1);
+      expect(s()).toMatchObject({ fase: 'entrada', tela: 'boasVindas', email: null });
+      expect(esquecer).toHaveBeenCalledTimes(1);
+      expect(auth.signOut).toHaveBeenCalledTimes(1);
+      esquecer.mockRestore();
+    });
+
+    it('o servidor primeiro: a sessão só sai depois que ele confirma', async () => {
+      const auth = simularCliente();
+      let confirmar!: () => void;
+      apagarNoBanco.mockReturnValue(new Promise<void>((r) => (confirmar = r)));
+      useSessao.setState({ fase: 'app', email: EMAIL });
+
+      const apagando = s().apagarConta();
+      await assentar();
+      expect(s().fase).toBe('app');
+      expect(auth.signOut).not.toHaveBeenCalled();
+
+      confirmar();
+      await apagando;
+      expect(s().fase).toBe('entrada');
+    });
+
+    it('sem rede, rejeita e a pessoa continua no app, com a conta e os dados', async () => {
+      const auth = simularCliente();
+      const esquecer = jest.spyOn(useDados.getState(), 'esquecer');
+      apagarNoBanco.mockRejectedValue(new Error('[banco] apagar a conta: sem rede'));
+      useSessao.setState({ fase: 'app', email: EMAIL });
+
+      await expect(s().apagarConta()).rejects.toThrow('sem rede');
+
+      expect(s()).toMatchObject({ fase: 'app', email: EMAIL });
+      expect(esquecer).not.toHaveBeenCalled();
+      expect(auth.signOut).not.toHaveBeenCalled();
+      esquecer.mockRestore();
+    });
+
+    it('o signOut que falha depois do apagar não segura ninguém no app', async () => {
+      const aviso = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      simularCliente().signOut.mockRejectedValue({ name: 'AuthApiError', status: 403 });
+      useSessao.setState({ fase: 'app', email: EMAIL });
+
+      await s().apagarConta();
+
+      expect(s().fase).toBe('entrada');
+      aviso.mockRestore();
+    });
   });
 });

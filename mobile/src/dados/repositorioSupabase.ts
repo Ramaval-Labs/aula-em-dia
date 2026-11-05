@@ -614,6 +614,23 @@ export const repositorioSupabase: Repositorio = {
   },
 };
 
+// --- Conta ------------------------------------------------------------------------
+
+/**
+ * Apaga a conta do professor logado (Parte 8, LGPD, SCRUM-75). A Edge Function
+ * `apagar-conta` apaga o usuário do Auth, e o cascade da 0001 leva o resto,
+ * numa transação. O app não apaga nada linha por linha: com a rede caindo no
+ * meio, ficaria meia conta.
+ *
+ * Quem é apagado sai do token que o supabase-js manda sozinho; nenhum id vai
+ * no pedido. Rejeita se não deu, e quem chama só sai da sessão depois disso.
+ */
+export async function apagarConta(): Promise<void> {
+  await exigirProfessor();
+  const { error } = await clienteSupabase().functions.invoke('apagar-conta', { method: 'POST' });
+  if (error) throw new ErroDoBanco('apagar a conta', error);
+}
+
 // --- Onboarding -------------------------------------------------------------------
 
 /**

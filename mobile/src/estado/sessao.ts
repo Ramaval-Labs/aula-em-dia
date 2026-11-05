@@ -26,7 +26,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { CHAVE_SESSAO } from '../dados/armazenamento';
-import { marcarOnboardingConcluido, onboardingConcluido } from '../dados/repositorioSupabase';
+import {
+  apagarConta as apagarContaNoBanco,
+  marcarOnboardingConcluido,
+  onboardingConcluido,
+} from '../dados/repositorioSupabase';
 import { clienteSupabase, usaSupabase } from '../dados/supabase';
 import { ERRO, validarAcesso } from '../dominio/validacao';
 import { useDados } from './dados';
@@ -67,10 +71,20 @@ type Sessao = {
   voltarEntrada: () => boolean;
   concluirOnboarding: () => void;
   sair: () => Promise<void>;
+  /**
+   * Apaga a conta de verdade, com todos os alunos (Parte 8, LGPD). Só no modo
+   * supabase: no local, rejeita. Primeiro o servidor; só se ele confirmar,
+   * a sessão sai como em `sair()`, que também esquece os dados do aparelho.
+   * Se falhar, rejeita e a pessoa continua no app, com a conta inteira.
+   */
+  apagarConta: () => Promise<void>;
 };
 
 /** Se o login é de verdade, para a tela decidir o que oferecer sem ler o ambiente. */
 export const loginReal = (): boolean => usaSupabase();
+
+/** Se dá para apagar a conta: só com login de verdade, porque no local não há conta. */
+export const podeApagarConta = (): boolean => usaSupabase();
 
 /**
  * Erro do Supabase Auth → frase de `ERRO`. Decide pelo `code` do erro da API
@@ -285,5 +299,17 @@ export const useSessao = create<Sessao>((set, get) => ({
     } catch (erro) {
       avisarEmDesenvolvimento('Sair', erro);
     }
+  },
+
+  async apagarConta() {
+    if (!usaSupabase()) {
+      throw new Error('[sessao] apagar a conta só existe no modo supabase: no local não há conta.');
+    }
+    // Primeiro o servidor. Sair antes deixaria a pessoa ver como apagada uma
+    // conta que continua no banco, se a rede caísse aqui.
+    await apagarContaNoBanco();
+    // O usuário já não existe: o `signOut` do `sair()` pode falhar no servidor,
+    // mas apaga a sessão do aparelho mesmo assim (Parte 3, decisão 6).
+    await get().sair();
   },
 }));
