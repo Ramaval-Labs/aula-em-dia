@@ -15,7 +15,9 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `migrations/0005_aplicar_movimento.sql` | A RPC `aplicar_movimento`: aluno + lançamento (+ proposta) juntos, ou nada, com trava de versão |
 | `migrations/0006_link_do_aluno.sql` | A RPC `novo_link_do_aluno`: troca o `token_publico`, e o link anterior para de funcionar |
 | `migrations/0007_horario_ocupado.sql` | A `aplicar_movimento` recusa o aceite num horário que outro aluno já ocupou, com trava para os aceites simultâneos |
+| `migrations/0008_propostas_estrita.sql` | A política de `propostas` exige, na escrita, que o aluno seja do professor |
 | `functions/aluno-publico/` | A Edge Function do link do aluno: lê o recorte e grava a resposta pelo token, sem login |
+| `functions/aluno-publico/cors.mjs` | As origens que o CORS aceita: a Vercel e o Expo Web local. Mudou o domínio? Muda aqui |
 | `functions/apagar-conta/` | A Edge Function de apagar a conta: com o JWT do professor, apaga o usuário do Auth, e o cascade leva o resto |
 | `functions/_shared/entrada.ts` | O que a função usa do domínio do app; o `dominio.js` ao lado é **gerado** e fica fora do git |
 | `seed.sql` | Os dados de demonstração. **Gerado**: não edite à mão |
@@ -25,7 +27,8 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `tests/database/link_do_aluno.test.sql` | Teste da RPC da `0006`: o token muda, o professor B não troca, sem login não chama |
 | `tests/database/horario_ocupado.test.sql` | Teste da `0007`: o segundo aceite no mesmo horário é recusado; o professor, o arquivado e o outro professor não bloqueiam |
 | `tests/database/apagar_conta.test.sql` | Apagar o usuário do Auth leva tudo do professor, e o professor B segue intacto |
-| `tests/funcoes/aluno-publico.test.mjs` | A `aluno-publico` servida de verdade só entrega o aluno do link: sentinelas e os 404 (no CI, o job "Função do aluno") |
+| `tests/database/propostas_estrita.test.sql` | Teste da `0008`: o professor B não cria proposta no aluno do A, nem muda a dele para lá |
+| `tests/funcoes/aluno-publico.test.mjs` | A `aluno-publico` servida de verdade só entrega o aluno do link: sentinelas, os 404, a janela inválida e a origem estranha (no CI, o job "Função do aluno") |
 
 ## Para rodar
 
