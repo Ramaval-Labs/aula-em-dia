@@ -74,3 +74,58 @@ jobs:
       # trigger que cria o professor.
       - name: Testes do banco
         run: supabase test db
+
+  # A Edge Function do link do aluno (SCRUM-81, P2-5 da revisão da Parte 6). Ela usa a
+  # service role, então a RLS não a protege: o filtro pelo token é a única barreira, e
+  # este job prova que ela só entrega o aluno do link. Fica separado do job de RLS porque
+  # precisa do gateway e do Auth, e não só do Postgres. Banco local, que morre com o job:
+  # nenhuma chave nem projeto da nuvem.
+  funcao:
+    name: Função do aluno
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      # O bundle do domínio fica fora do git (Parte 6, decisão 10): sem ele a função
+      # não sobe.
+      - name: Gerar o bundle do domínio
+        working-directory: mobile
+        run: |
+          npm ci
+          npm run bundle:dominio
+
+      # A mesma versão dos outros jobs.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
+
+      # Sem o que o teste não usa, para subir mais rápido. A saída vai para o lixo: no fim,
+      # o `start` imprime as chaves locais. São as padrão de qualquer Supabase local, mas o
+      # log do CI é público. Os erros continuam aparecendo, porque vão para o stderr.
+      - name: Subir o Supabase
+        run: supabase start -x studio,imgproxy,inbucket,realtime,storage-api,logflare,vector,supavisor > /dev/null
+
+      # Em segundo plano; o teste espera a função responder antes de começar.
+      - name: Servir a função
+        run: supabase functions serve aluno-publico > "$RUNNER_TEMP/funcao.log" 2>&1 &
+
+      # Sem `set -x`: as chaves locais não vão para o log, mesmo sendo as de exemplo.
+      - name: Testar a função
+        run: |
+          set -a
+          eval "$(supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY|PUBLISHABLE_KEY)=')"
+          set +a
+          node supabase/tests/funcoes/aluno-publico.test.mjs
+
+      # Só o que a função escreveu: ela não registra o pedido, que leva o token.
+      - name: Log da função
+        if: failure()
+        run: tail -n 50 "$RUNNER_TEMP/funcao.log"

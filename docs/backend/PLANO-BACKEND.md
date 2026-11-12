@@ -1466,7 +1466,9 @@ Esta parte não tem fim: cada parte anterior deixa aqui o que precisa.
   - Novos testes de integração com Jest (`mobile/src/dados/__tests__/`) rodam contra o Supabase local:
     - RLS: o professor B não lê nem grava nada do professor A;
     - `aplicar_movimento` faz rollback quando o lançamento falha e dá conflito com versão velha;
-    - a Edge Function só devolve o aluno do token.
+    - a Edge Function só devolve o aluno do token. **Feito no `SCRUM-81`:** não pelo Jest, mas
+      por `supabase/tests/funcoes/aluno-publico.test.mjs`, contra a função servida de verdade. O CI
+      roda o teste no job "Função do aluno". Sem o filtro pelo token, ele falha.
 - **Limite de requisições por IP na `aluno-publico`** (decisão de PO de 26/10, `SCRUM-24`). O token
   não se adivinha, mas a função hoje responde a quantos pedidos chegarem. Junto, decidir se a
   leitura vira `POST`, para o token sair da URL e do log de acesso do gateway (Parte 6, decisão 14).
