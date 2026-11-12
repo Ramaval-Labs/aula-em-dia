@@ -14,7 +14,7 @@ import { estadoInicial, type EstadoPersistivel } from '../../dados/semente';
 import { candidatos, melhores, type Candidata } from '../agenda';
 import { nomeDoDia } from '../disponibilidade';
 import { comoOAlunoVaiLer } from '../mensagens';
-import { paginaDoAluno } from '../paginaDoAluno';
+import { janelaVencida, paginaDoAluno } from '../paginaDoAluno';
 import { saldo, temPacote } from '../politica';
 import type { Aluno, Janela, Lancamento, Proposta } from '../tipos';
 
@@ -448,7 +448,9 @@ describe('a proposta', () => {
 
     expect(pagina(a, HOJE).proposta?.principal.razoes).toEqual(alvo.razoes);
     expect(alvo.razoes).not.toEqual([]);
-    expect(pagina(a, OUTRO_DIA).proposta?.principal.razoes).toEqual([]);
+    // Em OUTRO_DIA a janela já passou. Antes ela seguia oferecida, só sem as
+    // razões; desde o SCRUM-79 a proposta vencida some (PO, 04/11).
+    expect(pagina(a, OUTRO_DIA).proposta).toBeNull();
   });
 
   it('os outros alunos entram na conta: bloco ocupado por outro não é mais sugerido', () => {
@@ -475,6 +477,49 @@ describe('a proposta', () => {
 
     expect(alvo.razoes).not.toEqual([]);
     expect(proposta?.principal.razoes).toEqual([]);
+  });
+});
+
+describe('a proposta vencida some (SCRUM-79)', () => {
+  // HOJE é sexta, 28/08/2026 (os fake timers do topo).
+  const ONTEM = { dia: 'Quinta, 27/08', hora: '17h' };
+  const HOJE_17H = { dia: 'Sexta, 28/08', hora: '17h' };
+  const AMANHA = { dia: 'Sábado, 29/08', hora: '10h', motivo: 'Livre' };
+  const SEMANA_QUE_VEM = { dia: 'Quarta, 02/09', hora: '18h', motivo: 'Livre' };
+  const comProposta = (proposta: Proposta) => pagina({ ...alunoPor('val'), proposta });
+
+  it.each([
+    ['ontem', ONTEM, true],
+    ['hoje, que ainda vale', HOJE_17H, false],
+    ['amanhã', AMANHA, false],
+    ['sem data no rótulo, que não tem o que comparar', { dia: 'Sexta' }, false],
+  ])('janelaVencida: %s', (_nome, janela, esperado) => {
+    expect(janelaVencida(janela, HOJE)).toBe(esperado);
+  });
+
+  it('na virada do ano, 30/12 visto de 05/01 já passou', () => {
+    expect(janelaVencida({ dia: 'Quarta, 30/12' }, '05/01')).toBe(true);
+    expect(janelaVencida({ dia: 'Terça, 05/01' }, '30/12')).toBe(false);
+  });
+
+  it('a principal vencida: a proposta some, mesmo com alternativas futuras', () => {
+    expect(comProposta(propostaEm(ONTEM, { alternativas: [AMANHA, SEMANA_QUE_VEM] })).proposta).toBeNull();
+  });
+
+  it('o resto da página continua: some só a proposta', () => {
+    const p = comProposta(propostaEm(ONTEM));
+    expect(p.saldo).toBe(pagina(alunoPor('val')).saldo);
+    expect(p.extrato).toEqual(pagina(alunoPor('val')).extrato);
+  });
+
+  it('a janela de hoje ainda é oferecida', () => {
+    expect(comProposta(propostaEm(HOJE_17H)).proposta?.principal).toMatchObject(HOJE_17H);
+  });
+
+  it('a alternativa vencida sai da lista, e a futura fica', () => {
+    const p = comProposta(propostaEm(AMANHA, { alternativas: [{ ...ONTEM, motivo: 'Livre' }, SEMANA_QUE_VEM] })).proposta;
+    expect(p?.principal).toMatchObject({ dia: AMANHA.dia, hora: AMANHA.hora });
+    expect(p?.alternativas.map((a) => a.dia)).toEqual([SEMANA_QUE_VEM.dia]);
   });
 });
 
