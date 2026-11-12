@@ -207,7 +207,8 @@ Sem o `dominio.js`, a função não sobe. É de propósito: melhor do que rodar 
 pode sair (sobrenomes, e-mails, telefone, chave Pix, valor da aula, o outro aluno e o outro
 professor) e confere:
 - o recorte do aluno do link, com exatamente as chaves dele e nenhuma sentinela;
-- os 404 sem corpo: UUID inexistente, mal formado, link velho e aluno arquivado.
+- os 404 sem corpo: UUID inexistente, mal formado, link velho e aluno arquivado;
+- a proposta vencida (`SCRUM-79`): ela some da página, e aceitá-la dá 409 sem gravar nada.
 
 No fim, apaga o que criou. Com a função servida, como acima:
 

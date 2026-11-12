@@ -1420,6 +1420,28 @@ pelos dois. A correção tem três camadas:
     insistir nele deu 400.
 - **No app:** 19 testes novos, no conversor, no repositório, no motor e no recorte.
 
+**3. A proposta vencida some (P2-1, `SCRUM-79`).** O professor propunha "Terça, 20/10", o aluno não
+respondia, e semanas depois aceitava pelo link uma aula que não podia mais acontecer, gastando uma
+reposição. O link não vence (PO, 26/10), então isso ficava mais provável com o tempo. A decisão de
+PO de 04/11 é que **a proposta vencida some**: não existe o estado "expirada".
+
+- **O recorte** (`paginaDoAluno.ts`): `janelaVencida()` compara a data do rótulo com a referência,
+  pelo `diasEntre` de `datas.ts`.
+  - A janela de hoje ainda vale, e um rótulo sem data não vence.
+  - Se a principal venceu, a proposta vem `null`, e a página mostra que não há proposta em aberto.
+  - A alternativa vencida sai da lista.
+- **A função:** aceitar uma janela vencida dá **409** e não grava nada.
+  - **A principal vencida** já chega sem proposta.
+  - **A alternativa vencida** é conferida antes da lista do que foi oferecido; sem essa conferência,
+    ela cairia no 400.
+  - A página relê no 409, como no conflito.
+- **No banco, nada muda:** a proposta continua `enviada`, e só deixa de ser oferecida.
+- **Na ficha do professor, também nada muda:** ela segue mostrando a pendência ao lado da proposta,
+  porque mandar a proposta não apaga a pendência.
+- **Onde foi testado:** no `aluno-publico.test.mjs`, que roda no CI. A principal vencida some da
+  página e o aceite dá 409 sem gravar. A alternativa vencida sai da página e o aceite dela dá 409 sem
+  gravar, enquanto a janela futura segue aceita. Com a função de antes deste card, o teste falha.
+
 **O que fica em aberto.** O rótulo de `agendada` ("Terça, 10/11") não tem ano. Uma reposição antiga
 que nunca foi limpa ocuparia o mesmo rótulo no ano em que a data cair no mesmo dia da semana, o que
 acontece a cada cinco ou seis anos.
