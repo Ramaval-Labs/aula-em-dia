@@ -107,9 +107,11 @@ jobs:
         with:
           version: 2.120.0
 
-      # Sem o que o teste não usa, para subir mais rápido.
+      # Sem o que o teste não usa, para subir mais rápido. A saída vai para o lixo: no fim,
+      # o `start` imprime as chaves locais. São as padrão de qualquer Supabase local, mas o
+      # log do CI é público. Os erros continuam aparecendo, porque vão para o stderr.
       - name: Subir o Supabase
-        run: supabase start -x studio,imgproxy,inbucket,realtime,storage-api,logflare,vector,supavisor
+        run: supabase start -x studio,imgproxy,inbucket,realtime,storage-api,logflare,vector,supavisor > /dev/null
 
       # Em segundo plano; o teste espera a função responder antes de começar.
       - name: Servir a função
