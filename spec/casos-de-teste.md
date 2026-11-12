@@ -59,6 +59,8 @@ Textos: o caso 2 gera nota "Aviso com 26h, dentro do mínimo de 24h" e detalhe
 |---|---|---|
 | 27 | aluno sem validade estendida | **3** janelas |
 | 28 | `validadeEstendida: true` | **4** janelas (a extra é "Quinta, 11/09 · 18h") |
+| 42 | aluno com aula fixa terça 18h | nenhuma janela em terça na faixa de 18h (17–20); o resto da terça continua (SCRUM-84) |
+| 43 | o mesmo aluno, quinta 18h livre | a janela soma o bônus de mesmo horário, com a razão "No mesmo horário da aula dele." |
 
 ## Pagamento e validade
 | # | cenário | esperado |
