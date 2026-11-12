@@ -16,7 +16,7 @@
  * de ida e volta do banco é o mesmo conversor do repositório do app.
  */
 
-export { paginaDoAluno } from '../../../mobile/src/dominio/paginaDoAluno';
+export { janelaVencida, paginaDoAluno } from '../../../mobile/src/dominio/paginaDoAluno';
 export { marcarReposicao } from '../../../mobile/src/dominio/politica';
 export { hoje } from '../../../mobile/src/dominio/datas';
 export { DIAS, FAIXAS_HORARIAS } from '../../../mobile/src/dominio/disponibilidade';
