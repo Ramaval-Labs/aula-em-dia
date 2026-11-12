@@ -10,9 +10,9 @@
  * que não existe no toque e não tem equivalente direto no React Native. Aqui
  * o retorno de toque é escurecimento por opacidade, como o resto do iOS.
  *
- * **Alvo de toque.** Peças mais baixas que 44px (inline de 40, segmento de
- * 34/36/30, switch de 32, stepper de 34) recebem `hitSlop` até fechar os
- * 44px de `spec/acessibilidade.md`.
+ * **Alvo de toque.** Peças mais baixas que o piso (inline de 40, segmento de
+ * 34/36/30, switch de 32, stepper de 34 e, no Android, o botão de texto de 46)
+ * recebem `hitSlop` até fechar `ALVO_MINIMO`: 44pt no iOS, 48dp no Android.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -27,6 +27,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { folgaDeToque } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { duracao, useReduzirMovimento } from '../tema/movimento';
@@ -37,16 +38,6 @@ import { SuperficieVidro } from './Vidro';
 
 /** Opacidade do pressionado — substitui o `brightness(1.07)` do hover CSS. */
 const OPACIDADE_PRESSIONADO = 0.86;
-
-/**
- * Fecha os 44px do alvo de toque em peças mais baixas — e, com `largura`, nas
- * mais estreitas também.
- */
-function folgaDeToque(altura: number, largura?: number) {
-  const falta = Math.max(0, TAMANHO.alvoMinimo - altura) / 2;
-  const lado = largura === undefined ? 0 : Math.max(0, TAMANHO.alvoMinimo - largura) / 2;
-  return { top: falta, bottom: falta, left: lado, right: lado };
-}
 
 type Comum = {
   rotulo: string;
@@ -275,7 +266,7 @@ export function BotaoInline({
   );
 }
 
-/** Ação terciária, sem caixa: 46px, texto 15/600. */
+/** Ação terciária, sem caixa: 46px, texto 15/600; no Android a folga leva o toque a 48. */
 export function BotaoTexto({
   rotulo,
   aoTocar,
@@ -298,6 +289,7 @@ export function BotaoTexto({
       accessibilityState={{ disabled: desabilitado }}
       disabled={desabilitado}
       onPress={aoTocar}
+      hitSlop={folgaDeToque(TAMANHO.botaoTexto)}
       style={({ pressed }) => [
         estilos.botaoTexto,
         { opacity: pressed ? OPACIDADE_PRESSIONADO : 1 },
@@ -639,9 +631,10 @@ export function Stepper({
 }
 
 /**
- * 38 × 34: a folga fecha 44 nos dois eixos. Na largura são 3px de cada lado,
- * que cabem no `padding` de 3 do trilho e no vão de 4 até o valor — sem
- * sobrepor o botão vizinho.
+ * 38 × 34: a folga fecha o piso nos dois eixos. Na largura são 3px de cada
+ * lado no iOS e 5 no Android: cabem no `padding` de 3 do trilho e no vão de 4
+ * até o valor (que não é tocável), e os dois botões ficam a 34 um do outro,
+ * sem se sobrepor.
  */
 function BotaoDoStepper({
   glifo,

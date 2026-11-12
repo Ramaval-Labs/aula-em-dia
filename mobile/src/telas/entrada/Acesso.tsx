@@ -26,6 +26,7 @@ import { ERRO, emailValido, senhaValida, validarAcesso } from '../../dominio/val
 import { useRascunho } from '../../estado/formularios';
 import { loginReal, useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
+import { folgaDeToque } from '../../tema/alvoDeToque';
 import { useCores } from '../../tema/TemaProvider';
 import { texto } from '../../tema/tipografia';
 import { TAMANHO } from '../../tema/tokens';
@@ -35,7 +36,10 @@ import { TelaDeEntrada } from './TelaDeEntrada';
 const ACESSO_INICIAL = { email: '', erro: null };
 
 /** Não há recuperação para oferecer em nenhum dos modos, então o toque avisa. */
-const AVISO_RECUPERAR_SENHA = 'A recuperação de senha chega junto com o login de verdade.';
+/** O texto do link "Esqueci minha senha"; a folga de toque sai da altura dele. */
+const TEXTO_DO_LINK = texto(13.5, 600, { altura: 1.3 });
+
+const AVISO_RECUPERAR_SENHA ='A recuperação de senha chega junto com o login de verdade.';
 const AVISO_RECUPERAR_SENHA_REAL = 'A recuperação de senha ainda não está disponível.';
 
 /** Frases que apontam para o e-mail; as outras de campo ficam sob a senha. */
@@ -155,14 +159,14 @@ export function Acesso() {
         />
 
         {criando ? null : (
-          // O texto tem ~17px; o hitSlop vertical leva o alvo a ~45px.
+          // O texto tem 17,55px; a folga vertical fecha o piso (44 no iOS, 48 no Android).
           <Pressable
             accessibilityRole="link"
             onPress={() => avisar(real ? AVISO_RECUPERAR_SENHA_REAL : AVISO_RECUPERAR_SENHA)}
-            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+            hitSlop={{ ...folgaDeToque(TEXTO_DO_LINK.lineHeight ?? 0), left: 8, right: 8 }}
             style={estilos.link}
           >
-            <Text style={[texto(13.5, 600, { altura: 1.3 }), { color: cores.tint }]}>
+            <Text style={[TEXTO_DO_LINK, { color: cores.tint }]}>
               Esqueci minha senha
             </Text>
           </Pressable>
