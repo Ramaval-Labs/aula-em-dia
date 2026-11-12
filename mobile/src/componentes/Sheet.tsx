@@ -32,6 +32,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
+import { ALVO_MINIMO } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
@@ -42,8 +43,8 @@ import { SuperficieVidro } from './Vidro';
 /** 88% para sheet de tarefa, 74% para o de resultado. */
 export type AlturaSheet = 'tarefa' | 'resultado';
 
-/** Faixa mínima de toque acima do painel (handoff, "Sheet modal"). */
-const TOQUE_ACIMA = 44;
+/** Faixa mínima de toque acima do painel (handoff, "Sheet modal"): o piso da plataforma. */
+const TOQUE_ACIMA = ALVO_MINIMO;
 
 export type PropsSheet = {
   /** título do cabeçalho: nome do aluno ou a tarefa */

@@ -48,6 +48,9 @@ Leitura:
   escuro: o branco do handoff ficava em 1.6–1.9:1 sobre verde e âmbar claros.
 
 ## Alvos de toque
+- **Piso por plataforma:** 44pt no iOS e na web, 48dp no Android (`ALVO_MINIMO`, em
+  `tema/alvoDeToque.ts`). A altura visual é a mesma nas duas; no Android, o que sobe é a área de
+  toque. Exceção: a célula da grade semanal fica em 44 de largura a 360dp.
 - Botão primário 54px, secundário 52, compacto 50, texto 46. Botão inline (40), segmento
   (34/36/30), switch (32), stepper (34) e ficha (36) recebem `hitSlop` até 44px. O botão do
   stepper (38 de largura) ganha 3px de cada lado, que cabem no padding do trilho e no vão até o

@@ -673,8 +673,10 @@ servem também a entrada.
   Faixa, selo e botão primário têm altura **mínima**, não fixa, e o primário aceita duas linhas —
   os rótulos dinâmicos ("Propor quinta, 04/09 às 17h") não podem cortar. O resto do texto escala
   sem teto.
-- Pressionar escurece por opacidade (0,86) no lugar do hover de mouse do protótipo. Peças abaixo de
-  44px ganham `hitSlop` até fechar o alvo.
+- Pressionar escurece por opacidade (0,86) no lugar do hover de mouse do protótipo. Peças abaixo do
+  piso ganham `hitSlop` até fechar o alvo, por `folgaDeToque()` de `tema/alvoDeToque.ts`. O piso é
+  por plataforma (`ALVO_MINIMO`): `alvoMinimo` (44pt) no iOS e na web, `alvoMinimoAndroid` (48dp) no
+  Android. A altura visual não muda; o que sobe no Android é a área de toque.
 - **`Segmentado`**: trilho `preenchimento`, segmento ativo em `vidro2` com borda e sombra leve,
   texto `tinta`; inativo transparente em `tinta2`. Portes `filtro` (34px), `cartao` (36px) e
   `linha` (30px, raio 11/8,5, encolhe). Para o leitor de tela, um grupo de rádios.
@@ -726,7 +728,8 @@ confirmar, nunca a cada tecla.
 
 ### Peças derivadas de conteúdo (`GradeSemanal.tsx`, `PreviaDeMensagem.tsx`)
 `GradeSemanal` e `RodapeDaGrade`: células só de toque, livres em `preenchimento` e marcadas em
-`tint`, raio 9, com células que passam de 44px. `PreviaDeMensagem`: cartão de vidro com o
+`tint`, raio 9, com células na altura do piso da plataforma (44 no iOS, 48 no Android). Na largura
+  passam de 44 a partir de 360dp, e de 48 a partir de 384dp. `PreviaDeMensagem`: cartão de vidro com o
 cabeçalho "MENSAGEM", o destino à direita, o texto numa caixa `preenchimento` de raio 13 e um
 `BotaoCompacto` para copiar.
 
@@ -755,7 +758,7 @@ Nada anima para enfeitar: não há entrada de lista, parallax nem mola.
 - **Do** pegar toda cor de `useCores()`, com o papel certo: `tint` para destaque, `sobreTint` sobre ele, par suave e cheio para status.
 - **Do** manter um primário por tela e, no sheet, colocá-lo no rodapé fixo, com `NotaDoBotao` quando ele está apagado.
 - **Do** tirar todo texto de `TIPO` ou `texto()`, espaçar texto com `comEspaco()` e formatar dinheiro com `dinheiro()`.
-- **Do** reservar 126px embaixo em toda tela com tab bar e manter todo alvo de toque em 44px ou mais (aba com 48px).
+- **Do** reservar 126px embaixo em toda tela com tab bar e manter todo alvo de toque no piso da plataforma: 44pt no iOS, 48dp no Android (aba com 48 nos dois).
 - **Do** dar cor explícita a todo texto; o React Native não herda `color`.
 
 ### Don't:

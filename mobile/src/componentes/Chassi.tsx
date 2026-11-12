@@ -39,6 +39,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { repositorio } from '../dados/repositorio';
 import { useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
+import { folgaDeToque } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
@@ -194,6 +195,8 @@ export function BotaoVoltar({
       accessibilityRole="button"
       accessibilityLabel={`Voltar para ${rotulo}`}
       onPress={aoVoltar ?? (() => voltar())}
+      // A caixa fica em 44 para não descer o chevron; no Android a folga fecha 48.
+      hitSlop={folgaDeToque(TAMANHO.alvoMinimo)}
       style={[
         {
           position: 'absolute',

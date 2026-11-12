@@ -22,7 +22,6 @@
       "Edit(IMPLEMENTACAO.md)"
     ],
     "deny": [
-      "Edit(spec/**)",
       "Edit(handoff-ios-glass/**)",
       "Edit(docs/design/historico/**)",
       "Edit(docs/design/redesign-ios-glass/**)"

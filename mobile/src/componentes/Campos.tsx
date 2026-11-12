@@ -33,6 +33,7 @@ import {
 } from 'react-native';
 
 import { dinheiro, lerDinheiro } from '../dominio/formato';
+import { folgaDeToque } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
 import { RAIO, TAMANHO } from '../tema/tokens';
@@ -269,8 +270,8 @@ export function CampoDeDinheiro({
 
 /**
  * Ação de texto em tint para o `sufixo` do campo: "mostrar"/"ocultar" da
- * senha, "copiar" da chave Pix. Ocupa a altura do alvo mínimo, então o toque
- * pega a faixa inteira do trilho.
+ * senha, "copiar" da chave Pix. Ocupa 44 de altura, a faixa inteira do
+ * trilho; no Android a folga leva o toque a 48.
  */
 export function AcaoDoCampo({
   rotulo,
@@ -288,7 +289,7 @@ export function AcaoDoCampo({
       accessibilityRole="button"
       accessibilityLabel={rotuloAcessivel ?? rotulo}
       onPress={aoTocar}
-      hitSlop={{ left: 10, right: 10 }}
+      hitSlop={{ ...folgaDeToque(TAMANHO.alvoMinimo), left: 10, right: 10 }}
       style={({ pressed }) => [estilos.acao, { opacity: pressed ? 0.6 : 1 }]}
     >
       <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>

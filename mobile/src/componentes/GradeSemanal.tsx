@@ -26,6 +26,7 @@ import {
   temBloco,
 } from '../dominio/disponibilidade';
 import type { BlocoSemanal, DiaDaSemana, FaixaHoraria } from '../dominio/tipos';
+import { ALVO_MINIMO } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
@@ -40,6 +41,11 @@ import { RAIO } from '../tema/tokens';
  *   nome (fim da tarde), 5 dias: (312 − 38 − 5 × 3) ÷ 5 = 51,8
  *
  * Em 375pt a grade de 6 dias dá 46,5; em 390 (o aparelho do handoff), 49.
+ *
+ * No Android o piso é 48dp (SCRUM-41): a altura da célula sobe para 48, e a
+ * largura passa de 48 a partir de 384dp (a de 6 dias). Abaixo disso, a 360dp, a
+ * célula fica em 44 de largura: o vão de 3 entre elas não deixa folga sem
+ * sobrepor a vizinha.
  * O rótulo por nome ("fim da tarde") quebra em duas linhas e pede a coluna
  * mais larga; o de horário cabe em 30.
  */
@@ -57,7 +63,7 @@ export function GradeSemanal({
   faixas = FAIXAS_HORARIAS,
   /** "horario" mostra 8–12; "nome" mostra manhã */
   rotuloDaFaixa = 'horario',
-  alturaDaCelula = 44,
+  alturaDaCelula = ALVO_MINIMO,
   somenteLeitura = false,
 }: {
   marcados: BlocoSemanal[];

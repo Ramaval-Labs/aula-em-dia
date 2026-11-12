@@ -373,7 +373,10 @@ export const TAMANHO = {
   toastBase: 106,
   switchLargura: 52,
   switchAltura: 32,
+  /** alvo de toque mínimo no iOS e na web (44pt, diretriz da Apple) */
   alvoMinimo: 44,
+  /** alvo de toque mínimo no Android (48dp, diretriz do Material) */
+  alvoMinimoAndroid: 48,
   abaToque: 48,
   /** borda de vidro (.5px) */
   bordaVidro: 0.5,
