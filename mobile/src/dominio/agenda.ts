@@ -113,8 +113,14 @@ function rotuloDoDia(data: string): string {
 /**
  * Gera as janelas possíveis para repor a aula de um aluno.
  *
- * Descarta: folga do professor, bloco fora da disponibilidade, colisão com
- * aula fixa de outro aluno e colisão com reposição já marcada.
+ * Descarta: folga do professor, bloco fora da disponibilidade, a aula fixa do
+ * próprio aluno, colisão com aula fixa de outro aluno e colisão com reposição
+ * já marcada.
+ *
+ * O bônus de "mesmo horário" vale para a faixa da aula fixa em **outro** dia da
+ * semana (quinta 18h para quem tem terça 18h). O dia e a faixa da própria aula
+ * fixa não são reposição: é a aula que ele já tem (SCRUM-84, decisão de PO de
+ * 04/11).
  */
 export function candidatos(
   aluno: Aluno,
@@ -159,6 +165,9 @@ export function candidatos(
       }
       const foraDoHabitual = !temBloco(disponibilidade.blocos, bloco);
 
+      // a aula fixa do próprio aluno: nesse dia e faixa ele já tem aula
+      if (temBloco(blocosDoAluno, bloco)) continue;
+
       // choque com aula fixa de outro aluno
       if (temBloco(ocupados, bloco)) continue;
 
@@ -168,13 +177,14 @@ export function candidatos(
       // o aluno declarou disponibilidade e este bloco não está nela
       if (dispDoAluno.length > 0 && !temBloco(dispDoAluno, bloco)) continue;
 
-      const mesmoHorarioDeSempre = temBloco(blocosDoAluno, bloco);
+      // a mesma faixa da aula fixa, em outro dia (o dia dela já saiu acima)
+      const mesmoHorarioDeSempre = blocosDoAluno.some((b) => b.faixa === bloco.faixa);
       const razoes: string[] = [];
       let pontos = 100 - d; // quanto antes, melhor
 
       if (mesmoHorarioDeSempre) {
         pontos += 40;
-        razoes.push('É o mesmo horário da aula fixa dele.');
+        razoes.push('No mesmo horário da aula dele.');
       }
       if (dispDoAluno.length > 0 && temBloco(dispDoAluno, bloco)) {
         pontos += 25;
