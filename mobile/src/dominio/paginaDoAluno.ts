@@ -13,7 +13,7 @@
  */
 
 import { candidatos, MELHORES, melhores, type Candidata } from './agenda';
-import { hoje } from './datas';
+import { diasEntre, hoje } from './datas';
 import { primeiroNome } from './formato';
 import { comoOAlunoVaiLer } from './mensagens';
 import { saldo, temPacote } from './politica';
@@ -64,6 +64,18 @@ export interface PaginaDoAluno {
   disponibilidade: BlocoSemanal[];
 }
 
+/**
+ * A janela já passou: a data do rótulo ("Terça, 20/10") é anterior a
+ * `referencia`. A de hoje ainda vale. Um rótulo sem data não vence, porque
+ * não há o que comparar (SCRUM-79, P2-1 da revisão da Parte 6).
+ */
+export function janelaVencida(janela: { dia: string }, referencia: string = hoje()): boolean {
+  const data = /(\d{2}\/\d{2})\s*$/.exec(janela.dia)?.[1];
+  if (!data) return false;
+  const dias = diasEntre(data, referencia);
+  return dias !== null && dias > 0;
+}
+
 function propostaDaPagina(
   proposta: Proposta,
   aluno: Aluno,
@@ -79,6 +91,10 @@ function propostaDaPagina(
   });
 
   const { janela } = proposta;
+  // A proposta vencida some para o aluno (PO, 04/11): sem o estado "expirada",
+  // a página mostra que não há proposta em aberto, e o professor segue vendo a
+  // pendência na ficha. No banco ela continua como estava.
+  if (janelaVencida(janela, referencia)) return null;
   const sugeridas = (): Candidata[] =>
     melhores(todas.filter((c) => c.dia !== janela.dia || c.hora !== janela.hora));
 
@@ -91,7 +107,9 @@ function propostaDaPagina(
     );
   // Lista vazia é o que o professor enviou, e fica vazia. Só proposta gravada
   // sem o campo cai nas sugestões, como em AlunoProposta.
-  const alternativas = (proposta.alternativas ?? sugeridas()).slice(0, ALTERNATIVAS);
+  const alternativas = (proposta.alternativas ?? sugeridas())
+    .filter((j) => !janelaVencida(j, referencia))
+    .slice(0, ALTERNATIVAS);
   const livres = [janela, ...alternativas].filter((j) => !ocupada(j));
   if (livres.length === 0) return null;
   const [principal, ...resto] = livres;

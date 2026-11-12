@@ -28,6 +28,7 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.1
 import {
   alunoParaBanco,
   datasDoBanco,
+  janelaVencida,
   DIAS,
   FAIXAS_HORARIAS,
   hoje,
@@ -171,6 +172,14 @@ async function responder(banco: Banco, token: string, corpo: Record<string, unkn
   if (status === 'recusada') {
     // Só fecha a proposta: o aluno não muda e não há lançamento.
     return mover(banco, aluno, linha, { p_proposta: { status: 'recusada' } });
+  }
+
+  // A janela que já passou dá 409, como a proposta que mudou no meio: a página
+  // relê e não a oferece mais (SCRUM-79). A principal vencida já chega aqui sem
+  // proposta; isto pega a alternativa vencida, que senão cairia no 400 abaixo.
+  const pedida = janela as { dia?: unknown } | null | undefined;
+  if (pedida && typeof pedida.dia === 'string' && janelaVencida({ dia: pedida.dia }, hoje())) {
+    throw new Recusa(CONFLITO);
   }
 
   // A janela tem de ser uma das que a página ofereceu, e não uma qualquer.

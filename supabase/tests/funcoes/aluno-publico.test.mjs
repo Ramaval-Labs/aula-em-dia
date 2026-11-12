@@ -6,6 +6,9 @@
 // professores. Este teste roda a função de verdade, servida localmente, contra
 // o banco local, e quebra se ela devolver um campo a mais ou o dado de outro.
 //
+// A proposta vencida (SCRUM-79): a página não oferece janela que já passou, e
+// aceitá-la dá 409 sem gravar nada.
+//
 // Como funciona: cria dois professores e três alunos com valores-sentinela em
 // tudo que não pode sair (sobrenomes, e-mails, telefone, chave Pix, valor da
 // aula, o outro aluno, o outro professor) e procura essas sentinelas na resposta
@@ -197,6 +200,38 @@ function conferir(nome, ok, detalhe = '') {
 
 const pagina = (token) => pedir(`${FUNCAO}?token=${encodeURIComponent(token)}`);
 
+const responder = (token, corpo) =>
+  pedir(FUNCAO, {
+    metodo: 'POST',
+    cabecalhos: { 'Content-Type': 'application/json' },
+    corpo: { token, acao: 'responder', ...corpo },
+  });
+
+/**
+ * "Terça, 10/11" a `dias` de hoje, no fuso da função (America/Sao_Paulo). O
+ * runner do CI roda em UTC: com folga de dias, a virada da meia-noite não muda
+ * o que é passado e o que é futuro.
+ */
+function rotulo(dias) {
+  const partes = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const v = (t) => Number(partes.find((p) => p.type === t).value);
+  const d = new Date(Date.UTC(v('year'), v('month') - 1, v('day') + dias));
+  const nomes = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  return { dia: `${nomes[d.getUTCDay()]}, ${dd}/${mm}`, iso: d.toISOString().slice(0, 10) };
+}
+
+/** O que um aceite gravaria no aluno 1, para provar que nada mudou. */
+async function estadoDoAluno1() {
+  const [a] = await exigir('ler o aluno 1', rest(`alunos?id=eq.${ALUNO_1.id}&select=versao,agendada,reposicoes`, { cabecalhos: comoServico }));
+  const props = await exigir('ler as propostas', rest(`propostas?aluno_id=eq.${ALUNO_1.id}&select=status`, { cabecalhos: comoServico }));
+  const lancs = await exigir('ler o extrato', rest(`lancamentos?aluno_id=eq.${ALUNO_1.id}&select=id`, { cabecalhos: comoServico }));
+  return JSON.stringify({ ...a, propostas: props.map((x) => x.status).sort(), lancamentos: lancs.length });
+}
+
 /** Os cabeçalhos que não mudam de um pedido para outro. */
 function forma(r) {
   const nomes = [...r.cabecalhos.keys()].filter(
@@ -287,6 +322,56 @@ try {
   await conferir404('link velho, depois de novo_link_do_aluno', token1, formaDo404);
   const rNovo = await pagina(tokenNovo);
   conferir('o link novo abre a mesma página', rNovo.status === 200 && JSON.parse(rNovo.texto).nome === 'Alunoum', `HTTP ${rNovo.status}`);
+
+  // 3. A proposta vencida (SCRUM-79), com o link novo do aluno 1.
+  const passado = rotulo(-2);
+  const futuro = rotulo(5);
+  const [proposta] = await exigir(
+    'criar uma proposta vencida',
+    rest('propostas?select=id', {
+      metodo: 'POST',
+      cabecalhos: { ...comoServico, Prefer: 'return=representation' },
+      corpo: {
+        aluno_id: ALUNO_1.id,
+        professor_id: profA,
+        janela: { dia: passado.dia, hora: '17h' },
+        alternativas: [{ dia: futuro.dia, hora: '10h', motivo: 'Livre' }],
+        status: 'enviada',
+        enviada_em: rotulo(-3).iso,
+      },
+    }),
+  );
+  const comVencida = JSON.parse((await pagina(tokenNovo)).texto);
+  conferir('a principal vencida: a página vem sem proposta', comVencida.proposta === null);
+  let antes = await estadoDoAluno1();
+  let r = await responder(tokenNovo, { status: 'aceita' });
+  conferir('aceitar a principal vencida: 409', r.status === 409, `HTTP ${r.status}`);
+  conferir('  e nada foi gravado', (await estadoDoAluno1()) === antes);
+
+  // Agora a principal no futuro e a alternativa vencida.
+  await exigir(
+    'trocar as janelas da proposta',
+    rest(`propostas?id=eq.${proposta.id}`, {
+      metodo: 'PATCH',
+      cabecalhos: comoServico,
+      corpo: {
+        janela: { dia: futuro.dia, hora: '10h' },
+        alternativas: [{ dia: passado.dia, hora: '17h', motivo: 'Livre' }],
+      },
+    }),
+  );
+  const comAlternativa = JSON.parse((await pagina(tokenNovo)).texto);
+  conferir(
+    'a alternativa vencida sai da página, e a principal futura fica',
+    comAlternativa.proposta?.principal?.dia === futuro.dia && comAlternativa.proposta?.alternativas?.length === 0,
+  );
+  antes = await estadoDoAluno1();
+  r = await responder(tokenNovo, { status: 'aceita', janela: { dia: passado.dia, hora: '17h' } });
+  conferir('aceitar a alternativa vencida: 409', r.status === 409, `HTTP ${r.status}`);
+  conferir('  e nada foi gravado', (await estadoDoAluno1()) === antes);
+  r = await responder(tokenNovo, { status: 'aceita', janela: { dia: futuro.dia, hora: '10h' } });
+  conferir('a janela futura continua sendo aceita: 200', r.status === 200, `HTTP ${r.status}`);
+  conferir('  e a reposição fica marcada', JSON.parse(r.texto || '{}').agendada?.dia === futuro.dia);
 
   // O aluno arquivado.
   const r2 = await pagina(token2);
