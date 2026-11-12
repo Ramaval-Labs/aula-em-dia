@@ -25,6 +25,7 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `tests/database/link_do_aluno.test.sql` | Teste da RPC da `0006`: o token muda, o professor B não troca, sem login não chama |
 | `tests/database/horario_ocupado.test.sql` | Teste da `0007`: o segundo aceite no mesmo horário é recusado; o professor, o arquivado e o outro professor não bloqueiam |
 | `tests/database/apagar_conta.test.sql` | Apagar o usuário do Auth leva tudo do professor, e o professor B segue intacto |
+| `tests/funcoes/aluno-publico.test.mjs` | A `aluno-publico` servida de verdade só entrega o aluno do link: sentinelas e os 404 (no CI, o job "Função do aluno") |
 
 ## Para rodar
 
@@ -200,6 +201,23 @@ curl -i "http://127.0.0.1:54321/functions/v1/aluno-publico?token=<outro>"   # 40
 ```
 
 Sem o `dominio.js`, a função não sobe. É de propósito: melhor do que rodar com uma regra velha.
+
+**O teste automatizado** (`SCRUM-81`) faz essa conferência sozinho, e o CI roda a cada PR, no job
+"Função do aluno". Ele cria dois professores e três alunos com valores-sentinela em tudo que não
+pode sair (sobrenomes, e-mails, telefone, chave Pix, valor da aula, o outro aluno e o outro
+professor) e confere:
+- o recorte do aluno do link, com exatamente as chaves dele e nenhuma sentinela;
+- os 404 sem corpo: UUID inexistente, mal formado, link velho e aluno arquivado.
+
+No fim, apaga o que criou. Com a função servida, como acima:
+
+```bash
+set -a; eval "$(npx supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY|PUBLISHABLE_KEY)=')"; set +a
+node supabase/tests/funcoes/aluno-publico.test.mjs
+```
+
+Ele só roda contra o banco local e não imprime token nem chave. **Mexeu na função? Rode o
+teste.** Tirar o filtro pelo token ou devolver um campo a mais o deixa vermelho.
 
 ## Rodar no celular com o banco local
 
