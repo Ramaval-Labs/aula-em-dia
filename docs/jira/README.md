@@ -459,9 +459,9 @@ para carregar seus alunos. Confira a conexão e abra o app de novo."
 a Parte 6 deixar; o `SCRUM-31`; o `SCRUM-39`, o `SCRUM-40` e o `SCRUM-41`; o `SCRUM-71`; e os outros
 cards de plataforma e publicação.
 
-### Sprint 8 · 04/11 a 11/11 · **ativa** · 15 pontos
+### Sprint 8 · 04/11 a 05/11 · **fechada, 10 de 10, 21 pontos**
 
-Esta é a sprint que está no quadro agora. O tema é **o link sai de casa, com segurança e com saída**.
+O tema foi **o link sai de casa, com segurança e com saída**.
 O banco vai para a nuvem e o Expo Web para a Vercel, e o aluno abre o link no 4G. Antes disso, alguém
 que não escreveu a Edge Function a revisa. Junto vai o que a Parte 8 cobra antes de publicar:
 apagar a conta de verdade e backup do banco.
@@ -541,10 +541,29 @@ bloqueia a publicação.
   Foi para o backlog e entra na Sprint 9.
 - **Fica com o Rafael:** a conferência 3 do `SCRUM-73`, o log do gateway no painel do Supabase.
 
-### Sprint 9 · 05/11 a 12/11 · **planejada, não iniciada** · 13 pontos
+**Como fechou, para registro:** em 05/11, seis dias antes do fim previsto, com os 8 cards planejados
+e os 2 que entraram (`SCRUM-83` e `SCRUM-85`): 10 de 10, 21 pontos. A suíte foi de 949 para
+**1002 testes**.
 
-Está no quadro como sprint futura. **Abre quando o `SCRUM-85` fechar:** feche a Sprint 8 e inicie
-esta. O tema é **endurecer o que já está na internet e tirar o "saia e volte" da demonstração**.
+- **O `SCRUM-85` fechou com as duas máquinas** (`SCRUM-86` e `SCRUM-87`), como o card pedia.
+- **O ensaio do `SCRUM-85` subiu o projeto para o Expo SDK 58** (PR #39). O Expo Go da loja só
+  abre o SDK mais novo, e no iPhone não dá para instalar um Expo Go antigo: o app fechava logo depois
+  de ler o QR Code. O PR entrou na `main` com a main já congelada para a apresentação, como exceção
+  autorizada pelo PO, porque sem ele não havia apresentação. Junto vieram três ajustes de tipo do
+  React Native 0.88 (`tipografia.ts`, `Vidro.tsx` e `Sheet.tsx`) e a seção do erro "Project is
+  incompatible with this version of Expo Go" no `mobile/README.md`.
+- **A Vercel republicou a partir do merge do PR #39.** O domínio de produção mostrou o "Vercel
+  Security Checkpoint" a requisições automáticas depois de uma série de consultas feitas por
+  script. Navegador de verdade passa pelo desafio sozinho. Não é regra do projeto, que não tem
+  firewall configurado.
+- **Continua com o Rafael:** a conferência 3 do `SCRUM-73`, e apagar no GitHub a branch
+  `scrum-85-sdk57-alinhado`, que ficou do primeiro ensaio.
+
+### Sprint 9 · 05/11 a 12/11 · **ativa** · 13 pontos
+
+Abriu em 05/11, logo depois de a Sprint 8 fechar. O tema é **endurecer o que já está na internet e
+tirar o "saia e volte" da demonstração**. O `SCRUM-88` já começa com o PR #38 aberto, esperando a
+main descongelar.
 
 | Dono | Cards | Pts |
 |---|---|---|
@@ -563,6 +582,17 @@ sexta, PR pode abrir mas não entra, e nenhuma Edge Function é publicada na nuv
 - o commit 2 do `SCRUM-79` antes do `SCRUM-82`: os dois mexem em `aluno-publico/index.ts`
 - o Mauro abre `dominio/` em dois cards (`SCRUM-84` em `agenda.ts`, `SCRUM-79` em
   `paginaDoAluno.ts`): arquivos diferentes, sem ordem entre eles
+
+**Ordem cronológica, por dia** (escrita em 05/11, na abertura):
+
+| Quando | Mauro | Valentin | Rafael |
+|---|---|---|---|
+| **Dia 1** (qui 05/11, noite) | Começa o `SCRUM-81` numa branch: o script com as sentinelas, rodando no banco local, e a prova de que ele falha sem o `where token_publico`. Sem merge. | Último ensaio da apresentação na sua máquina. Nenhum deploy de função. | Abre o link do aluno no celular, no 4G, e confere que a página carrega. A conferência 3 do `SCRUM-73` e a branch `scrum-85-sdk57-alinhado`. |
+| **Dia 2** (sex 06/11) | Apresentação. **Depois da aula:** abre o PR do `SCRUM-81`, com o job no `ci.yml`. | Apresentação. **Depois da aula:** revisa o PR #38 (`SCRUM-88`). | Apresentação. **Depois da aula:** atualiza o PR #38 sobre a `main` do SDK 58, roda testes e tipos, e põe 1007 testes nos READMEs. |
+| **Dia 3** (seg 09/11) | `SCRUM-79` commit 1: o teste que falha e o recorte sem janela vencida. PR, com review do Rafael. | De manhã, revisa o PR do `SCRUM-81`: ele segura todo o resto da sua faixa. Depois, mede a cota de invocações do plano free (P2-4 do `SCRUM-82`), que não toca em código. | Mescla o PR #38 e testa no Expo Go: o aluno aceita no navegador, o professor puxa a ficha e vê "Reposição confirmada". Revisa o PR do `SCRUM-79` commit 1. |
+| **Dia 4** (ter 10/11) | `SCRUM-84`: o teste que falha, o descarte da aula fixa do próprio aluno e o bônus na mesma faixa de outro dia. O ajuste em `spec/casos-de-teste.md` é à mão. | `SCRUM-79` commit 2, com o commit 1 já na `main`: `npm run bundle:dominio` e o 409 no aceite vencido. PR; depois do merge, deploy da função. | `SCRUM-41`: a auditoria dos alvos entre 44 e 48, num comentário do card, e depois o token por plataforma. Revisa o PR do `SCRUM-79` commit 2. |
+| **Dia 5** (qua 11/11) | Revisa o PR do `SCRUM-82` e o do `SCRUM-41`. | `SCRUM-82`, com o `SCRUM-81` verde a cada passo: P3-1 e P3-4 com `curl`, a migração `0008` com o pgTAP (P3-5) e a decisão do limite no plano. PR. | `SCRUM-41` no Android, pelo Expo Go (lista, ficha e Registrar), e a linha nova em `spec/acessibilidade.md`, à mão. Revisa o PR do `SCRUM-84`. |
+| **Dia 6** (qui 12/11) | Review: demo do motor sem a aula fixa. | Mescla o `SCRUM-82` e publica a função. Confere o app do professor e o link no navegador, com o CORS novo. | Review e fechamento da sprint. |
 
 **Decisões de PO de 04/11**, tomadas na planning:
 
@@ -756,7 +786,7 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
   que criou, iniciou e fechou as sprints até a 4, agora devolve "Unknown operation", e o `discover`
   não o lista mais. O conector ainda move card para uma sprint que já existe
   (`transitionJiraIssue`), mas criar, iniciar e fechar sprint voltou a ser feito pelo navegador.
-  **Ele voltou em 23/10**: fechou a Sprint 5, abriu a 6 e, em 26/10, fechou a 6 e abriu a 7
+  **Ele voltou em 23/10**: fechou a Sprint 5, abriu a 6 e, em 26/10, fechou a 6 e abriu a 7. Em 05/11 fechou a 8 e abriu a 9
 - **`SCRUM-69` a `SCRUM-72` criados** em 26/10, na abertura da Sprint 7. O `69` e o `70` são o
   recorte e a tela da Parte 6, partida por faixa com o `SCRUM-22`. O `71` é a publicação do link
   (Supabase na nuvem e Vercel), e o `72` é a frase da carga que falha sem cache, a sobra da Sprint 5

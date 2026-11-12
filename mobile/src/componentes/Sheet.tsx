@@ -13,7 +13,7 @@
  * devolve o app para a última tela não-sheet (spec/navegacao.md).
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, type ComponentRef } from 'react';
 import {
   AccessibilityInfo,
   Animated,
@@ -128,7 +128,7 @@ export function Sheet({
   // isso ele fica no botão que abriu o sheet, agora escondido atrás dele.
   // Espera a subida; o web não tem o que mover (o react-native-web não
   // implementa `setAccessibilityFocus`).
-  const refTitulo = useRef<Text>(null);
+  const refTitulo = useRef<ComponentRef<typeof Text>>(null);
   useEffect(() => {
     if (Platform.OS === 'web') return;
     const t = setTimeout(
