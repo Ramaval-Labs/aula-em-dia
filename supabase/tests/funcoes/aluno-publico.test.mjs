@@ -9,6 +9,9 @@
 // A proposta vencida (SCRUM-79): a página não oferece janela que já passou, e
 // aceitá-la dá 409 sem gravar nada.
 //
+// E o endurecimento do SCRUM-82: janela que não é `{ dia, hora }` dá 400 (P3-1),
+// e só as origens da página do aluno passam pelo CORS (P3-4).
+//
 // Como funciona: cria dois professores e três alunos com valores-sentinela em
 // tudo que não pode sair (sobrenomes, e-mails, telefone, chave Pix, valor da
 // aula, o outro aluno, o outro professor) e procura essas sentinelas na resposta
@@ -198,7 +201,11 @@ function conferir(nome, ok, detalhe = '') {
   console.log(`${ok ? 'ok  ' : 'FALHOU'} ${nome}${detalhe ? ` — ${detalhe}` : ''}`);
 }
 
-const pagina = (token) => pedir(`${FUNCAO}?token=${encodeURIComponent(token)}`);
+const pagina = (token, cabecalhos = {}) =>
+  pedir(`${FUNCAO}?token=${encodeURIComponent(token)}`, { cabecalhos });
+
+const VERCEL = 'https://aula-em-dia-three.vercel.app';
+const ESTRANHA = 'https://exemplo.com';
 
 const responder = (token, corpo) =>
   pedir(FUNCAO, {
@@ -372,6 +379,49 @@ try {
   r = await responder(tokenNovo, { status: 'aceita', janela: { dia: futuro.dia, hora: '10h' } });
   conferir('a janela futura continua sendo aceita: 200', r.status === 200, `HTTP ${r.status}`);
   conferir('  e a reposição fica marcada', JSON.parse(r.texto || '{}').agendada?.dia === futuro.dia);
+
+  // 4. A janela que não é `{ dia, hora }` dá 400, sem gravar (SCRUM-82, P3-1).
+  antes = await estadoDoAluno1();
+  for (const [nome, janela] of [['nula', null], ['texto', 'Sexta'], ['número', 42], ['objeto vazio', {}]]) {
+    r = await responder(tokenNovo, { status: 'aceita', janela });
+    conferir(`janela ${nome}: 400`, r.status === 400, `HTTP ${r.status}`);
+  }
+  conferir('  e nada foi gravado', (await estadoDoAluno1()) === antes);
+
+  // 5. O CORS só da página do aluno (SCRUM-82, P3-4). Pelo HTTP, o que passa
+  // pelo Kong local: o 403 da origem estranha, que é da função. O preflight
+  // com `Access-Control-Request-Method` o Kong responde sozinho, e ele troca o
+  // `Allow-Origin` por `*`; os cabeçalhos que a função manda são conferidos no
+  // fim, direto no `cors.mjs`.
+  antes = await estadoDoAluno1();
+  let rc = await pagina(tokenNovo, { Origin: ESTRANHA });
+  conferir('GET de origem estranha: 403 sem corpo', rc.status === 403 && rc.texto === '', `HTTP ${rc.status}`);
+  rc = await pedir(FUNCAO, {
+    metodo: 'POST',
+    cabecalhos: { Origin: ESTRANHA, 'Content-Type': 'application/json' },
+    corpo: { token: tokenNovo, acao: 'responder', status: 'recusada' },
+  });
+  conferir('POST de origem estranha: 403', rc.status === 403, `HTTP ${rc.status}`);
+  conferir('  e nada foi gravado', (await estadoDoAluno1()) === antes);
+  rc = await pedir(FUNCAO, { metodo: 'OPTIONS', cabecalhos: { Origin: ESTRANHA } });
+  conferir('OPTIONS de origem estranha que chega à função: 403', rc.status === 403, `HTTP ${rc.status}`);
+  for (const origem of [VERCEL, 'http://localhost:8081', 'http://localhost:8099']) {
+    rc = await pagina(tokenNovo, { Origin: origem });
+    conferir(`GET de ${origem}: 200`, rc.status === 200, `HTTP ${rc.status}`);
+  }
+  rc = await pagina(tokenNovo);
+  conferir('GET sem origem (curl): 200', rc.status === 200, `HTTP ${rc.status}`);
+
+  const cors = await import('../../functions/aluno-publico/cors.mjs');
+  let h = cors.corsPara(ESTRANHA);
+  conferir('o cors.mjs não dá Allow-Origin à origem estranha', !('Access-Control-Allow-Origin' in h) && h.Vary === 'Origin');
+  h = cors.corsPara(null);
+  conferir('  nem ao pedido sem origem', !('Access-Control-Allow-Origin' in h));
+  for (const origem of [VERCEL, 'http://localhost:8081', 'http://localhost:8099']) {
+    h = cors.corsPara(origem);
+    conferir(`  e a ${origem} recebe a própria origem, nunca *`, h['Access-Control-Allow-Origin'] === origem && h.Vary === 'Origin');
+  }
+  conferir('  e sem origem não é estranho', !cors.origemEstranha(null) && cors.origemEstranha(ESTRANHA));
 
   // O aluno arquivado.
   const r2 = await pagina(token2);

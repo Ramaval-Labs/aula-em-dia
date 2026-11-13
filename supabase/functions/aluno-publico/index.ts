@@ -21,6 +21,12 @@
  * resposta não sobrescreve um movimento que o professor gravou no meio.
  *
  * O token nunca vai para log.
+ *
+ * Só as origens da página do aluno chamam pelo navegador (SCRUM-82, P3-4): a
+ * Vercel e o Expo Web local, listadas em `cors.mjs`. Pedido com outra origem é
+ * 403, antes de tocar no banco. Pedido sem origem (curl, o teste do CI) segue:
+ * o CORS só protege o navegador, e quem não é navegador manda o cabeçalho que
+ * quiser.
  */
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0';
@@ -38,27 +44,23 @@ import {
   paginaDoAluno,
 } from '../_shared/dominio.js';
 
+import { corsPara, origemEstranha } from './cors.mjs';
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// O Expo Web do aluno não é servido do mesmo endereço da função.
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-};
+type Cabecalhos = Record<string, string>;
 
-const CABECALHOS = {
-  ...CORS,
-  // A resposta é de uma pessoa só: nada de cache no caminho, nem buscador.
-  'Cache-Control': 'no-store',
-  'X-Robots-Tag': 'noindex',
-};
-
-function resposta(status: number, corpo?: unknown): Response {
-  if (corpo === undefined) return new Response(null, { status, headers: CABECALHOS });
+function resposta(cors: Cabecalhos, status: number, corpo?: unknown): Response {
+  const cabecalhos = {
+    ...cors,
+    // A resposta é de uma pessoa só: nada de cache no caminho, nem buscador.
+    'Cache-Control': 'no-store',
+    'X-Robots-Tag': 'noindex',
+  };
+  if (corpo === undefined) return new Response(null, { status, headers: cabecalhos });
   return new Response(JSON.stringify(corpo), {
     status,
-    headers: { ...CABECALHOS, 'Content-Type': 'application/json; charset=utf-8' },
+    headers: { ...cabecalhos, 'Content-Type': 'application/json; charset=utf-8' },
   });
 }
 
@@ -70,6 +72,8 @@ class Recusa extends Error {
 }
 
 const NAO_ACHOU = 404;
+/** Pedido de uma origem fora da lista (P3-4). */
+const ORIGEM_RECUSADA = 403;
 /** A proposta já foi respondida, ou o professor gravou o aluno no meio. */
 const CONFLITO = 409;
 const PEDIDO_INVALIDO = 400;
@@ -160,9 +164,20 @@ async function mover(
 const mesmaJanela = (a: { dia: string; hora: string }, b: { dia: string; hora: string }) =>
   a.dia === b.dia && a.hora === b.hora;
 
+/** `{ dia, hora }` com textos: o que a página manda quando o aluno toca numa janela. */
+function ehJanela(j: unknown): j is { dia: string; hora: string } {
+  if (typeof j !== 'object' || j === null) return false;
+  const { dia, hora } = j as { dia?: unknown; hora?: unknown };
+  return typeof dia === 'string' && typeof hora === 'string';
+}
+
 async function responder(banco: Banco, token: string, corpo: Record<string, unknown>) {
   const { status, janela } = corpo;
   if (status !== 'aceita' && status !== 'recusada') throw new Recusa(PEDIDO_INVALIDO);
+  // A janela vem ausente ou como a página a manda. `null`, texto, número ou
+  // objeto sem os campos são 400, antes de tocar no banco (P3-1): antes, o
+  // `null` derrubava a comparação abaixo num 500.
+  if (janela !== undefined && !ehJanela(janela)) throw new Recusa(PEDIDO_INVALIDO);
 
   const { linha, aluno, pagina } = await ler(banco, token);
   // Sem proposta aberta não há o que responder: a segunda resposta seguida
@@ -177,19 +192,14 @@ async function responder(banco: Banco, token: string, corpo: Record<string, unkn
   // A janela que já passou dá 409, como a proposta que mudou no meio: a página
   // relê e não a oferece mais (SCRUM-79). A principal vencida já chega aqui sem
   // proposta; isto pega a alternativa vencida, que senão cairia no 400 abaixo.
-  const pedida = janela as { dia?: unknown } | null | undefined;
-  if (pedida && typeof pedida.dia === 'string' && janelaVencida({ dia: pedida.dia }, hoje())) {
-    throw new Recusa(CONFLITO);
-  }
+  if (janela !== undefined && janelaVencida(janela, hoje())) throw new Recusa(CONFLITO);
 
   // A janela tem de ser uma das que a página ofereceu, e não uma qualquer.
   const ofertadas = [pagina.proposta.principal, ...pagina.proposta.alternativas];
   const escolhida =
     janela === undefined
       ? pagina.proposta.principal
-      : ofertadas.find((o: { dia: string; hora: string }) =>
-          mesmaJanela(o, janela as { dia: string; hora: string }),
-        );
+      : ofertadas.find((o: { dia: string; hora: string }) => mesmaJanela(o, janela));
   if (!escolhida) throw new Recusa(PEDIDO_INVALIDO);
 
   const marcado = marcarReposicao(aluno, { dia: escolhida.dia, hora: escolhida.hora }, hoje());
@@ -246,14 +256,19 @@ function banco(): Banco {
 }
 
 Deno.serve(async (pedido) => {
-  if (pedido.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  const origem = pedido.headers.get('Origin');
+  const cors = corsPara(origem);
+  // Origem fora da lista: 403 para tudo, o preflight inclusive, e sem tocar no
+  // banco. Sem origem, segue.
+  if (origemEstranha(origem)) return resposta(cors, ORIGEM_RECUSADA);
+  if (pedido.method === 'OPTIONS') return new Response('ok', { headers: cors });
 
   try {
     const db = banco();
 
     if (pedido.method === 'GET') {
       const token = new URL(pedido.url).searchParams.get('token') ?? '';
-      return resposta(200, (await ler(db, token)).pagina);
+      return resposta(cors, 200, (await ler(db, token)).pagina);
     }
 
     if (pedido.method === 'POST') {
@@ -263,14 +278,14 @@ Deno.serve(async (pedido) => {
       else if (corpo.acao === 'disponibilidade') await enviarDisponibilidade(db, corpo.token, corpo);
       else throw new Recusa(PEDIDO_INVALIDO);
       // A página como ficou, para a tela do aluno não precisar ler de novo.
-      return resposta(200, (await ler(db, corpo.token)).pagina);
+      return resposta(cors, 200, (await ler(db, corpo.token)).pagina);
     }
 
-    return resposta(405);
+    return resposta(cors, 405);
   } catch (erro) {
-    if (erro instanceof Recusa) return resposta(erro.status);
+    if (erro instanceof Recusa) return resposta(cors, erro.status);
     // Só a mensagem: o pedido, que leva o token, não vai para o log.
     console.error(erro instanceof Error ? erro.message : 'falha sem mensagem');
-    return resposta(500);
+    return resposta(cors, 500);
   }
 });

@@ -1256,7 +1256,8 @@ Nenhuma tela mudou, e o modo local também não.
 - **O aluno vê só o recorte do `SCRUM-69`.** Não saem telefone, e-mail, `valorPorAula` nem nada de
   outro aluno.
 - **A demonstração é contra o banco local.** A nuvem é o `SCRUM-71`.
-- **O limite por IP fica para a Parte 8.**
+- **O limite por IP fica para a Parte 8.** O `SCRUM-82` mediu a cota e decidiu não pôr limite na
+  função: veja "Endurecimento da função", abaixo.
 
 **1. O token é a única barreira.** A função usa a service role, e com ela a RLS não filtra nada.
 
@@ -1364,7 +1365,7 @@ erro, só a mensagem. O log de acesso do gateway pode ter a URL. Se isso pesar, 
 - **A tela.** O `AppDoAluno`, o desvio em `/a/` e os dois botões da ficha são o `SCRUM-70`. A ponta
   a ponta pelo navegador do celular também.
 - **A nuvem.** É o `SCRUM-71`, com o `TZ` por `supabase secrets set`.
-- **O limite por IP.** Fica na Parte 8.
+- **O limite por IP.** Fica na Parte 8. A decisão do `SCRUM-82` está em "Endurecimento da função".
 - **O extrato com mais de 1000 lançamentos.** A função lê o extrato numa página só, e o `max_rows`
   corta os mais antigos. Para um aluno, isso é anos de aula.
 
@@ -1445,6 +1446,72 @@ PO de 04/11 é que **a proposta vencida some**: não existe o estado "expirada".
 **O que fica em aberto.** O rótulo de `agendada` ("Terça, 10/11") não tem ano. Uma reposição antiga
 que nunca foi limpa ocuparia o mesmo rótulo no ano em que a data cair no mesmo dia da semana, o que
 acontece a cada cinco ou seis anos.
+
+### Endurecimento da função (SCRUM-82)
+
+Os achados P2-4, P3-1, P3-4 e P3-5 da revisão do `SCRUM-73`. Nenhum vazava dado de outra pessoa;
+eles pesam quando o link circular em volume.
+
+**1. Janela que não é `{ dia, hora }` dá 400 (P3-1).** `janela: null` dava 500 e escrevia
+`Cannot read properties of null` no log. A função confere a forma antes de comparar: `null`, texto,
+número e objeto sem `dia` e `hora` dão 400, sem gravar.
+
+**2. CORS só da página do aluno (P3-4).** As origens moram em `aluno-publico/cors.mjs`: a Vercel
+(`https://aula-em-dia-three.vercel.app`) e o Expo Web local (`localhost:8081` e `localhost:8099`).
+
+- **Origem da lista:** recebe `Access-Control-Allow-Origin` com o valor dela, nunca `*`, e
+  `Vary: Origin`.
+- **Outra origem:** 403 sem corpo para tudo, o preflight inclusive, antes de tocar no banco.
+- **Sem origem** (curl, o teste do CI): segue. O CORS só protege o navegador, e quem não é
+  navegador manda o cabeçalho que quiser. Por isso isto não é controle de acesso: a barreira
+  continua sendo o token.
+- **Mudou o domínio da Vercel?** Muda em `cors.mjs` e publica a função, ou a página para de abrir.
+  As prévias da Vercel (`*-git-*.vercel.app`) ficam de fora de propósito.
+- **O Kong local mente sobre o CORS.** O gateway do Supabase local responde o preflight sozinho e
+  troca o `Allow-Origin` da função por `*`. O gateway da nuvem repassa o `OPTIONS` à função:
+  conferido em 12/11/2026, a resposta da nuvem trazia os `Allow-Headers` e `Allow-Methods` escritos
+  na função, e não os do gateway. Por isso o teste confere os cabeçalhos importando o `cors.mjs`,
+  e o 403 pelo HTTP. Depois do deploy, a prova é o `curl` do card:
+
+  ```bash
+  curl -s -o /dev/null -w "%{http_code}\n" -H "Origin: https://exemplo.com" -X OPTIONS \
+    "https://muorubktmkcxpqukmrbf.supabase.co/functions/v1/aluno-publico"   # 403
+  ```
+
+**3. Proposta só no aluno do próprio professor (P3-5).** A política de `propostas` da 0002 só
+conferia o `professor_id` da linha. O professor B gravava uma proposta com o próprio id no aluno do
+A, e o índice `uma_proposta_aberta` deixava o A sem poder propor. A `0008_propostas_estrita.sql`
+adota a variante que a 0002 deixou comentada: o `with check` também exige que o aluno seja do
+professor, no insert e no update. O `propostas_estrita.test.sql` falha sem a 0008 e passa com ela.
+
+**4. Limite de pedidos: a cota medida, e nenhum limite na função (P2-4).** Lido nas docs de billing
+do Supabase em 12/11/2026:
+
+| | |
+|---|---|
+| Cota do plano gratuito | **500 mil invocações por mês**, somadas em todos os projetos da organização (a `apagar-conta` também conta) |
+| O que conta | Toda invocação, com qualquer status: o 403 e o 404 contam. O preflight (`OPTIONS`) não |
+| Passou da cota | E-mail de aviso e um período de carência. Depois, restrição na **organização inteira**: a API responde **402** a tudo, o app do professor inclusive, até a cota renovar no ciclo seguinte ou o plano subir para o Pro |
+| Limite por IP no gateway | Não há, nas docs lidas |
+
+**A conta.** Um script com 1 pedido por segundo gasta a cota em 6 dias; com 50 por segundo, em menos
+de 3 horas. O uso real é outra ordem: 30 alunos abrindo o link 10 vezes por mês dão 300 invocações
+por professor, e a cota cobre mais de mil professores assim.
+
+**A decisão: não pôr limite por IP na função.**
+
+- **Não protege a cota.** A invocação é contada antes do código rodar, então o pedido barrado por um
+  limite dentro da função já gastou a cota. Ele só pouparia o banco, que não é o gargalo: o pedido de
+  UUID qualquer já para numa consulta, e o de origem estranha em nenhuma.
+- **Nem limitaria de verdade.** A função roda em várias instâncias, que nascem e morrem sozinhas. Um
+  contador em memória é de cada instância; um contador no banco custaria uma escrita a cada pedido.
+- **O limite que vale fica antes da invocação**, num proxy na frente da função (um domínio próprio
+  com WAF, ou uma rota da Vercel que repasse o pedido). É infraestrutura nova, e fica para a Parte 8,
+  antes de divulgar o link a alunos em volume, como a revisão recomendou.
+- **Até lá:** o plano gratuito não cobra excedente, e o aviso por e-mail chega antes da restrição.
+  A reação a um abuso é tirar a função do ar (`supabase functions delete aluno-publico`) até a cota
+  renovar, e o link volta com um novo deploy. As docs não dizem se o pedido a uma função que não
+  existe conta como invocação; o painel de uso do projeto mostra se a contagem parou.
 
 ### Pronto quando
 
