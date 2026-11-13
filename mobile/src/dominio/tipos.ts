@@ -29,6 +29,23 @@ export interface Pagamento {
   dias?: number;
 }
 
+/**
+ * Preferências da tela "Avisos e lembretes" (SCRUM-91 trouxe o tipo de
+ * `dados/repositorio.ts` para cá, porque a regra dos lembretes o lê).
+ */
+export interface PreferenciasDeAviso {
+  aulaDoDia: boolean;
+  saldoBaixo: boolean;
+  reposicaoPendente: boolean;
+  pagamentoVencendo: boolean;
+  /**
+   * O aviso uma hora antes de cada aula (SCRUM-23, PO de 13/11). Opcional
+   * porque as preferências gravadas antes dele, no aparelho e na coluna
+   * `preferencias_aviso`, não têm a chave: ausente vale o padrão, ligado.
+   */
+  antesDaAula?: boolean;
+}
+
 export interface Pendencia {
   /** dd/mm da falta que gerou o direito de reposição */
   origem: string;

@@ -20,6 +20,7 @@ import type {
   Lancamento,
   Perfil,
   Politicas,
+  PreferenciasDeAviso,
   StatusDaProposta,
 } from '../dominio/tipos';
 import { repositorioLocal } from './adaptador';
@@ -27,21 +28,10 @@ import { repositorioSupabase } from './repositorioSupabase';
 import type { EstadoPersistivel } from './semente';
 
 /**
- * Preferências da tela "Avisos e lembretes". Só a escolha fica salva — nada é
- * enviado nesta versão, e a tela diz isso.
+ * O tipo mora no domínio desde o SCRUM-91, porque a regra dos lembretes o
+ * lê; o repositório só o reexporta para quem já o importava daqui.
  */
-export interface PreferenciasDeAviso {
-  aulaDoDia: boolean;
-  saldoBaixo: boolean;
-  reposicaoPendente: boolean;
-  pagamentoVencendo: boolean;
-  /**
-   * O aviso uma hora antes de cada aula (SCRUM-23, PO de 13/11). Opcional
-   * porque as preferências gravadas antes dele, no aparelho e na coluna
-   * `preferencias_aviso`, não têm a chave: ausente vale o padrão, ligado.
-   */
-  antesDaAula?: boolean;
-}
+export type { PreferenciasDeAviso };
 
 /** O estado que vai para o disco. */
 export interface Persistido extends EstadoPersistivel {
