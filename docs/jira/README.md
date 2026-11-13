@@ -709,65 +709,68 @@ previsto. Os 4 cards, 12 pontos, e nenhum card novo. A suíte foi de 1022 para *
   isso. O roteiro do `/designer` passou a subir o Expo Web com `EXPO_PUBLIC_BACKEND=local`.
 - **Uma correção no card do `SCRUM-90`:** o `mar` da semente é o Mateus, não a Marina.
 
-### Sprint 11 · 13/11 a 20/11 · **ativa** · 12 pontos
+### Sprint 11 · 13/11 a 20/11 · **ativa** · 10 pontos
 
-O tema é **o app sai do Expo Go e os lembretes ganham regra**. A tela de Avisos promete quatro
-lembretes desde o redesign, e nenhum é calculado: são só preferências salvas. E o push, que os
-entrega, não chega no Expo Go. Esta sprint junta as três pontas.
+O tema é **os lembretes ganham regra e backend**. A tela de Avisos promete quatro lembretes desde o
+redesign, e nenhum é calculado: são só preferências salvas. Esta sprint escreve a regra no domínio,
+acrescenta o aviso uma hora antes de cada aula e monta o backend que manda os dois.
 
 | Dono | Cards | Pts |
 |---|---|---|
-| Mauro | `SCRUM-91` — a regra dos avisos do dia no domínio (2) | 2 |
-| Valentin | `SCRUM-23` — o resumo da manhã por push: migração, `avisos-do-dia`, `pg_cron` e o token (5, com o commit final do Rafael) | 5 |
-| Rafael | `SCRUM-47` — o build instalável pelo EAS (5) + a permissão de notificação na tela de Avisos, no `SCRUM-23` | 5 |
+| Mauro | `SCRUM-91` — a regra no domínio: o resumo do dia e o aviso antes da aula (3) | 3 |
+| Valentin | `SCRUM-23` — o backend: banco, a função `avisos`, os dois agendamentos e o teste contra um Expo falso (5) | 5 |
+| Rafael | `SCRUM-92` — a tela de Avisos ganha "Antes da aula" (2) | 2 |
 
-**12 pontos, igual à Sprint 10.** A carga do Mauro é menor de propósito: o `SCRUM-91` segura o
-`SCRUM-23` inteiro, e é melhor ele sair cedo.
+**10 pontos, dois a menos que a Sprint 10.** A planning começou com o build (`SCRUM-47`) dentro, e o
+PO decidiu adiá-lo na mesma tarde (veja as decisões). O que dependia do celular saiu junto.
 
 **Ordem obrigatória**, com os vínculos *blocks* no board:
 
-- o `SCRUM-91` antes da função `avisos-do-dia`: ela chama o `avisosDoDia` do bundle
-- o `SCRUM-47` antes do teste real do push: no Android, o Expo Go não recebe push remoto
-- o `npx eas-cli login` e o `init` do `SCRUM-47` são do Rafael, à mão: pedem senha
+- o `SCRUM-91` antes da função do `SCRUM-23`: ela chama a regra do bundle
+- o commit de abertura do `SCRUM-23` (`antesDaAula` nas preferências) antes do `SCRUM-92`
+- o vínculo antigo "`SCRUM-47` bloqueia `SCRUM-23`" ficou no board e não vale mais: o conector do
+  Jira não apaga vínculo, então tire à mão
 
 **Ordem cronológica, por dia** (escrita em 13/11, na abertura):
 
 | Quando | Mauro | Valentin | Rafael |
 |---|---|---|---|
-| **Dia 1** (seg 16/11) | `SCRUM-91`: os testes que falham, um por promessa da tela de Avisos. | `SCRUM-23`: a migração `0010` e o pgTAP, no banco local. | `SCRUM-47`: `expo-dev-client`, `eas login` e `eas init`, e o `eas.json`. |
-| **Dia 2** (ter 17/11) | `SCRUM-91`: o `avisosDoDia` e o `resumoDoDia`. PR, com review do Valentin. | Revisa o PR do `SCRUM-91`. Começa a `avisos-do-dia` com o domínio já na `main`. | `SCRUM-47`: o primeiro APK pelo perfil `preview`, instalado num Android. |
-| **Dia 3** (qua 18/11) | Os casos 47 a 53 em `spec/casos-de-teste.md`. Revisa o PR do `SCRUM-47`. | A função e o teste dela; o token de push no repositório. PR. | `SCRUM-47`: o perfil `development` e a seção do README. PR. Revisa o PR do `SCRUM-23`. |
-| **Dia 4** (qui 19/11) | Revisa o PR do commit da tela. | Mescla, faz o `db push`, o bundle e o deploy da função, e agenda o `pg_cron`. | `SCRUM-23`, commit final: a tela de Avisos pede a permissão. Novo APK com o push. |
-| **Dia 5** (sex 20/11) | Review: o resumo do dia da semente. | Confere o push das 7h no aparelho do Rafael. | Review e fechamento da sprint. |
+| **Dia 1** (seg 16/11) | `SCRUM-91`: os testes que falham, um por promessa da tela e o da aula na próxima hora. | Commit de abertura do `SCRUM-23` (`antesDaAula`), push no mesmo dia. A migração `0010` e o pgTAP no banco local. | Espera o commit de abertura. Revisa o PR do `SCRUM-91` quando abrir. |
+| **Dia 2** (ter 17/11) | `SCRUM-91`: o `avisosDoDia`, o `resumoDoDia`, o `aulasDaProximaHora` e o `avisoDaAula`. PR. | Revisa o PR do `SCRUM-91`. Começa a função `avisos` com o domínio na `main`. | `SCRUM-92`: o quinto item na tela de Avisos e o teste. PR. |
+| **Dia 3** (qua 18/11) | Os casos 47 a 55 em `spec/casos-de-teste.md`. Revisa o PR do `SCRUM-92`. Pede o job no CI. | A função e o teste contra o Expo falso. PR. | Revisa o PR do `SCRUM-23`. |
+| **Dia 4** (qui 19/11) | O job "Avisos" no `ci.yml`, como o da `aluno-publico`. | Mescla, faz o `db push`, o deploy da função e os dois agendamentos na nuvem. | Captura da tela de Avisos e `/designer avisos`, se quiser. |
+| **Dia 5** (sex 20/11) | Review: o resumo e os avisos da semente. | Confere no painel que os dois agendamentos rodaram. | Review e fechamento da sprint. |
 
-**Decisões de PO para a planning** (propostas, a confirmar):
+**Decisões de PO de 13/11**, tomadas na planning, escolhidas entre opções:
 
-- **Um push por professor por dia, com o resumo**, e não um por aluno. "Hoje: 2 aulas, 1 saldo baixo
-  e 1 reposição sem horário." Sem nada para avisar, não há push.
-- **Os números são os que a tela já promete:** saldo de 2 aulas ou menos, reposição 3 dias sem
-  horário, pagamento 3 dias antes do vencimento, e a aula do dia na manhã dela.
-- **O projeto continua *managed*, com o EAS Build na nuvem**, no plano gratuito. Sem `expo prebuild`
-  e sem `android/` ou `ios/` no repositório.
-- **Só Android.** O build de iOS exige a conta paga da Apple (US$ 99 por ano). Quem tem iPhone
-  continua no Expo Go, e lá não recebe o push.
-- **Os TTFs da Satoshi ficam no git por enquanto.** O EAS sobe os arquivos versionados; tirá-los
-  (o `SCRUM-56`, § 2b) quebraria o build. Os dois precisam ser resolvidos juntos.
+- **Lembretes: o resumo às 7h e um aviso uma hora antes de cada aula.** O resumo é um push por
+  professor por dia ("Hoje: 2 aulas, 1 saldo baixo e 1 reposição sem horário."); sem nada para
+  avisar, não há push. O aviso da aula é um por aula, sem repetir. Descartados: um push por
+  categoria e um push por aluno, pelo excesso de notificações.
+- **O build instalável (`SCRUM-47`) fica para o lançamento.** O app segue no Expo Go até lá. Sem
+  build, o push remoto não chega ao Android, então o backend é testado contra um Expo Push falso, e
+  gravar o token e pedir a permissão virou o `SCRUM-93`, no backlog.
+- **No lançamento, Android e iOS.** O iOS exige a conta Apple Developer (US$ 99 por ano). O
+  `SCRUM-47` volta reestimado, maior que os 5 pontos de hoje.
+- **Os TTFs da Satoshi ficam no git por enquanto.** O `SCRUM-56` continua no backlog e precisa ser
+  resolvido junto com o build, porque o EAS sobe os arquivos versionados.
 
 **Revisado antes de abrir**, contra a `main` de 13/11:
 
-- o `SCRUM-47` e o `SCRUM-23` subiram da profundidade média para o template de nove seções. O
-  `SCRUM-23` foi de 3 para 5 pontos: agora inclui o `pg_cron`, a função, o token e o teste.
+- o `SCRUM-23` subiu da profundidade média para o template de nove seções e foi de 3 para 5
+  pontos: agora é o backend inteiro dos dois lembretes, sem a parte do celular.
 - o `SCRUM-91` nasceu no template, separando a regra (domínio, Mauro) do disparo (backend,
-  Valentin), como o `SCRUM-31` fez na Sprint 10.
+  Valentin), como o `SCRUM-31` fez na Sprint 10. Com o aviso da aula, foi de 2 para 3 pontos.
+- o `SCRUM-92` e o `SCRUM-93` nasceram na planning, quando o build saiu.
 - **Achado na abertura:** a tela de Avisos promete os quatro lembretes desde o redesign, mas nenhum
   código os calcula. O `SCRUM-91` implementa exatamente as frases da tela.
 
-**Fora da sprint, de propósito:** o `SCRUM-62` e o `SCRUM-63` (voltam na Sprint 12, com o deep link
-do `SCRUM-47` pronto); o `SCRUM-39`; o `SCRUM-56` e o `SCRUM-57`; e os cards de plataforma
-(`SCRUM-42`, `SCRUM-43`, `SCRUM-44`), que ficam melhores de medir no build do `SCRUM-47`.
+**Fora da sprint, de propósito:** o `SCRUM-47` e o `SCRUM-93` (o lançamento); o `SCRUM-62` e o
+`SCRUM-63` (precisam do deep link do build); o `SCRUM-39`; o `SCRUM-56` e o `SCRUM-57`; e os cards
+de plataforma (`SCRUM-42`, `SCRUM-43`, `SCRUM-44`).
 
-**Se a sua faixa esvaziar:** Rafael, o `SCRUM-44` (o brilho da pílula no aparelho); Mauro, o teste
-de montagem da tela de Avisos com as preferências desligadas.
+**Se a sua faixa esvaziar:** Rafael, uma fatia do `SCRUM-39` (as 4 telas do Financeiro, por
+`/designer`); Mauro, o teste de montagem da tela de Avisos com as preferências desligadas.
 
 ---
 
