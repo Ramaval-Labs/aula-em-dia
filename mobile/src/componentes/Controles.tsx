@@ -464,21 +464,28 @@ export function FichaDeEscolha({
   rotulo,
   marcada,
   aoTocar,
+  rotuloAcessivel,
+  estilo,
 }: {
   rotulo: string;
   marcada: boolean;
   aoTocar: () => void;
+  /** o que o leitor de tela diz, quando o rótulo é abreviado ("Ter" → "Terça") */
+  rotuloAcessivel?: string;
+  /** a fileira de dias divide a largura entre as fichas */
+  estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
   return (
     <Pressable
       accessibilityRole="checkbox"
-      accessibilityLabel={rotulo}
+      accessibilityLabel={rotuloAcessivel ?? rotulo}
       accessibilityState={{ checked: marcada }}
       onPress={aoTocar}
       hitSlop={folgaDeToque(TAMANHO.ficha)}
       style={({ pressed }) => [
         estilos.ficha,
+        estilo,
         {
           backgroundColor: marcada ? cores.tint : cores.preenchimento,
           opacity: pressed ? OPACIDADE_PRESSIONADO : 1,

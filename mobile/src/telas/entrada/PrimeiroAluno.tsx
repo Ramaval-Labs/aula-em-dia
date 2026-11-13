@@ -12,7 +12,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
-import { CampoDeTexto } from '../../componentes/Campos';
+import { CampoDeTexto, SeletorDeDias } from '../../componentes/Campos';
 import { Segmentado } from '../../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../../componentes/Listas';
 import { hoje } from '../../dominio/datas';
@@ -22,7 +22,7 @@ import { saldo, saldoBaixo, VALOR_AULA } from '../../dominio/politica';
 import type { Aluno, ConfigPacote } from '../../dominio/tipos';
 import { ERRO, nomeValido } from '../../dominio/validacao';
 import { useDados } from '../../estado/dados';
-import { useRascunho } from '../../estado/formularios';
+import { horarioDoRascunho, useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
@@ -42,7 +42,7 @@ export function PrimeiroAluno() {
   const [form, atualizar] = useRascunho('aluno', {
     nome: '',
     disciplina: perfil.disciplinas[0] ?? '',
-    dia: '',
+    dias: [],
     hora: '',
     telefone: '',
   });
@@ -70,13 +70,14 @@ export function PrimeiroAluno() {
       ? 'Falta a disciplina.'
       : undefined;
 
+  const horario = horarioDoRascunho(form);
+
   /** Aluno sintético só para a prévia — não vai para o estado. */
   const previa: Aluno = {
     id: 'previa',
     name: form.nome.trim() || 'Seu aluno',
     disciplina: form.disciplina || 'Disciplina',
-    dia: form.dia || 'sem horário fixo',
-    hora: form.hora,
+    ...horario,
     hoje: false,
     total: pacote.aulas,
     usadas: 0,
@@ -90,8 +91,7 @@ export function PrimeiroAluno() {
     const id = criarAluno({
       nome: form.nome,
       disciplina: form.disciplina,
-      dia: form.dia || 'sem horário fixo',
-      hora: form.hora,
+      ...horario,
       telefone: form.telefone || undefined,
     });
     criarPacoteCom(id, pacote);
@@ -118,23 +118,31 @@ export function PrimeiroAluno() {
           capitalizar="words"
         />
 
-        <View style={estilos.dupla}>
+        <CampoDeTexto
+          rotulo="Disciplina"
+          valor={form.disciplina}
+          aoMudar={(disciplina) => atualizar({ disciplina })}
+          placeholder="Inglês"
+          capitalizar="words"
+        />
+
+        <SeletorDeDias
+          rotulo="Dias da aula"
+          dias={form.dias}
+          aoMudar={(dias) => atualizar({ dias })}
+          ajuda={form.dias.length === 0 ? 'Sem dia marcado, ele fica sem horário fixo.' : undefined}
+        />
+
+        {form.dias.length > 0 ? (
           <CampoDeTexto
-            estilo={estilos.flexivel}
-            rotulo="Disciplina"
-            valor={form.disciplina}
-            aoMudar={(disciplina) => atualizar({ disciplina })}
-            placeholder="Inglês"
-            capitalizar="words"
+            rotulo="Hora"
+            valor={form.hora}
+            aoMudar={(hora) => atualizar({ hora })}
+            placeholder="18"
+            teclado="numerico"
+            ajuda="A hora cheia do começo da aula."
           />
-          <CampoDeTexto
-            estilo={estilos.flexivel}
-            rotulo="Horário fixo"
-            valor={form.dia}
-            aoMudar={(dia) => atualizar({ dia })}
-            placeholder="Ter e qui, 18h"
-          />
-        </View>
+        ) : null}
 
         <CampoDeTexto
           rotulo="Telefone"
@@ -198,8 +206,6 @@ function CaixaDeValor({ rotulo, valor }: { rotulo: string; valor: string }) {
 
 const estilos = StyleSheet.create({
   campos: { gap: 16 },
-  dupla: { flexDirection: 'row', gap: 10 },
-  flexivel: { flex: 1, minWidth: 0 },
   caixas: { marginTop: 10, flexDirection: 'row', gap: 10 },
   caixa: {
     flex: 1,
