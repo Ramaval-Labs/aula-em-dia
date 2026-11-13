@@ -15,7 +15,7 @@ import { useDados } from '../estado/dados';
 import { useNavegacao } from '../estado/navegacao';
 import { useTema, useCores } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
-import { TAMANHO } from '../tema/tokens';
+import { PAD, TAMANHO } from '../tema/tokens';
 
 /** Rodapé do handoff §8, sem o "protótipo acadêmico" (mapa de telas). */
 const VERSAO = 'Versão 0.5';
@@ -163,8 +163,7 @@ const estilos = StyleSheet.create({
   pressionado: { opacity: 0.86 },
   perfil: { marginTop: 18 },
   cartaoPerfil: {
-    paddingVertical: 15,
-    paddingHorizontal: 16,
+    ...PAD.cartaoComIcone,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 13,

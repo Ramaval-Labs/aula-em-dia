@@ -20,7 +20,7 @@ import {
 
 import { useCores, type CoresDoTema } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { ESCALA_FONTE, RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 import { BotaoInline } from './Controles';
 import { Icone, type NomeDeIcone } from './Icone';
@@ -663,14 +663,14 @@ export function EstadoVazio({
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
-  padCartao: { paddingVertical: 17, paddingHorizontal: 18 },
-  padAjuste: { paddingVertical: 16, paddingHorizontal: 17 },
+  padCartao: PAD.cartao,
+  padAjuste: PAD.cartaoDeAjuste,
   aDireita: { textAlign: 'right' },
-  padDebito: { padding: 18 },
+  padDebito: PAD.debito,
   debito: {
     borderRadius: RAIO.cartao,
     borderWidth: TAMANHO.bordaVidro,
-    padding: 18,
+    ...PAD.debito,
   },
   linhaDebito: {
     flexDirection: 'row',
@@ -687,13 +687,13 @@ const estilos = StyleSheet.create({
   parDebito: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   linhaAjuste: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   corpoAjuste: { marginTop: 12 },
-  padResumo: { flex: 1, paddingVertical: 14, paddingHorizontal: 13 },
+  padResumo: { flex: 1, ...PAD.resumo },
   bloco: {
     borderRadius: RAIO.bloco,
     borderWidth: TAMANHO.bordaVidro,
   },
-  padBlocoIcone: { paddingVertical: 15, paddingHorizontal: 16 },
-  padBlocoTexto: { paddingVertical: 16, paddingHorizontal: 17 },
+  padBlocoIcone: PAD.cartaoComIcone,
+  padBlocoTexto: PAD.blocoTexto,
   linhaBloco: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconeBloco: {
     width: TAMANHO.iconeBloco,
@@ -705,7 +705,7 @@ const estilos = StyleSheet.create({
   acaoBloco: { marginTop: 13 },
   faixa: {
     minHeight: TAMANHO.faixaStatus,
-    paddingHorizontal: 8,
+    ...PAD.faixa,
     borderRadius: RAIO.faixa,
     alignSelf: 'flex-start',
     alignItems: 'center',
@@ -713,5 +713,5 @@ const estilos = StyleSheet.create({
   },
   medidor: { flexDirection: 'row', gap: 4 },
   barraMedidor: { flex: 1, height: TAMANHO.medidor, borderRadius: RAIO.medidor },
-  vazio: { paddingVertical: 30, paddingHorizontal: 20, alignItems: 'center' },
+  vazio: { ...PAD.vazio, alignItems: 'center' },
 });

@@ -382,7 +382,7 @@ components:
 
 # Design System: Aula em Dia
 
-> Espelho de `mobile/src/tema/tokens.ts` (`CORES`, `RAIO`, `TAMANHO`, `MATERIAL`, `MOVIMENTO`) e
+> Espelho de `mobile/src/tema/tokens.ts` (`CORES`, `RAIO`, `TAMANHO`, `PAD`, `MATERIAL`, `MOVIMENTO`) e
 > de `TIPO` em `mobile/src/tema/tipografia.ts`; `tokens/tokens.json` é a fonte dos mesmos valores,
 > e o teste `mobile/src/tema/__tests__/tokens.test.ts` cobra os dois lados. Mudou um token,
 > atualize os três e este arquivo. O frontmatter é normativo: as chaves sem sufixo são o tema
@@ -550,6 +550,27 @@ O ritmo vertical observado: 18px entre o cabeçalho e o primeiro bloco e entre o
 ações do fim, 24px antes de um cabeçalho de grupo, 9px entre o cabeçalho de grupo e a lista, 9 a
 14px entre cartões irmãos, 12px de vão dentro dos formulários da entrada. Esses vãos são literais
 no código, não tokens.
+
+O **padding interno** de cada cartão e bloco, ao contrário, é token: `PAD` em `tokens.ts` (`padding`
+no JSON), com o nome do componente e o valor que o handoff mede (SCRUM-40). Está pronto para
+espalhar no `style` (`{ ...PAD.cartao, gap: 12 }`).
+
+| Token | Padding | Componente |
+|---|---|---|
+| `PAD.cartao` | 17 · 18 | cartão de vidro (saldo, aulas dadas) |
+| `PAD.cartaoDeAjuste` | 16 · 17 | cartão de ajuste e o cartão das telas de Ajustes |
+| `PAD.blocoTexto` | 16 · 17 | bloco de status só com texto (o âmbar) |
+| `PAD.cartaoComIcone` | 15 · 16 | cartão que abre com ícone ou avatar (o bloco vermelho, o perfil) |
+| `PAD.cartaoEscolha` | 14 · 15 | cartão de escolha, com e sem seleção |
+| `PAD.resumo` | 14 · 13 | cartão de resumo do Financeiro |
+| `PAD.debito` | 18 | cartão de débito da Cobrança |
+| `PAD.toast` | 14 · 16 | toast |
+| `PAD.vazio` | 30 · 20 | estado vazio de lista |
+| `PAD.linhaLista` | 12 · 15 | linha de lista agrupada (o extrato) |
+| `PAD.faixa` | 0 · 8 | faixa de status |
+| `PAD.caixaValor` | 6 · 10 | caixa do saldo à direita de uma linha |
+
+O bloco âmbar e o cartão de ajuste medem igual hoje, mas são tokens separados: mudam cada um por si.
 
 ### Named Rules
 **The 126 Rule.** Toda tela que convive com a tab bar reserva 126px embaixo. Conteúdo nunca passa

@@ -20,7 +20,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { texto } from '../../tema/tipografia';
-import { RAIO, TAMANHO } from '../../tema/tokens';
+import { PAD, RAIO, TAMANHO } from '../../tema/tokens';
 import { estilos } from './estilos';
 import { TelaDeAjuste } from './pecas';
 
@@ -106,8 +106,7 @@ export function PacotesPadrao() {
 const proprios = StyleSheet.create({
   nota: {
     marginTop: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 17,
+    ...PAD.cartaoDeAjuste,
     borderRadius: RAIO.cartao,
     borderWidth: TAMANHO.bordaVidro,
   },

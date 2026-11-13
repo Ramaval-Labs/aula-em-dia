@@ -9,6 +9,7 @@ import {
   ESCALA_FONTE,
   MATERIAL,
   MOVIMENTO,
+  PAD,
   PILULA_ABA,
   RAIO,
   TAMANHO,
@@ -46,6 +47,11 @@ describe('tokens', () => {
     expect(MOVIMENTO).toEqual(json.motion);
     expect(TRACO_ICONE).toEqual(json.stroke);
     expect(ESCALA_FONTE).toEqual(json.fontScale);
+  });
+
+  it('padding dos cartões bate com o JSON (SCRUM-40)', () => {
+    const { _fonte, ...padding } = json.padding;
+    expect(PAD).toEqual(padding);
   });
 
   it('pílula da aba ativa bate com o JSON', () => {

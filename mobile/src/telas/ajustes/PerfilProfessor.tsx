@@ -19,6 +19,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
+import { PAD } from '../../tema/tokens';
 import { estilos } from './estilos';
 import { TelaDeAjuste } from './pecas';
 
@@ -130,8 +131,7 @@ export function PerfilProfessor() {
 const proprios = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   perfil: {
-    paddingVertical: 15,
-    paddingHorizontal: 16,
+    ...PAD.cartaoComIcone,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 13,

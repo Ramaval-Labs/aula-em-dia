@@ -20,7 +20,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-n
 import { useCatalogo } from '../../estado/depuracao';
 import { useTema, useCores, type NomeDeTema } from '../../tema/TemaProvider';
 import { comEspaco, TIPO } from '../../tema/tipografia';
-import { RAIO, TAMANHO } from '../../tema/tokens';
+import { PAD, RAIO, TAMANHO } from '../../tema/tokens';
 import {
   AlvoDeDesfoque,
   blurLigado,
@@ -289,14 +289,13 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
   },
-  cartao: { marginTop: 18, paddingVertical: 17, paddingHorizontal: 18 },
+  cartao: { marginTop: 18, ...PAD.cartao },
   linhaSaldo: { flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 9 },
   bloco: {
     marginTop: 14,
     borderRadius: RAIO.bloco,
     borderWidth: TAMANHO.bordaVidro,
-    paddingVertical: 16,
-    paddingHorizontal: 17,
+    ...PAD.blocoTexto,
   },
   trilho: {
     marginTop: 18,
