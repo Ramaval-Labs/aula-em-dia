@@ -194,6 +194,7 @@ export function Home() {
 }
 
 const estilos = StyleSheet.create({
+  // 4px do handoff: a contagem senta na linha de base do título grande, não na borda
   contagem: { alignItems: 'flex-end', paddingBottom: 4 },
   importar: { marginTop: 18, gap: 2 },
   filtros: { marginTop: 18 },

@@ -270,6 +270,8 @@ export function LinhaAluno({
   rotuloAcessivel?: string;
 }) {
   const { cores } = useCores();
+  // A medida de cada porte da linha de aluno mora nesta tabela, com nome: `pad` é o
+  // padding lateral (14 na lista, 15 no sheet e na cobrança), como o handoff mede.
   const p = {
     lista: {
       altura: TAMANHO.linhaAluno,
@@ -440,7 +442,7 @@ const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   direita: { alignItems: 'flex-end' },
   cabecalhoGrupo: {
-    paddingHorizontal: 6,
+    ...PAD.recuo,
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',

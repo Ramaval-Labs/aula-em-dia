@@ -515,6 +515,42 @@ export const PAD = {
   rodapeSheet: { paddingTop: 10, paddingHorizontal: 16, paddingBottom: 30 },
   /** faixa fixa do rodapé na entrada (login e onboarding) */
   rodapeEntrada: { paddingTop: 12 },
+
+  /* Controles e recuos (SCRUM-40, rodada 2) */
+  /** botão primário (`8px 18px` por dentro da altura mínima) */
+  botaoPrimario: { paddingVertical: 8, paddingHorizontal: 18 },
+  /** botão inline (`0 18px`) */
+  botaoInline: { paddingHorizontal: 18 },
+  /** trilho do segmentado de filtro e de cartão (`3px`) */
+  trilhoSegmentado: { padding: 3 },
+  /** trilho do segmentado embutido numa linha de lista (`2.5px`) */
+  trilhoSegmentadoLinha: { padding: 2.5 },
+  /** trilho do stepper (`3px`) */
+  trilhoStepper: { padding: 3 },
+  /** ficha de escolha (`0 14px`) */
+  ficha: { paddingHorizontal: 14 },
+  /** selo "MELHOR" (`0 7px`) */
+  selo: { paddingHorizontal: 7 },
+  /** trilho do campo de texto (`0 14px`) */
+  campo: { paddingHorizontal: 14 },
+  /** separador com fio dentro do cartão de escolha e do débito (`padding-top: 13px`) */
+  separador: { paddingTop: 13 },
+  /** rodapé com fio dentro de um cartão: o da grade, as linhas do pacote (`padding-top: 12px`) */
+  rodapeDoCartao: { paddingTop: 12 },
+  /** caixa da prévia de mensagem (`14px`) */
+  previaMensagem: { padding: 14 },
+  /** cartão que envolve a grade semanal (`14px 8px`; a conta da grade depende dele) */
+  cartaoDaGrade: { paddingVertical: 14, paddingHorizontal: 8 },
+  /** caixas de valor e validade do primeiro pacote (`11px 13px`) */
+  caixaDePacote: { paddingVertical: 11, paddingHorizontal: 13 },
+  /** linha numerada das Boas-vindas, "01 · 02 · 03" (`14px 15px`) */
+  linhaDePasso: { paddingVertical: 14, paddingHorizontal: 15 },
+  /** recuo do texto solto, alinhado ao cabeçalho de grupo (`0 6px`) */
+  recuo: { paddingHorizontal: 6 },
+  /** identificação da ficha, avatar e nome (`0 4px`) */
+  identificacao: { paddingHorizontal: 4 },
+  /** conteúdo centralizado do Resultado (`10px 4px 0`) */
+  resultado: { paddingTop: 10, paddingHorizontal: 4 },
 } as const;
 
 /**

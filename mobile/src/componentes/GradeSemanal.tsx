@@ -29,7 +29,7 @@ import type { BlocoSemanal, DiaDaSemana, FaixaHoraria } from '../dominio/tipos';
 import { ALVO_MINIMO } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
-import { RAIO } from '../tema/tokens';
+import { PAD, RAIO } from '../tema/tokens';
 
 /**
  * Largura das células ≥ 44px (alvo mínimo) na tela mais estreita que o app
@@ -54,7 +54,7 @@ const COLUNA_NOME = 38;
 const VAO = 3;
 
 /** Padding do cartão que envolve a grade — o resto da conta acima. */
-export const PAD_CARTAO_DA_GRADE = { paddingVertical: 14, paddingHorizontal: 8 } as const;
+export const PAD_CARTAO_DA_GRADE = PAD.cartaoDaGrade;
 
 export function GradeSemanal({
   marcados,
@@ -168,7 +168,7 @@ const estilos = StyleSheet.create({
   direita: { textAlign: 'right' },
   rodape: {
     marginTop: 13,
-    paddingTop: 12,
+    ...PAD.rodapeDoCartao,
     borderTopWidth: 0.5,
     flexDirection: 'row',
     justifyContent: 'space-between',

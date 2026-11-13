@@ -9,6 +9,7 @@ import { ListaAgrupada } from '../../componentes/Listas';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
+import { PAD } from '../../tema/tokens';
 import { definirModoDeAcesso, type ModoDeAcesso } from './modoDeAcesso';
 import { TelaDeEntrada } from './TelaDeEntrada';
 
@@ -101,8 +102,7 @@ function LinhaDePasso({
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   linha: {
-    paddingVertical: 14,
-    paddingHorizontal: 15,
+    ...PAD.linhaDePasso,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,

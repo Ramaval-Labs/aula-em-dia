@@ -44,6 +44,7 @@ const estilos = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    // 24px: o splash não tem chassi nem padLateral, e a marca não encosta na borda
     paddingHorizontal: 24,
   },
   aoCentro: { textAlign: 'center' },

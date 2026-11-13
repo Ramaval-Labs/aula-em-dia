@@ -26,7 +26,7 @@ import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
-import { RAIO } from '../tema/tokens';
+import { PAD, RAIO } from '../tema/tokens';
 import { CartaoVidro } from './Blocos';
 import { BotaoCompacto, BotaoTexto } from './Controles';
 
@@ -192,7 +192,7 @@ const estilos = StyleSheet.create({
   caixa: {
     marginTop: 12,
     marginBottom: 14,
-    padding: 14,
+    ...PAD.previaMensagem,
     borderRadius: RAIO.botaoInline,
   },
   nota: { marginTop: 10, textAlign: 'center' },

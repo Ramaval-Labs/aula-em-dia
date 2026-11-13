@@ -37,6 +37,7 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { PAD } from '../tema/tokens';
 import { LinhaDoExtrato } from './comum/Extrato';
 import { linhaDeHorario } from './comum/aluno';
 
@@ -378,7 +379,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    paddingHorizontal: 4,
+    ...PAD.identificacao,
   },
   cartaoSaldo: { marginTop: 18 },
   linhaSaldo: {
@@ -401,5 +402,6 @@ const estilos = StyleSheet.create({
   tituloMais: { marginTop: 22 },
   listaMais: { marginTop: 9 },
   acoes: { gap: 10 },
+  // 8px de recuo óptico: a nota centralizada não encosta nas bordas dos botões acima
   nota: { textAlign: 'center', paddingHorizontal: 8 },
 });

@@ -680,7 +680,7 @@ const estilos = StyleSheet.create({
   },
   separadorDebito: {
     marginTop: 14,
-    paddingTop: 13,
+    ...PAD.separador,
     borderTopWidth: TAMANHO.bordaVidro,
     gap: 8,
   },
