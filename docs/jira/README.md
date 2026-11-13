@@ -728,8 +728,8 @@ PO decidiu adiá-lo na mesma tarde (veja as decisões). O que dependia do celula
 
 - o `SCRUM-91` antes da função do `SCRUM-23`: ela chama a regra do bundle
 - o commit de abertura do `SCRUM-23` (`antesDaAula` nas preferências) antes do `SCRUM-92`
-- o vínculo antigo "`SCRUM-47` bloqueia `SCRUM-23`" ficou no board e não vale mais: o conector do
-  Jira não apaga vínculo, então tire à mão
+- o vínculo antigo "`SCRUM-47` bloqueia `SCRUM-23`" saiu do board em 13/11, à mão: o conector do
+  Jira não apaga vínculo
 
 **Ordem cronológica, por dia** (escrita em 13/11, na abertura):
 
