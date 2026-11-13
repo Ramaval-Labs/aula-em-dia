@@ -89,3 +89,20 @@ Textos: o caso 2 gera nota "Aviso com 26h, dentro do mínimo de 24h" e detalhe
 | 39 | mudar `avisoHoras` para 48 e salvar | registro de falta avisada com 26h passa a debitar |
 | 40 | Descartar | rascunho volta ao valor salvo, sem efeito colateral |
 | 41 | `limiteReposicoes: 0` | detalhe do aluno mostra "{n} reposições" (sem "de X") |
+
+## Avisos (`avisos.ts`, SCRUM-91)
+
+Cada caso é uma frase da tela de Avisos. Arquivado não gera aviso nenhum; pausado não entra nos
+avisos de aula.
+
+| # | cenário | esperado |
+|---|---|---|
+| 47 | aula do dia: aula fixa no dia da semana de hoje; outra em outro dia | só a de hoje entra |
+| 48 | saldo baixo: saldo 2 e saldo 3; aluno sem pacote | só o de saldo 2 (o âmbar da lista) |
+| 49 | reposição pendente há 2, 3 e 9 dias, sem `agendada` | entram 3 e 9 ("3 dias sem horário") |
+| 50 | reposição pendente com proposta `enviada` e com proposta `recusada` | só a recusada: a enviada já tem horário escolhido |
+| 51 | pagamento em aberto vencendo daqui a 2, 3 e 4 dias; pago daqui a 3 | só o aberto de 3 dias, para avisar uma vez |
+| 52 | as quatro preferências do resumo desligadas | as quatro categorias vazias |
+| 53 | `resumoDoDia` com 2 aulas, 1 saldo baixo e 1 reposição | "Hoje: 2 aulas, 1 saldo baixo e 1 reposição sem horário."; sem nada, `null` |
+| 54 | antes da aula, `horaAgora = 17`: aulas de hoje às 18h e às 19h | só a das 18h; "Aula com Bia às 18h." |
+| 55 | antes da aula com `antesDaAula: false` e com a chave ausente | desligado não avisa; ausente vale ligado |
