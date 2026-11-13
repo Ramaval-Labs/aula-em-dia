@@ -149,7 +149,7 @@ todo mundo.
 
 ```bash
 cd mobile
-npm test ; echo "EXIT=$?"   # hoje: 1043 testes, 37 suítes — só conta com EXIT=0
+npm test ; echo "EXIT=$?"   # hoje: 1044 testes, 37 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
 npm run lint                # ESLint: não acrescente achado nos arquivos que você mexeu
 ```
@@ -261,7 +261,7 @@ As três pessoas usam Claude Code neste repositório, então vale combinar o bá
 
 ## 7. Onde a rede de segurança tem buraco
 
-1043 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
+1044 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
 confiar:
 
 - **Todo módulo de `dominio/` com lógica já tem suíte própria**, mas em `estado/dados.ts`, o maior arquivo
