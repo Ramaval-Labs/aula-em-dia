@@ -8,6 +8,7 @@
  * volta, essa sim, tem de ser idêntica à primeira.
  */
 
+import { aulaFixaDe } from '../../dominio/aulaFixa';
 import { formatarDdMm } from '../../dominio/datas';
 import type { Aluno, Lancamento } from '../../dominio/tipos';
 import { criadoEmDoBanco, EMAIL_DO_LOGIN, linhasDoPersistido } from '../__simulados__/linhas';
@@ -68,7 +69,7 @@ function canonico(p: Persistido): Persistido {
         {
           ...a,
           // `hoje` é derivado do dia fixo: a semente o tem escrito à mão.
-          hoje: temAulaHoje(a.dia),
+          hoje: temAulaHoje(a),
           // `criadoEm` é quando a linha nasceu no banco.
           criadoEm: criadoEmDoBanco(),
           // Sem pacote e sem data: o `''` de `criarAluno` (Parte 2, decisão 3).
@@ -109,16 +110,22 @@ describe('datas', () => {
 });
 
 describe('temAulaHoje — o `hoje` que o banco não guarda', () => {
+  // Sem `aulaFixa`, o domínio lê o texto (`lerAulaFixa`): é a linha de antes da 0009.
   it.each([
     ['quarta', 'quarta', QUARTA, true],
     ['quarta', 'quinta', QUINTA, false],
     ['terça e quinta', 'quinta', QUINTA, true],
     ['Quinta-feira', 'quinta', QUINTA, true],
-    ['ter e qui', 'quinta', QUINTA, true],
     ['sem horário fixo', 'quarta', QUARTA, false],
     ['sábado', 'sábado', dia(2026, 10, 24), true],
   ])('"%s" numa %s → %s', (diaFixo, _nome, referencia, esperado) => {
-    expect(temAulaHoje(diaFixo, referencia)).toBe(esperado);
+    expect(temAulaHoje({ dia: diaFixo, hora: '' }, referencia)).toBe(esperado);
+  });
+
+  it('com a estrutura, vale ela, e não o texto', () => {
+    const a = { dia: 'quarta', hora: '18h', aulaFixa: { dias: ['qui' as const], hora: 18 } };
+    expect(temAulaHoje(a, QUINTA)).toBe(true);
+    expect(temAulaHoje(a, QUARTA)).toBe(false);
   });
 });
 
@@ -267,6 +274,66 @@ describe('colunasDoAluno — o update grava só o que a ação mudou', () => {
 
   it('campo derivado ou de outra tabela não vira coluna', () => {
     expect(colunasDoAluno(aluno, ['hoje', 'id', 'proposta', 'criadoEm'])).toEqual({});
+  });
+});
+
+describe('a aula fixa estruturada (SCRUM-89)', () => {
+  const ANA: Aluno = {
+    id: 'ana',
+    name: 'Ana',
+    disciplina: 'Piano',
+    dia: 'terça e quinta',
+    hora: '18h',
+    hoje: false,
+    total: 8,
+    usadas: 2,
+    validade: '30/11',
+    reposicoes: 0,
+    pagamento: { status: 'sem' },
+  };
+  /** O aluno ao banco e de volta, como numa carga em outro aparelho. */
+  const ida = (a: Aluno, extra: Partial<LinhaDoAluno> = {}) => {
+    const linha = {
+      ...alunoParaBanco(a, QUARTA),
+      professor_id: PROFESSOR,
+      criado_em: new Date(2026, 9, 1, 15).toISOString(),
+      token_publico: 't',
+      versao: 0,
+      ...extra,
+    } as LinhaDoAluno;
+    return { linha, volta: alunoDoBanco(linha, undefined, QUARTA) };
+  };
+
+  it('terça e quinta às 18h vai como jsonb e volta igual', () => {
+    const { linha, volta } = ida({ ...ANA, aulaFixa: { dias: ['ter', 'qui'], hora: 18 } });
+    expect(linha.aula_fixa).toEqual({ dias: ['ter', 'qui'], hora: 18 });
+    expect(volta.aulaFixa).toEqual({ dias: ['ter', 'qui'], hora: 18 });
+  });
+
+  it('sem horário fixo também vai e volta: nenhum dia e sem hora', () => {
+    const { volta } = ida({ ...ANA, aulaFixa: { dias: [], hora: null } });
+    expect(volta.aulaFixa).toEqual({ dias: [], hora: null });
+  });
+
+  it('a linha antiga, com aula_fixa nula, abre igual a antes: o horário sai do texto', () => {
+    const { linha, volta } = ida(ANA);
+    expect(linha.aula_fixa).toBeNull();
+    expect('aulaFixa' in volta).toBe(false);
+    expect(aulaFixaDe(volta)).toEqual({ dias: ['ter', 'qui'], hora: 18 });
+    expect(volta.hoje).toBe(false); // QUARTA
+    expect(alunoDoBanco(linha, undefined, QUINTA).hoje).toBe(true);
+  });
+
+  it('o `hoje` sai da estrutura, mesmo quando o texto diz outra coisa', () => {
+    const { linha } = ida({ ...ANA, dia: 'segunda', aulaFixa: { dias: ['qui'], hora: 18 } });
+    expect(alunoDoBanco(linha, undefined, QUINTA).hoje).toBe(true);
+  });
+
+  it('o update da ficha grava a coluna aula_fixa', () => {
+    expect(colunasDoAluno({ ...ANA, aulaFixa: { dias: ['seg'], hora: 9 } }, ['aulaFixa'])).toEqual({
+      aula_fixa: { dias: ['seg'], hora: 9 },
+    });
+    expect(colunasDoAluno({ ...ANA, aulaFixa: null }, ['aulaFixa'])).toEqual({ aula_fixa: null });
   });
 });
 

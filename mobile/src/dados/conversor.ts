@@ -13,9 +13,10 @@
  */
 
 import { formatarDdMm, hojeComoData, lerDdMm } from '../dominio/datas';
-import { DIAS } from '../dominio/disponibilidade';
+import { aulaFixaDe, temAulaNoDia } from '../dominio/aulaFixa';
 import type {
   Aluno,
+  AulaFixa,
   ConfigPacote,
   DiaDaSemana,
   Disponibilidade,
@@ -129,27 +130,17 @@ function momentoDoLancamento(data: Date, posicao: number): string {
 /** Chave do dia na ordem de `Date.getDay()`, que começa no domingo. */
 const DIA_DO_GETDAY: DiaDaSemana[] = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
 
-const normalizar = (v: string): string =>
-  v
-    .toLowerCase()
-    .normalize('NFD')
-    .split('')
-    .filter((c) => {
-      const n = c.charCodeAt(0);
-      return n < 0x0300 || n > 0x036f;
-    })
-    .join('');
-
 /**
- * O `hoje` do aluno, que o banco não guarda. O dia fixo é texto livre
- * ("quarta", "terça e quinta", "sem horário fixo"): tem aula hoje quando uma
- * das palavras é o nome do dia de hoje ou a abreviação dele ("ter", "qui").
+ * O `hoje` do aluno, que o banco não guarda. Quem diz se a aula fixa cai no
+ * dia é o domínio: `aulaFixaDe` usa a estrutura quando o aluno tem, e lê o
+ * texto de `dia` e `hora` quando é uma linha de antes do SCRUM-89. Nenhum
+ * outro lugar interpreta "terça e quinta" (SCRUM-31).
  */
-export function temAulaHoje(dia: string, referencia: Date = hojeComoData()): boolean {
-  const chave = DIA_DO_GETDAY[referencia.getDay()];
-  const longo = DIAS.find((d) => d.chave === chave)?.longo ?? '';
-  const palavras = normalizar(dia).split(/[^a-z]+/);
-  return palavras.includes(normalizar(longo)) || palavras.includes(chave);
+export function temAulaHoje(
+  a: Pick<Aluno, 'dia' | 'hora' | 'aulaFixa'>,
+  referencia: Date = hojeComoData(),
+): boolean {
+  return temAulaNoDia(aulaFixaDe(a), DIA_DO_GETDAY[referencia.getDay()]);
 }
 
 // --- Título → tipo --------------------------------------------------------------
@@ -213,13 +204,17 @@ export function alunoDoBanco(
   proposta: LinhaDaProposta | undefined,
   referencia: Date = hojeComoData(),
 ): Aluno {
+  // Nula é a linha de antes da 0009: o aluno vai sem `aulaFixa`, e o domínio
+  // lê o horário do texto. Sem backfill (SCRUM-89).
+  const aulaFixa = l.aula_fixa !== null ? (l.aula_fixa as unknown as AulaFixa) : undefined;
   return {
     id: l.id,
     name: l.nome,
     disciplina: l.disciplina,
     dia: l.dia,
     hora: l.hora,
-    hoje: temAulaHoje(l.dia, referencia),
+    ...(aulaFixa ? { aulaFixa } : {}),
+    hoje: temAulaHoje({ dia: l.dia, hora: l.hora, aulaFixa }, referencia),
     total: l.total,
     usadas: l.usadas,
     // Sem data no banco: sem pacote é o `''` de `criarAluno`; com pacote, é o
@@ -386,6 +381,7 @@ export function alunoParaBanco(
     disciplina: a.disciplina,
     dia: a.dia,
     hora: a.hora,
+    aula_fixa: a.aulaFixa ? json(a.aulaFixa) : null,
     telefone: a.telefone ?? null,
     email: a.email ?? null,
     total: a.total,
@@ -447,9 +443,7 @@ const COLUNAS_DO_CAMPO: Record<
   atrasosHistoricos: ['atrasos_historicos'],
   pagamento: ['pagamento_status', 'pagamento_em', 'pagamento_meio', 'pagamento_vencimento'],
   arquivado: ['arquivado'],
-  // Ainda sem coluna: a `aula_fixa` nasce no SCRUM-89, que troca isto por
-  // ['aula_fixa']. Até lá nenhuma tela grava `aulaFixa` (a ficha é o SCRUM-90).
-  aulaFixa: [],
+  aulaFixa: ['aula_fixa'],
 };
 
 /** Só as colunas dos campos pedidos, com os valores do aluno como ficou. */

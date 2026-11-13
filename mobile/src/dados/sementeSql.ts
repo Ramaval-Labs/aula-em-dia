@@ -14,6 +14,7 @@
  * docs/backend/PLANO-BACKEND.md, Parte 2.
  */
 
+import { aulaFixaDe } from '../dominio/aulaFixa';
 import { DIAS } from '../dominio/disponibilidade';
 import type { Aluno, DiaDaSemana, Lancamento } from '../dominio/tipos';
 import { tipoPorTitulo } from './conversor';
@@ -270,6 +271,9 @@ function alunos(lista: Aluno[]): string {
       texto(a.disciplina),
       texto(a.dia),
       texto(a.hora),
+      // A semente só tem o texto; a estrutura sai dele pela porta do domínio
+      // (SCRUM-89). A store local fica com o texto, que o domínio lê igual.
+      json(aulaFixaDe(a)),
       textoOuNulo(a.telefone),
       textoOuNulo(a.email),
       String(a.total),
@@ -302,7 +306,7 @@ delete from public.alunos where professor_id = ${PROFESSOR};
 
 -- Ficam de fora, por serem derivados: \`hoje\`, \`pendencia.dias\` e \`pagamento.dias\`.
 insert into public.alunos (
-  id, professor_id, nome, disciplina, dia, hora, telefone, email,
+  id, professor_id, nome, disciplina, dia, hora, aula_fixa, telefone, email,
   total, usadas, validade, validade_estendida, sem_pacote, encerrado, valor_por_aula_centavos,
   reposicoes, pendencia_origem, agendada, disponibilidade,
   pausado, lembretes, ultimo_lembrete, atrasos_historicos,
