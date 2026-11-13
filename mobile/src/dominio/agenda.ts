@@ -5,11 +5,12 @@
  * janelas saem de um cálculo contra a agenda real. O algoritmo percorre o
  * horizonte até a validade do pacote, descarta o que colide e pontua o resto.
  *
- * O modelo de horário do aluno é texto livre no handoff ("quarta", "terça e
- * quinta", "17h"), então a leitura é por palavra-chave. É o suficiente para
- * o protótipo e fica isolado aqui.
+ * O horário fixo do aluno sai de `aulaFixaDe` (`aulaFixa.ts`): a estrutura
+ * `{ dias, hora }` quando o aluno tem, senão o texto livre de antes, lido lá.
+ * Este módulo não interpreta texto de horário (SCRUM-31).
  */
 
+import { aulaFixaDe } from './aulaFixa';
 import { diaDaSemanaDe, DIAS, duracaoDaFaixa, emFolga, FAIXAS, temBloco } from './disponibilidade';
 import { diasEntre, formatarDdMm, lerDdMm, somarDias } from './datas';
 import { plural } from './formato';
@@ -31,31 +32,14 @@ const HORIZONTE_PADRAO = 30;
 
 // --- leitura do horário fixo do aluno -------------------------------------
 
-const APELIDOS: Record<string, DiaDaSemana> = {
-  segunda: 'seg',
-  terca: 'ter',
-  terça: 'ter',
-  quarta: 'qua',
-  quinta: 'qui',
-  sexta: 'sex',
-  sabado: 'sab',
-  sábado: 'sab',
-  domingo: 'dom',
-};
-
-/** "terça e quinta" → ['ter', 'qui'] */
+/** Os dias da aula fixa: "terça e quinta" → ['ter', 'qui'], ou a estrutura. */
 export function diasDoAluno(a: Aluno): DiaDaSemana[] {
-  const texto = (a.dia ?? '').toLowerCase();
-  const achados = Object.keys(APELIDOS)
-    .filter((k) => texto.includes(k))
-    .map((k) => APELIDOS[k]);
-  return Array.from(new Set(achados));
+  return aulaFixaDe(a).dias;
 }
 
-/** "17h" → 17 */
+/** A hora cheia da aula fixa: "17h" → 17, ou a estrutura. */
 export function horaDoAluno(a: Aluno): number | null {
-  const m = /(\d{1,2})\s*h/.exec(a.hora ?? '');
-  return m ? Number(m[1]) : null;
+  return aulaFixaDe(a).hora;
 }
 
 /** Em qual faixa cai uma hora do dia. */
@@ -66,10 +50,10 @@ export function faixaDaHora(hora: number): FaixaHoraria | null {
 
 /** O bloco semanal em que a aula fixa do aluno acontece. */
 export function blocosDaAulaFixa(a: Aluno): BlocoSemanal[] {
-  const hora = horaDoAluno(a);
+  const { dias, hora } = aulaFixaDe(a);
   const faixa = hora === null ? null : faixaDaHora(hora);
   if (!faixa) return [];
-  return diasDoAluno(a).map((dia) => ({ dia, faixa }));
+  return dias.map((dia) => ({ dia, faixa }));
 }
 
 /**

@@ -447,6 +447,9 @@ const COLUNAS_DO_CAMPO: Record<
   atrasosHistoricos: ['atrasos_historicos'],
   pagamento: ['pagamento_status', 'pagamento_em', 'pagamento_meio', 'pagamento_vencimento'],
   arquivado: ['arquivado'],
+  // Ainda sem coluna: a `aula_fixa` nasce no SCRUM-89, que troca isto por
+  // ['aula_fixa']. Até lá nenhuma tela grava `aulaFixa` (a ficha é o SCRUM-90).
+  aulaFixa: [],
 };
 
 /** Só as colunas dos campos pedidos, com os valores do aluno como ficou. */

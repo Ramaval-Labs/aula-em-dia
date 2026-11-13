@@ -73,6 +73,11 @@ export interface Aluno {
   /** sobrepõe VALOR_AULA quando o pacote deste aluno tem outro preço */
   valorPorAula?: number;
   disponibilidade?: BlocoSemanal[];
+  /**
+   * A aula fixa estruturada (SCRUM-31). Ausente no aluno salvo antes dela: aí
+   * o horário é lido de `dia` e `hora` por `aulaFixaDe`, em `aulaFixa.ts`.
+   */
+  aulaFixa?: AulaFixa | null;
   arquivado?: boolean;
   /** dd/mm */
   criadoEm?: string;
@@ -128,6 +133,18 @@ export type FaixaHoraria = 'manha' | 'tarde' | 'fimTarde' | 'noite';
 export interface BlocoSemanal {
   dia: DiaDaSemana;
   faixa: FaixaHoraria;
+}
+
+/**
+ * A aula fixa do aluno, estruturada (SCRUM-31). É o que o motor de reposição
+ * lê. `Aluno.dia` e `Aluno.hora` continuam como o texto que as telas mostram,
+ * gerado desta estrutura na hora de salvar.
+ */
+export interface AulaFixa {
+  /** os dias da semana em que a aula acontece; vazio = sem horário fixo */
+  dias: DiaDaSemana[];
+  /** a hora cheia do começo da aula (18 para "18h" e para "18h30"); `null` = sem hora */
+  hora: number | null;
 }
 
 export interface Folga {
