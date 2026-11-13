@@ -3,7 +3,7 @@
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
 com as três pessoas dentro e os cards atribuídos. Até agora foram dez janelas: uma semana de
-preparação e nove sprints de uma semana. A Sprint 10 está planejada.
+preparação e nove sprints de uma semana. A Sprint 10 está ativa.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -629,7 +629,7 @@ suíte foi de 1002 para **1022 testes**.
 - **A `main` ficou congelada até a apresentação de 06/11, como combinado.** Todos os merges
   vieram depois dela.
 
-### Sprint 10 · 13/11 a 19/11 · **planejada** · 12 pontos
+### Sprint 10 · 13/11 a 19/11 · **ativa** · 12 pontos
 
 O tema é **o horário fixo do aluno deixa de ser texto livre**. Hoje o horário é uma frase
 ("terça e quinta", "18h") e o motor de reposição, que o Envio 01 chama de diferencial, a lê por
