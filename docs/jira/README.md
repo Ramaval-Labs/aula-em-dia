@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro e os cards atribuídos. Até agora foram nove janelas: uma semana de
-preparação e oito sprints de uma semana.
+com as três pessoas dentro e os cards atribuídos. Até agora foram dez janelas: uma semana de
+preparação e nove sprints de uma semana. A Sprint 10 está planejada.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -559,7 +559,7 @@ e os 2 que entraram (`SCRUM-83` e `SCRUM-85`): 10 de 10, 21 pontos. A suíte foi
 - **Continua com o Rafael:** a conferência 3 do `SCRUM-73`, e apagar no GitHub a branch
   `scrum-85-sdk57-alinhado`, que ficou do primeiro ensaio.
 
-### Sprint 9 · 05/11 a 12/11 · **ativa** · 13 pontos
+### Sprint 9 · 05/11 a 12/11 · **fechada, 6 de 6, 13 pontos**
 
 Abriu em 05/11, logo depois de a Sprint 8 fechar. O tema é **endurecer o que já está na internet e
 tirar o "saia e volte" da demonstração**. O `SCRUM-88` já começa com o PR #38 aberto, esperando a
@@ -616,6 +616,79 @@ sexta, PR pode abrir mas não entra, e nenhuma Edge Function é publicada na nuv
 **Fora da sprint, de propósito:** o `SCRUM-23` (o push pede o `SCRUM-47`); o `SCRUM-31`; o
 `SCRUM-39`; o `SCRUM-56` e o `SCRUM-57`; o `SCRUM-62` e o `SCRUM-63` (fora por decisão de PO); e
 os cards de plataforma (`SCRUM-42`, `SCRUM-43`, `SCRUM-44`, `SCRUM-47`).
+
+**Como fechou, para registro:** com os 6 cards planejados, 13 pontos, e nenhum card novo. Cinco
+PRs entraram em 12/11 e o sexto (`SCRUM-82`, PR #44) em 13/11, um dia depois do fim previsto. A
+suíte foi de 1002 para **1022 testes**.
+
+- **Três PRs entraram sem aprovação, por decisão do PO**, com o check `Testes e tipos` verde: o
+  #38 (`SCRUM-88`), o #40 (`SCRUM-41`) e o #42 (`SCRUM-84`). Os outros três (#41, #43 e #44), mesclados
+  pelo Valentin, passaram pela review do Rafael.
+- **O `SCRUM-84` mudou de dono:** era do Mauro e foi feito pelo Rafael em 12/11, a pedido do PO,
+  para não segurar o fechamento. O card no Jira ficou com o Rafael.
+- **A `main` ficou congelada até a apresentação de 06/11, como combinado.** Todos os merges
+  vieram depois dela.
+
+### Sprint 10 · 13/11 a 19/11 · **planejada** · 12 pontos
+
+O tema é **o horário fixo do aluno deixa de ser texto livre**. Hoje o horário é uma frase
+("terça e quinta", "18h") e o motor de reposição, que o Envio 01 chama de diferencial, a lê por
+palavra-chave. O `SCRUM-31` esperava desde a preparação por uma sprint em que as três frentes não
+estivessem abertas ao mesmo tempo, porque ele atravessa as três camadas. Agora ele foi dividido em
+três cards, um por dono.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Mauro | `SCRUM-31` — a aula fixa estruturada no domínio, e o motor lendo dela (3) | 3 |
+| Valentin | `SCRUM-89` — a coluna `aula_fixa`, o conversor e a `aluno-publico` (3) | 3 |
+| Rafael | `SCRUM-40` — medidas soltas para token, por `/designer` (3) + `SCRUM-90` — a ficha do aluno escolhe dias e hora (3) | 6 |
+
+**12 pontos, um a menos que a Sprint 9.** A carga do Rafael é maior, mas o `SCRUM-40` é feito
+enquanto ele espera os outros dois: o `SCRUM-90` só começa depois deles.
+
+**Ordem obrigatória**, com os vínculos *blocks* no board:
+
+- o commit de abertura do `SCRUM-31` (`tipos.ts`, só o tipo) antes de tudo, com push no mesmo dia
+- o `SCRUM-31` antes do `SCRUM-89`: o conversor usa o `aulaFixaDe` do domínio
+- o commit de abertura do `SCRUM-89` (`NovoAluno.aulaFixa?`, em `estado/dados.ts`) antes do passo 3
+  do `SCRUM-90`
+- o `SCRUM-40` antes do `SCRUM-90`, e o `SCRUM-40` não abre `AlunoForm.tsx` nem `PrimeiroAluno.tsx`
+
+**Ordem cronológica, por dia** (escrita em 13/11, na abertura):
+
+| Quando | Mauro | Valentin | Rafael |
+|---|---|---|---|
+| **Dia 1** (sex 13/11) | `SCRUM-31` commit de abertura: `AulaFixa` e `aulaFixa?` em `tipos.ts`. Push no mesmo dia. | Lê o `SCRUM-89` e escreve a migração `0009` com o pgTAP, no banco local. Sem merge. | Entrega do dia 13 (vídeo, prints e dump). Depois, o levantamento do `SCRUM-40` num comentário do card. |
+| **Dia 2** (seg 16/11) | `SCRUM-31` commit 2: `aulaFixa.ts` com o teste que falha, e `agenda.ts` lendo dele. PR, com review do Valentin. | Commit de abertura do `SCRUM-89` (`NovoAluno`). Push no mesmo dia. Revisa o PR do `SCRUM-31`. | `SCRUM-40`: a primeira rodada de `/designer extract`. |
+| **Dia 3** (ter 17/11) | Os casos 44 a 46 em `spec/casos-de-teste.md`. Revisa o PR do `SCRUM-40`. | `SCRUM-89`: o conversor, a semente e o `seed.sql`, com o `SCRUM-31` já na `main`. PR. | `SCRUM-40`: a segunda rodada e o merge. Revisa o PR do `SCRUM-89`. |
+| **Dia 4** (qua 18/11) | Revisa o PR do `SCRUM-90`. | Mescla o `SCRUM-89`, faz o `db push` na nuvem, o bundle e o deploy da `aluno-publico`. | `SCRUM-90`: a fileira de dias no catálogo e a ficha do aluno. PR. |
+| **Dia 5** (qui 19/11) | Review: o motor com a aula fixa estruturada. | Confere no navegador que a página do aluno mostra o horário igual a antes. | Mescla o `SCRUM-90`, testa no Expo Go e fecha a sprint. |
+
+**Decisões de PO para a planning** (propostas, a confirmar):
+
+- **A estrutura é a fonte, e o texto continua.** `Aluno.aulaFixa` (`{ dias, hora }`) passa a ser o
+  que o motor lê. `dia` e `hora` continuam no tipo e no banco, gerados pelo `rotuloDaAulaFixa` na
+  hora de salvar. Assim, nenhuma tela de leitura muda e a página do aluno mostra o mesmo texto.
+- **Sem subir a chave do estado (`v4`).** O campo é opcional; aluno sem ele é lido do texto pelo
+  `aulaFixaDe`. Nada que está no aparelho de alguém é descartado.
+- **Sem backfill em SQL.** A linha antiga do banco fica com `aula_fixa` nula e é lida do texto até
+  o professor salvar o aluno de novo. Um segundo leitor de "terça e quinta", em SQL, iria divergir
+  do domínio.
+- **Hora cheia e de segunda a sábado.** O motor trabalha com faixa e hora cheia ("18h30" vira 18),
+  e a grade do professor não tem domingo (`DIAS_DA_SEMANA`).
+
+**Revisado antes de abrir**, contra a `main` de 13/11:
+
+- o `SCRUM-31` saiu da profundidade média para o template de nove seções e ficou só com o domínio,
+  de 5 para 3 pontos. O `SCRUM-89` e o `SCRUM-90` nasceram no template, com o resto dele.
+- o `SCRUM-40` subiu para o template e perdeu as duas telas que o `SCRUM-90` reescreve.
+- o pré-requisito do `SCRUM-31`, o `SCRUM-32` (teste do motor), já estava feito.
+- **Achado na abertura:** o banco já está na nuvem desde a Sprint 8, então o card guardado não
+  previa a migração nem o redeploy da `aluno-publico`. Os dois entraram no `SCRUM-89`.
+
+**Fora da sprint, de propósito:** o `SCRUM-23` (o push pede o `SCRUM-47`); o `SCRUM-39`; o
+`SCRUM-56` e o `SCRUM-57`; o `SCRUM-62` e o `SCRUM-63` (fora por decisão de PO, e o `SCRUM-62`
+pede o `SCRUM-47`); e os cards de plataforma (`SCRUM-42`, `SCRUM-43`, `SCRUM-44`, `SCRUM-47`).
 
 ---
 
