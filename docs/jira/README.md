@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro e os cards atribuídos. Até agora foram dez janelas: uma semana de
-preparação e nove sprints de uma semana. A Sprint 10 está ativa.
+com as três pessoas dentro e os cards atribuídos. Até agora foram onze janelas: uma semana de
+preparação e dez sprints de uma semana. A Sprint 11 está ativa.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -629,7 +629,7 @@ suíte foi de 1002 para **1022 testes**.
 - **A `main` ficou congelada até a apresentação de 06/11, como combinado.** Todos os merges
   vieram depois dela.
 
-### Sprint 10 · 13/11 a 19/11 · **ativa** · 12 pontos
+### Sprint 10 · 13/11 · **fechada, 4 de 4, 12 pontos no dia em que abriu**
 
 O tema é **o horário fixo do aluno deixa de ser texto livre**. Hoje o horário é uma frase
 ("terça e quinta", "18h") e o motor de reposição, que o Envio 01 chama de diferencial, a lê por
@@ -689,6 +689,85 @@ enquanto ele espera os outros dois: o `SCRUM-90` só começa depois deles.
 **Fora da sprint, de propósito:** o `SCRUM-23` (o push pede o `SCRUM-47`); o `SCRUM-39`; o
 `SCRUM-56` e o `SCRUM-57`; o `SCRUM-62` e o `SCRUM-63` (fora por decisão de PO, e o `SCRUM-62`
 pede o `SCRUM-47`); e os cards de plataforma (`SCRUM-42`, `SCRUM-43`, `SCRUM-44`, `SCRUM-47`).
+
+**Como fechou, para registro:** em 13/11, no mesmo dia em que abriu, seis dias antes do fim
+previsto. Os 4 cards, 12 pontos, e nenhum card novo. A suíte foi de 1022 para **1057 testes**.
+
+- **O `SCRUM-31` mudou de dono:** era do Mauro, que não estava disponível, e foi feito pelo Rafael.
+  O commit de abertura precisou de uma linha na faixa do Valentin, `aulaFixa: []` no
+  `COLUNAS_DO_CAMPO` do conversor, porque o `Record` cobra cada campo novo do `Aluno`. O `SCRUM-89`
+  trocou a linha por `['aula_fixa']`, como o comentário no card dele pedia.
+- **Dois PRs entraram sem aprovação, por decisão do PO**, com os checks verdes: o #45
+  (`SCRUM-31`) e o #47 (`SCRUM-90`). O #46 (`SCRUM-89`) passou pela review do Rafael.
+- **O `SCRUM-40` teve o escopo decidido pelo PO na própria sprint:** os vãos entre elementos
+  continuam literais, como o `DESIGN.md` já decidia, e o card cobriu o padding interno e as
+  medidas do chassi. Foram duas rodadas de `/designer extract` mescladas direto na `main`
+  (`153fc39` e `f04fe6c`). O resultado: 39 tokens em `PAD`, 4 em `TAMANHO`, e os paddings soltos
+  de 52 para 10, todos comentados.
+- **Achado de ferramenta:** com o `mobile/.env` apontando para a nuvem, o `npm run capturar` abria a
+  tela de entrada em vez da tela pedida. As primeiras capturas da rodada 1 deram "idêntico" por
+  isso. O roteiro do `/designer` passou a subir o Expo Web com `EXPO_PUBLIC_BACKEND=local`.
+- **Uma correção no card do `SCRUM-90`:** o `mar` da semente é o Mateus, não a Marina.
+
+### Sprint 11 · 13/11 a 20/11 · **ativa** · 12 pontos
+
+O tema é **o app sai do Expo Go e os lembretes ganham regra**. A tela de Avisos promete quatro
+lembretes desde o redesign, e nenhum é calculado: são só preferências salvas. E o push, que os
+entrega, não chega no Expo Go. Esta sprint junta as três pontas.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Mauro | `SCRUM-91` — a regra dos avisos do dia no domínio (2) | 2 |
+| Valentin | `SCRUM-23` — o resumo da manhã por push: migração, `avisos-do-dia`, `pg_cron` e o token (5, com o commit final do Rafael) | 5 |
+| Rafael | `SCRUM-47` — o build instalável pelo EAS (5) + a permissão de notificação na tela de Avisos, no `SCRUM-23` | 5 |
+
+**12 pontos, igual à Sprint 10.** A carga do Mauro é menor de propósito: o `SCRUM-91` segura o
+`SCRUM-23` inteiro, e é melhor ele sair cedo.
+
+**Ordem obrigatória**, com os vínculos *blocks* no board:
+
+- o `SCRUM-91` antes da função `avisos-do-dia`: ela chama o `avisosDoDia` do bundle
+- o `SCRUM-47` antes do teste real do push: no Android, o Expo Go não recebe push remoto
+- o `npx eas-cli login` e o `init` do `SCRUM-47` são do Rafael, à mão: pedem senha
+
+**Ordem cronológica, por dia** (escrita em 13/11, na abertura):
+
+| Quando | Mauro | Valentin | Rafael |
+|---|---|---|---|
+| **Dia 1** (seg 16/11) | `SCRUM-91`: os testes que falham, um por promessa da tela de Avisos. | `SCRUM-23`: a migração `0010` e o pgTAP, no banco local. | `SCRUM-47`: `expo-dev-client`, `eas login` e `eas init`, e o `eas.json`. |
+| **Dia 2** (ter 17/11) | `SCRUM-91`: o `avisosDoDia` e o `resumoDoDia`. PR, com review do Valentin. | Revisa o PR do `SCRUM-91`. Começa a `avisos-do-dia` com o domínio já na `main`. | `SCRUM-47`: o primeiro APK pelo perfil `preview`, instalado num Android. |
+| **Dia 3** (qua 18/11) | Os casos 47 a 53 em `spec/casos-de-teste.md`. Revisa o PR do `SCRUM-47`. | A função e o teste dela; o token de push no repositório. PR. | `SCRUM-47`: o perfil `development` e a seção do README. PR. Revisa o PR do `SCRUM-23`. |
+| **Dia 4** (qui 19/11) | Revisa o PR do commit da tela. | Mescla, faz o `db push`, o bundle e o deploy da função, e agenda o `pg_cron`. | `SCRUM-23`, commit final: a tela de Avisos pede a permissão. Novo APK com o push. |
+| **Dia 5** (sex 20/11) | Review: o resumo do dia da semente. | Confere o push das 7h no aparelho do Rafael. | Review e fechamento da sprint. |
+
+**Decisões de PO para a planning** (propostas, a confirmar):
+
+- **Um push por professor por dia, com o resumo**, e não um por aluno. "Hoje: 2 aulas, 1 saldo baixo
+  e 1 reposição sem horário." Sem nada para avisar, não há push.
+- **Os números são os que a tela já promete:** saldo de 2 aulas ou menos, reposição 3 dias sem
+  horário, pagamento 3 dias antes do vencimento, e a aula do dia na manhã dela.
+- **O projeto continua *managed*, com o EAS Build na nuvem**, no plano gratuito. Sem `expo prebuild`
+  e sem `android/` ou `ios/` no repositório.
+- **Só Android.** O build de iOS exige a conta paga da Apple (US$ 99 por ano). Quem tem iPhone
+  continua no Expo Go, e lá não recebe o push.
+- **Os TTFs da Satoshi ficam no git por enquanto.** O EAS sobe os arquivos versionados; tirá-los
+  (o `SCRUM-56`, § 2b) quebraria o build. Os dois precisam ser resolvidos juntos.
+
+**Revisado antes de abrir**, contra a `main` de 13/11:
+
+- o `SCRUM-47` e o `SCRUM-23` subiram da profundidade média para o template de nove seções. O
+  `SCRUM-23` foi de 3 para 5 pontos: agora inclui o `pg_cron`, a função, o token e o teste.
+- o `SCRUM-91` nasceu no template, separando a regra (domínio, Mauro) do disparo (backend,
+  Valentin), como o `SCRUM-31` fez na Sprint 10.
+- **Achado na abertura:** a tela de Avisos promete os quatro lembretes desde o redesign, mas nenhum
+  código os calcula. O `SCRUM-91` implementa exatamente as frases da tela.
+
+**Fora da sprint, de propósito:** o `SCRUM-62` e o `SCRUM-63` (voltam na Sprint 12, com o deep link
+do `SCRUM-47` pronto); o `SCRUM-39`; o `SCRUM-56` e o `SCRUM-57`; e os cards de plataforma
+(`SCRUM-42`, `SCRUM-43`, `SCRUM-44`), que ficam melhores de medir no build do `SCRUM-47`.
+
+**Se a sua faixa esvaziar:** Rafael, o `SCRUM-44` (o brilho da pílula no aparelho); Mauro, o teste
+de montagem da tela de Avisos com as preferências desligadas.
 
 ---
 
