@@ -19,10 +19,13 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 
+import { aulaFixaDe, lerHora, rotuloDaAulaFixa } from '../dominio/aulaFixa';
 import type {
+  AulaFixa,
   Aluno,
   BlocoSemanal,
   ConfigPacote,
+  DiaDaSemana,
   Desfecho,
   Disponibilidade,
   FaixaDeAlunos,
@@ -51,7 +54,9 @@ export interface RascunhoAluno {
   id?: string;
   nome: string;
   disciplina: string;
-  dia: string;
+  /** os dias da aula fixa, na ordem da semana; vazio = sem horário fixo (SCRUM-90) */
+  dias: DiaDaSemana[];
+  /** a hora como foi digitada no campo numérico ("18"); `lerHora` a lê ao salvar */
   hora: string;
   telefone: string;
   /**
@@ -145,6 +150,32 @@ export const REPOSICAO_INICIAL: RascunhoReposicao = {
 };
 
 /**
+ * A aula fixa do aluno → os campos do rascunho. Quem lê o horário é o
+ * domínio (`aulaFixaDe`): a estrutura quando o aluno tem, senão o texto de antes.
+ */
+function horarioParaORascunho(aluno: Aluno): Pick<RascunhoAluno, 'dias' | 'hora'> {
+  const { dias, hora } = aulaFixaDe(aluno);
+  return { dias, hora: hora === null ? '' : String(hora) };
+}
+
+/**
+ * Os campos do rascunho → o que a tela grava (SCRUM-90): a estrutura e o
+ * texto que a lista e a página do aluno mostram, gerado dela. Sem dia
+ * marcado não há aula fixa, então a hora digitada não vale sozinha.
+ */
+export function horarioDoRascunho(r: Pick<RascunhoAluno, 'dias' | 'hora'>): {
+  aulaFixa: AulaFixa;
+  dia: string;
+  hora: string;
+} {
+  const aulaFixa: AulaFixa = {
+    dias: r.dias,
+    hora: r.dias.length > 0 ? lerHora(r.hora) : null,
+  };
+  return { aulaFixa, ...rotuloDaAulaFixa(aulaFixa) };
+}
+
+/**
  * O rascunho de edição de um aluno existente. Quem abre a edição grava este
  * rascunho antes de navegar: um rascunho que sobrou de uma edição cancelada
  * seria de outro aluno, ou levaria o `retorno` de outra tarefa.
@@ -153,8 +184,7 @@ export const rascunhoDeAluno = (aluno: Aluno, retorno?: Tela): RascunhoAluno => 
   id: aluno.id,
   nome: aluno.name,
   disciplina: aluno.disciplina,
-  dia: aluno.dia,
-  hora: aluno.hora,
+  ...horarioParaORascunho(aluno),
   telefone: aluno.telefone ?? '',
   retorno,
 });

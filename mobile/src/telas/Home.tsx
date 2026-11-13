@@ -56,7 +56,7 @@ export function Home() {
     reiniciarRascunho('aluno', {
       nome: '',
       disciplina: '',
-      dia: '',
+      dias: [],
       hora: '',
       telefone: '',
     });

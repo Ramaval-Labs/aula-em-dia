@@ -76,7 +76,7 @@ export function Registrar() {
     reiniciarRascunho('aluno', {
       nome: '',
       disciplina: '',
-      dia: '',
+      dias: [],
       hora: '',
       telefone: '',
     });

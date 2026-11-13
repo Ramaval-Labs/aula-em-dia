@@ -11,14 +11,14 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro } from '../componentes/Blocos';
-import { CampoDeTexto } from '../componentes/Campos';
+import { CampoDeTexto, SeletorDeDias } from '../componentes/Campos';
 import { BotaoPrimario, BotaoTexto, NotaDoBotao } from '../componentes/Controles';
 import { Sheet } from '../componentes/Sheet';
 import { useDoisToques } from '../componentes/useDoisToques';
 import { primeiroNome } from '../dominio/formato';
 import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
-import { rascunhoDeAluno, useRascunho } from '../estado/formularios';
+import { horarioDoRascunho, rascunhoDeAluno, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
@@ -41,7 +41,7 @@ export function AlunoForm() {
       : {
           nome: '',
           disciplina: perfil.disciplinas[0] ?? '',
-          dia: '',
+          dias: [],
           hora: '',
           telefone: '',
         },
@@ -77,12 +77,12 @@ export function AlunoForm() {
 
   const salvar = () => {
     if (!pronto) return;
+    const horario = horarioDoRascunho(form);
     if (emEdicao) {
       atualizarAluno(emEdicao.id, {
         name: form.nome.trim(),
         disciplina: form.disciplina,
-        dia: form.dia || 'sem horário fixo',
-        hora: form.hora,
+        ...horario,
         telefone: form.telefone || undefined,
       });
       avisar(`Dados de ${primeiroNome(form.nome)} atualizados.`);
@@ -100,8 +100,7 @@ export function AlunoForm() {
     const id = criarAluno({
       nome: form.nome,
       disciplina: form.disciplina,
-      dia: form.dia || 'sem horário fixo',
-      hora: form.hora,
+      ...horario,
       telefone: form.telefone || undefined,
     });
     avisar(avisos.alunoCriado(form.nome));
@@ -144,22 +143,23 @@ export function AlunoForm() {
           capitalizar="words"
         />
 
-        <View style={estilos.linha}>
+        <SeletorDeDias
+          rotulo="Dias da aula"
+          dias={form.dias}
+          aoMudar={(dias) => atualizar({ dias })}
+          ajuda={form.dias.length === 0 ? 'Sem dia marcado, ele fica sem horário fixo.' : undefined}
+        />
+
+        {form.dias.length > 0 ? (
           <CampoDeTexto
-            estilo={estilos.flexivel}
-            rotulo="Dia"
-            valor={form.dia}
-            aoMudar={(dia) => atualizar({ dia })}
-            placeholder="terça e quinta"
-          />
-          <CampoDeTexto
-            estilo={estilos.flexivel}
             rotulo="Hora"
             valor={form.hora}
             aoMudar={(hora) => atualizar({ hora })}
-            placeholder="18h"
+            placeholder="18"
+            teclado="numerico"
+            ajuda="A hora cheia do começo da aula."
           />
-        </View>
+        ) : null}
 
         <CampoDeTexto
           rotulo="Telefone"
@@ -192,10 +192,8 @@ export function AlunoForm() {
 }
 
 const estilos = StyleSheet.create({
-  flexivel: { flex: 1, minWidth: 0 },
   centro: { textAlign: 'center' },
   campos: { gap: 16 },
-  linha: { flexDirection: 'row', gap: 10 },
   arquivar: { marginTop: 18, alignItems: 'center', gap: 4 },
   rodape: { gap: 10 },
 });
