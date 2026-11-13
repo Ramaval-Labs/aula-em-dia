@@ -32,6 +32,7 @@ import {
 import { calcularPacote, type PacoteCalculado } from '../dominio/pacote';
 import type {
   Aluno,
+  AulaFixa,
   BlocoSemanal,
   ConfigPacote,
   Desfecho,
@@ -130,9 +131,12 @@ type Dados = Persistido & {
 export interface NovoAluno {
   nome: string;
   disciplina: string;
+  /** o texto da lista e da página do aluno; com `aulaFixa`, sai de `rotuloDaAulaFixa` */
   dia: string;
   hora: string;
   telefone?: string;
+  /** o horário estruturado (SCRUM-89); sem ele, o domínio lê `dia` e `hora` */
+  aulaFixa?: AulaFixa | null;
 }
 
 /**
@@ -449,6 +453,7 @@ export const useDados = create<Dados>((set, get) => {
         dia: dados.dia,
         hora: dados.hora,
         telefone: dados.telefone,
+        ...(dados.aulaFixa ? { aulaFixa: dados.aulaFixa } : {}),
         hoje: false,
         total: 0,
         usadas: 0,
