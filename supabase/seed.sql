@@ -119,7 +119,7 @@ delete from public.alunos where professor_id = '00000000-0000-4000-8000-00000000
 
 -- Ficam de fora, por serem derivados: `hoje`, `pendencia.dias` e `pagamento.dias`.
 insert into public.alunos (
-  id, professor_id, nome, disciplina, dia, hora, telefone, email,
+  id, professor_id, nome, disciplina, dia, hora, aula_fixa, telefone, email,
   total, usadas, validade, validade_estendida, sem_pacote, encerrado, valor_por_aula_centavos,
   reposicoes, pendencia_origem, agendada, disponibilidade,
   pausado, lembretes, ultimo_lembrete, atrasos_historicos,
@@ -127,13 +127,13 @@ insert into public.alunos (
   arquivado
 ) values
   -- val
-  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000001', 'Valentin Klein', 'Matemática', 'quarta', '17h', '51900000101', 'valentin.klein@exemplo.test', 6, 2, pg_temp.hoje() + 63, false, false, null, 8000, 0, null, null, null, false, 1, pg_temp.hoje() - 6, 3, 'atraso', null, null, pg_temp.hoje() - 12, false),
+  ('00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000001', 'Valentin Klein', 'Matemática', 'quarta', '17h', '{"dias":["qua"],"hora":17}'::jsonb, '51900000101', 'valentin.klein@exemplo.test', 6, 2, pg_temp.hoje() + 63, false, false, null, 8000, 0, null, null, null, false, 1, pg_temp.hoje() - 6, 3, 'atraso', null, null, pg_temp.hoje() - 12, false),
   -- raf
-  ('00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000000001', 'Rafael Dornelas', 'Violão', 'segunda', '19h', '51900000202', 'rafael.dornelas@exemplo.test', 8, 6, pg_temp.hoje() + 33, false, false, null, 8000, 1, pg_temp.hoje() - 16, null, null, false, 0, null, 0, 'aberto', null, null, pg_temp.hoje() + 15, false),
+  ('00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000000001', 'Rafael Dornelas', 'Violão', 'segunda', '19h', '{"dias":["seg"],"hora":19}'::jsonb, '51900000202', 'rafael.dornelas@exemplo.test', 8, 6, pg_temp.hoje() + 33, false, false, null, 8000, 1, pg_temp.hoje() - 16, null, null, false, 0, null, 0, 'aberto', null, null, pg_temp.hoje() + 15, false),
   -- mar
-  ('00000000-0000-4000-8000-000000000103', '00000000-0000-4000-8000-000000000001', 'Mateus Alves', 'Inglês', 'terça e quinta', '18h', '51900000303', 'mateus.alves@exemplo.test', 8, 3, pg_temp.hoje() + 94, false, false, null, 8000, 0, null, null, null, false, 0, null, 0, 'pago', pg_temp.hoje() - 27, 'Pix', null, false),
+  ('00000000-0000-4000-8000-000000000103', '00000000-0000-4000-8000-000000000001', 'Mateus Alves', 'Inglês', 'terça e quinta', '18h', '{"dias":["ter","qui"],"hora":18}'::jsonb, '51900000303', 'mateus.alves@exemplo.test', 8, 3, pg_temp.hoje() + 94, false, false, null, 8000, 0, null, null, null, false, 0, null, 0, 'pago', pg_temp.hoje() - 27, 'Pix', null, false),
   -- bea
-  ('00000000-0000-4000-8000-000000000104', '00000000-0000-4000-8000-000000000001', 'Bernardo Lemos', 'Inglês', 'sem horário fixo', '', '51900000404', 'bernardo.lemos@exemplo.test', 0, 0, null, false, true, pg_temp.hoje() - 55, null, 0, null, null, null, false, 0, null, 0, 'sem', null, null, null, false);
+  ('00000000-0000-4000-8000-000000000104', '00000000-0000-4000-8000-000000000001', 'Bernardo Lemos', 'Inglês', 'sem horário fixo', '', '{"dias":[],"hora":null}'::jsonb, '51900000404', 'bernardo.lemos@exemplo.test', 0, 0, null, false, true, pg_temp.hoje() - 55, null, 0, null, null, null, false, 0, null, 0, 'sem', null, null, null, false);
 
 insert into public.lancamentos (
   aluno_id, professor_id, tipo, data, titulo, subtitulo, delta, saldo_depois, dinheiro, criado_em
