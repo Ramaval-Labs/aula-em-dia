@@ -7,9 +7,11 @@
 
 import { StyleSheet } from 'react-native';
 
+import { PAD } from '../../tema/tokens';
+
 export const estilos = StyleSheet.create({
   primeiro: { marginTop: 18 },
-  cartao: { marginTop: 12, paddingVertical: 16, paddingHorizontal: 17 },
+  cartao: { marginTop: 12, ...PAD.cartaoDeAjuste },
   grupo: { marginTop: 24, marginBottom: 9 },
   bloco: { marginTop: 12 },
 });

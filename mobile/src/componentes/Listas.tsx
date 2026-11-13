@@ -20,7 +20,7 @@ import {
 
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { RAIO, TAMANHO } from '../tema/tokens';
+import { PAD, RAIO, TAMANHO } from '../tema/tokens';
 import {
   Avatar,
   FaixaStatus,
@@ -117,7 +117,7 @@ function Linha({
   const { cores } = useCores();
   const base: ViewStyle = {
     minHeight: minAltura,
-    paddingVertical: 12,
+    paddingVertical: PAD.linhaLista.paddingVertical,
     paddingHorizontal: padHorizontal,
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,7 +192,7 @@ export function LinhaLista({
             ? TAMANHO.linhaAjustes
             : TAMANHO.linhaLista
       }
-      padHorizontal={15}
+      padHorizontal={PAD.linhaLista.paddingHorizontal}
     >
       <View style={estilos.flexivel}>
         <Text
@@ -407,7 +407,7 @@ export function LinhaExtrato({
         .filter(Boolean)
         .join('. ')}
       minAltura={TAMANHO.linhaLista}
-      padHorizontal={15}
+      padHorizontal={PAD.linhaLista.paddingHorizontal}
     >
       <Text
         style={[texto(11.5, 600, { altura: 1.3 }), estilos.colunaData, { color: cores.tinta3 }]}
@@ -454,8 +454,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    ...PAD.caixaValor,
     borderRadius: RAIO.saldoLinha,
   },
 });

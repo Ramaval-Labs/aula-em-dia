@@ -31,7 +31,7 @@ import { folgaDeToque } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { duracao, useReduzirMovimento } from '../tema/movimento';
-import { ESCALA_FONTE, MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, MOVIMENTO, PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
@@ -897,7 +897,7 @@ const estilos = StyleSheet.create({
     borderWidth: TAMANHO.bordaVidro,
   },
   /** o padding mora no rádio, para a faixa inteira da linha ser tocável */
-  padEscolha: { paddingVertical: 14, paddingHorizontal: 15 },
+  padEscolha: PAD.cartaoEscolha,
   padEscolhaComCorpo: { paddingBottom: 0 },
   linhaEscolha: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 42 },
   tituloEscolha: {
@@ -908,7 +908,7 @@ const estilos = StyleSheet.create({
   },
   corpoEscolha: {
     marginTop: 13,
-    marginHorizontal: 15,
+    marginHorizontal: PAD.cartaoEscolha.paddingHorizontal,
     marginBottom: 14,
     paddingTop: 13,
     borderTopWidth: TAMANHO.bordaVidro,

@@ -451,6 +451,42 @@ export const TAMANHO = {
 } as const;
 
 /**
+ * Padding interno de cada cartão e bloco, como o handoff mede (SCRUM-40).
+ * Pronto para espalhar no `style`: `{ ...PAD.cartao, gap: 12 }`.
+ *
+ * O nome é o do componente, não o do número: o bloco âmbar e o cartão de
+ * ajuste medem igual hoje, mas mudam cada um por si. Os vãos ENTRE blocos
+ * (`gap`, `margin`) não estão aqui: são literais de propósito (DESIGN.md,
+ * "Layout").
+ */
+export const PAD = {
+  /** cartão de vidro: saldo, aulas dadas (handoff `17px 18px`) */
+  cartao: { paddingVertical: 17, paddingHorizontal: 18 },
+  /** cartão de ajuste e o cartão das telas de Ajustes (`16px 17px`) */
+  cartaoDeAjuste: { paddingVertical: 16, paddingHorizontal: 17 },
+  /** bloco de status só com texto, o âmbar (`16px 17px`) */
+  blocoTexto: { paddingVertical: 16, paddingHorizontal: 17 },
+  /** cartão que abre com ícone ou avatar: bloco vermelho, perfil (`15px 16px`) */
+  cartaoComIcone: { paddingVertical: 15, paddingHorizontal: 16 },
+  /** cartão de escolha, com e sem seleção (`14px 15px`) */
+  cartaoEscolha: { paddingVertical: 14, paddingHorizontal: 15 },
+  /** cartão de resumo do Financeiro (`14px 13px`) */
+  resumo: { paddingVertical: 14, paddingHorizontal: 13 },
+  /** cartão de débito da Cobrança (`18px`) */
+  debito: { padding: 18 },
+  /** toast (`14px 16px`) */
+  toast: { paddingVertical: 14, paddingHorizontal: 16 },
+  /** estado vazio de lista ("Nenhum lançamento ainda.", `30px 20px`) */
+  vazio: { paddingVertical: 30, paddingHorizontal: 20 },
+  /** linha de lista agrupada, como o extrato (`12px 15px`) */
+  linhaLista: { paddingVertical: 12, paddingHorizontal: 15 },
+  /** faixa de status ("Pagamento em atraso", `0 8px`) */
+  faixa: { paddingHorizontal: 8 },
+  /** caixa do saldo à direita de uma linha (`6px 10px`) */
+  caixaValor: { paddingVertical: 6, paddingHorizontal: 10 },
+} as const;
+
+/**
  * Item ativo da tab bar (handoff, "Tab bar" → Item): gradiente vertical do
  * miolo e o brilho desfocado acima dele. Branco nos dois temas.
  */

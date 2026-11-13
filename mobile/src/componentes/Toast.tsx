@@ -18,7 +18,7 @@ import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { texto } from '../tema/tipografia';
-import { MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { MOVIMENTO, PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 import { Icone } from './Icone';
 import { useBaseDaTabBar } from './TabBar';
@@ -77,8 +77,7 @@ export function Toast() {
         raio={RAIO.toast}
         sombraExterna={material.sombraToast}
         style={{
-          paddingVertical: 14,
-          paddingHorizontal: 16,
+          ...PAD.toast,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 11,
