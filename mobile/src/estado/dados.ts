@@ -63,6 +63,7 @@ export const AVISOS_PADRAO: PreferenciasDeAviso = {
   saldoBaixo: true,
   reposicaoPendente: true,
   pagamentoVencendo: false,
+  antesDaAula: true,
 };
 
 type Dados = Persistido & {

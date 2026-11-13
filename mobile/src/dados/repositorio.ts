@@ -35,6 +35,12 @@ export interface PreferenciasDeAviso {
   saldoBaixo: boolean;
   reposicaoPendente: boolean;
   pagamentoVencendo: boolean;
+  /**
+   * O aviso uma hora antes de cada aula (SCRUM-23, PO de 13/11). Opcional
+   * porque as preferências gravadas antes dele, no aparelho e na coluna
+   * `preferencias_aviso`, não têm a chave: ausente vale o padrão, ligado.
+   */
+  antesDaAula?: boolean;
 }
 
 /** O estado que vai para o disco. */

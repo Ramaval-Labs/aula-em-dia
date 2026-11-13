@@ -16,6 +16,9 @@ import { CartaoComSwitch, TelaDeAjuste } from './pecas';
 
 const ITENS_DE_AVISO = [
   { chave: 'aulaDoDia' as const, titulo: 'Aula do dia', sub: 'Aviso na manhã de cada aula' },
+  // SCRUM-92 (PO, 13/11): o lembrete da própria aula, uma hora antes. Junto do
+  // "Aula do dia" porque os dois falam da aula; a regra é o SCRUM-91.
+  { chave: 'antesDaAula' as const, titulo: 'Antes da aula', sub: 'Uma hora antes de cada aula' },
   { chave: 'saldoBaixo' as const, titulo: 'Saldo baixo', sub: 'Quando restarem 2 aulas ou menos' },
   {
     chave: 'reposicaoPendente' as const,
@@ -36,7 +39,10 @@ export function Avisos() {
   // cada leitura e o zustand entraria em loop de render.
   const salvas = useDados((s) => s.preferenciasDeAviso) ?? AVISOS_PADRAO;
   const salvarPreferencias = useDados((s) => s.salvarPreferenciasDeAviso);
-  const [ligados, setLigados] = React.useState(salvas);
+  // Preferência gravada antes de um aviso existir não tem a chave dele (o
+  // `antesDaAula` entrou em 13/11): o padrão completa o que falta, e salvar
+  // grava o objeto inteiro.
+  const [ligados, setLigados] = React.useState(() => ({ ...AVISOS_PADRAO, ...salvas }));
 
   return (
     <TelaDeAjuste
@@ -58,7 +64,7 @@ export function Avisos() {
           key={i.chave}
           titulo={i.titulo}
           sub={i.sub}
-          ligado={ligados[i.chave]}
+          ligado={!!ligados[i.chave]}
           aoAlternar={(v) => setLigados((s) => ({ ...s, [i.chave]: v }))}
           estilo={n === 0 ? estilos.primeiro : undefined}
         />
