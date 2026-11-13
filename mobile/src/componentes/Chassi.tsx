@@ -43,7 +43,7 @@ import { folgaDeToque } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { MOVIMENTO, TAMANHO } from '../tema/tokens';
+import { MOVIMENTO, PAD, TAMANHO } from '../tema/tokens';
 import { Icone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -145,7 +145,7 @@ export function BarraNavegacao({
           style={{
             height: TAMANHO.tituloNav,
             justifyContent: 'center',
-            paddingHorizontal: 60,
+            ...PAD.tituloNav,
           }}
         >
           <Text
@@ -201,9 +201,9 @@ export function BotaoVoltar({
         {
           position: 'absolute',
           top: topo,
-          left: 12,
+          left: TAMANHO.margemVoltar,
           height: TAMANHO.alvoMinimo,
-          paddingHorizontal: 10,
+          ...PAD.botaoVoltar,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 3,
@@ -416,8 +416,11 @@ export function TelaVidro({
 const styles = StyleSheet.create({
   cheio: { flex: 1 },
   flexivel: { flex: 1, minWidth: 0 },
-  titulo: { paddingHorizontal: 6 },
-  tituloGrande: { paddingTop: 8, paddingBottom: 2 },
+  titulo: { paddingHorizontal: PAD.cabecalhoTela.paddingHorizontal },
+  tituloGrande: {
+    paddingTop: PAD.cabecalhoTela.paddingTop,
+    paddingBottom: PAD.cabecalhoTela.paddingBottom,
+  },
   tituloComDireita: {
     flexDirection: 'row',
     alignItems: 'flex-end',

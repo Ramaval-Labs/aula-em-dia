@@ -113,10 +113,13 @@ explique.
 Pasta da rodada: `docs/design/revisoes/capturas/<AAAA-MM-DD>-<alvo>/` — fora do git.
 
 1. **Suba o Expo Web uma vez**, em segundo plano (Bash com `run_in_background`), a partir de
-   `mobile/`: `BROWSER=none npx expo start --web --port 8099`. Espere responder:
-   `curl -s -o /dev/null -w "%{http_code}" http://localhost:8099` devolve `200`.
+   `mobile/`: `EXPO_PUBLIC_BACKEND=local BROWSER=none npx expo start --web --port 8099`. Espere
+   responder: `curl -s -o /dev/null -w "%{http_code}" http://localhost:8099` devolve `200`.
    Com o servidor no ar, o script reaproveita e cada captura leva poucos segundos; sem ele, o
    script sobe um servidor próprio por chamada, o que é bem mais lento.
+   **O `EXPO_PUBLIC_BACKEND=local` é obrigatório** quando o `mobile/.env` aponta para o Supabase:
+   a sessão que o script injeta é local, e sem ele toda captura sai na tela de entrada, com o
+   HTML igual entre telas diferentes. Confira que duas telas diferentes não deram o mesmo HTML.
 2. **Antes:** para cada tela do alvo, em `mobile/`:
    `node scripts/capturar.mjs <argumentos do mapa> --nome antes-<tela> --saida <pasta da rodada>`.
    Tema claro sempre; acrescente `--tema escuro` quando o alvo for uma raiz ou a mudança tocar em

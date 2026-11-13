@@ -30,6 +30,7 @@ import { ehSheet, useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
+import { PAD } from '../tema/tokens';
 
 const MEIOS: { valor: MeioDePagamento; rotulo: string }[] = [
   { valor: 'Pix', rotulo: 'Pix' },
@@ -167,7 +168,7 @@ export function Pagamento() {
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
   direita: { alignItems: 'flex-end' },
-  nota: { paddingHorizontal: 6 },
+  nota: PAD.recuo,
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
   linhaChave: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },

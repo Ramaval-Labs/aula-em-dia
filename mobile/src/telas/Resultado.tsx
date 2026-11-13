@@ -28,7 +28,7 @@ import { REGISTRO_INICIAL, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { RAIO, TAMANHO } from '../tema/tokens';
+import { PAD, RAIO, TAMANHO } from '../tema/tokens';
 
 export function Resultado() {
   const { cores, material } = useCores();
@@ -176,7 +176,7 @@ export function Resultado() {
 
 const estilos = StyleSheet.create({
   vazio: { marginTop: 10 },
-  centro: { alignItems: 'center', paddingTop: 10, paddingHorizontal: 4 },
+  centro: { alignItems: 'center', ...PAD.resultado },
   texto: { textAlign: 'center' },
   // A explicação não estica até a borda: o handoff a segura em 300px.
   explicacao: { maxWidth: TAMANHO.larguraExplicacao },

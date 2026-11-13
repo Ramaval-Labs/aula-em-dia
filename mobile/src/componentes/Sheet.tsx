@@ -36,7 +36,7 @@ import { ALVO_MINIMO } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
-import { ESCALA_FONTE, MOVIMENTO, RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, MOVIMENTO, PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAlturaDoTeclado } from './teclado';
 import { SuperficieVidro } from './Vidro';
 
@@ -171,7 +171,7 @@ export function Sheet({
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps={comTeclado ? 'handled' : undefined}
       keyboardDismissMode={comTeclado ? 'interactive' : undefined}
-      contentContainerStyle={{ paddingTop: 6, paddingHorizontal: 16, paddingBottom: 16 }}
+      contentContainerStyle={PAD.corpoSheet}
     >
       {children}
     </ScrollView>
@@ -206,11 +206,11 @@ export function Sheet({
           sombraExterna={material.sombraSheet}
           style={{ flex: 1 }}
         >
-          <View style={{ paddingTop: 9, paddingBottom: 2, alignItems: 'center' }}>
+          <View style={{ ...PAD.puxadorSheet, alignItems: 'center' }}>
             <View
               style={{
-                width: 38,
-                height: 5,
+                width: TAMANHO.puxadorLargura,
+                height: TAMANHO.puxadorAltura,
                 borderRadius: RAIO.puxador,
                 backgroundColor: cores.tinta3,
               }}
@@ -220,18 +220,22 @@ export function Sheet({
           <View
             style={{
               height: TAMANHO.cabecalhoSheet,
-              paddingHorizontal: 18,
+              ...PAD.cabecalhoSheet,
               flexDirection: 'row',
               alignItems: 'center',
             }}
           >
             {semCancelar ? (
-              <View style={{ width: 72 }} />
+              <View style={{ width: TAMANHO.colunaCabecalhoSheet }} />
             ) : (
               <Pressable
                 accessibilityRole="button"
                 onPress={fechar}
-                style={{ width: 72, height: TAMANHO.cabecalhoSheet, justifyContent: 'center' }}
+                style={{
+                  width: TAMANHO.colunaCabecalhoSheet,
+                  height: TAMANHO.cabecalhoSheet,
+                  justifyContent: 'center',
+                }}
               >
                 <Text
                   maxFontSizeMultiplier={ESCALA_FONTE.controle}
@@ -254,7 +258,7 @@ export function Sheet({
               {titulo}
             </Text>
             {/* 72px vazios do outro lado: é o que mantém o título no centro. */}
-            <View style={{ width: 72 }} />
+            <View style={{ width: TAMANHO.colunaCabecalhoSheet }} />
           </View>
 
           {corpo}
@@ -263,10 +267,13 @@ export function Sheet({
             <View
               onLayout={(e) => setAlturaDoRodape(e.nativeEvent.layout.height)}
               style={{
-                paddingTop: 10,
-                paddingHorizontal: 16,
+                paddingTop: PAD.rodapeSheet.paddingTop,
+                paddingHorizontal: PAD.rodapeSheet.paddingHorizontal,
                 // Sobre o teclado não há indicador de home a respeitar.
-                paddingBottom: teclado > 0 ? 10 : Math.max(30, insets.bottom),
+                paddingBottom:
+                  teclado > 0
+                    ? PAD.rodapeSheet.paddingTop
+                    : Math.max(PAD.rodapeSheet.paddingBottom, insets.bottom),
                 borderTopWidth: TAMANHO.bordaVidro,
                 borderTopColor: cores.fio,
               }}
@@ -295,7 +302,7 @@ export function SubLinhaSheet({ passo, texto: linha }: { passo?: string; texto?:
   if (!passo && !linha) return null;
 
   return (
-    <View style={{ paddingTop: 4, paddingHorizontal: 6 }}>
+    <View style={PAD.subLinhaSheet}>
       {passo ? (
         <Text style={[texto(11.5, 600, { altura: 1.3 }), { color: cores.tinta3 }]}>{passo}</Text>
       ) : null}

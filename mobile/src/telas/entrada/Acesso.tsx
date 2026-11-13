@@ -203,6 +203,7 @@ export function Acesso() {
 
 const estilos = StyleSheet.create({
   campos: { gap: 16 },
+  // 2px: o texto do link alinha com o texto do campo, não com a borda do trilho
   link: { alignSelf: 'flex-start', paddingHorizontal: 2 },
   ou: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 12 },
   fio: { flex: 1, height: TAMANHO.bordaVidro },

@@ -26,7 +26,7 @@ import { horarioDoRascunho, useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
-import { RAIO } from '../../tema/tokens';
+import { PAD, RAIO } from '../../tema/tokens';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
 import { faixaDaLinha, linhaDeHorario } from '../comum/aluno';
 
@@ -210,8 +210,7 @@ const estilos = StyleSheet.create({
   caixa: {
     flex: 1,
     borderRadius: RAIO.caixaValor,
-    paddingVertical: 11,
-    paddingHorizontal: 13,
+    ...PAD.caixaDePacote,
   },
   previa: { marginTop: 9 },
 });

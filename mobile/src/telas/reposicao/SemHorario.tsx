@@ -25,6 +25,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
+import { PAD } from '../../tema/tokens';
 
 export function SemHorario() {
   const { cores } = useCores();
@@ -134,5 +135,5 @@ const estilos = StyleSheet.create({
   bloco: { marginTop: 16 },
   cabecalho: { marginTop: 24 },
   lista: { marginTop: 9 },
-  recuo: { paddingHorizontal: 6 },
+  recuo: PAD.recuo,
 });

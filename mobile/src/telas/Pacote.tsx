@@ -25,7 +25,7 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { texto, TIPO } from '../tema/tipografia';
-import { TAMANHO } from '../tema/tokens';
+import { PAD, TAMANHO } from '../tema/tokens';
 
 const VALIDADES = [
   { valor: 30, rotulo: '30 dias' },
@@ -180,6 +180,6 @@ const estilos = StyleSheet.create({
   cartao: { marginTop: 14 },
   linhaSaldo: { flexDirection: 'row', alignItems: 'flex-end' },
   numeroDoSaldo: { marginTop: 9, flexDirection: 'row', alignItems: 'baseline', gap: 7 },
-  linhas: { marginTop: 14, paddingTop: 12, borderTopWidth: TAMANHO.bordaVidro, gap: 8 },
+  linhas: { marginTop: 14, ...PAD.rodapeDoCartao, borderTopWidth: TAMANHO.bordaVidro, gap: 8 },
   linha: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
 });

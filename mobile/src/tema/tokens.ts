@@ -448,6 +448,15 @@ export const TAMANHO = {
 
   /** marcador redondo de lista de motivos ("Por que esse horário") */
   pontoLista: 6,
+
+  /* Chassi (SCRUM-40) */
+  /** distância do botão voltar à borda esquerda (handoff `left: 12px`) */
+  margemVoltar: 12,
+  /** puxador do sheet, a barrinha do topo */
+  puxadorLargura: 38,
+  puxadorAltura: 5,
+  /** as colunas dos dois lados do cabeçalho do sheet: "Cancelar" e o vazio que centraliza o título */
+  colunaCabecalhoSheet: 72,
 } as const;
 
 /**
@@ -484,6 +493,64 @@ export const PAD = {
   faixa: { paddingHorizontal: 8 },
   /** caixa do saldo à direita de uma linha (`6px 10px`) */
   caixaValor: { paddingVertical: 6, paddingHorizontal: 10 },
+
+  /* Chassi (SCRUM-40, rodada 2) */
+  /** título da barra de navegação: o vão que deixa o botão voltar livre (`0 60px`) */
+  tituloNav: { paddingHorizontal: 60 },
+  /** botão voltar (`0 10px`) */
+  botaoVoltar: { paddingHorizontal: 10 },
+  /** cabeçalho do título grande da tela (`8px 6px 2px`) */
+  cabecalhoTela: { paddingTop: 8, paddingHorizontal: 6, paddingBottom: 2 },
+  /** tab bar, entre a borda e os itens (`5px`) */
+  tabBar: { padding: 5 },
+  /** área do puxador do sheet (`9px 0 2px`) */
+  puxadorSheet: { paddingTop: 9, paddingBottom: 2 },
+  /** cabeçalho do sheet, "Cancelar" e título (`0 18px`) */
+  cabecalhoSheet: { paddingHorizontal: 18 },
+  /** corpo rolável do sheet (`6px 16px 16px`) */
+  corpoSheet: { paddingTop: 6, paddingHorizontal: 16, paddingBottom: 16 },
+  /** sub-linha do sheet, abaixo do cabeçalho (`4px 6px 0`) */
+  subLinhaSheet: { paddingTop: 4, paddingHorizontal: 6 },
+  /** rodapé fixo do sheet (`10px 16px 30px`; sobre o teclado, 10 embaixo também) */
+  rodapeSheet: { paddingTop: 10, paddingHorizontal: 16, paddingBottom: 30 },
+  /** faixa fixa do rodapé na entrada (login e onboarding) */
+  rodapeEntrada: { paddingTop: 12 },
+
+  /* Controles e recuos (SCRUM-40, rodada 2) */
+  /** botão primário (`8px 18px` por dentro da altura mínima) */
+  botaoPrimario: { paddingVertical: 8, paddingHorizontal: 18 },
+  /** botão inline (`0 18px`) */
+  botaoInline: { paddingHorizontal: 18 },
+  /** trilho do segmentado de filtro e de cartão (`3px`) */
+  trilhoSegmentado: { padding: 3 },
+  /** trilho do segmentado embutido numa linha de lista (`2.5px`) */
+  trilhoSegmentadoLinha: { padding: 2.5 },
+  /** trilho do stepper (`3px`) */
+  trilhoStepper: { padding: 3 },
+  /** ficha de escolha (`0 14px`) */
+  ficha: { paddingHorizontal: 14 },
+  /** selo "MELHOR" (`0 7px`) */
+  selo: { paddingHorizontal: 7 },
+  /** trilho do campo de texto (`0 14px`) */
+  campo: { paddingHorizontal: 14 },
+  /** separador com fio dentro do cartão de escolha e do débito (`padding-top: 13px`) */
+  separador: { paddingTop: 13 },
+  /** rodapé com fio dentro de um cartão: o da grade, as linhas do pacote (`padding-top: 12px`) */
+  rodapeDoCartao: { paddingTop: 12 },
+  /** caixa da prévia de mensagem (`14px`) */
+  previaMensagem: { padding: 14 },
+  /** cartão que envolve a grade semanal (`14px 8px`; a conta da grade depende dele) */
+  cartaoDaGrade: { paddingVertical: 14, paddingHorizontal: 8 },
+  /** caixas de valor e validade do primeiro pacote (`11px 13px`) */
+  caixaDePacote: { paddingVertical: 11, paddingHorizontal: 13 },
+  /** linha numerada das Boas-vindas, "01 · 02 · 03" (`14px 15px`) */
+  linhaDePasso: { paddingVertical: 14, paddingHorizontal: 15 },
+  /** recuo do texto solto, alinhado ao cabeçalho de grupo (`0 6px`) */
+  recuo: { paddingHorizontal: 6 },
+  /** identificação da ficha, avatar e nome (`0 4px`) */
+  identificacao: { paddingHorizontal: 4 },
+  /** conteúdo centralizado do Resultado (`10px 4px 0`) */
+  resultado: { paddingTop: 10, paddingHorizontal: 4 },
 } as const;
 
 /**

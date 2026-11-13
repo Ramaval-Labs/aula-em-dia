@@ -25,6 +25,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
+import { PAD } from '../../tema/tokens';
 
 export function DispAluno() {
   const { cores } = useCores();
@@ -90,6 +91,6 @@ export function DispAluno() {
 }
 
 const estilos = StyleSheet.create({
-  recuo: { paddingHorizontal: 6 },
+  recuo: PAD.recuo,
   cartao: { marginTop: 14, ...PAD_CARTAO_DA_GRADE },
 });

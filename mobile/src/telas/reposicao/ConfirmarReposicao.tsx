@@ -29,6 +29,7 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
+import { PAD } from '../../tema/tokens';
 
 export function ConfirmarReposicao() {
   const { cores } = useCores();
@@ -208,7 +209,7 @@ const estilos = StyleSheet.create({
   bloco: { marginTop: 14 },
   linhaSwitch: { flexDirection: 'row', alignItems: 'center', gap: 13 },
   flexivel: { flex: 1, minWidth: 0 },
-  recuo: { paddingHorizontal: 6 },
+  recuo: PAD.recuo,
   linhaResumo: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   valorResumo: { flexShrink: 1, textAlign: 'right' },
 });

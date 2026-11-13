@@ -38,7 +38,7 @@ import type { DiaDaSemana } from '../dominio/tipos';
 import { folgaDeToque } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
-import { RAIO, TAMANHO } from '../tema/tokens';
+import { PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
 import { FichaDeEscolha } from './Controles';
 
@@ -378,10 +378,11 @@ const estilos = StyleSheet.create({
   trilho: {
     borderRadius: RAIO.botaoInline,
     borderWidth: 1,
-    paddingHorizontal: 14,
+    ...PAD.campo,
     flexDirection: 'row',
     gap: 10,
   },
   entrada: { flex: 1, minWidth: 0 },
+  // 2px: a dica alinha com o texto digitado, não com a borda do trilho
   nota: { paddingHorizontal: 2 },
 });
