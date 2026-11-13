@@ -24,6 +24,8 @@ import {
   reposicaoMarcada,
   type Candidata,
 } from '../agenda';
+import { estadoInicial } from '../../dados/semente';
+import { lerAulaFixa } from '../aulaFixa';
 import { diasEntre, somarDias } from '../datas';
 import { diaDaSemanaDe, nomeDoDia, temBloco } from '../disponibilidade';
 import type {
@@ -247,6 +249,37 @@ describe('candidatos — descarte', () => {
     expect(temJanela(lista, { dia: 'ter', faixa: 'fimTarde' })).toBe(false);
     expect(temJanela(lista, { dia: 'qui', faixa: 'fimTarde' })).toBe(false);
     expect(temJanela(lista, { dia: 'seg', faixa: 'fimTarde' })).toBe(true);
+  });
+
+  // SCRUM-31: a estrutura é a fonte. O texto é só o que a tela mostra.
+  it('com a aula fixa estruturada, vale ela, e não o texto', () => {
+    const estruturado = com({ dia: '', hora: '', aulaFixa: { dias: ['ter'], hora: 18 } });
+    const lista = candidatos(estruturado, [estruturado], ABERTA, HOJE);
+    expect(temJanela(lista, { dia: 'ter', faixa: 'fimTarde' })).toBe(false);
+
+    const divergente = com({ dia: 'quarta', hora: '17h', aulaFixa: { dias: ['ter'], hora: 18 } });
+    const outra = candidatos(divergente, [divergente], ABERTA, HOJE);
+    expect(temJanela(outra, { dia: 'ter', faixa: 'fimTarde' })).toBe(false);
+    expect(temJanela(outra, QUA_FIM_TARDE)).toBe(true);
+  });
+
+  it('a aula fixa estruturada de outro aluno ocupa o bloco dele', () => {
+    const outro = com({ id: 'b', dia: '', hora: '', aulaFixa: { dias: ['seg'], hora: 15 } });
+    const segTarde: BlocoSemanal = { dia: 'seg', faixa: 'tarde' };
+    expect(temJanela(candidatos(aluno, [aluno, outro], ABERTA, HOJE), segTarde)).toBe(false);
+  });
+
+  it('estruturar a semente não muda nenhuma janela', () => {
+    // a validade da semente é relativa à data real; aqui ela fica fixa, para
+    // as janelas existirem com o HOJE literal da suíte
+    const texto = estadoInicial().alunos.map((a) => ({ ...a, validade: '30/10' }));
+    const estruturados = texto.map((a) => ({ ...a, aulaFixa: lerAulaFixa(a.dia, a.hora) }));
+    expect(texto.length).toBeGreaterThan(0);
+    for (let i = 0; i < texto.length; i += 1) {
+      const antes = candidatos(texto[i], texto, DISPONIBILIDADE, HOJE);
+      expect(antes.length).toBeGreaterThan(0);
+      expect(candidatos(estruturados[i], estruturados, DISPONIBILIDADE, HOJE)).toEqual(antes);
+    }
   });
 
   it('aluno sem hora reconhecível não perde bloco nenhum', () => {
