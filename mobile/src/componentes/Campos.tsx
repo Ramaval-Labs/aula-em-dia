@@ -32,12 +32,15 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { DIAS, DIAS_DA_SEMANA } from '../dominio/disponibilidade';
 import { dinheiro, lerDinheiro } from '../dominio/formato';
+import type { DiaDaSemana } from '../dominio/tipos';
 import { folgaDeToque } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
 import { RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
+import { FichaDeEscolha } from './Controles';
 
 export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'decimal' | 'telefone';
 
@@ -297,7 +300,80 @@ export function AcaoDoCampo({
   );
 }
 
+/* ── Seletor de dias ──────────────────────────────────────────────────── */
+
+/** "SEG" → "Seg", "SÁB" → "Sáb": a ficha é estreita, o nome longo vai para o leitor de tela. */
+const curtoDe = (curto: string) => curto[0] + curto.slice(1).toLowerCase();
+
+/**
+ * Os dias da aula fixa (SCRUM-90) — derivado: uma fileira de `FichaDeEscolha`
+ * de segunda a sábado, a mesma semana da grade do professor
+ * (`DIAS_DA_SEMANA`), sob o mesmo rótulo do campo de texto. As seis fichas
+ * dividem a largura. Escolha múltipla; nenhuma marcada é "sem horário fixo".
+ * Os dias saem sempre na ordem da semana, qualquer que seja a ordem do toque.
+ */
+export function SeletorDeDias({
+  rotulo,
+  dias,
+  aoMudar,
+  ajuda,
+}: {
+  rotulo: string;
+  dias: DiaDaSemana[];
+  aoMudar: (dias: DiaDaSemana[]) => void;
+  /** dica fixa sob a fileira */
+  ajuda?: string;
+}) {
+  const { cores } = useCores();
+  const alternar = (dia: DiaDaSemana) => {
+    const proximo = dias.includes(dia) ? dias.filter((d) => d !== dia) : [...dias, dia];
+    aoMudar(DIAS_DA_SEMANA.filter((d) => proximo.includes(d)));
+  };
+
+  return (
+    <View>
+      <Text
+        style={[
+          texto(11.5, 600, { tracking: 0.04, maiuscula: true }),
+          { color: cores.tinta3 },
+        ]}
+      >
+        {rotulo}
+      </Text>
+      <View style={estilos.fileiraDeDias}>
+        {DIAS_DA_SEMANA.map((dia) => {
+          const nomes = DIAS.find((d) => d.chave === dia);
+          return (
+            <FichaDeEscolha
+              key={dia}
+              rotulo={curtoDe(nomes?.curto ?? dia)}
+              rotuloAcessivel={nomes?.longo ?? dia}
+              marcada={dias.includes(dia)}
+              aoTocar={() => alternar(dia)}
+              estilo={estilos.fichaDeDia}
+            />
+          );
+        })}
+      </View>
+      {ajuda ? (
+        <Text
+          style={[
+            comEspaco(texto(12, 500, { altura: 1.4 }), { topo: 6 }),
+            estilos.nota,
+            { color: cores.tinta2 },
+          ]}
+        >
+          {ajuda}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 const estilos = StyleSheet.create({
+  fileiraDeDias: { flexDirection: 'row', gap: 6, marginTop: 8 },
+  // as seis dividem a largura: o padding lateral da ficha não cabe seis vezes
+  fichaDeDia: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
   acao: { height: TAMANHO.alvoMinimo, justifyContent: 'center' },
   trilho: {
     borderRadius: RAIO.botaoInline,

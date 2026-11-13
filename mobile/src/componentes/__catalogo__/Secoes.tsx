@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { dinheiro } from '../../dominio/formato';
-import type { BlocoSemanal } from '../../dominio/tipos';
+import type { BlocoSemanal, DiaDaSemana } from '../../dominio/tipos';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { TAMANHO } from '../../tema/tokens';
@@ -27,7 +27,7 @@ import {
   type EstadoDoAvatar,
   type TamanhoDeAvatar,
 } from '../Blocos';
-import { CampoDeDinheiro, CampoDeTexto, useCampoDeDinheiro } from '../Campos';
+import { CampoDeDinheiro, CampoDeTexto, SeletorDeDias, useCampoDeDinheiro } from '../Campos';
 import { useAtualizarAoPuxar } from '../Chassi';
 import {
   BotaoCompacto,
@@ -653,6 +653,7 @@ function AmostraAtualizarAoPuxar() {
 function SecaoDerivados() {
   const [nome, setNome] = useState('Valentina Rocha');
   const [email, setEmail] = useState('valentina');
+  const [dias, setDias] = useState<DiaDaSemana[]>(['ter', 'qui']);
   const [marcados, setMarcados] = useState<BlocoSemanal[]>(BLOCOS);
   const [valorPorAula, setValorPorAula] = useState(80);
   const { campo: campoDeValor } = useCampoDeDinheiro(valorPorAula, setValorPorAula);
@@ -691,6 +692,20 @@ function SecaoDerivados() {
               valor={MENSAGEM}
               aoMudar={() => {}}
               multilinha
+            />
+          </View>
+        </CartaoVidro>
+      </Amostra>
+
+      <Amostra rotulo="seletor de dias · sem handoff">
+        <CartaoVidro>
+          <View style={estilos.colunaCampos}>
+            <SeletorDeDias rotulo="Dias da aula" dias={dias} aoMudar={setDias} />
+            <SeletorDeDias
+              rotulo="Dias da aula"
+              dias={[]}
+              aoMudar={() => {}}
+              ajuda="Sem dia marcado, o aluno fica sem horário fixo."
             />
           </View>
         </CartaoVidro>
