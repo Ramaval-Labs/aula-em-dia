@@ -29,7 +29,7 @@ import {
   useBarraComRolagem,
   usePadTopo,
 } from '../../componentes/Chassi';
-import { TAMANHO } from '../../tema/tokens';
+import { PAD, TAMANHO } from '../../tema/tokens';
 
 /** Respiro entre o cabeçalho de texto e o primeiro cartão. */
 const ESPACO_APOS_TITULO = 18;
@@ -128,7 +128,7 @@ const estilos = StyleSheet.create({
   cheio: { flex: 1 },
   acima: { marginBottom: 16 },
   rodape: {
-    paddingTop: 12,
+    ...PAD.rodapeEntrada,
     paddingHorizontal: TAMANHO.padLateral,
     gap: 8,
   },

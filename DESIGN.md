@@ -569,8 +569,24 @@ espalhar no `style` (`{ ...PAD.cartao, gap: 12 }`).
 | `PAD.linhaLista` | 12 · 15 | linha de lista agrupada (o extrato) |
 | `PAD.faixa` | 0 · 8 | faixa de status |
 | `PAD.caixaValor` | 6 · 10 | caixa do saldo à direita de uma linha |
+| `PAD.tituloNav` | 0 · 60 | título da barra de navegação |
+| `PAD.botaoVoltar` | 0 · 10 | botão voltar |
+| `PAD.cabecalhoTela` | 8 · 6 · 2 | cabeçalho do título grande da tela |
+| `PAD.tabBar` | 5 | tab bar, entre a borda e os itens |
+| `PAD.puxadorSheet` | 9 · 0 · 2 | área do puxador do sheet |
+| `PAD.cabecalhoSheet` | 0 · 18 | cabeçalho do sheet |
+| `PAD.corpoSheet` | 6 · 16 · 16 | corpo rolável do sheet |
+| `PAD.subLinhaSheet` | 4 · 6 · 0 | sub-linha do sheet |
+| `PAD.rodapeSheet` | 10 · 16 · 30 | rodapé fixo do sheet (sobre o teclado, 10 embaixo) |
+| `PAD.rodapeEntrada` | 12 em cima | faixa fixa do rodapé na entrada |
 
 O bloco âmbar e o cartão de ajuste medem igual hoje, mas são tokens separados: mudam cada um por si.
+As medidas de tamanho e posição do chassi foram para `TAMANHO`: `margemVoltar` (12),
+`puxadorLargura` × `puxadorAltura` (38 × 5) e `colunaCabecalhoSheet` (72).
+
+**O que continua literal, e por quê:** os vãos entre elementos (`gap`, `margin`, o `topo` de
+`comEspaco`) são o ritmo vertical descrito acima e não são tokens. Os zeros de posição (`left: 0`,
+`right: 0`) só preenchem o pai. A tipografia sai de `texto()`/`TIPO`, que já é o tema.
 
 ### Named Rules
 **The 126 Rule.** Toda tela que convive com a tab bar reserva 126px embaixo. Conteúdo nunca passa

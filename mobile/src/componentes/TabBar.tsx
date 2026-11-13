@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Aba } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
 import { TIPO } from '../tema/tipografia';
-import { ESCALA_FONTE, PILULA_ABA, RAIO, TAMANHO } from '../tema/tokens';
+import { ESCALA_FONTE, PAD, PILULA_ABA, RAIO, TAMANHO } from '../tema/tokens';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
@@ -157,7 +157,7 @@ export function TabBar({
           height: TAMANHO.tabBar,
           flexDirection: 'row',
           alignItems: 'center',
-          padding: 5,
+          ...PAD.tabBar,
           gap: 4,
         }}
       >

@@ -448,6 +448,15 @@ export const TAMANHO = {
 
   /** marcador redondo de lista de motivos ("Por que esse horário") */
   pontoLista: 6,
+
+  /* Chassi (SCRUM-40) */
+  /** distância do botão voltar à borda esquerda (handoff `left: 12px`) */
+  margemVoltar: 12,
+  /** puxador do sheet, a barrinha do topo */
+  puxadorLargura: 38,
+  puxadorAltura: 5,
+  /** as colunas dos dois lados do cabeçalho do sheet: "Cancelar" e o vazio que centraliza o título */
+  colunaCabecalhoSheet: 72,
 } as const;
 
 /**
@@ -484,6 +493,28 @@ export const PAD = {
   faixa: { paddingHorizontal: 8 },
   /** caixa do saldo à direita de uma linha (`6px 10px`) */
   caixaValor: { paddingVertical: 6, paddingHorizontal: 10 },
+
+  /* Chassi (SCRUM-40, rodada 2) */
+  /** título da barra de navegação: o vão que deixa o botão voltar livre (`0 60px`) */
+  tituloNav: { paddingHorizontal: 60 },
+  /** botão voltar (`0 10px`) */
+  botaoVoltar: { paddingHorizontal: 10 },
+  /** cabeçalho do título grande da tela (`8px 6px 2px`) */
+  cabecalhoTela: { paddingTop: 8, paddingHorizontal: 6, paddingBottom: 2 },
+  /** tab bar, entre a borda e os itens (`5px`) */
+  tabBar: { padding: 5 },
+  /** área do puxador do sheet (`9px 0 2px`) */
+  puxadorSheet: { paddingTop: 9, paddingBottom: 2 },
+  /** cabeçalho do sheet, "Cancelar" e título (`0 18px`) */
+  cabecalhoSheet: { paddingHorizontal: 18 },
+  /** corpo rolável do sheet (`6px 16px 16px`) */
+  corpoSheet: { paddingTop: 6, paddingHorizontal: 16, paddingBottom: 16 },
+  /** sub-linha do sheet, abaixo do cabeçalho (`4px 6px 0`) */
+  subLinhaSheet: { paddingTop: 4, paddingHorizontal: 6 },
+  /** rodapé fixo do sheet (`10px 16px 30px`; sobre o teclado, 10 embaixo também) */
+  rodapeSheet: { paddingTop: 10, paddingHorizontal: 16, paddingBottom: 30 },
+  /** faixa fixa do rodapé na entrada (login e onboarding) */
+  rodapeEntrada: { paddingTop: 12 },
 } as const;
 
 /**
