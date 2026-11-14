@@ -819,6 +819,30 @@ o trigger cria as três linhas e o seed grava o perfil por cima.
 - Os dados continuam no aparelho mesmo no modo `supabase`: o repositório remoto é a Parte 4, e
   até lá `escolherRepositorio` cai no local com um aviso.
 
+**Recuperar a senha (SCRUM-62).** O link do e-mail abre o app do professor no navegador, na
+Vercel, e não depende do build (PO, 14/11). O e-mail sai pelo Resend, ligado como SMTP do Supabase.
+
+- **O `token_hash`, e não o PKCE.** O link é `{{ .RedirectTo }}?token_hash=…&type=recovery`, e a tela
+  chama `redefinirSenha`, que faz `verifyOtp` e `updateUser`. Funciona em qualquer navegador; o PKCE
+  só funcionaria no aparelho que pediu.
+- **Não revela quem tem conta.** O Supabase já responde igual para o e-mail sem conta. A sessão
+  também trata o limite de envio (429) como sucesso: uma resposta diferente ali diria que o e-mail
+  existe. A tela mostra `FRASE_DO_LINK_ENVIADO` nos dois casos.
+- **O link vale uma vez só.** O usado, o vencido e o inventado dão `otp_expired`, que vira "Esse
+  link expirou ou já foi usado".
+  - **A senha recusada** depois do `verifyOtp` (igual à atual, por exemplo) não gasta o link de
+    novo: a nova tentativa usa a sessão aberta.
+- **A conta do link pode não ser a do aparelho:** os dados guardados são esquecidos antes de entrar,
+  como no `sair`.
+- **As frases novas** (link vencido, senha igual, falha no envio) moram em `ERRO_DA_RECUPERACAO`, na
+  sessão, até irem para `dominio/validacao.ts`.
+- **Onde foi testado:**
+  - no `sessao.test.ts`, com o cliente simulado e os códigos que o Auth local devolveu
+    (`over_email_send_rate_limit`, `otp_expired`, `same_password`);
+  - no `supabase/tests/funcoes/recuperacao.test.mjs`, de ponta a ponta no Auth local, com o
+    e-mail lido no Inbucket.
+- **A configuração da nuvem** (Resend, modelo, URLs) está em `supabase/README.md`.
+
 **Onde foi testado.** Em 15/10/2026, contra o banco local: `db reset` com a `0003`, os testes pgTAP
 (o do trigger e o de RLS), e a sessão de verdade num teste temporário contra o Auth local —
 senha errada, e-mail repetido, senha curta, cadastro, reabrir logado, sair e entrar. No
