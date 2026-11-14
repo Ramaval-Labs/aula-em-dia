@@ -32,14 +32,18 @@ import {
   onboardingConcluido,
 } from '../dados/repositorioSupabase';
 import { clienteSupabase, usaSupabase } from '../dados/supabase';
-import { ERRO, validarAcesso } from '../dominio/validacao';
+import { emailValido, ERRO, senhaValida, validarAcesso } from '../dominio/validacao';
 import { useDados } from './dados';
 
 /** Em qual das três máquinas o app está. */
 export type Fase = 'carregando' | 'entrada' | 'onboarding' | 'app';
 
-/** Telas da máquina de entrada (A2 e A3; A1 é a fase 'carregando'). */
-export type TelaDeEntrada = 'boasVindas' | 'acesso';
+/**
+ * Telas da máquina de entrada (A2 e A3; A1 é a fase 'carregando'). A
+ * `novaSenha` é a do link de recuperação (SCRUM-62): o app abre nela pelo
+ * caminho `/redefinir-senha` do e-mail, e não pelo fluxo de boas-vindas.
+ */
+export type TelaDeEntrada = 'boasVindas' | 'acesso' | 'novaSenha';
 
 /** Passos do onboarding (A4 a A7). */
 export type PassoDeOnboarding = 1 | 2 | 3 | 4;
@@ -66,6 +70,18 @@ type Sessao = {
   entrar: (email: string, senha?: string) => Promise<string | null>;
   /** Conta nova: começa o onboarding no passo 1. Mesma resposta de `entrar`. */
   criarConta: (email: string, senha?: string) => Promise<string | null>;
+  /**
+   * "Esqueci minha senha" (SCRUM-62): pede o e-mail com o link. Devolve `null`
+   * quando o pedido saiu, **tenha o e-mail conta ou não**: a tela mostra
+   * `FRASE_DO_LINK_ENVIADO` nos dois casos, para não revelar quem tem conta.
+   * Erro só de formulário, de rede ou do servidor, como em `entrar`.
+   */
+  pedirRecuperacao: (email: string) => Promise<string | null>;
+  /**
+   * A senha nova, com o `token_hash` que veio no link do e-mail. Deu certo:
+   * `null`, e a pessoa já entra, como em `entrar`. Senão, a frase para a tela.
+   */
+  redefinirSenha: (tokenHash: string, novaSenha: string) => Promise<string | null>;
   avancar: () => void;
   /** Devolve false quando não há para onde voltar — o SO fecha o app. */
   voltarEntrada: () => boolean;
@@ -79,6 +95,12 @@ type Sessao = {
    */
   apagarConta: () => Promise<void>;
 };
+
+/**
+ * O que a tela mostra depois de pedir o link, exista a conta ou não
+ * (SCRUM-62): a mesma frase nos dois casos é o que não revela quem tem conta.
+ */
+export const FRASE_DO_LINK_ENVIADO = 'Se houver uma conta com esse e-mail, mandamos o link.';
 
 /** Se o login é de verdade, para a tela decidir o que oferecer sem ler o ambiente. */
 export const loginReal = (): boolean => usaSupabase();
@@ -114,6 +136,18 @@ export function fraseDoErroDeAcesso(erro: unknown): string {
 function erroDoFormulario(email: string, senha: string | undefined): string | null {
   const erros = validarAcesso(email, senha ?? '');
   return erros.email ?? erros.senha ?? null;
+}
+
+/** Só o e-mail, para o pedido de recuperação: as frases de `validarAcesso`. */
+function erroDoEmail(email: string): string | null {
+  if (!email.trim()) return ERRO.emailVazio;
+  return emailValido(email) ? null : ERRO.emailInvalido;
+}
+
+/** Só a senha, para a senha nova: as frases de `validarAcesso`. */
+function erroDaSenha(senha: string): string | null {
+  if (!senha) return ERRO.senhaVazia;
+  return senhaValida(senha) ? null : ERRO.senhaCurta;
 }
 
 /** Falha que não é do usuário (variável faltando, por exemplo): aparece no console. */
@@ -236,6 +270,30 @@ export const useSessao = create<Sessao>((set, get) => ({
       avisarEmDesenvolvimento('Criar a conta', erro);
       return fraseDoErroDeAcesso(erro);
     }
+  },
+
+  async pedirRecuperacao(email) {
+    const doFormulario = erroDoEmail(email);
+    if (doFormulario) return doFormulario;
+    // No modo local não há conta nem e-mail: responde como se tivesse mandado.
+    if (!usaSupabase()) return null;
+    // O pedido de verdade entra no próximo commit (SCRUM-62).
+    return ERRO.falhaNoAcesso;
+  },
+
+  async redefinirSenha(tokenHash, novaSenha) {
+    const daSenha = erroDaSenha(novaSenha);
+    if (daSenha) return daSenha;
+    if (!usaSupabase()) {
+      // Sem conta no modo local: a senha nova é aceita e a pessoa entra.
+      const email = get().email;
+      set({ fase: 'app', contaNova: false });
+      gravar({ fase: 'app', email });
+      return null;
+    }
+    void tokenHash;
+    // A troca de verdade entra no próximo commit (SCRUM-62).
+    return ERRO.falhaNoAcesso;
   },
 
   avancar() {

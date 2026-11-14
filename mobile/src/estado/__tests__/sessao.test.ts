@@ -20,7 +20,13 @@ import {
 import { clienteSupabase, usaSupabase } from '../../dados/supabase';
 import { ERRO } from '../../dominio/validacao';
 import { useDados } from '../dados';
-import { fraseDoErroDeAcesso, loginReal, podeApagarConta, useSessao } from '../sessao';
+import {
+  FRASE_DO_LINK_ENVIADO,
+  fraseDoErroDeAcesso,
+  loginReal,
+  podeApagarConta,
+  useSessao,
+} from '../sessao';
 
 jest.mock('../../dados/supabase', () => ({
   usaSupabase: jest.fn(() => false),
@@ -155,6 +161,27 @@ describe('modo local, como sempre foi', () => {
     expect(s()).toMatchObject({ fase: 'entrada', tela: 'boasVindas', email: null });
     expect(await gravado()).toBeNull();
     expect(cliente).not.toHaveBeenCalled();
+  });
+
+  it('pedir a recuperação responde sem rede, e o e-mail ainda é conferido', async () => {
+    await expect(s().pedirRecuperacao(EMAIL)).resolves.toBeNull();
+    await expect(s().pedirRecuperacao('')).resolves.toBe(ERRO.emailVazio);
+    await expect(s().pedirRecuperacao('sem-arroba')).resolves.toBe(ERRO.emailInvalido);
+    expect(cliente).not.toHaveBeenCalled();
+  });
+
+  it('redefinir a senha confere a senha nova e entra no app, sem rede', async () => {
+    await expect(s().redefinirSenha('hash', '')).resolves.toBe(ERRO.senhaVazia);
+    await expect(s().redefinirSenha('hash', '123')).resolves.toBe(ERRO.senhaCurta);
+    expect(s().fase).toBe('entrada');
+
+    await expect(s().redefinirSenha('hash', SENHA)).resolves.toBeNull();
+    expect(s().fase).toBe('app');
+    expect(cliente).not.toHaveBeenCalled();
+  });
+
+  it('a frase do link enviado não diz se a conta existe', () => {
+    expect(FRASE_DO_LINK_ENVIADO).toBe('Se houver uma conta com esse e-mail, mandamos o link.');
   });
 
   it('loginReal é falso', () => {
