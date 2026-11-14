@@ -8,6 +8,7 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | Arquivo | O que é |
 |---|---|
 | `config.toml` | Portas e versão do Postgres, iguais para as três pessoas |
+| `templates/recuperacao.html` | O e-mail de "Esqueci minha senha", com o link de `token_hash`; o mesmo vai no painel da nuvem |
 | `migrations/0001_esquema.sql` | 5 enums, 6 tabelas, 2 índices |
 | `migrations/0002_rls.sql` | RLS nas 6 tabelas, com política em todas |
 | `migrations/0003_novo_professor.sql` | Trigger: criar o login cria o professor, a política e a disponibilidade |
@@ -34,6 +35,7 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `tests/database/aula_fixa.test.sql` | Teste da `0009`: o `check` aceita a estrutura e o nulo, e recusa hora fora de 0–23, dia que não existe e texto livre |
 | `tests/database/avisos.test.sql` | Teste da `0010`: o token é só do dono, o aviso não repete, e os agendamentos sem o Vault não chamam ninguém |
 | `tests/funcoes/avisos.test.mjs` | A `avisos` contra um Expo Push falso: um resumo por dia, um aviso por aula, nada repetido |
+| `tests/funcoes/recuperacao.test.mjs` | Recuperar a senha de ponta a ponta no Auth local: o e-mail, o link e a senha nova, com o link valendo uma vez só |
 | `tests/funcoes/aluno-publico.test.mjs` | A `aluno-publico` servida de verdade só entrega o aluno do link: sentinelas, os 404, a janela inválida e a origem estranha (no CI, o job "Função do aluno") |
 
 ## Para rodar
@@ -274,6 +276,57 @@ select vault.create_secret('<o mesmo segredo>', 'avisos_segredo');
 Para conferir: `select * from cron.job_run_details order by start_time desc limit 5;` mostra as
 rodadas, e `select status_code, content from net._http_response order by id desc limit 5;` as
 respostas da função, que só contam quantos pushes saíram.
+
+## Recuperar a senha (SCRUM-62)
+
+O professor toca em "Esqueci minha senha", recebe um e-mail e abre o link em qualquer navegador.
+O link leva ao app do professor na web, em `/redefinir-senha`, onde ele escolhe a senha nova.
+As telas são do `SCRUM-96`. A sessão (`estado/sessao.ts`) tem as duas ações:
+- `pedirRecuperacao(email)` chama o `resetPasswordForEmail`, com o retorno em
+  `<EXPO_PUBLIC_URL_DO_APP>/redefinir-senha`. Responde igual para quem tem conta e quem não tem.
+  O limite de envio (429) também responde igual.
+- `redefinirSenha(tokenHash, senha)` chama o `verifyOtp({ type: 'recovery', token_hash })` e o
+  `updateUser({ password })`, e a pessoa entra.
+
+**O fluxo é o do `token_hash`, não o PKCE.** O verificador do PKCE fica no aparelho que pediu,
+e o link aberto em outro navegador falharia. Por isso o modelo do e-mail monta o link à mão:
+`{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery`. O `detectSessionInUrl` continua
+desligado: quem lê o `token_hash` é a tela.
+
+**No local**, o e-mail cai no Inbucket (`http://127.0.0.1:54324`), e o `config.toml` já tem o
+modelo (`templates/recuperacao.html`) e o retorno para o Expo Web (`localhost:8081`). O teste de
+ponta a ponta precisa do Inbucket no ar, então rode o `start` sem `-x inbucket`:
+
+```bash
+set -a; eval "$(npx supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY|PUBLISHABLE_KEY|INBUCKET_URL)=')"; set +a
+node supabase/tests/funcoes/recuperacao.test.mjs
+```
+
+**Na nuvem, uma vez, pelo painel.** O `config.toml` só vale no local. **Não rode
+`supabase config push`:** ele levaria o `site_url` do `localhost` para a nuvem.
+
+1. **Resend** (resend.com, plano gratuito): crie uma API key com permissão de envio. Ela vai
+   só no painel do Supabase, nunca no git nem em `EXPO_PUBLIC_*`.
+   - **Atenção ao domínio.** Sem um domínio verificado no Resend, o remetente de teste
+     (`onboarding@resend.dev`) só manda para o e-mail da própria conta do Resend. Para mandar a
+     qualquer professor, é preciso verificar um domínio próprio, com os registros DNS que o
+     Resend mostra. O `*.vercel.app` não serve, porque não dá para pôr DNS nele.
+2. **Authentication → Emails → SMTP Settings:** ligue o SMTP próprio.
+   - Host `smtp.resend.com`, porta `465`, usuário `resend` e, como senha, a API key.
+   - O remetente é `onboarding@resend.dev` no teste, ou um endereço do domínio verificado, e o
+     nome do remetente é `Aula em Dia`.
+3. **Authentication → Emails → Templates → Reset Password:** o assunto
+   `Redefinir a senha do Aula em Dia`, e o corpo é o HTML de `templates/recuperacao.html`.
+4. **Authentication → URL Configuration:**
+   - **Site URL:** `https://aula-em-dia-three.vercel.app`.
+   - **Redirect URLs:** `https://aula-em-dia-three.vercel.app/redefinir-senha` e, para testar
+     do computador, `http://localhost:8081/redefinir-senha`.
+5. **Vercel → Settings → Environment Variables:** `EXPO_PUBLIC_URL_DO_APP` =
+   `https://aula-em-dia-three.vercel.app`, e um novo deploy. No `mobile/.env` de cada pessoa, o
+   mesmo valor, para o Expo Go pedir o link certo.
+
+Para conferir: peça o link pelo app e veja o e-mail chegar. Abrir o link e trocar a senha só
+funciona com as telas do `SCRUM-96`, que leem o `/redefinir-senha`.
 
 ## Rodar no celular com o banco local
 
