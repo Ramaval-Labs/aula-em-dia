@@ -11,15 +11,22 @@
  *
  * O painel é o terceiro eixo da navegação: quem fecha é `fecharSheet()`, que
  * devolve o app para a última tela não-sheet (spec/navegacao.md).
+ *
+ * Fechar desce o painel e apaga o véu, com a mesma curva e as mesmas durações
+ * da subida, e só no fim chama `fecharSheet()` (SCRUM-42). O puxador e o
+ * cabeçalho aceitam arrastar para baixo: o painel acompanha o dedo e, ao
+ * soltar, fecha ou volta, conforme `deveFecharAoSoltar`. Com "reduzir
+ * movimento", fecha na hora.
  */
 
-import React, { useEffect, useRef, type ComponentRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, type ComponentRef } from 'react';
 import {
   AccessibilityInfo,
   Animated,
   BackHandler,
   Easing,
   findNodeHandle,
+  PanResponder,
   Platform,
   Pressable,
   ScrollView,
@@ -45,6 +52,44 @@ export type AlturaSheet = 'tarefa' | 'resultado';
 
 /** Faixa mínima de toque acima do painel (handoff, "Sheet modal"): o piso da plataforma. */
 const TOQUE_ACIMA = ALVO_MINIMO;
+
+/*
+ * O gesto de arrastar para fechar (SCRUM-42). São regras do gesto, não medidas
+ * visuais, por isso ficam aqui e não no tema: as do sheet nativo do iOS.
+ */
+/** Arrastou mais que esta fração da altura do painel: fecha ao soltar. */
+const FRACAO_PARA_FECHAR = 0.25;
+/** Soltou descendo mais rápido que isto (px/ms): fecha, mesmo arrastando pouco. */
+const VELOCIDADE_PARA_FECHAR = 1;
+/** Deslocamento vertical que separa o arrasto de um toque no "Cancelar". */
+const INICIO_DO_ARRASTO = 6;
+
+/**
+ * Na web, o mouse arrastando o painel seleciona o texto por onde passa. Se a
+ * seleção sobra, o próximo arrasto vira o arrasto nativo dela (`dragstart`),
+ * que o React Native Web trata como cancelamento: o gesto morre sem mover o
+ * painel. Limpar a seleção durante o gesto evita isso. No celular não há o
+ * que limpar.
+ */
+function limparSelecaoNaWeb() {
+  if (Platform.OS !== 'web') return;
+  (globalThis as { getSelection?: () => { removeAllRanges(): void } | null })
+    .getSelection?.()
+    ?.removeAllRanges();
+}
+
+/**
+ * Ao soltar o painel: fecha se desceu mais de um quarto da altura dele ou se
+ * o dedo saiu descendo rápido; senão, ele volta para cima.
+ */
+export function deveFecharAoSoltar(
+  deslocamento: number,
+  velocidade: number,
+  alturaDoPainel: number,
+): boolean {
+  if (deslocamento <= 0) return false;
+  return deslocamento > alturaDoPainel * FRACAO_PARA_FECHAR || velocidade > VELOCIDADE_PARA_FECHAR;
+}
 
 export type PropsSheet = {
   /** título do cabeçalho: nome do aluno ou a tarefa */
@@ -82,7 +127,7 @@ export function Sheet({
   const { height: alturaTela } = useWindowDimensions();
   const semMovimento = useReduzirMovimento();
   const fecharSheet = useNavegacao((s) => s.fecharSheet);
-  const fechar = aoFechar ?? fecharSheet;
+  const fecharDeVez = aoFechar ?? fecharSheet;
 
   const teclado = useAlturaDoTeclado(comTeclado);
   const alturaCheia = Math.round(
@@ -98,11 +143,15 @@ export function Sheet({
 
   const subida = useRef(new Animated.Value(semMovimento ? 0 : alturaCheia)).current;
   const fade = useRef(new Animated.Value(semMovimento ? 1 : 0)).current;
+  // O painel só aceita arrastar depois de terminar de subir, e fecha uma vez só.
+  const subiu = useRef(semMovimento);
+  const fechando = useRef(false);
 
   useEffect(() => {
     if (semMovimento) {
       subida.setValue(0);
       fade.setValue(1);
+      subiu.current = true;
       return;
     }
     // A animação é independente da árvore: desmontar não a cancela, e o timer
@@ -121,9 +170,81 @@ export function Sheet({
         useNativeDriver: false,
       }),
     ]);
-    movimento.start();
+    movimento.start(({ finished }) => {
+      if (finished) subiu.current = true;
+    });
     return () => movimento.stop();
   }, [semMovimento, subida, fade]);
+
+  /**
+   * Fecha descendo: o painel vai para baixo da tela (do teclado também, se
+   * estiver aberto) e o véu apaga, com a curva e as durações da subida. Só no
+   * fim a navegação fecha o sheet. Dois toques seguidos fecham uma vez só.
+   */
+  const fechar = useCallback(() => {
+    if (fechando.current) return;
+    fechando.current = true;
+    if (semMovimento) {
+      fecharDeVez();
+      return;
+    }
+    Animated.parallel([
+      Animated.timing(subida, {
+        toValue: alturaPainel + teclado,
+        duration: MOVIMENTO.sheetMs,
+        easing: Easing.bezier(...MOVIMENTO.sheetCurva),
+        useNativeDriver: false,
+      }),
+      Animated.timing(fade, {
+        toValue: 0,
+        duration: MOVIMENTO.fundoSheetMs,
+        easing: Easing.ease,
+        useNativeDriver: false,
+      }),
+    ]).start(({ finished }) => {
+      // Interrompida (a tela saiu por outro caminho): não fecha nada por cima.
+      if (finished) fecharDeVez();
+    });
+  }, [semMovimento, fecharDeVez, subida, fade, alturaPainel, teclado]);
+
+  /** Arrastou pouco: o painel volta para cima com mola, ou na hora sem movimento. */
+  const voltarParaCima = useCallback(() => {
+    if (semMovimento) {
+      subida.setValue(0);
+      return;
+    }
+    Animated.spring(subida, { toValue: 0, bounciness: 0, useNativeDriver: false }).start();
+  }, [semMovimento, subida]);
+
+  // O gesto mora no puxador e no cabeçalho, e não no corpo: lá ele roubaria a
+  // rolagem. Só começa num arrasto vertical para baixo, para o toque no
+  // "Cancelar" continuar sendo toque.
+  const arrasto = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, g) =>
+          subiu.current &&
+          !fechando.current &&
+          g.dy > INICIO_DO_ARRASTO &&
+          Math.abs(g.dy) > Math.abs(g.dx),
+        // Começado o arrasto, ele não cede o toque. Na web isso importa: o
+        // mouse arrastando seleciona texto, e o React Native Web encerra o
+        // gesto no `selectionchange` a menos que ele recuse aqui.
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: limparSelecaoNaWeb,
+        onPanResponderMove: (_, g) => {
+          limparSelecaoNaWeb();
+          subida.setValue(Math.max(0, g.dy));
+        },
+        onPanResponderRelease: (_, g) => {
+          limparSelecaoNaWeb();
+          if (deveFecharAoSoltar(g.dy, g.vy, alturaPainel)) fechar();
+          else voltarParaCima();
+        },
+        onPanResponderTerminate: () => voltarParaCima(),
+      }),
+    [subida, alturaPainel, fechar, voltarParaCima],
+  );
 
   // O foco do leitor de tela vai para o título quando o painel abre: sem
   // isso ele fica no botão que abriu o sheet, agora escondido atrás dele.
@@ -206,59 +327,67 @@ export function Sheet({
           sombraExterna={material.sombraSheet}
           style={{ flex: 1 }}
         >
-          <View style={{ ...PAD.puxadorSheet, alignItems: 'center' }}>
+          {/* Puxador e cabeçalho: a faixa que se arrasta para fechar. */}
+          <View testID="arrasto-do-sheet" {...arrasto.panHandlers}>
+            <View style={{ ...PAD.puxadorSheet, alignItems: 'center' }}>
+              <View
+                style={{
+                  width: TAMANHO.puxadorLargura,
+                  height: TAMANHO.puxadorAltura,
+                  borderRadius: RAIO.puxador,
+                  backgroundColor: cores.tinta3,
+                }}
+              />
+            </View>
+
             <View
               style={{
-                width: TAMANHO.puxadorLargura,
-                height: TAMANHO.puxadorAltura,
-                borderRadius: RAIO.puxador,
-                backgroundColor: cores.tinta3,
+                height: TAMANHO.cabecalhoSheet,
+                ...PAD.cabecalhoSheet,
+                flexDirection: 'row',
+                alignItems: 'center',
               }}
-            />
-          </View>
-
-          <View
-            style={{
-              height: TAMANHO.cabecalhoSheet,
-              ...PAD.cabecalhoSheet,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            {semCancelar ? (
-              <View style={{ width: TAMANHO.colunaCabecalhoSheet }} />
-            ) : (
-              <Pressable
-                accessibilityRole="button"
-                onPress={fechar}
-                style={{
-                  width: TAMANHO.colunaCabecalhoSheet,
-                  height: TAMANHO.cabecalhoSheet,
-                  justifyContent: 'center',
-                }}
-              >
-                <Text
-                  maxFontSizeMultiplier={ESCALA_FONTE.controle}
-                  style={[texto(15.5, 600), { color: cores.tint }]}
-                >
-                  Cancelar
-                </Text>
-              </Pressable>
-            )}
-            <Text
-              ref={refTitulo}
-              accessibilityRole="header"
-              numberOfLines={1}
-              maxFontSizeMultiplier={ESCALA_FONTE.controle}
-              style={[
-                TIPO.tituloSheet,
-                { flex: 1, textAlign: 'center', color: cores.tinta },
-              ]}
             >
-              {titulo}
-            </Text>
-            {/* 72px vazios do outro lado: é o que mantém o título no centro. */}
-            <View style={{ width: TAMANHO.colunaCabecalhoSheet }} />
+              {semCancelar ? (
+                <View style={{ width: TAMANHO.colunaCabecalhoSheet }} />
+              ) : (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={fechar}
+                  style={{
+                    width: TAMANHO.colunaCabecalhoSheet,
+                    height: TAMANHO.cabecalhoSheet,
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    selectable={false}
+                    maxFontSizeMultiplier={ESCALA_FONTE.controle}
+                    style={[texto(15.5, 600), { color: cores.tint }]}
+                  >
+                    Cancelar
+                  </Text>
+                </Pressable>
+              )}
+              <Text
+                ref={refTitulo}
+                // Na web, arrastar o mouse por cima seleciona o texto, e o React
+                // Native Web encerra o gesto de arrastar para fechar quando isso
+                // acontece. A faixa do arrasto não seleciona texto.
+                selectable={false}
+                accessibilityRole="header"
+                numberOfLines={1}
+                maxFontSizeMultiplier={ESCALA_FONTE.controle}
+                style={[
+                  TIPO.tituloSheet,
+                  { flex: 1, textAlign: 'center', color: cores.tinta },
+                ]}
+              >
+                {titulo}
+              </Text>
+              {/* 72px vazios do outro lado: é o que mantém o título no centro. */}
+              <View style={{ width: TAMANHO.colunaCabecalhoSheet }} />
+            </View>
           </View>
 
           {corpo}
