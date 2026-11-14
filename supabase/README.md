@@ -17,9 +17,11 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `migrations/0007_horario_ocupado.sql` | A `aplicar_movimento` recusa o aceite num horário que outro aluno já ocupou, com trava para os aceites simultâneos |
 | `migrations/0008_propostas_estrita.sql` | A política de `propostas` exige, na escrita, que o aluno seja do professor |
 | `migrations/0009_aula_fixa.sql` | `alunos.aula_fixa`: o horário fixo estruturado (`{ dias, hora }`), nulo na linha antiga, com `check` |
+| `migrations/0010_avisos.sql` | Os lembretes: `token_push` e `ultimo_resumo` no professor, `avisos_enviados` para não repetir, e os dois `pg_cron` |
 | `functions/aluno-publico/` | A Edge Function do link do aluno: lê o recorte e grava a resposta pelo token, sem login |
 | `functions/aluno-publico/cors.mjs` | As origens que o CORS aceita: a Vercel e o Expo Web local. Mudou o domínio? Muda aqui |
 | `functions/apagar-conta/` | A Edge Function de apagar a conta: com o JWT do professor, apaga o usuário do Auth, e o cascade leva o resto |
+| `functions/avisos/` | A Edge Function dos lembretes: o resumo das 7h e o aviso antes da aula, pelo Expo Push, com o `AVISOS_SEGREDO` |
 | `functions/_shared/entrada.ts` | O que a função usa do domínio do app; o `dominio.js` ao lado é **gerado** e fica fora do git |
 | `seed.sql` | Os dados de demonstração. **Gerado**: não edite à mão |
 | `tests/database/rls.test.sql` | Teste de RLS com dois professores, em pgTAP |
@@ -30,6 +32,8 @@ modo `supabase` (Partes 3 e 4); o padrão do app continua sendo o modo local.
 | `tests/database/apagar_conta.test.sql` | Apagar o usuário do Auth leva tudo do professor, e o professor B segue intacto |
 | `tests/database/propostas_estrita.test.sql` | Teste da `0008`: o professor B não cria proposta no aluno do A, nem muda a dele para lá |
 | `tests/database/aula_fixa.test.sql` | Teste da `0009`: o `check` aceita a estrutura e o nulo, e recusa hora fora de 0–23, dia que não existe e texto livre |
+| `tests/database/avisos.test.sql` | Teste da `0010`: o token é só do dono, o aviso não repete, e os agendamentos sem o Vault não chamam ninguém |
+| `tests/funcoes/avisos.test.mjs` | A `avisos` contra um Expo Push falso: um resumo por dia, um aviso por aula, nada repetido |
 | `tests/funcoes/aluno-publico.test.mjs` | A `aluno-publico` servida de verdade só entrega o aluno do link: sentinelas, os 404, a janela inválida e a origem estranha (no CI, o job "Função do aluno") |
 
 ## Para rodar
@@ -224,6 +228,52 @@ node supabase/tests/funcoes/aluno-publico.test.mjs
 
 Ele só roda contra o banco local e não imprime token nem chave. **Mexeu na função? Rode o
 teste.** Tirar o filtro pelo token ou devolver um campo a mais o deixa vermelho.
+
+## Os lembretes: a função avisos (Parte 7)
+
+Dois pushes para o professor (`SCRUM-23`): o resumo do dia às 7h e o aviso uma hora antes de
+cada aula. A regra é do domínio (`mobile/src/dominio/avisos.ts`); a função só decide para quem
+mandar e manda pela API do Expo.
+
+- **Quem chama** é o `pg_cron` da 0010, pela `chamar_avisos`, que lê o endereço e o segredo do
+  Vault. A função recusa com 401 quem não manda `Authorization: Bearer <AVISOS_SEGREDO>`.
+- **O relógio** é o de Brasília (UTC−3), calculado na função.
+- **Nada repete:** o resumo marca `professores.ultimo_resumo`, e o aviso da aula, a tabela
+  `avisos_enviados`, antes de mandar. Se o Expo recusa, a marca é desfeita.
+- **Sem token, nada sai.** O app grava o `token_push` no `SCRUM-93`, que espera o build.
+
+**O teste** roda a função contra um Expo falso, um servidor em Node na porta de
+`EXPO_PUSH_URL`, que a função alcança por `host.docker.internal`:
+
+```bash
+(cd mobile && npm run bundle:dominio)
+printf 'AVISOS_SEGREDO=%s\nEXPO_PUSH_URL=http://host.docker.internal:54399\n' "$(openssl rand -hex 16)" > /tmp/avisos.env
+npx supabase functions serve --env-file /tmp/avisos.env &
+set -a; . /tmp/avisos.env; eval "$(npx supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY)=')"; set +a
+node supabase/tests/funcoes/avisos.test.mjs
+```
+
+O `functions serve` sem nome serve as três funções; o teste da `aluno-publico` roda no mesmo
+servidor.
+
+**Na nuvem, uma vez,** depois do `db push` e do deploy. O segredo é gerado na sua máquina e
+nunca vai para o git nem para o chat:
+
+```bash
+openssl rand -hex 32                                   # o segredo; guarde para os dois passos
+npx supabase secrets set AVISOS_SEGREDO=<o segredo>    # a função passa a aceitar quem o tem
+```
+
+E no SQL Editor do painel, para o `pg_cron` saber aonde ir e com que segredo:
+
+```sql
+select vault.create_secret('https://<ref>.supabase.co/functions/v1/avisos', 'avisos_url');
+select vault.create_secret('<o mesmo segredo>', 'avisos_segredo');
+```
+
+Para conferir: `select * from cron.job_run_details order by start_time desc limit 5;` mostra as
+rodadas, e `select status_code, content from net._http_response order by id desc limit 5;` as
+respostas da função, que só contam quantos pushes saíram.
 
 ## Rodar no celular com o banco local
 
