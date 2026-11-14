@@ -1539,6 +1539,30 @@ por professor, e a cota cobre mais de mil professores assim.
    - Push exige um **development build**: desde o SDK 53, o Expo Go no Android não recebe push
      remoto. Isso casa com PROXIMOS-PASSOS §7.
 
+**Lembretes no backend (SCRUM-23).** O build foi adiado para o lançamento (PO, 13/11), então o
+backend ficou pronto e testado contra um Expo Push falso, e o app gravar o token é o `SCRUM-93`.
+Entrou um segundo lembrete: o aviso uma hora antes de cada aula.
+
+- **A regra é do domínio** (`dominio/avisos.ts`, `SCRUM-91`), no bundle: `avisosDoDia` +
+  `resumoDoDia` para as 7h e `aulasDaProximaHora` + `avisoDaAula` para a aula. A função não
+  refaz conta.
+- **A função** `avisos` recebe `?tipo=resumo` ou `?tipo=aula`. Ela calcula o dia e a hora de
+  Brasília uma vez (UTC−3, sem horário de verão desde 2019) e passa à regra. Preferência nula, ou
+  gravada antes do `antesDaAula`, vale o `AVISOS_PADRAO`, que mora no conversor.
+- **Ninguém recebe duas vezes.** Antes de mandar, o resumo marca `professores.ultimo_resumo`
+  (num `update` condicional) e o aviso da aula insere em `avisos_enviados` (chave em aluno, dia e
+  hora). Só manda quem marcou. Se o Expo recusa, a marca é desfeita.
+- **Quem dispara** é o `pg_cron` da 0010 (às 10:00 UTC e de hora em hora), pela `chamar_avisos`,
+  que lê o endereço e o `AVISOS_SEGREDO` do Vault. Sem o Vault, não chama nada. A função tem
+  `verify_jwt = false` e confere o segredo ela mesma: quem chama é o banco, não um professor.
+- **O teste** (`tests/funcoes/avisos.test.mjs`) cria cinco professores e confere:
+  - um resumo por dia;
+  - um aviso só para a aula da próxima hora;
+  - nada para quem não tem token, desligou ou não tem o que avisar;
+  - a nova tentativa depois de uma recusa do Expo;
+  - a resposta sem token nem nome.
+- **A configuração na nuvem** (o segredo e o Vault) está em `supabase/README.md`.
+
 ### Pronto quando
 
 - Tocar em "Enviar" abre o WhatsApp com a mensagem e o telefone certos.

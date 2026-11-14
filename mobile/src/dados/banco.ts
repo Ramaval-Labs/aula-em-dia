@@ -43,6 +43,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"avisos_enviados": {
+                  Row: {
+                    "aluno_id": string,"dia": string,"enviado_em": string,"hora": number,"professor_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "aluno_id": string,"dia": string,"enviado_em"?: string,"hora": number,"professor_id": string
+                  }
+                  Update: {
+                    "aluno_id"?: string,"dia"?: string,"enviado_em"?: string,"hora"?: number,"professor_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "avisos_enviados_aluno_id_fkey"
+      columns: ["aluno_id"]
+isOneToOne: false
+      referencedRelation: "alunos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_enviados_professor_id_fkey"
+      columns: ["professor_id"]
+isOneToOne: false
+      referencedRelation: "professores"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"disponibilidades": {
                   Row: {
                     "aceita_fora_dos_blocos": boolean,"blocos": NonNullable<Json>,"folgas": NonNullable<Json>,"professor_id": string,"sugere_sabado": boolean
@@ -111,14 +137,14 @@ isOneToOne: true
                   ]
                 },"professores": {
                   Row: {
-                    "chave_pix": string | null,"criado_em": string,"disciplinas": (string)[],"email": string,"faixa_de_alunos": Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais": string,"nome": string,"onboarding_concluido": boolean,"pacote_padrao": Json | null,"plano": Database["public"]['Enums']["plano"],"preferencias_aviso": Json | null
+                    "chave_pix": string | null,"criado_em": string,"disciplinas": (string)[],"email": string,"faixa_de_alunos": Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais": string,"nome": string,"onboarding_concluido": boolean,"pacote_padrao": Json | null,"plano": Database["public"]['Enums']["plano"],"preferencias_aviso": Json | null,"token_push": string | null,"ultimo_resumo": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email": string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais"?: string,"nome"?: string,"onboarding_concluido"?: boolean,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null
+                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email": string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id": string,"iniciais"?: string,"nome"?: string,"onboarding_concluido"?: boolean,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null,"token_push"?: string | null,"ultimo_resumo"?: string | null
                   }
                   Update: {
-                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email"?: string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id"?: string,"iniciais"?: string,"nome"?: string,"onboarding_concluido"?: boolean,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null
+                    "chave_pix"?: string | null,"criado_em"?: string,"disciplinas"?: (string)[],"email"?: string,"faixa_de_alunos"?: Database["public"]['Enums']["faixa_de_alunos"] | null,"id"?: string,"iniciais"?: string,"nome"?: string,"onboarding_concluido"?: boolean,"pacote_padrao"?: Json | null,"plano"?: Database["public"]['Enums']["plano"],"preferencias_aviso"?: Json | null,"token_push"?: string | null,"ultimo_resumo"?: string | null
                   }
                   Relationships: [
                     

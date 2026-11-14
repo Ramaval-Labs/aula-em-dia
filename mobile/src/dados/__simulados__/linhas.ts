@@ -49,6 +49,9 @@ export function linhasDoPersistido(
     pacote_padrao: (p.pacotePadrao ?? null) as LinhaDoProfessor['pacote_padrao'],
     preferencias_aviso: (p.preferenciasDeAviso ?? null) as LinhaDoProfessor['preferencias_aviso'],
     onboarding_concluido: true,
+    // Os lembretes (0010): sem aparelho registrado e sem resumo mandado.
+    token_push: null,
+    ultimo_resumo: null,
     ...perfilParaBanco(p.perfil),
   } as LinhaDoProfessor;
 

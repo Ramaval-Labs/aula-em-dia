@@ -23,15 +23,15 @@ select is(
   (select count(*)::int from pg_class c
      join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public' and c.relkind = 'r' and c.relrowsecurity),
-  6,
-  'RLS está ligada nas seis tabelas'
+  7,
+  'RLS está ligada nas sete tabelas (a sétima, avisos_enviados, é da 0010)'
 );
 
 select results_eq(
   -- `tablename` é do tipo name, com outra collation: sem o collate o pgTAP não compara.
   $$ select tablename::text collate "default", count(*)::int from pg_policies
       where schemaname = 'public' group by tablename order by tablename $$,
-  $$ values ('alunos', 1), ('disponibilidades', 1), ('lancamentos', 2),
+  $$ values ('alunos', 1), ('avisos_enviados', 1), ('disponibilidades', 1), ('lancamentos', 2),
             ('politicas', 1), ('professores', 1), ('propostas', 1) $$,
   'toda tabela tem política, e o extrato tem duas (ler e inserir)'
 );
