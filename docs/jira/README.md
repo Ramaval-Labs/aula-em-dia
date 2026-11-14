@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro e os cards atribuídos. Até agora foram onze janelas: uma semana de
-preparação e dez sprints de uma semana. A Sprint 11 está ativa.
+com as três pessoas dentro e os cards atribuídos. Até agora foram doze janelas: uma semana de
+preparação e onze sprints de uma semana. A Sprint 12 está ativa.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -709,7 +709,7 @@ previsto. Os 4 cards, 12 pontos, e nenhum card novo. A suíte foi de 1022 para *
   isso. O roteiro do `/designer` passou a subir o Expo Web com `EXPO_PUBLIC_BACKEND=local`.
 - **Uma correção no card do `SCRUM-90`:** o `mar` da semente é o Mateus, não a Marina.
 
-### Sprint 11 · 13/11 a 20/11 · **ativa** · 10 pontos
+### Sprint 11 · 13/11 a 14/11 · **fechada, 3 de 3, 10 pontos**
 
 O tema é **os lembretes ganham regra e backend**. A tela de Avisos promete quatro lembretes desde o
 redesign, e nenhum é calculado: são só preferências salvas. Esta sprint escreve a regra no domínio,
@@ -771,6 +771,83 @@ de plataforma (`SCRUM-42`, `SCRUM-43`, `SCRUM-44`).
 
 **Se a sua faixa esvaziar:** Rafael, uma fatia do `SCRUM-39` (as 4 telas do Financeiro, por
 `/designer`); Mauro, o teste de montagem da tela de Avisos com as preferências desligadas.
+
+**Como fechou, para registro:** em 14/11, seis dias antes do fim previsto. Os 3 cards, 10 pontos, e
+nenhum card novo. A suíte foi de 1061 para **1089 testes**.
+
+- **O `SCRUM-91` mudou de dono:** era do Mauro, que não estava disponível, e foi feito pelo Rafael.
+  O commit de abertura levou `PreferenciasDeAviso` de `dados/repositorio.ts` para `dominio/tipos.ts`.
+  Três decisões que o card não fechava ficaram no PR #49: proposta enviada conta como horário
+  escolhido; arquivado não gera aviso; pausado sai só dos avisos de aula.
+- **O commit de abertura do `SCRUM-23` (`antesDaAula`) também foi do Rafael**, para destravar o
+  `SCRUM-92`. A chave entrou opcional, porque as preferências já gravadas não a têm.
+- **Os três PRs entraram sem aprovação:** o #48 (`SCRUM-92`) e o #49 (`SCRUM-91`) por decisão do
+  PO, e o #50 (`SCRUM-23`) mesclado pelo Valentin. Os três com os checks verdes.
+- **O backend está na nuvem:** a `0010`, a função `avisos`, o segredo no Vault e os dois
+  agendamentos, conferidos pelo Valentin. Sem token gravado (`SCRUM-93`), eles rodam e não mandam
+  nada.
+- **Ficou de fora:** o job do CI que roda o teste da função `avisos`, porque o `.github/` é do
+  Mauro. Virou o `SCRUM-94`, na Sprint 12.
+
+### Sprint 12 · 14/11 a 21/11 · **ativa** · 13 pontos
+
+O tema é **o professor recupera a senha sozinho, e o sheet fecha como no iPhone**. A recuperação
+dependia do build por causa do deep link, e deixou de depender: o link do e-mail abre o app do
+professor no navegador, na Vercel. Junto, o sheet ganha a saída que faltava, e o CI fecha duas
+lacunas.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Mauro | `SCRUM-94` — o teste da função `avisos` no CI (1) + `SCRUM-95` — o linter no CI (2) | 3 |
+| Valentin | `SCRUM-62` — a recuperação: a sessão, o Resend e o link para a web (3) | 3 |
+| Rafael | `SCRUM-96` — as telas da recuperação (2) + `SCRUM-42` — o sheet desce e fecha arrastando (5) | 7 |
+
+**13 pontos, três a mais que a Sprint 11.** A carga do Rafael é maior, mas o `SCRUM-42` é feito
+enquanto ele espera o commit de abertura do `SCRUM-62`.
+
+**Ordem obrigatória**, com os vínculos *blocks* no board:
+
+- o commit de abertura do `SCRUM-62` (`pedirRecuperacao`, `redefinirSenha` e a tela `novaSenha` em
+  `estado/sessao.ts`) antes do `SCRUM-96`
+- o `SCRUM-95` não roda `--fix` no repositório: os PRs abertos dos outros não podem ganhar conflito
+  de formatação
+
+**Ordem cronológica, por dia** (escrita em 14/11, na abertura):
+
+| Quando | Mauro | Valentin | Rafael |
+|---|---|---|---|
+| **Dia 1** (seg 16/11) | `SCRUM-94`: o trecho do PR #50 no `ci.yml` e a prova do `host.docker.internal` no runner. | A conta no Resend, o SMTP no Supabase e um e-mail de teste para fora da equipe. Commit de abertura do `SCRUM-62`, push no mesmo dia. | `SCRUM-42`: a saída animada, com o teste do `fecharSheet` no fim da animação. |
+| **Dia 2** (ter 17/11) | `SCRUM-95`: o primeiro `npx expo lint` e o resultado num comentário do card. | `SCRUM-62`: as duas ações de verdade, com teste. PR. | `SCRUM-96`: o "Esqueci minha senha" na Acesso, em cima do commit de abertura. Revisa o PR do `SCRUM-62`. |
+| **Dia 3** (qua 18/11) | `SCRUM-95`: as regras em `warn` e `error`, e o passo no CI. PR. Revisa o PR do `SCRUM-62`. | O modelo do e-mail e as URLs no painel do Supabase. Revisa o PR do `SCRUM-94`. | `SCRUM-96`: a tela de nova senha e o caminho `/redefinir-senha`. PR. |
+| **Dia 4** (qui 19/11) | Revisa o PR do `SCRUM-96` e o do `SCRUM-42`. | Ponta a ponta na nuvem: pedir pelo Expo Go, abrir o link no computador, entrar com a nova. | `SCRUM-42`: o arrasto no puxador, no catálogo e no Expo Go. PR. |
+| **Dia 5** (sex 20/11) | Review: o PR de prova vermelho no lint e no teste da função. | Review: a recuperação na nuvem. | Review e fechamento da sprint. |
+
+**Decisões de PO de 14/11**, tomadas na planning, escolhidas entre opções:
+
+- **O e-mail da recuperação sai pelo Resend**, no plano gratuito, como SMTP do Supabase. O SMTP
+  padrão do Supabase só entrega para e-mails da equipe do projeto; adiar ficou descartado.
+- **O link abre o app na web, com `token_hash` e `verifyOtp`**, e não com o fluxo PKCE: o link
+  funciona em qualquer navegador, mesmo quando o pedido saiu do celular.
+- **O card principal do Rafael é o `SCRUM-42`**, o sheet. Ficaram para depois o `SCRUM-39`
+  (Financeiro) e o par `SCRUM-43` e `SCRUM-44`.
+- **O segundo card do Mauro é o linter.** O teste de fluxo de ponta a ponta ficou para depois.
+
+**Revisado antes de abrir**, contra a `main` de 14/11:
+
+- o `SCRUM-62` subiu para o template de nove seções, foi para o Valentin e perdeu a dependência do
+  build. As telas viraram o `SCRUM-96`.
+- o `SCRUM-42` subiu para o template. O `SCRUM-94` e o `SCRUM-95` nasceram nele.
+- **Achado na abertura:** três itens de "Regra e domínio" em `PROXIMOS-PASSOS.md` já estavam
+  feitos (o resumo do mês do Financeiro, o "62,50" dos Pacotes padrão e o "Marcar folga"). O
+  arquivo foi corrigido.
+- o vínculo antigo "`SCRUM-47` bloqueia `SCRUM-62`" não vale mais e precisa sair à mão, como o do
+  `SCRUM-23` na Sprint 11.
+
+**Fora da sprint, de propósito:** o `SCRUM-47`, o `SCRUM-93` e o `SCRUM-63` (o lançamento); o
+`SCRUM-39`; o `SCRUM-43` e o `SCRUM-44`; o `SCRUM-56` e o `SCRUM-57`.
+
+**Se a sua faixa esvaziar:** Mauro, o teste de fluxo de ponta a ponta (registrar a falta, propor a
+reposição e confirmar); Valentin, o `SCRUM-63` na web, que também não precisa do build.
 
 ---
 

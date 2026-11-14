@@ -115,11 +115,12 @@ O que a revisão final das 35 telas (três `revisor-design`) levantou e a Onda 5
 os P0/P1 foram corrigidos; o que ficou é o que exige regra nova, dependência nova ou aparelho.
 
 **Regra e domínio**
-- Resumo do mês do Financeiro para o domínio, com filtro por mês: hoje a tela soma o extrato
-  inteiro, então "aulas dadas em agosto" cresce para sempre.
-- Validar o "valor por aula" em Pacotes padrão: digitar "62,50" vira 6250 (o campo só tira o
-  que não é dígito).
-- "Marcar folga" em Minha disponibilidade não faz nada: ou implementa, ou sai da tela.
+- ~~Resumo do mês do Financeiro para o domínio, com filtro por mês.~~ **Feito:** `resumoDoMes`
+  em `dominio/financeiro.ts`, e a tela não soma extrato (conferido em 14/11).
+- ~~Validar o "valor por aula" em Pacotes padrão.~~ **Feito:** a tela usa o `CampoDeDinheiro`, que
+  lê "62,50" pelo `lerDinheiro` (conferido em 14/11).
+- ~~"Marcar folga" em Minha disponibilidade não faz nada.~~ **Feito:** a folga abre inline
+  (`SCRUM-30`).
 
 **Movimento e plataforma**
 - Sheet sem animação de saída e sem arrastar-para-fechar (só "Cancelar", toque fora e voltar).
