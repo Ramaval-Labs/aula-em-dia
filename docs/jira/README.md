@@ -840,7 +840,7 @@ enquanto ele espera o commit de abertura do `SCRUM-62`.
 - **Achado na abertura:** três itens de "Regra e domínio" em `PROXIMOS-PASSOS.md` já estavam
   feitos (o resumo do mês do Financeiro, o "62,50" dos Pacotes padrão e o "Marcar folga"). O
   arquivo foi corrigido.
-- o vínculo antigo "`SCRUM-47` bloqueia `SCRUM-62`" não vale mais e precisa sair à mão, como o do
+- o vínculo antigo "`SCRUM-47` bloqueia `SCRUM-62`" saiu do board em 14/11, à mão, como o do
   `SCRUM-23` na Sprint 11.
 
 **Fora da sprint, de propósito:** o `SCRUM-47`, o `SCRUM-93` e o `SCRUM-63` (o lançamento); o
