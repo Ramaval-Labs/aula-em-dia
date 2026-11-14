@@ -388,6 +388,8 @@ describe('perfil', () => {
       pacote_padrao: null,
       preferencias_aviso: null,
       onboarding_concluido: false,
+      token_push: null,
+      ultimo_resumo: null,
       criado_em: new Date().toISOString(),
     } as LinhaDoProfessor);
     expect(p.faixaDeAlunos).toBe('1–5');
