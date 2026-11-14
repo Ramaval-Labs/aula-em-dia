@@ -39,3 +39,58 @@ alter table public.avisos_enviados enable row level security;
 -- Sem policy de insert, update e delete, a operação é negada (como o extrato).
 create policy "lê os próprios avisos" on public.avisos_enviados
   for select using (professor_id = (select auth.uid()));
+
+-- ── os dois agendamentos ─────────────────────────────────────────────────────
+-- O `pg_cron` chama a função `avisos` pelo `pg_net`. O endereço e o segredo
+-- moram no Vault, não aqui: a migração vai para o git, e o segredo não. Em cada
+-- ambiente, uma vez (ver `supabase/README.md`):
+--
+--   select vault.create_secret('https://<ref>.supabase.co/functions/v1/avisos', 'avisos_url');
+--   select vault.create_secret('<o mesmo AVISOS_SEGREDO da função>', 'avisos_segredo');
+--
+-- Sem os dois, a `chamar_avisos` não faz nada: os agendamentos rodam no banco
+-- local e no CI sem chamar ninguém. Na nuvem, sem token gravado (SCRUM-93),
+-- a função roda e não manda nada.
+
+create extension if not exists pg_cron;
+create extension if not exists pg_net with schema extensions;
+
+create or replace function public.chamar_avisos(p_tipo text)
+returns bigint                    -- o id do pedido no pg_net, ou null sem o Vault
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_url     text;
+  v_segredo text;
+begin
+  if p_tipo not in ('resumo', 'aula') then
+    raise exception 'tipo de aviso desconhecido: %', p_tipo;
+  end if;
+
+  select decrypted_secret into v_url from vault.decrypted_secrets where name = 'avisos_url';
+  select decrypted_secret into v_segredo from vault.decrypted_secrets where name = 'avisos_segredo';
+  if v_url is null or v_segredo is null then
+    return null;
+  end if;
+
+  return net.http_post(
+    url                  := v_url || '?tipo=' || p_tipo,
+    headers              := jsonb_build_object(
+                              'Authorization', 'Bearer ' || v_segredo,
+                              'Content-Type', 'application/json'),
+    body                 := '{}'::jsonb,
+    timeout_milliseconds := 30000
+  );
+end;
+$$;
+
+-- Só o agendador (o postgres) chama: lê o segredo do Vault.
+revoke execute on function public.chamar_avisos(text) from public, anon, authenticated;
+
+-- O resumo às 10:00 UTC, que é 7h em Brasília (UTC−3 o ano todo). O aviso da
+-- aula de hora em hora, no minuto 0: às 17h saem os das aulas das 18h. O
+-- `cron.schedule` com nome substitui o agendamento de mesmo nome.
+select cron.schedule('avisos-resumo', '0 10 * * *', $$select public.chamar_avisos('resumo')$$);
+select cron.schedule('avisos-aula', '0 * * * *', $$select public.chamar_avisos('aula')$$);
