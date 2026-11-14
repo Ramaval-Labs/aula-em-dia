@@ -102,6 +102,31 @@ type Sessao = {
  */
 export const FRASE_DO_LINK_ENVIADO = 'Se houver uma conta com esse e-mail, mandamos o link.';
 
+/**
+ * As frases da recuperação que `ERRO` ainda não tem. Moram aqui, ao lado do
+ * mapa de códigos, até irem para `dominio/validacao.ts`, que é de onde as
+ * frases de acesso saem.
+ */
+export const ERRO_DA_RECUPERACAO = {
+  linkVencido: 'Esse link expirou ou já foi usado. Peça um novo',
+  senhaIgual: 'A senha nova precisa ser diferente da atual',
+  falhaNoEnvio: 'Não deu para mandar o link agora. Tente de novo em instantes',
+} as const;
+
+/** O caminho do app que o link do e-mail abre (o `App.tsx` o lê, no SCRUM-96). */
+export const CAMINHO_DA_NOVA_SENHA = '/redefinir-senha';
+
+/**
+ * Para onde o link do e-mail leva: `<EXPO_PUBLIC_URL_DO_APP>/redefinir-senha`,
+ * o app do professor no navegador. `null` sem a variável.
+ */
+export function enderecoDaNovaSenha(
+  base: string | undefined = process.env.EXPO_PUBLIC_URL_DO_APP,
+): string | null {
+  if (!base) return null;
+  return `${base.replace(/\/+$/, '')}${CAMINHO_DA_NOVA_SENHA}`;
+}
+
 /** Se o login é de verdade, para a tela decidir o que oferecer sem ler o ambiente. */
 export const loginReal = (): boolean => usaSupabase();
 
@@ -128,9 +153,44 @@ export function fraseDoErroDeAcesso(erro: unknown): string {
       return ERRO.senhaCurta;
   }
   // O fetch nem chegou ao servidor: o auth-js embrulha a falha com status 0.
-  if (e.name === 'AuthRetryableFetchError' && e.status === 0) return ERRO.semConexao;
+  if (semRede(e)) return ERRO.semConexao;
   return ERRO.falhaNoAcesso;
 }
+
+const semRede = (e: { name?: unknown; status?: unknown }): boolean =>
+  e.name === 'AuthRetryableFetchError' && e.status === 0;
+
+/**
+ * Erro do pedido de recuperação → frase, ou `null`. O limite de envio
+ * (`over_email_send_rate_limit`, 429) vira `null`, como o sucesso: o primeiro
+ * e-mail já saiu, e uma resposta diferente diria que o e-mail tem conta.
+ */
+export function fraseDoErroDoPedido(erro: unknown): string | null {
+  const e = (erro ?? {}) as { code?: unknown; name?: unknown; status?: unknown };
+  if (e.code === 'over_email_send_rate_limit') return null;
+  if (e.code === 'email_address_invalid') return ERRO.emailInvalido;
+  if (semRede(e)) return ERRO.semConexao;
+  return ERRO_DA_RECUPERACAO.falhaNoEnvio;
+}
+
+/**
+ * Erro da troca de senha → frase. `otp_expired` é o código do link usado, do
+ * vencido e do inventado (GoTrue 2.197, conferido no Supabase local).
+ */
+export function fraseDoErroDaNovaSenha(erro: unknown): string {
+  const e = (erro ?? {}) as { code?: unknown };
+  if (e.code === 'otp_expired') return ERRO_DA_RECUPERACAO.linkVencido;
+  if (e.code === 'same_password') return ERRO_DA_RECUPERACAO.senhaIgual;
+  return fraseDoErroDeAcesso(erro);
+}
+
+/**
+ * O link já trocado por sessão nesta aba. O `token_hash` vale uma vez só: se a
+ * senha nova for recusada depois do `verifyOtp` (igual à atual, por exemplo),
+ * a segunda tentativa usa a sessão que ele abriu, em vez de gastar o link de
+ * novo e cair em "link usado".
+ */
+let linkJaVerificado: string | null = null;
 
 /** O que a tela precisa corrigir antes de ir à rede: o primeiro erro, ou null. */
 function erroDoFormulario(email: string, senha: string | undefined): string | null {
@@ -277,8 +337,23 @@ export const useSessao = create<Sessao>((set, get) => ({
     if (doFormulario) return doFormulario;
     // No modo local não há conta nem e-mail: responde como se tivesse mandado.
     if (!usaSupabase()) return null;
-    // O pedido de verdade entra no próximo commit (SCRUM-62).
-    return ERRO.falhaNoAcesso;
+
+    const redirectTo = enderecoDaNovaSenha();
+    if (!redirectTo) {
+      // Sem a variável, o link cairia no `site_url`, fora da tela de nova senha.
+      avisarEmDesenvolvimento('Pedir a recuperação', 'falta EXPO_PUBLIC_URL_DO_APP');
+      return ERRO_DA_RECUPERACAO.falhaNoEnvio;
+    }
+    try {
+      // E-mail sem conta não é erro: o Supabase responde igual e não manda nada.
+      const { error } = await clienteSupabase().auth.resetPasswordForEmail(email.trim(), {
+        redirectTo,
+      });
+      return error ? fraseDoErroDoPedido(error) : null;
+    } catch (erro) {
+      avisarEmDesenvolvimento('Pedir a recuperação', erro);
+      return fraseDoErroDoPedido(erro);
+    }
   },
 
   async redefinirSenha(tokenHash, novaSenha) {
@@ -291,9 +366,35 @@ export const useSessao = create<Sessao>((set, get) => ({
       gravar({ fase: 'app', email });
       return null;
     }
-    void tokenHash;
-    // A troca de verdade entra no próximo commit (SCRUM-62).
-    return ERRO.falhaNoAcesso;
+
+    if (!tokenHash) return ERRO_DA_RECUPERACAO.linkVencido;
+    try {
+      const auth = clienteSupabase().auth;
+      if (linkJaVerificado !== tokenHash) {
+        // O token_hash e não o PKCE: funciona no navegador que abriu o link,
+        // seja ele qual for. Dá certo uma vez só; depois, `otp_expired`.
+        const { error } = await auth.verifyOtp({ type: 'recovery', token_hash: tokenHash });
+        if (error) return fraseDoErroDaNovaSenha(error);
+        linkJaVerificado = tokenHash;
+      }
+      const { data, error } = await auth.updateUser({ password: novaSenha });
+      if (error) return fraseDoErroDaNovaSenha(error);
+      linkJaVerificado = null;
+
+      // A conta do link pode não ser a que este aparelho guardava: os alunos
+      // de antes não ficam à mostra, e o app relê os desta conta.
+      useDados.getState().esquecer();
+      const email = data.user?.email ?? null;
+      if ((await faseDoLogado()) === 'onboarding') {
+        set({ fase: 'onboarding', passo: 1, email, contaNova: true });
+        return null;
+      }
+      set({ fase: 'app', email, contaNova: false });
+      return null;
+    } catch (erro) {
+      avisarEmDesenvolvimento('Redefinir a senha', erro);
+      return fraseDoErroDaNovaSenha(erro);
+    }
   },
 
   avancar() {

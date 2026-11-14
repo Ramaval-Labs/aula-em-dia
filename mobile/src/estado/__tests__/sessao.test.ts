@@ -7,6 +7,8 @@
  * devolveu de verdade (CLI 2.120, GoTrue 2.197), conferidos ao escrever esta
  * suíte: `invalid_credentials` (400), `user_already_exists` (422),
  * `weak_password` (422) e, sem rede, `AuthRetryableFetchError` com status 0.
+ * Os da recuperação (SCRUM-62) também: `over_email_send_rate_limit` (429),
+ * `otp_expired` (403) para o link usado e o inventado, e `same_password` (422).
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,8 +23,12 @@ import { clienteSupabase, usaSupabase } from '../../dados/supabase';
 import { ERRO } from '../../dominio/validacao';
 import { useDados } from '../dados';
 import {
+  enderecoDaNovaSenha,
+  ERRO_DA_RECUPERACAO,
   FRASE_DO_LINK_ENVIADO,
+  fraseDoErroDaNovaSenha,
   fraseDoErroDeAcesso,
+  fraseDoErroDoPedido,
   loginReal,
   podeApagarConta,
   useSessao,
@@ -65,6 +71,9 @@ function simularCliente() {
     signUp: jest.fn(),
     signOut: jest.fn().mockResolvedValue({ error: null }),
     getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    resetPasswordForEmail: jest.fn().mockResolvedValue({ data: {}, error: null }),
+    verifyOtp: jest.fn().mockResolvedValue({ data: { session: sessaoDe(), user: usuario() }, error: null }),
+    updateUser: jest.fn().mockResolvedValue({ data: { user: usuario() }, error: null }),
   };
   cliente.mockReturnValue({ auth } as unknown as ReturnType<typeof clienteSupabase>);
   return auth;
@@ -408,6 +417,175 @@ describe('modo supabase', () => {
     await expect(s().entrar(EMAIL, SENHA)).resolves.toBe(ERRO.falhaNoAcesso);
     expect(aviso).toHaveBeenCalledTimes(1);
     aviso.mockRestore();
+  });
+});
+
+describe('recuperar a senha no modo supabase (SCRUM-62)', () => {
+  const URL_ORIGINAL = process.env.EXPO_PUBLIC_URL_DO_APP;
+  const ERRO_LIMITE = { name: 'AuthApiError', code: 'over_email_send_rate_limit', status: 429 };
+  const ERRO_LINK = { name: 'AuthApiError', code: 'otp_expired', status: 403 };
+  const ERRO_SENHA_IGUAL = { name: 'AuthApiError', code: 'same_password', status: 422 };
+  /** Um token por teste: o link verificado fica lembrado na sessão. */
+  let n = 0;
+  const umLink = () => `token-hash-${++n}`;
+
+  beforeEach(() => {
+    modoSupabase.mockReturnValue(true);
+    process.env.EXPO_PUBLIC_URL_DO_APP = 'https://app.exemplo.test/';
+    useSessao.setState({ fase: 'entrada', tela: 'novaSenha', email: null });
+  });
+  afterAll(() => {
+    process.env.EXPO_PUBLIC_URL_DO_APP = URL_ORIGINAL;
+  });
+
+  describe('pedir o link', () => {
+    it('pede ao Supabase com o retorno para a tela de nova senha', async () => {
+      const auth = simularCliente();
+
+      await expect(s().pedirRecuperacao(` ${EMAIL} `)).resolves.toBeNull();
+      expect(auth.resetPasswordForEmail).toHaveBeenCalledWith(EMAIL, {
+        redirectTo: 'https://app.exemplo.test/redefinir-senha',
+      });
+    });
+
+    it('e-mail sem conta responde igual: o Supabase não diz, e a sessão também não', async () => {
+      // O Supabase responde 200 sem erro para o e-mail que não existe.
+      simularCliente();
+      await expect(s().pedirRecuperacao('ninguem@exemplo.test')).resolves.toBeNull();
+    });
+
+    it('o limite de envio também responde igual, para não revelar quem tem conta', async () => {
+      const auth = simularCliente();
+      auth.resetPasswordForEmail.mockResolvedValue({ data: null, error: ERRO_LIMITE });
+
+      await expect(s().pedirRecuperacao(EMAIL)).resolves.toBeNull();
+    });
+
+    it('sem rede: a frase de sem conexão', async () => {
+      const auth = simularCliente();
+      auth.resetPasswordForEmail.mockResolvedValue({ data: null, error: ERRO_SEM_REDE });
+
+      await expect(s().pedirRecuperacao(EMAIL)).resolves.toBe(ERRO.semConexao);
+    });
+
+    it('e-mail inválido nem vai à rede', async () => {
+      const auth = simularCliente();
+
+      await expect(s().pedirRecuperacao('sem-arroba')).resolves.toBe(ERRO.emailInvalido);
+      expect(auth.resetPasswordForEmail).not.toHaveBeenCalled();
+    });
+
+    it('sem EXPO_PUBLIC_URL_DO_APP, não pede: o link cairia fora da tela', async () => {
+      const aviso = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      delete process.env.EXPO_PUBLIC_URL_DO_APP;
+      const auth = simularCliente();
+
+      await expect(s().pedirRecuperacao(EMAIL)).resolves.toBe(ERRO_DA_RECUPERACAO.falhaNoEnvio);
+      expect(auth.resetPasswordForEmail).not.toHaveBeenCalled();
+      aviso.mockRestore();
+    });
+  });
+
+  describe('a senha nova', () => {
+    it('troca o link por sessão, grava a senha e entra no app', async () => {
+      const auth = simularCliente();
+      const link = umLink();
+
+      await expect(s().redefinirSenha(link, SENHA)).resolves.toBeNull();
+      expect(auth.verifyOtp).toHaveBeenCalledWith({ type: 'recovery', token_hash: link });
+      expect(auth.updateUser).toHaveBeenCalledWith({ password: SENHA });
+      expect(s()).toMatchObject({ fase: 'app', email: EMAIL, contaNova: false });
+    });
+
+    it('o link usado, vencido ou inventado: a frase do link, e a senha não é tocada', async () => {
+      const auth = simularCliente();
+      auth.verifyOtp.mockResolvedValue({ data: { session: null, user: null }, error: ERRO_LINK });
+
+      await expect(s().redefinirSenha(umLink(), SENHA)).resolves.toBe(ERRO_DA_RECUPERACAO.linkVencido);
+      expect(auth.updateUser).not.toHaveBeenCalled();
+      expect(s().fase).toBe('entrada');
+    });
+
+    it('senha igual à atual: a frase, e a nova tentativa não gasta o link de novo', async () => {
+      const auth = simularCliente();
+      auth.updateUser.mockResolvedValueOnce({ data: { user: null }, error: ERRO_SENHA_IGUAL });
+      const link = umLink();
+
+      await expect(s().redefinirSenha(link, SENHA)).resolves.toBe(ERRO_DA_RECUPERACAO.senhaIgual);
+      expect(s().fase).toBe('entrada');
+
+      await expect(s().redefinirSenha(link, 'outra-senha')).resolves.toBeNull();
+      expect(auth.verifyOtp).toHaveBeenCalledTimes(1);
+      expect(s().fase).toBe('app');
+    });
+
+    it('senha fraca para o servidor: a frase da senha curta', async () => {
+      const auth = simularCliente();
+      auth.updateUser.mockResolvedValue({ data: { user: null }, error: ERRO_SENHA_FRACA });
+
+      await expect(s().redefinirSenha(umLink(), SENHA)).resolves.toBe(ERRO.senhaCurta);
+    });
+
+    it('sem token no link, ou com a senha curta, nem vai à rede', async () => {
+      const auth = simularCliente();
+
+      await expect(s().redefinirSenha('', SENHA)).resolves.toBe(ERRO_DA_RECUPERACAO.linkVencido);
+      await expect(s().redefinirSenha(umLink(), '123')).resolves.toBe(ERRO.senhaCurta);
+      expect(auth.verifyOtp).not.toHaveBeenCalled();
+    });
+
+    it('sem rede: a frase de sem conexão, devolvida ou lançada', async () => {
+      const auth = simularCliente();
+      auth.verifyOtp.mockResolvedValueOnce({ data: { session: null, user: null }, error: ERRO_SEM_REDE });
+      await expect(s().redefinirSenha(umLink(), SENHA)).resolves.toBe(ERRO.semConexao);
+
+      auth.verifyOtp.mockRejectedValueOnce(ERRO_SEM_REDE);
+      const aviso = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      await expect(s().redefinirSenha(umLink(), SENHA)).resolves.toBe(ERRO.semConexao);
+      aviso.mockRestore();
+    });
+
+    it('a conta com o onboarding pela metade volta a ele', async () => {
+      simularCliente();
+      concluido.mockResolvedValue(false);
+
+      await expect(s().redefinirSenha(umLink(), SENHA)).resolves.toBeNull();
+      expect(s()).toMatchObject({ fase: 'onboarding', passo: 1, contaNova: true });
+    });
+
+    it('esquece os alunos que o aparelho guardava: a conta do link pode ser outra', async () => {
+      simularCliente();
+      const esquecer = jest.spyOn(useDados.getState(), 'esquecer');
+
+      await s().redefinirSenha(umLink(), SENHA);
+      expect(esquecer).toHaveBeenCalledTimes(1);
+      esquecer.mockRestore();
+    });
+  });
+
+  it('o endereço da tela de nova senha sai da variável, sem barra dobrada', () => {
+    expect(enderecoDaNovaSenha('https://app.exemplo.test')).toBe('https://app.exemplo.test/redefinir-senha');
+    expect(enderecoDaNovaSenha('https://app.exemplo.test//')).toBe('https://app.exemplo.test/redefinir-senha');
+    expect(enderecoDaNovaSenha('')).toBeNull();
+  });
+
+  it.each([
+    ['link usado', ERRO_LINK, ERRO_DA_RECUPERACAO.linkVencido],
+    ['senha igual', ERRO_SENHA_IGUAL, ERRO_DA_RECUPERACAO.senhaIgual],
+    ['senha fraca', ERRO_SENHA_FRACA, ERRO.senhaCurta],
+    ['sem rede', ERRO_SEM_REDE, ERRO.semConexao],
+    ['erro qualquer', new Error('boom'), ERRO.falhaNoAcesso],
+  ])('a troca de senha: %s', (_nome, erro, frase) => {
+    expect(fraseDoErroDaNovaSenha(erro)).toBe(frase);
+  });
+
+  it.each([
+    ['limite de envio', ERRO_LIMITE, null],
+    ['e-mail inválido no servidor', { code: 'email_address_invalid', status: 400 }, ERRO.emailInvalido],
+    ['sem rede', ERRO_SEM_REDE, ERRO.semConexao],
+    ['erro qualquer', new Error('boom'), ERRO_DA_RECUPERACAO.falhaNoEnvio],
+  ])('o pedido: %s', (_nome, erro, frase) => {
+    expect(fraseDoErroDoPedido(erro)).toBe(frase);
   });
 });
 
