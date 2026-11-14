@@ -58,13 +58,9 @@ const DIAS_DE_EXTENSAO = 15;
 // o importa daqui.
 export type { PreferenciasDeAviso } from '../dados/repositorio';
 
-export const AVISOS_PADRAO: PreferenciasDeAviso = {
-  aulaDoDia: true,
-  saldoBaixo: true,
-  reposicaoPendente: true,
-  pagamentoVencendo: false,
-  antesDaAula: true,
-};
+// O padrão mora no conversor, que entra no bundle da função `avisos`
+// (SCRUM-23): coluna nula e tela sem mexer valem a mesma coisa.
+export { AVISOS_PADRAO } from '../dados/conversor';
 
 type Dados = Persistido & {
   carregado: boolean;

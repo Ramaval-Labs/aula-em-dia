@@ -399,6 +399,11 @@ verify_jwt = false
 [functions.apagar-conta]
 verify_jwt = true
 
+# Os lembretes (SCRUM-23): quem chama é o pg_cron, com o AVISOS_SEGREDO, e não
+# um professor logado. A própria função recusa quem não tem o segredo.
+[functions.avisos]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

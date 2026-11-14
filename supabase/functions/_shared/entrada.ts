@@ -21,8 +21,17 @@ export { marcarReposicao } from '../../../mobile/src/dominio/politica';
 export { hoje } from '../../../mobile/src/dominio/datas';
 export { DIAS, FAIXAS_HORARIAS } from '../../../mobile/src/dominio/disponibilidade';
 export {
+  alunoDoBanco,
   alunoParaBanco,
   datasDoBanco,
   lancamentoDoMovimento,
   montarPersistido,
+  preferenciasDeAvisoDe,
 } from '../../../mobile/src/dados/conversor';
+// Os lembretes do professor (SCRUM-91), para a função `avisos` (SCRUM-23).
+export {
+  aulasDaProximaHora,
+  avisoDaAula,
+  avisosDoDia,
+  resumoDoDia,
+} from '../../../mobile/src/dominio/avisos';

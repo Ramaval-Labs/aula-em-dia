@@ -13,6 +13,7 @@ import { formatarDdMm } from '../../dominio/datas';
 import type { Aluno, Lancamento } from '../../dominio/tipos';
 import { criadoEmDoBanco, EMAIL_DO_LOGIN, linhasDoPersistido } from '../__simulados__/linhas';
 import {
+  AVISOS_PADRAO,
   alunoDoBanco,
   alunoParaBanco,
   COLUNAS_DO_MOVIMENTO,
@@ -26,6 +27,7 @@ import {
   montarPersistido,
   perfilDoBanco,
   perfilParaBanco,
+  preferenciasDeAvisoDe,
   propostaDoMovimento,
   temAulaHoje,
   tipoPorTitulo,
@@ -334,6 +336,21 @@ describe('a aula fixa estruturada (SCRUM-89)', () => {
       aula_fixa: { dias: ['seg'], hora: 9 },
     });
     expect(colunasDoAluno({ ...ANA, aulaFixa: null }, ['aulaFixa'])).toEqual({ aula_fixa: null });
+  });
+});
+
+describe('preferências de aviso (SCRUM-23)', () => {
+  it('a coluna nula vale o padrão', () => {
+    expect(preferenciasDeAvisoDe(null)).toEqual(AVISOS_PADRAO);
+  });
+
+  it('a gravada antes do aviso da aula não tem antesDaAula, e ele vale ligado', () => {
+    const antigas = { aulaDoDia: false, saldoBaixo: true, reposicaoPendente: false, pagamentoVencendo: true };
+    expect(preferenciasDeAvisoDe(antigas)).toEqual({ ...antigas, antesDaAula: true });
+  });
+
+  it('o que o professor desligou continua desligado', () => {
+    expect(preferenciasDeAvisoDe({ ...AVISOS_PADRAO, antesDaAula: false }).antesDaAula).toBe(false);
   });
 });
 

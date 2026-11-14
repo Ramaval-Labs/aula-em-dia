@@ -143,6 +143,30 @@ export function temAulaHoje(
   return temAulaNoDia(aulaFixaDe(a), DIA_DO_GETDAY[referencia.getDay()]);
 }
 
+// --- Preferências de aviso ------------------------------------------------------
+
+/**
+ * Os avisos que a tela mostra ligados antes de o professor mexer neles, e o
+ * que vale quando `preferencias_aviso` é nula no banco.
+ */
+export const AVISOS_PADRAO: PreferenciasDeAviso = {
+  aulaDoDia: true,
+  saldoBaixo: true,
+  reposicaoPendente: true,
+  pagamentoVencendo: false,
+  antesDaAula: true,
+};
+
+/**
+ * A preferência gravada por cima do padrão. A gravada antes de uma chave nova
+ * existir não tem a chave (o `antesDaAula`, do SCRUM-23), e ela vale o padrão.
+ * É o que a função `avisos` passa à regra.
+ */
+export const preferenciasDeAvisoDe = (gravadas: unknown): PreferenciasDeAviso => ({
+  ...AVISOS_PADRAO,
+  ...(gravadas !== null && typeof gravadas === 'object' ? (gravadas as Partial<PreferenciasDeAviso>) : {}),
+});
+
 // --- Título → tipo --------------------------------------------------------------
 
 /**
