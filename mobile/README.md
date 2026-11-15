@@ -24,7 +24,7 @@ build no navegador.
 ## Verificação
 
 ```bash
-npm test          # 1125 testes: regras, navegação, tokens, catálogo e montagem das 35 telas
+npm test          # 1136 testes: regras, navegação, tokens, catálogo e montagem das 36 telas
 npm run typecheck # tsc --noEmit
 ```
 
@@ -108,7 +108,7 @@ src/componentes/             o catálogo iOS Glass (inventário em ../spec/compo
   Controles.tsx Blocos.tsx Listas.tsx Campos.tsx GradeSemanal.tsx PreviaDeMensagem.tsx Icone.tsx
   useDoisToques.ts             confirmação em dois toques
   __catalogo__/                tela de desenvolvimento com cada peça em todos os estados
-src/telas/                   as 35 telas
+src/telas/                   as 36 telas
   comum/                       adaptadores de domínio de várias telas (extrato, frases do aluno)
   entrada/                     login e onboarding (Fluxo A), com o chassi TelaDeEntrada
   reposicao/                   assistente de 3 passos (Fluxo C)

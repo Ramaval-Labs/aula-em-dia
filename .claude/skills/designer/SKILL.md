@@ -154,7 +154,7 @@ Estas regras vencem o Impeccable quando os dois conflitam ("the brief wins").
   `TIPO.*` e espaço vertical por `comEspaco()`; cor de texto sempre explícita; dinheiro por
   `dinheiro()`; datas por `dominio/datas.ts`; seletor de store estável; rascunho que atravessa
   telas em `useRascunho`. Nada de curva, cabeçalho escuro ou amarelo — são da direção aposentada.
-- **Tela derivada:** 26 das 35 telas não têm desenho no handoff (ver `MAPA-DE-TELAS.md`). Nelas,
+- **Tela derivada:** 27 das 36 telas não têm desenho no handoff (ver `MAPA-DE-TELAS.md`). Nelas,
   o padrão é a tela desenhada indicada como "Modelo" no mapa; não invente um terceiro padrão.
 - **Copy em pt-BR.** Só `clarify` reescreve texto, e sem inventar fato — por exemplo, não
   prometer envio automático de WhatsApp, que ainda não existe.
