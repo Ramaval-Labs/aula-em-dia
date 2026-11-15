@@ -13,6 +13,7 @@ import { useSessao } from '../../estado/sessao';
 import { Acesso } from './Acesso';
 import { BoasVindas } from './BoasVindas';
 import { Disponibilidade } from './Disponibilidade';
+import { NovaSenha } from './NovaSenha';
 import { Perfil } from './Perfil';
 import { PoliticaInicial } from './PoliticaInicial';
 import { PrimeiroAluno } from './PrimeiroAluno';
@@ -29,6 +30,7 @@ export function Entrada() {
     return () => sub.remove();
   }, [voltarEntrada]);
 
+  if (tela === 'novaSenha') return <NovaSenha />;
   return tela === 'acesso' ? <Acesso /> : <BoasVindas />;
 }
 
