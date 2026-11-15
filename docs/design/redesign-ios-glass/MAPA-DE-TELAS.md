@@ -33,7 +33,7 @@ Rótulo do voltar = título curto da última tela **não-sheet** da pilha: "Alun
 - "Cancelar", toque fora do painel e voltar do Android → `fecharSheet()`: remove as entradas de
   sheet da pilha e volta para a última não-sheet.
 
-## As 35 telas
+## As 36 telas
 
 ### Aba Alunos — dono T1 (exceto registro e reposição, T2)
 
@@ -84,7 +84,8 @@ Rótulo do voltar = título curto da última tela **não-sheet** da pilha: "Alun
 |---|---|---|---|---|
 | Splash | `telas/entrada/Splash.tsx` | entrada | Derivada (Fluxo A1) | Fundo de refração + wordmark **só tipográfico** ("Aula em Dia", Satoshi 800, tint). As quatro barras com amarelo saem |
 | Boas-vindas | `telas/entrada/BoasVindas.tsx` | entrada | Derivada (Fluxo A2) | Título grande de H§1; três passos em lista agrupada; primário "Criar conta", secundário "Entrar" |
-| Acesso | `telas/entrada/Acesso.tsx` | entrada | Derivada (Fluxo A3) | Campos em cartão de vidro; segmentado Entrar/Criar conta |
+| Acesso | `telas/entrada/Acesso.tsx` | entrada | Derivada (Fluxo A3) | Campos em cartão de vidro; segmentado Entrar/Criar conta. "Esqueci minha senha" pede o link de recuperação (SCRUM-96) |
+| Nova senha | `telas/entrada/NovaSenha.tsx` | entrada | Derivada (SCRUM-96, sem fluxo no handoff) | Abre pelo link `/redefinir-senha` do e-mail. Modelo: a Acesso — dois campos de senha em cartão de vidro, nota do que falta e primário "Salvar e entrar" no rodapé; link vencido vira bloco vermelho com "Pedir outro link" |
 | Onboarding 1–4 | `telas/entrada/{Perfil,Disponibilidade,PoliticaInicial,PrimeiroAluno}.tsx` + `PassoDoOnboarding.tsx` | entrada | Derivada (Fluxo A4–A7) | Chassi único em `PassoDoOnboarding`: voltar, "Passo N de 4" como sub-linha, medidor de 4 barras (padrão do medidor de pacote de H§2), primário no rodapé. `PoliticaInicial` reusa os cartões de H§9 |
 
 ## Divergências handoff × domínio já conhecidas

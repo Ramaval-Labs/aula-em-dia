@@ -24,7 +24,12 @@ import {
 } from '../../componentes/Controles';
 import { ERRO, emailValido, senhaValida, validarAcesso } from '../../dominio/validacao';
 import { useRascunho } from '../../estado/formularios';
-import { loginReal, useSessao } from '../../estado/sessao';
+import {
+  ERRO_DA_RECUPERACAO,
+  FRASE_DO_LINK_ENVIADO,
+  loginReal,
+  useSessao,
+} from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { folgaDeToque } from '../../tema/alvoDeToque';
 import { useCores } from '../../tema/TemaProvider';
@@ -35,12 +40,11 @@ import { TelaDeEntrada } from './TelaDeEntrada';
 
 const ACESSO_INICIAL = { email: '', erro: null };
 
-/** Não há recuperação para oferecer em nenhum dos modos, então o toque avisa. */
 /** O texto do link "Esqueci minha senha"; a folga de toque sai da altura dele. */
 const TEXTO_DO_LINK = texto(13.5, 600, { altura: 1.3 });
 
-const AVISO_RECUPERAR_SENHA ='A recuperação de senha chega junto com o login de verdade.';
-const AVISO_RECUPERAR_SENHA_REAL = 'A recuperação de senha ainda não está disponível.';
+/** No modo local não há conta nem e-mail: o toque só avisa. */
+const AVISO_RECUPERAR_SENHA = 'A recuperação de senha chega junto com o login de verdade.';
 
 /** Frases que apontam para o e-mail; as outras de campo ficam sob a senha. */
 const ERROS_DO_EMAIL: readonly string[] = [
@@ -50,7 +54,11 @@ const ERROS_DO_EMAIL: readonly string[] = [
 ];
 
 /** Frases que não são de campo nenhum: vão num bloco abaixo do formulário. */
-const ERROS_GERAIS: readonly string[] = [ERRO.semConexao, ERRO.falhaNoAcesso];
+const ERROS_GERAIS: readonly string[] = [
+  ERRO.semConexao,
+  ERRO.falhaNoAcesso,
+  ERRO_DA_RECUPERACAO.falhaNoEnvio,
+];
 
 const MODOS: readonly OpcaoSegmentada<ModoDeAcesso>[] = [
   { valor: 'entrar', rotulo: 'Entrar' },
@@ -61,6 +69,7 @@ export function Acesso() {
   const { cores } = useCores();
   const entrar = useSessao((s) => s.entrar);
   const criarConta = useSessao((s) => s.criarConta);
+  const pedirRecuperacao = useSessao((s) => s.pedirRecuperacao);
   const voltarEntrada = useSessao((s) => s.voltarEntrada);
   const avisar = useToast((s) => s.avisar);
   const [form, atualizar] = useRascunho('acesso', ACESSO_INICIAL);
@@ -70,10 +79,33 @@ export function Acesso() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [modo, setModo] = useState<ModoDeAcesso>(modoDeAcessoInicial);
   const [enviando, setEnviando] = useState(false);
+  // O link de recuperação saiu: a frase fica à vista até a pessoa mexer de novo.
+  const [linkEnviado, setLinkEnviado] = useState(false);
+  const [pedindoLink, setPedindoLink] = useState(false);
   // O estado só desabilita o botão no render seguinte; a ref barra o segundo
   // toque que chega antes dele.
   const emAndamento = useRef(false);
   const real = loginReal();
+
+  /**
+   * "Esqueci minha senha" (SCRUM-96): manda o link para o e-mail do campo.
+   * A resposta é a mesma frase exista a conta ou não, para não revelar quem
+   * tem conta. Sem e-mail válido, a sessão devolve o erro do campo.
+   */
+  const esqueciASenha = async () => {
+    if (!real) {
+      avisar(AVISO_RECUPERAR_SENHA);
+      return;
+    }
+    if (emAndamento.current) return;
+    emAndamento.current = true;
+    setPedindoLink(true);
+    const erro = await pedirRecuperacao(form.email);
+    emAndamento.current = false;
+    setPedindoLink(false);
+    atualizar({ erro });
+    setLinkEnviado(erro === null);
+  };
 
   const criando = modo === 'criar';
 
@@ -132,7 +164,10 @@ export function Acesso() {
         <CampoDeTexto
           rotulo="E-mail"
           valor={form.email}
-          aoMudar={(email) => atualizar({ email, erro: null })}
+          aoMudar={(email) => {
+            atualizar({ email, erro: null });
+            setLinkEnviado(false);
+          }}
           placeholder="voce@email.com"
           teclado="email"
           erro={erroDoEmail}
@@ -162,7 +197,9 @@ export function Acesso() {
           // O texto tem 17,55px; a folga vertical fecha o piso (44 no iOS, 48 no Android).
           <Pressable
             accessibilityRole="link"
-            onPress={() => avisar(real ? AVISO_RECUPERAR_SENHA_REAL : AVISO_RECUPERAR_SENHA)}
+            accessibilityState={{ disabled: enviando || pedindoLink }}
+            disabled={enviando || pedindoLink}
+            onPress={esqueciASenha}
             hitSlop={{ ...folgaDeToque(TEXTO_DO_LINK.lineHeight ?? 0), left: 8, right: 8 }}
             style={estilos.link}
           >
@@ -174,6 +211,14 @@ export function Acesso() {
       </CartaoVidro>
 
       {erroGeral ? <BlocoStatus tom="vermelho" titulo={erroGeral} vivo /> : null}
+
+      {linkEnviado && !criando ? (
+        <BlocoStatus
+          titulo="Confira seu e-mail"
+          texto={`${FRASE_DO_LINK_ENVIADO} Ele abre no navegador, onde você cria a senha nova.`}
+          vivo
+        />
+      ) : null}
 
       {criando ? (
         <BlocoStatus

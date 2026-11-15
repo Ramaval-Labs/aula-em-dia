@@ -34,6 +34,7 @@ import {
 } from './src/estado/navegacao';
 import { useSessao } from './src/estado/sessao';
 import { AppDoAluno, tokenDoCaminho } from './src/telas/aluno/AppDoAluno';
+import { lerLinkDaNovaSenha } from './src/telas/entrada/linkDaNovaSenha';
 import { Entrada, Onboarding, Splash } from './src/telas/entrada/Portao';
 import { telaDe } from './src/telas/registro';
 import { TemaProvider, useTema } from './src/tema/TemaProvider';
@@ -53,6 +54,13 @@ const CAMINHO_DO_ALUNO =
   window.location?.pathname?.startsWith('/a/')
     ? window.location.pathname
     : null;
+
+/**
+ * O link do e-mail de recuperação (`/redefinir-senha?token_hash=…`, SCRUM-96):
+ * lido uma vez, na carga, e tirado da barra de endereço. Com ele, o app abre
+ * direto na tela de nova senha em vez de restaurar a sessão guardada.
+ */
+const TOKEN_DA_NOVA_SENHA = CAMINHO_DO_ALUNO === null ? lerLinkDaNovaSenha() : null;
 
 /**
  * O aluno responde pelo link com o app do professor em segundo plano: ao
@@ -190,6 +198,13 @@ function Portao({ fontesProntas }: { fontesProntas: boolean }) {
   const catalogoAberto = useCatalogo((s) => s.aberto) && __DEV__;
 
   useEffect(() => {
+    // Aberto pelo link de recuperação: a tela de nova senha, e não a sessão
+    // guardada. A conta do link pode não ser a deste aparelho; a sessão troca
+    // de conta quando a senha nova é salva (`redefinirSenha`).
+    if (TOKEN_DA_NOVA_SENHA !== null) {
+      useSessao.setState({ fase: 'entrada', tela: 'novaSenha' });
+      return;
+    }
     carregarSessao();
   }, [carregarSessao]);
 

@@ -12,7 +12,7 @@
  *   --tela <chave>       tela do app (união `Tela` de estado/navegacao.ts); padrão home
  *   --aluno <id>         aluno do contexto (raf, val, bea… da semente)
  *   --tema claro|escuro  padrão claro
- *   --entrada <qual>     máquina de entrada: splash, boasVindas, acesso, onboarding:1..4
+ *   --entrada <qual>     máquina de entrada: splash, boasVindas, acesso, novaSenha, onboarding:1..4
  *   --catalogo           catálogo de componentes (src/componentes/__catalogo__)
  *   --clicar <texto>     toca no primeiro elemento com esse texto (repetível)
  *   --rolar <px|fim>     rola a maior área rolável
