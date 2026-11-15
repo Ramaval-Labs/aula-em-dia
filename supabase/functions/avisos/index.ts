@@ -181,8 +181,6 @@ async function aulas(banco: Banco, relogio: Relogio, { professor, preferencias, 
       await banco
         .from('avisos_enviados')
         .upsert({ ...chave, professor_id: professor.id }, {
-          onConflict: 'aluno_id,dia,hora',
-          ignoreDuplicates: true,
         })
         .select('aluno_id'),
       'marcar o aviso',
