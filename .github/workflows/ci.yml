@@ -79,7 +79,8 @@ jobs:
   # service role, então a RLS não a protege: o filtro pelo token é a única barreira, e
   # este job prova que ela só entrega o aluno do link. Fica separado do job de RLS porque
   # precisa do gateway e do Auth, e não só do Postgres. Banco local, que morre com o job:
-  # nenhuma chave nem projeto da nuvem.
+  # nenhuma chave nem projeto da nuvem. Desde o SCRUM-94, o mesmo job testa também a
+  # função `avisos` contra um Expo Push falso: o nome do check continua o mesmo.
   funcao:
     name: Função do aluno
     runs-on: ubuntu-latest
@@ -113,19 +114,28 @@ jobs:
       - name: Subir o Supabase
         run: supabase start -x studio,imgproxy,inbucket,realtime,storage-api,logflare,vector,supavisor > /dev/null
 
-      # Em segundo plano; o teste espera a função responder antes de começar.
-      - name: Servir a função
-        run: supabase functions serve aluno-publico > "$RUNNER_TEMP/funcao.log" 2>&1 &
+      # Todas as funções, em segundo plano; cada teste espera a sua responder antes de
+      # começar. A `avisos` (SCRUM-23) precisa de dois valores: o AVISOS_SEGREDO, gerado
+      # aqui e que morre com o job, e o EXPO_PUSH_URL, que aponta para o Expo falso que o
+      # próprio teste sobe no runner. A função roda no Docker e chega ao runner por
+      # `host.docker.internal`.
+      - name: Servir as funções
+        run: |
+          printf 'AVISOS_SEGREDO=%s\nEXPO_PUSH_URL=http://host.docker.internal:54399\n' "$(openssl rand -hex 16)" > "$RUNNER_TEMP/funcoes.env"
+          supabase functions serve --env-file "$RUNNER_TEMP/funcoes.env" > "$RUNNER_TEMP/funcao.log" 2>&1 &
 
-      # Sem `set -x`: as chaves locais não vão para o log, mesmo sendo as de exemplo.
-      - name: Testar a função
+      # Sem `set -x`: as chaves locais e o segredo não vão para o log, mesmo sendo
+      # descartáveis.
+      - name: Testar as funções
         run: |
           set -a
+          . "$RUNNER_TEMP/funcoes.env"
           eval "$(supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY|PUBLISHABLE_KEY)=')"
           set +a
           node supabase/tests/funcoes/aluno-publico.test.mjs
+          node supabase/tests/funcoes/avisos.test.mjs
 
-      # Só o que a função escreveu: ela não registra o pedido, que leva o token.
-      - name: Log da função
+      # Só o que as funções escreveram: nenhuma registra o pedido, que leva o token.
+      - name: Log das funções
         if: failure()
         run: tail -n 50 "$RUNNER_TEMP/funcao.log"
