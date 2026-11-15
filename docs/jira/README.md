@@ -2,8 +2,8 @@
 
 O quadro Scrum do **Aula em Dia** está em
 [aulaemdia.atlassian.net](https://aulaemdia.atlassian.net/jira/software/projects/SCRUM/boards/1),
-com as três pessoas dentro e os cards atribuídos. Até agora foram doze janelas: uma semana de
-preparação e onze sprints de uma semana. A Sprint 12 está ativa.
+com as três pessoas dentro e os cards atribuídos. Até agora foram treze janelas: uma semana de
+preparação e doze sprints de uma semana. A Sprint 13 está ativa.
 
 O processo de código (branch, commit, PR, donos, armadilhas) está em
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Este arquivo é o quadro.
@@ -789,7 +789,7 @@ nenhum card novo. A suíte foi de 1061 para **1089 testes**.
 - **Ficou de fora:** o job do CI que roda o teste da função `avisos`, porque o `.github/` é do
   Mauro. Virou o `SCRUM-94`, na Sprint 12.
 
-### Sprint 12 · 14/11 a 21/11 · **ativa** · 13 pontos
+### Sprint 12 · 14/11 a 15/11 · **fechada, 4 de 5, 10 de 13 pontos**
 
 O tema é **o professor recupera a senha sozinho, e o sheet fecha como no iPhone**. A recuperação
 dependia do build por causa do deep link, e deixou de depender: o link do e-mail abre o app do
@@ -848,6 +848,59 @@ enquanto ele espera o commit de abertura do `SCRUM-62`.
 
 **Se a sua faixa esvaziar:** Mauro, o teste de fluxo de ponta a ponta (registrar a falta, propor a
 reposição e confirmar); Valentin, o `SCRUM-63` na web, que também não precisa do build.
+
+**Como fechou, para registro:** em 15/11, seis dias antes do fim previsto. 4 dos 5 cards, 10 dos
+13 pontos. A suíte foi de 1089 para **1136 testes**, e o lint entrou no CI.
+
+- **O `SCRUM-62` passou para a Sprint 13.** O código está na `main` (PR #52), mas falta a nuvem
+  pelo painel: o SMTP no Supabase, as URLs do Auth e a variável na Vercel. Faltava também uma
+  decisão do time sobre o domínio do Resend, tomada na planning da 13.
+- **Os dois cards do Mauro foram feitos pelo Rafael**, porque ele não estava disponível, cada um
+  com um PR de prova vermelho, fechado sem merge. O `SCRUM-94` (#54) respondeu a dúvida do
+  card: no runner Linux a função alcança o Expo falso por `host.docker.internal`, sem
+  `--add-host`. O `SCRUM-95` (#55) achou o eslint já configurado desde o `SCRUM-35`; o
+  card virou a política (só bug é erro) e o passo no job "Testes e tipos". Sobraram 2 avisos,
+  os dois do Rafael, que viraram o `SCRUM-97`.
+- **O `SCRUM-96` (#53) mexeu em uma linha fora da faixa**, a da `NovaSenha` no teste de
+  montagem do Mauro, num commit separado. As telas passaram a ser 36.
+- **Os quatro PRs entraram sem aprovação**, por decisão do PO, todos com os checks verdes.
+- **Fica para conferir no aparelho:** o arrasto do sheet com o dedo no Expo Go (`SCRUM-42`) e a
+  recuperação de ponta a ponta com o e-mail real (`SCRUM-96`, depois do `SCRUM-62`).
+
+### Sprint 13 · 15/11 a 22/11 · **ativa** · 12 pontos
+
+O tema é **a recuperação de senha funciona na nuvem, e o acabamento fecha as pontas da Sprint 12**.
+
+| Dono | Cards | Pts |
+|---|---|---|
+| Valentin | `SCRUM-62` — a recuperação na nuvem, com o remetente de teste (3) | 3 |
+| Rafael | `SCRUM-39` — validar com design as 14 derivadas da Entrada e dos Ajustes (5) + `SCRUM-97` — o lint sem avisos (1) | 6 |
+| Mauro | `SCRUM-98` — banco e funções como checks obrigatórios, e o link de nova senha testado pelo `App.tsx` (3) | 3 |
+
+**12 pontos, um a menos que a Sprint 12.** O backlog livre estava quase vazio: o que sobra
+depende do build adiado (`SCRUM-47`, `SCRUM-63`, `SCRUM-93`), da decisão da Satoshi
+(`SCRUM-56`, `SCRUM-57`) ou de medir no aparelho (`SCRUM-43`, `SCRUM-44`).
+
+**Decisões de PO de 15/11**, tomadas na planning, escolhidas entre opções:
+
+- **A sprint é "nuvem + acabamento"**, e não "plataforma no aparelho" nem "destravar o build".
+- **O domínio próprio do Resend foi adiado.** A recuperação fica com o remetente de teste, que só
+  entrega para o e-mail da conta do Resend. O domínio virou o `SCRUM-99`, no backlog, e o
+  critério "e-mail de fora da equipe" saiu do `SCRUM-62`.
+
+**Revisado antes de abrir**, contra a `main` de 15/11:
+
+- o `SCRUM-39` subiu para o template de nove seções e foi fatiado, como o próprio card pedia:
+  Entrada (8, com a Nova senha) e Ajustes (6) ficam aqui; as outras 13 viraram o `SCRUM-100`.
+- **Achado na abertura:** o `PROXIMOS-PASSOS.md` ainda lista o WhatsApp e os testes de domínio
+  como pendentes, e os dois já existem (`PreviaDeMensagem` abre o `wa.me`; `agenda`,
+  `mensagens` e `pacote` têm teste próprio).
+
+**Fora da sprint, de propósito:** o `SCRUM-47`, o `SCRUM-93` e o `SCRUM-63` (o lançamento); o
+`SCRUM-43` e o `SCRUM-44`; o `SCRUM-56` e o `SCRUM-57`; o `SCRUM-99` e o `SCRUM-100`.
+
+**Se a sua faixa esvaziar:** Rafael, uma fatia do `SCRUM-100` (as 2 telas do Financeiro); Mauro,
+corrigir o `PROXIMOS-PASSOS.md` (o achado acima); Valentin, o `SCRUM-63` na web.
 
 ---
 
@@ -1033,6 +1086,9 @@ Criado em 26/09/2026 pela API: 8 épicos e 35 stories, 132 pontos, tirados de
 - **`SCRUM-84` a `SCRUM-88` criados** em 04/11: o motor que sugere a aula fixa do próprio aluno
   (`84`, achado no teste em 5G), a apresentação com dois celulares (`85`, com as subtarefas `86` e
   `87`) e o puxar para atualizar (`88`, na planning da Sprint 9)
+- **`SCRUM-97` a `SCRUM-100` criados** em 15/11, na abertura da Sprint 13: os dois avisos do lint
+  (`97`), os checks obrigatórios e o teste do link pelo `App.tsx` (`98`), o domínio do Resend
+  adiado pelo PO (`99`) e a segunda metade do `SCRUM-39` (`100`)
 - **`SCRUM-57` criado e adiado** em 07/10, por decisão de PO: pedir autorização à ITF primeiro
   e, sem ela, trocar 600 e 800 pelos pesos oficiais. Fica fora das sprints até alguém ir
   publicar em loja. O card explica por que tirar os TTFs do git agora não resolve: quebra o CI e
