@@ -24,6 +24,7 @@ import { BoasVindas } from '../entrada/BoasVindas';
 import { Disponibilidade } from '../entrada/Disponibilidade';
 import { Perfil } from '../entrada/Perfil';
 import { PoliticaInicial } from '../entrada/PoliticaInicial';
+import { NovaSenha } from '../entrada/NovaSenha';
 import { PrimeiroAluno } from '../entrada/PrimeiroAluno';
 import { Splash } from '../entrada/Splash';
 import { REGISTRO } from '../registro';
@@ -50,11 +51,12 @@ function montarComponente(Componente: React.ComponentType) {
 
 const montar = (tela: Tela) => montarComponente(REGISTRO[tela]);
 
-/** As sete telas da máquina de entrada (estado/sessao.ts), fora do registro. */
+/** As oito telas da máquina de entrada (estado/sessao.ts), fora do registro. */
 const ENTRADA: [string, React.ComponentType][] = [
   ['Splash', Splash],
   ['BoasVindas', BoasVindas],
   ['Acesso', Acesso],
+  ['NovaSenha (link de recuperação)', NovaSenha],
   ['Perfil (passo 1)', Perfil],
   ['Disponibilidade (passo 2)', Disponibilidade],
   ['PoliticaInicial (passo 3)', PoliticaInicial],
