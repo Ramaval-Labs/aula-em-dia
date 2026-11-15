@@ -151,7 +151,7 @@ todo mundo.
 cd mobile
 npm test ; echo "EXIT=$?"   # hoje: 1136 testes, 42 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
-npm run lint                # ESLint: não acrescente achado nos arquivos que você mexeu
+npm run lint ; echo "EXIT=$?"   # ESLint, também no CI: erro trava o PR; não acrescente aviso
 ```
 
 **Leia o código de saída, não o resumo.** O Jest consegue imprimir
@@ -271,9 +271,10 @@ confiar:
   afirma que nada lança exceção. Só dois fluxos têm o conteúdo conferido, em `fluxo.test.tsx`
   (`SCRUM-34`): registrar aula e confirmar reposição. O resto das telas pode mostrar um número
   errado sem que teste nenhum acuse.
-- **O linter existe, mas não está no CI** (`SCRUM-35`). `npm run lint` roda o
-  `eslint-config-expo`, e cada regra desligada tem a razão escrita em `mobile/eslint.config.js`.
-  Ele entra no CI quando os achados que sobraram, todos em arquivos do Rafael, forem resolvidos.
+- **O linter só trava o que é bug** (`SCRUM-35` e `SCRUM-95`). `npm run lint` roda o
+  `eslint-config-expo` no job "Testes e tipos": hook fora de ordem e import que não existe deixam
+  o PR vermelho, mas dependência faltando no `useEffect` e variável sem uso são só aviso no log.
+  Cada regra desligada ou rebaixada tem a razão escrita em `mobile/eslint.config.js`.
 
 O que **deixou** de ser buraco: o CI roda a cada push e PR, e a `main` só aceita código que
 passou por ele (`SCRUM-36` e `SCRUM-49`). O teste do banco (`npx supabase test db`, RLS com dois

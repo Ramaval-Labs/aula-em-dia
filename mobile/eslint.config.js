@@ -22,6 +22,24 @@ module.exports = defineConfig([
       // a ref durante o render de propósito. Religar junto com o React Compiler, quando
       // as animações passarem para `useState(() => new Animated.Value(0))`.
       'react-hooks/refs': 'off',
+      // Também do conjunto do React Compiler. Acusa `const TelaDeFundo = telaDe(fundo)`
+      // no App.tsx como "componente criado no render", mas `telaDe` só consulta o mapa
+      // de telas/registro.ts: devolve sempre o mesmo componente para a mesma tela, e
+      // nada remonta. Religar junto com o React Compiler.
+      'react-hooks/static-components': 'off',
+      // O CI só trava no que é bug (SCRUM-95): hook fora de ordem, import que não existe,
+      // chave duplicada, setState no meio do render (laço infinito). As outras regras do
+      // React Compiler medem compatibilidade com um compilador que o app não liga, então
+      // ficam como aviso até ele entrar.
+      'react-hooks/purity': 'warn',
+      'react-hooks/immutability': 'warn',
+      'react-hooks/globals': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/error-boundaries': 'warn',
+      'react-hooks/use-memo': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/config': 'warn',
+      'react-hooks/gating': 'warn',
     },
   },
   {

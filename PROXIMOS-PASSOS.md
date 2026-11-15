@@ -151,7 +151,8 @@ os P0/P1 foram corrigidos; o que ficou é o que exige regra nova, dependência n
   montagem.
 - **`mobile/src/dados/seed.json` é cópia** de `data/seed.json`, porque o Metro não resolve arquivos
   fora da raiz do projeto. Mudou um, copie no outro.
-- **Sem linter configurado.** Só `tsc --noEmit`. Um `eslint-config-expo` fecharia a lacuna.
+- ~~**Sem linter configurado.**~~ **Feito** (`SCRUM-35` e `SCRUM-95`): `npm run lint` roda o
+  `eslint-config-expo` no job "Testes e tipos" do CI, e só o que é bug trava o PR.
 - ~~**Sem CI.**~~ **Feito** (`SCRUM-36`): `.github/workflows/ci.yml` roda `npm run typecheck` e
   `npm test` a cada push e PR contra a `main`. Desde o `SCRUM-49` a `main` é protegida — PR
   obrigatório, 1 aprovação e o check `Testes e tipos` verde — com `enforce_admins` em `false`,

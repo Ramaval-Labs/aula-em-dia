@@ -39,6 +39,12 @@ jobs:
       - name: Tipos
         run: npm run typecheck
 
+      # ESLint do Expo (SCRUM-95). Só o que é bug trava o PR; o resto sai como aviso
+      # no log, e cada regra desligada tem a razão em mobile/eslint.config.js. No mesmo
+      # job, para o nome do check obrigatório da main não mudar.
+      - name: Lint
+        run: npm run lint
+
       # --ci faz o Jest falhar em vez de escrever snapshot novo, e
       # --runInBand evita a concorrência engolir memória no runner compartilhado.
       - name: Testes
