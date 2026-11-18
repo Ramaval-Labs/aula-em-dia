@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
 import { CampoDeDinheiro, useCampoDeDinheiro } from '../../componentes/Campos';
@@ -19,8 +19,8 @@ import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto } from '../../tema/tipografia';
-import { PAD, RAIO, TAMANHO } from '../../tema/tokens';
+import { comEspaco, texto } from '../../tema/tipografia';
+import { PAD } from '../../tema/tokens';
 import { estilos } from './estilos';
 import { TelaDeAjuste } from './pecas';
 
@@ -90,10 +90,15 @@ export function PacotesPadrao() {
         />
       </CartaoVidro>
 
-      <View
-        style={[proprios.nota, { backgroundColor: cores.preenchimento, borderColor: cores.borda }]}
+      {/* Rodapé de grupo, como o do Pagamento: texto solto no recuo do
+          cabeçalho de grupo. Era uma caixa montada à mão, fora do catálogo. */}
+      <Text
+        style={[
+          comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 14 }),
+          proprios.nota,
+          { color: cores.tinta2 },
+        ]}
       >
-        <Text style={[texto(13, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
           {`A validade vem da política de faltas: ${
             politicas.validadeDias === 0 ? 'sem prazo' : `${politicas.validadeDias} dias`
           }. Hoje ${plural(
@@ -101,17 +106,11 @@ export function PacotesPadrao() {
             'aluno tem',
             'alunos têm',
           )} pacote ativo.`}
-        </Text>
-      </View>
+      </Text>
     </TelaDeAjuste>
   );
 }
 
 const proprios = StyleSheet.create({
-  nota: {
-    marginTop: 12,
-    ...PAD.cartaoDeAjuste,
-    borderRadius: RAIO.cartao,
-    borderWidth: TAMANHO.bordaVidro,
-  },
+  nota: PAD.recuo,
 });

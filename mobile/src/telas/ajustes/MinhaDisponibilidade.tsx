@@ -10,7 +10,12 @@ import { StyleSheet, View } from 'react-native';
 
 import { CartaoVidro, EstadoVazio } from '../../componentes/Blocos';
 import { CampoDeTexto } from '../../componentes/Campos';
-import { BotaoInline, BotaoPrimario, BotaoSecundario } from '../../componentes/Controles';
+import {
+  BotaoInline,
+  BotaoPrimario,
+  BotaoSecundario,
+  BotaoTexto,
+} from '../../componentes/Controles';
 import {
   GradeSemanal,
   PAD_CARTAO_DA_GRADE,
@@ -142,17 +147,32 @@ export function MinhaDisponibilidade() {
       />
 
       <View style={estilos.grupo}>
-        <CabecalhoGrupo
-          titulo="Folgas e feriados"
-          acao={
-            <BotaoInline
-              rotulo={abrindo ? 'Cancelar' : 'Marcar folga'}
-              variante="vidro"
-              aoTocar={abrindo ? fecharFolga : () => setAbrindo(true)}
-            />
-          }
-        />
+        <CabecalhoGrupo titulo="Folgas e feriados" />
       </View>
+      <ListaAgrupada>
+        {d.folgas.length === 0 ? (
+          <EstadoVazio titulo="Nenhuma folga marcada" />
+        ) : (
+          d.folgas.map((f) => (
+            <LinhaLista
+              key={`${f.de}-${f.motivo}`}
+              titulo={periodoDaFolga(f)}
+              subtitulo={f.motivo}
+              direita={
+                <BotaoInline
+                  rotulo="Remover"
+                  variante="vidro"
+                  rotuloAcessivel={`Remover folga: ${periodoDaFolga(f)}`}
+                  aoTocar={() => atualizar({ folgas: d.folgas.filter((x) => x !== f) })}
+                />
+              }
+            />
+          ))
+        )}
+      </ListaAgrupada>
+      {/* "Marcar folga" mora abaixo da lista, como na referência (Fluxo E), e
+          abre o cartão do formulário no lugar dele. No cabeçalho do grupo ele
+          era vidro direto sobre o fundo e engrossava a linha do cabeçalho. */}
       {abrindo ? (
         <CartaoVidro estilo={[estilos.cartao, proprios.folga]}>
           <View style={proprios.datas}>
@@ -191,39 +211,22 @@ export function MinhaDisponibilidade() {
             aoEnviar={adicionar}
           />
           <BotaoSecundario rotulo="Adicionar" aoTocar={adicionar} desabilitado={!de} />
+          <BotaoTexto rotulo="Cancelar" aoTocar={fecharFolga} />
         </CartaoVidro>
-      ) : null}
-      <ListaAgrupada estilo={abrindo ? estilos.bloco : undefined}>
-        {d.folgas.length === 0 ? (
-          <EstadoVazio titulo="Nenhuma folga marcada" />
-        ) : (
-          d.folgas.map((f) => (
-            <LinhaLista
-              key={`${f.de}-${f.motivo}`}
-              titulo={periodoDaFolga(f)}
-              subtitulo={f.motivo}
-              direita={
-                <BotaoInline
-                  rotulo="Remover"
-                  variante="vidro"
-                  rotuloAcessivel={`Remover folga: ${periodoDaFolga(f)}`}
-                  aoTocar={() =>
-                    atualizar({ folgas: d.folgas.filter((x) => x !== f) })
-                  }
-                />
-              }
-            />
-          ))
-        )}
-      </ListaAgrupada>
+      ) : (
+        <BotaoSecundario
+          rotulo="Marcar folga"
+          aoTocar={() => setAbrindo(true)}
+          estilo={estilos.bloco}
+        />
+      )}
     </TelaDeAjuste>
   );
 }
 
 const proprios = StyleSheet.create({
   cartaoGrade: { marginTop: 12, ...PAD_CARTAO_DA_GRADE },
-  // o cabeçalho do grupo já dá o respiro de cima
-  folga: { marginTop: 0, gap: 16 },
+  folga: { gap: 16 },
   datas: { flexDirection: 'row', gap: 12 },
   flexivel: { flex: 1, minWidth: 0 },
 });
