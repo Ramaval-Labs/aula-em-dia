@@ -1,5 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useColorScheme } from 'react-native';
 
 import { CHAVE_TEMA } from '../dados/armazenamento';
@@ -19,6 +27,10 @@ export function TemaProvider({ children }: { children: React.ReactNode }) {
   const doSistema = useColorScheme();
   const [tema, setTema] = useState<NomeDeTema>('claro');
   const [carregado, setCarregado] = useState(false);
+  // O tema do sistema na primeira carga. Numa ref, e não na lista de dependências:
+  // o efeito roda uma vez só, e trocar o tema do sistema depois não pode passar
+  // por cima da escolha manual (SCRUM-97).
+  const sistemaNaCarga = useRef(doSistema);
 
   // Preferência do sistema na primeira carga; a escolha manual vence depois.
   useEffect(() => {
@@ -32,13 +44,12 @@ export function TemaProvider({ children }: { children: React.ReactNode }) {
       }
       if (!vivo) return;
       if (salvo === 'claro' || salvo === 'escuro') setTema(salvo);
-      else setTema(doSistema === 'dark' ? 'escuro' : 'claro');
+      else setTema(sistemaNaCarga.current === 'dark' ? 'escuro' : 'claro');
       setCarregado(true);
     })();
     return () => {
       vivo = false;
     };
-    // roda uma vez: depois da primeira carga a escolha manual manda
   }, []);
 
   const trocarTema = useCallback((t: NomeDeTema) => {

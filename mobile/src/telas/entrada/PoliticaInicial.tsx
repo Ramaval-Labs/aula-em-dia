@@ -8,7 +8,6 @@
  */
 
 import React from 'react';
-import { StyleSheet } from 'react-native';
 
 import { BlocoStatus, CartaoDeAjuste } from '../../componentes/Blocos';
 import { Segmentado, Stepper, Switch } from '../../componentes/Controles';
@@ -103,6 +102,3 @@ export function PoliticaInicial() {
     </PassoDoOnboarding>
   );
 }
-
-const estilos = StyleSheet.create({
-});
