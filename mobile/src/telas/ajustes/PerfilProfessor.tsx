@@ -24,6 +24,13 @@ import { PAD } from '../../tema/tokens';
 import { estilos } from './estilos';
 import { TelaDeAjuste } from './pecas';
 
+/**
+ * "Matemática, Violão e Inglês": vírgula entre os itens e "e" só antes do
+ * último. Sem `Intl.ListFormat`, que o Hermes nem sempre traz.
+ */
+const emLista = (itens: string[]): string =>
+  itens.length < 2 ? (itens[0] ?? '') : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`;
+
 export function PerfilProfessor() {
   const { cores } = useCores();
   const { concluir } = useNavegacao();
@@ -102,7 +109,7 @@ export function PerfilProfessor() {
               { color: cores.tinta2 },
             ]}
           >
-            {form.disciplinas.join(' e ') || 'Nenhuma disciplina'}
+            {emLista(form.disciplinas) || 'Nenhuma disciplina'}
           </Text>
         </View>
       </CartaoVidro>

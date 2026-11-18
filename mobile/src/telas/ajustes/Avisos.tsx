@@ -28,7 +28,7 @@ const ITENS_DE_AVISO = [
   {
     chave: 'pagamentoVencendo' as const,
     titulo: 'Pagamento vencendo',
-    sub: 'Três dias antes do vencimento',
+    sub: '3 dias antes do vencimento',
   },
 ];
 

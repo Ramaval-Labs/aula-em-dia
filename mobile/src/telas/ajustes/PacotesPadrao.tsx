@@ -51,6 +51,9 @@ export function PacotesPadrao() {
     atualizar({ valorPorAula }),
   );
 
+  // Quantos pacotes já existem: o padrão não mexe neles, e a nota diz isso.
+  const ativos = alunos.filter(temPacote).length;
+
   const opcoes = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 
   return (
@@ -101,11 +104,7 @@ export function PacotesPadrao() {
       >
           {`A validade vem da política de faltas: ${
             politicas.validadeDias === 0 ? 'sem prazo' : `${politicas.validadeDias} dias`
-          }. Hoje ${plural(
-            alunos.filter(temPacote).length,
-            'aluno tem',
-            'alunos têm',
-          )} pacote ativo.`}
+          }.${ativos > 0 ? ` O padrão vale para os pacotes novos: ${plural(ativos, 'pacote ativo continua', 'pacotes ativos continuam')} como ${ativos === 1 ? 'está' : 'estão'}.` : ''}`}
       </Text>
     </TelaDeAjuste>
   );
