@@ -36,8 +36,11 @@ import { useAnuncio } from './anunciar';
 import { Icone, type NomeDeIcone } from './Icone';
 import { SuperficieVidro } from './Vidro';
 
-/** Opacidade do pressionado — substitui o `brightness(1.07)` do hover CSS. */
-const OPACIDADE_PRESSIONADO = 0.86;
+/**
+ * Opacidade do pressionado — substitui o `brightness(1.07)` do hover CSS. A mesma
+ * em toda peça tocável do sistema (botões, células da grade, ação do campo).
+ */
+export const OPACIDADE_PRESSIONADO = 0.86;
 
 type Comum = {
   rotulo: string;

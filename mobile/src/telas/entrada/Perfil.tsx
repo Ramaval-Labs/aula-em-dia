@@ -1,10 +1,10 @@
 /** A4 — Onboarding, passo 1: quem é o professor. */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
-import { CampoDeTexto } from '../../componentes/Campos';
+import { AcaoDoCampo, CampoDeTexto } from '../../componentes/Campos';
 import { FichaDeEscolha, Segmentado } from '../../componentes/Controles';
 import type { FaixaDeAlunos } from '../../dominio/tipos';
 import { ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
@@ -50,6 +50,23 @@ export function Perfil() {
       ? `${ERRO.disciplinaVazia}.`
       : undefined;
 
+  // A disciplina fora do catálogo: o campo abre dentro do cartão, e o que for
+  // digitado vira uma ficha marcada. O texto em digitação morre com a tela; o
+  // que vale é a lista no rascunho.
+  const [outraAberta, setOutraAberta] = useState(false);
+  const [outra, setOutra] = useState('');
+  const fichas = [...DISCIPLINAS, ...form.disciplinas.filter((d) => !DISCIPLINAS.includes(d))];
+
+  const acrescentarOutra = () => {
+    const nova = outra.trim();
+    const jaTem = fichas.find((d) => d.toLowerCase() === nova.toLowerCase());
+    if (nova && !jaTem) atualizar({ disciplinas: [...form.disciplinas, nova] });
+    else if (jaTem && !form.disciplinas.includes(jaTem))
+      atualizar({ disciplinas: [...form.disciplinas, jaTem] });
+    setOutra('');
+    setOutraAberta(false);
+  };
+
   const alternarDisciplina = (d: string) =>
     atualizar({
       disciplinas: form.disciplinas.includes(d)
@@ -89,15 +106,37 @@ export function Perfil() {
       </CartaoVidro>
 
       <CartaoDeAjuste titulo="O que você ensina">
-        <View accessibilityRole="list" accessibilityLabel="O que você ensina" style={estilos.fichas}>
-          {DISCIPLINAS.map((d) => (
-            <FichaDeEscolha
-              key={d}
-              rotulo={d}
-              marcada={form.disciplinas.includes(d)}
-              aoTocar={() => alternarDisciplina(d)}
+        <View style={estilos.disciplinas}>
+          <View accessibilityRole="list" accessibilityLabel="O que você ensina" style={estilos.fichas}>
+            {fichas.map((d) => (
+              <FichaDeEscolha
+                key={d}
+                rotulo={d}
+                marcada={form.disciplinas.includes(d)}
+                aoTocar={() => alternarDisciplina(d)}
+              />
+            ))}
+            {outraAberta ? null : (
+              <FichaDeEscolha
+                rotulo="+ outra"
+                rotuloAcessivel="Acrescentar outra disciplina"
+                marcada={false}
+                aoTocar={() => setOutraAberta(true)}
+              />
+            )}
+          </View>
+          {outraAberta ? (
+            <CampoDeTexto
+              rotulo="Outra disciplina"
+              valor={outra}
+              aoMudar={setOutra}
+              placeholder="Piano, Espanhol…"
+              capitalizar="words"
+              autoFoco
+              aoEnviar={acrescentarOutra}
+              sufixo={<AcaoDoCampo rotulo="incluir" aoTocar={acrescentarOutra} />}
             />
-          ))}
+          ) : null}
         </View>
       </CartaoDeAjuste>
 
@@ -115,5 +154,7 @@ export function Perfil() {
 }
 
 const estilos = StyleSheet.create({
+  // 12: o vão dos formulários da entrada, entre as fichas e o campo de "+ outra"
+  disciplinas: { gap: 12 },
   fichas: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

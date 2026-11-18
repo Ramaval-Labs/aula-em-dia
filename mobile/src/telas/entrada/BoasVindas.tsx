@@ -80,7 +80,7 @@ function LinhaDePasso({
 }) {
   const { cores } = useCores();
   return (
-    <View accessible accessibilityLabel={`Passo ${numero}. ${titulo} ${apoio}`} style={estilos.linha}>
+    <View accessible accessibilityLabel={`Passo ${Number(numero)}. ${titulo} ${apoio}`} style={estilos.linha}>
       <Avatar texto={numero} tamanho={38} />
       <View style={estilos.flexivel}>
         <Text style={[texto(14.5, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>

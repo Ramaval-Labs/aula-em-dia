@@ -22,6 +22,7 @@
 
 import React, { useState } from 'react';
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -29,6 +30,7 @@ import {
   View,
   type KeyboardTypeOptions,
   type StyleProp,
+  type TextStyle,
   type ViewStyle,
 } from 'react-native';
 
@@ -40,9 +42,16 @@ import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
 import { PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
-import { FichaDeEscolha } from './Controles';
+import { FichaDeEscolha, OPACIDADE_PRESSIONADO } from './Controles';
 
 export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'decimal' | 'telefone';
+
+/**
+ * Só na web: o navegador desenha o anel de foco em `outline-style: auto`, que
+ * ignora a largura, então só o `none` o tira. O tipo do React Native aceita
+ * só solid, dotted e dashed; o react-native-web aceita o `none`.
+ */
+const SEM_CONTORNO_NA_WEB = { outlineStyle: 'none' } as unknown as TextStyle;
 
 const TECLADOS: Record<TipoDeTeclado, KeyboardTypeOptions> = {
   texto: 'default',
@@ -152,6 +161,9 @@ export function CampoDeTexto({
               tabular: teclado === 'numerico' || teclado === 'decimal' || teclado === 'telefone',
             }),
             estilos.entrada,
+            // No navegador o campo ganhava o contorno de foco preto por dentro do
+            // trilho, duplicando a borda de 1px em tint, que é o indicador de foco.
+            Platform.OS === 'web' ? SEM_CONTORNO_NA_WEB : null,
             {
               color: cores.tinta,
               textAlignVertical: multilinha ? 'top' : 'center',
@@ -293,7 +305,7 @@ export function AcaoDoCampo({
       accessibilityLabel={rotuloAcessivel ?? rotulo}
       onPress={aoTocar}
       hitSlop={{ ...folgaDeToque(TAMANHO.alvoMinimo), left: 10, right: 10 }}
-      style={({ pressed }) => [estilos.acao, { opacity: pressed ? 0.6 : 1 }]}
+      style={({ pressed }) => [estilos.acao, { opacity: pressed ? OPACIDADE_PRESSIONADO : 1 }]}
     >
       <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
     </Pressable>

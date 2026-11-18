@@ -513,8 +513,8 @@ export const PAD = {
   subLinhaSheet: { paddingTop: 4, paddingHorizontal: 6 },
   /** rodapé fixo do sheet (`10px 16px 30px`; sobre o teclado, 10 embaixo também) */
   rodapeSheet: { paddingTop: 10, paddingHorizontal: 16, paddingBottom: 30 },
-  /** faixa fixa do rodapé na entrada (login e onboarding) */
-  rodapeEntrada: { paddingTop: 12 },
+  /** faixa fixa do rodapé na entrada (login e onboarding); embaixo, ou a área segura se for maior */
+  rodapeEntrada: { paddingTop: 12, paddingBottom: 30 },
 
   /* Controles e recuos (SCRUM-40, rodada 2) */
   /** botão primário (`8px 18px` por dentro da altura mínima) */

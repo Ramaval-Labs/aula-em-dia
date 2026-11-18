@@ -578,7 +578,7 @@ espalhar no `style` (`{ ...PAD.cartao, gap: 12 }`).
 | `PAD.corpoSheet` | 6 · 16 · 16 | corpo rolável do sheet |
 | `PAD.subLinhaSheet` | 4 · 6 · 0 | sub-linha do sheet |
 | `PAD.rodapeSheet` | 10 · 16 · 30 | rodapé fixo do sheet (sobre o teclado, 10 embaixo) |
-| `PAD.rodapeEntrada` | 12 em cima | faixa fixa do rodapé na entrada |
+| `PAD.rodapeEntrada` | 12 em cima · 30 embaixo (ou a área segura) | faixa fixa do rodapé na entrada |
 | `PAD.botaoPrimario` | 8 · 18 | botão primário, por dentro da altura mínima |
 | `PAD.botaoInline` | 0 · 18 | botão inline |
 | `PAD.trilhoSegmentado` | 3 | trilho do segmentado de filtro e de cartão |

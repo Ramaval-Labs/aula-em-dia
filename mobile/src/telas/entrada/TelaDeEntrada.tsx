@@ -16,10 +16,25 @@
  * Medidas: padding `54 16` quando não há voltar e `100 16` quando há — o
  * mesmo par raiz/empilhada do handoff, porque o botão voltar ocupa os
  * primeiros 94px da tela.
+ *
+ * O rodapé é o espelho da barra de navegação embaixo: quando há conteúdo
+ * rolável sob ele, ganha a faixa de vidro com o fio em cima, na mesma rampa de
+ * opacidade; com tudo à vista, some, e o primário fica sobre o fundo. Sem isso o
+ * conteúdo era cortado seco no meio de um cartão, e nada dizia que havia mais.
  */
 
-import React from 'react';
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import {
+  Animated,
+  Easing,
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -29,10 +44,69 @@ import {
   useBarraComRolagem,
   usePadTopo,
 } from '../../componentes/Chassi';
-import { PAD, TAMANHO } from '../../tema/tokens';
+import { SuperficieVidro } from '../../componentes/Vidro';
+import { useReduzirMovimento } from '../../tema/movimento';
+import { useCores } from '../../tema/TemaProvider';
+import { MOVIMENTO, PAD, TAMANHO } from '../../tema/tokens';
 
 /** Respiro entre o cabeçalho de texto e o primeiro cartão. */
 const ESPACO_APOS_TITULO = 18;
+
+/**
+ * Quanto de conteúdo escondido sob o rodapé leva a faixa à opacidade cheia —
+ * o mesmo curso da barra de navegação, que acende nos primeiros ~50px.
+ */
+const CURSO_DO_RODAPE = 50;
+
+/**
+ * A faixa do rodapé acende conforme sobra conteúdo abaixo da área visível, em
+ * degraus de 0,1 como a barra de navegação, e sem transição com "reduzir
+ * movimento".
+ */
+function useFaixaDoRodape() {
+  const semMovimento = useReduzirMovimento();
+  const opacidade = useRef(new Animated.Value(0)).current;
+  const medida = useRef({ y: 0, visivel: 0, conteudo: 0 });
+  const degrau = useRef(0);
+  const emCurso = useRef<Animated.CompositeAnimation | null>(null);
+  useEffect(() => () => emCurso.current?.stop(), []);
+
+  const atualizar = useCallback(() => {
+    const { y, visivel, conteudo } = medida.current;
+    const escondido = conteudo - visivel - y;
+    const alvo = Math.round(Math.min(1, Math.max(0, escondido / CURSO_DO_RODAPE)) * 10) / 10;
+    if (alvo === degrau.current) return;
+    degrau.current = alvo;
+    if (semMovimento) {
+      opacidade.setValue(alvo);
+      return;
+    }
+    emCurso.current?.stop();
+    emCurso.current = Animated.timing(opacidade, {
+      toValue: alvo,
+      duration: MOVIMENTO.barraNavMs,
+      easing: Easing.linear,
+      useNativeDriver: false,
+    });
+    emCurso.current.start();
+  }, [opacidade, semMovimento]);
+
+  return {
+    opacidade,
+    aoRolar: (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      medida.current.y = e.nativeEvent.contentOffset.y;
+      atualizar();
+    },
+    aoMedir: (e: LayoutChangeEvent) => {
+      medida.current.visivel = e.nativeEvent.layout.height;
+      atualizar();
+    },
+    aoMudarConteudo: (_largura: number, altura: number) => {
+      medida.current.conteudo = altura;
+      atualizar();
+    },
+  };
+}
 
 export type PropsTelaDeEntrada = {
   /** título grande, o único cabeçalho da tela */
@@ -65,17 +139,24 @@ export function TelaDeEntrada({
   comTeclado = false,
   children,
 }: PropsTelaDeEntrada) {
+  const { cores } = useCores();
   const insets = useSafeAreaInsets();
   const padTopo = usePadTopo(voltar ? 'empilhada' : 'raiz');
   // Sem a barra, o conteúdo rolado passaria por baixo do voltar fixo e os
   // dois se sobreporiam.
   const { opacidade, aoRolar } = useBarraComRolagem();
+  const faixa = useFaixaDoRodape();
 
   const corpo = (
     <View style={estilos.cheio}>
       <ScrollView
         style={estilos.cheio}
-        onScroll={aoRolar}
+        onScroll={(e) => {
+          aoRolar(e);
+          faixa.aoRolar(e);
+        }}
+        onLayout={faixa.aoMedir}
+        onContentSizeChange={faixa.aoMudarConteudo}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps={comTeclado ? 'handled' : 'never'}
@@ -99,8 +180,22 @@ export function TelaDeEntrada({
       </ScrollView>
 
       {rodape ? (
-        <View style={[estilos.rodape, { paddingBottom: Math.max(30, insets.bottom) }]}>
-          {rodape}
+        <View>
+          <Animated.View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { opacity: faixa.opacidade }]}
+          >
+            <SuperficieVidro nivel="vidro" raio={0} style={estilos.cheio} />
+            <View style={[estilos.fio, { backgroundColor: cores.fio }]} />
+          </Animated.View>
+          <View
+            style={[
+              estilos.rodape,
+              { paddingBottom: Math.max(PAD.rodapeEntrada.paddingBottom, insets.bottom) },
+            ]}
+          >
+            {rodape}
+          </View>
         </View>
       ) : null}
     </View>
@@ -127,6 +222,7 @@ export function TelaDeEntrada({
 const estilos = StyleSheet.create({
   cheio: { flex: 1 },
   acima: { marginBottom: 16 },
+  fio: { position: 'absolute', left: 0, right: 0, top: 0, height: TAMANHO.bordaVidro },
   rodape: {
     ...PAD.rodapeEntrada,
     paddingHorizontal: TAMANHO.padLateral,
