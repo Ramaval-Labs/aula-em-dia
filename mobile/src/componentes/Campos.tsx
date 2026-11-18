@@ -81,6 +81,7 @@ export function CampoDeTexto({
   sufixo,
   aoEnviar,
   aoSair,
+  editavel = true,
   estilo,
 }: {
   rotulo: string;
@@ -101,6 +102,8 @@ export function CampoDeTexto({
   aoEnviar?: () => void;
   /** o campo perdeu o foco — quem valida no fim da digitação escuta aqui */
   aoSair?: () => void;
+  /** false: só leitura — o texto vai para `tinta2` e o teclado não abre */
+  editavel?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
   const { cores } = useCores();
@@ -143,6 +146,7 @@ export function CampoDeTexto({
           autoCapitalize={teclado === 'email' ? 'none' : capitalizar}
           autoCorrect={teclado !== 'email'}
           autoFocus={autoFoco}
+          editable={editavel}
           multiline={multilinha}
           onFocus={() => setFocado(true)}
           onBlur={() => {
@@ -165,7 +169,7 @@ export function CampoDeTexto({
             // trilho, duplicando a borda de 1px em tint, que é o indicador de foco.
             Platform.OS === 'web' ? SEM_CONTORNO_NA_WEB : null,
             {
-              color: cores.tinta,
+              color: editavel ? cores.tinta : cores.tinta2,
               textAlignVertical: multilinha ? 'top' : 'center',
             },
           ]}
@@ -317,6 +321,114 @@ export function AcaoDoCampo({
 /** "SEG" → "Seg", "SÁB" → "Sáb": a ficha é estreita, o nome longo vai para o leitor de tela. */
 const curtoDe = (curto: string) => curto[0] + curto.slice(1).toLowerCase();
 
+/** As disciplinas sugeridas ao professor; "+ outra" acrescenta qualquer uma. */
+export const DISCIPLINAS_SUGERIDAS: readonly string[] = [
+  'Inglês',
+  'Violão',
+  'Matemática',
+  'Música',
+  'Reforço escolar',
+];
+
+/**
+ * As disciplinas do professor (SCRUM-39) — derivado: fichas de escolha
+ * múltipla com as sugestões e as que ele já acrescentou, e a ficha "+ outra"
+ * da referência (Fluxo A), que abre um campo logo abaixo. O que for digitado
+ * vira ficha marcada; digitar uma que já existe só a marca; enviar vazio fecha
+ * o campo. A mesma peça no onboarding (passo 1) e em Meu perfil, onde antes
+ * havia um campo de texto separado por vírgula.
+ */
+export function SeletorDeDisciplinas({
+  disciplinas,
+  aoMudar,
+  rotulo,
+  rotuloDoGrupo,
+  sugestoes = DISCIPLINAS_SUGERIDAS,
+}: {
+  disciplinas: string[];
+  aoMudar: (disciplinas: string[]) => void;
+  /** rótulo em caixa alta acima, como o do campo de texto (Meu perfil) */
+  rotulo?: string;
+  /** o que o leitor de tela diz da lista, quando o título está fora dela */
+  rotuloDoGrupo?: string;
+  sugestoes?: readonly string[];
+}) {
+  const { cores } = useCores();
+  // O campo aberto e o texto em digitação morrem com a tela; a lista é de quem chama.
+  const [aberta, setAberta] = useState(false);
+  const [outra, setOutra] = useState('');
+  const fichas = [...sugestoes, ...disciplinas.filter((d) => !sugestoes.includes(d))];
+
+  const alternar = (d: string) =>
+    aoMudar(disciplinas.includes(d) ? disciplinas.filter((x) => x !== d) : [...disciplinas, d]);
+
+  const acrescentar = () => {
+    const nova = outra.trim();
+    // `toLowerCase`, e não o local: o Hermes nem sempre traz ICU completo.
+    const existente = nova
+      ? fichas.find((d) => d.toLowerCase() === nova.toLowerCase())
+      : undefined;
+    if (existente) {
+      if (!disciplinas.includes(existente)) aoMudar([...disciplinas, existente]);
+    } else if (nova) {
+      aoMudar([...disciplinas, nova]);
+    }
+    setOutra('');
+    setAberta(false);
+  };
+
+  return (
+    <View style={estilos.disciplinas}>
+      <View>
+        {rotulo ? (
+          <Text
+            style={[
+              texto(11.5, 600, { tracking: 0.04, maiuscula: true }),
+              { color: cores.tinta3 },
+            ]}
+          >
+            {rotulo}
+          </Text>
+        ) : null}
+        <View
+          accessibilityRole="list"
+          accessibilityLabel={rotuloDoGrupo ?? rotulo}
+          style={[estilos.fichasDeDisciplina, rotulo ? estilos.aposRotulo : null]}
+        >
+          {fichas.map((d) => (
+            <FichaDeEscolha
+              key={d}
+              rotulo={d}
+              marcada={disciplinas.includes(d)}
+              aoTocar={() => alternar(d)}
+            />
+          ))}
+          {aberta ? null : (
+            <FichaDeEscolha
+              rotulo="+ outra"
+              rotuloAcessivel="Acrescentar outra disciplina"
+              marcada={false}
+              aoTocar={() => setAberta(true)}
+            />
+          )}
+        </View>
+      </View>
+      {aberta ? (
+        <CampoDeTexto
+          rotulo="Outra disciplina"
+          valor={outra}
+          aoMudar={setOutra}
+          placeholder="Piano, Espanhol…"
+          capitalizar="words"
+          autoFoco
+          aoEnviar={acrescentar}
+          sufixo={<AcaoDoCampo rotulo="incluir" aoTocar={acrescentar} />}
+        />
+      ) : null}
+    </View>
+  );
+}
+
 /**
  * Os dias da aula fixa (SCRUM-90) — derivado: uma fileira de `FichaDeEscolha`
  * de segunda a sábado, a mesma semana da grade do professor
@@ -384,6 +496,11 @@ export function SeletorDeDias({
 
 const estilos = StyleSheet.create({
   fileiraDeDias: { flexDirection: 'row', gap: 6, marginTop: 8 },
+  // 12: o vão dos formulários, entre as fichas e o campo de "+ outra"
+  disciplinas: { gap: 12 },
+  fichasDeDisciplina: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  // o mesmo respiro do rótulo para a fileira de dias
+  aposRotulo: { marginTop: 8 },
   // as seis dividem a largura: o padding lateral da ficha não cabe seis vezes
   fichaDeDia: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
   acao: { height: TAMANHO.alvoMinimo, justifyContent: 'center' },

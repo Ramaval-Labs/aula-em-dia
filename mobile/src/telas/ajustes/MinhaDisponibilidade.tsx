@@ -88,17 +88,37 @@ export function MinhaDisponibilidade() {
 
   const campoDoErro = erro ? (CAMPO_DO_ERRO[erro] ?? 'de') : null;
 
+  // Folga digitada e não adicionada: o Salvar a inclui, se for válida, em vez de
+  // descartá-la calado. Inválida, o erro aparece no campo e nada é salvo.
+  const folgaPendente = abrindo && !!de;
   const salvar = () => {
-    salvarDisponibilidade(d);
+    let dados = d;
+    if (folgaPendente) {
+      const nova: Folga = { de, ate: ate || de, motivo: motivo.trim() };
+      const problema = folgaValida(nova, d.folgas);
+      if (problema) {
+        setErro(problema);
+        return;
+      }
+      dados = { ...d, folgas: adicionarFolga(d.folgas, nova) };
+    }
+    salvarDisponibilidade(dados);
     avisar(avisos.disponibilidadeSalva);
     concluir('ajustes');
   };
 
   return (
     <TelaDeAjuste
+      comTeclado
       titulo="Minha disponibilidade"
       subtitulo="É a base do cálculo de reposição."
-      rodape={<BotaoPrimario rotulo="Salvar" desabilitado={!mudou} aoTocar={salvar} />}
+      rodape={
+        <BotaoPrimario
+          rotulo="Salvar"
+          desabilitado={!mudou && !folgaPendente}
+          aoTocar={salvar}
+        />
+      }
     >
       <CartaoVidro estilo={[proprios.cartaoGrade, estilos.primeiro]}>
         <GradeSemanal
@@ -188,7 +208,7 @@ export function MinhaDisponibilidade() {
                   variante="vidro"
                   rotuloAcessivel={`Remover folga: ${periodoDaFolga(f)}`}
                   aoTocar={() =>
-                    atualizar({ folgas: d.folgas.filter((x) => x.de !== f.de) })
+                    atualizar({ folgas: d.folgas.filter((x) => x !== f) })
                   }
                 />
               }

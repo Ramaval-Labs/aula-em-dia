@@ -5,7 +5,7 @@
  * antes, e o visual segue os cartões de controle de §9.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
@@ -33,7 +33,7 @@ export function PacotesPadrao() {
   const salvarPacotePadrao = useDados((s) => s.salvarPacotePadrao);
   const avisar = useToast((s) => s.avisar);
 
-  const [cfg, atualizar] = useRascunho(
+  const [cfg, atualizar, , descartar] = useRascunho(
     'pacote',
     salvo ?? {
       aulas: 8,
@@ -42,6 +42,10 @@ export function PacotesPadrao() {
       somarSaldo: false,
     },
   );
+
+  // A chave `pacote` é a mesma do sheet de pacote: sair pelo voltar não pode
+  // deixar a edição abandonada para ele, nem para a próxima visita.
+  useEffect(() => descartar, [descartar]);
 
   const { campo: campoDeValor, confirmar } = useCampoDeDinheiro(cfg.valorPorAula, (valorPorAula) =>
     atualizar({ valorPorAula }),

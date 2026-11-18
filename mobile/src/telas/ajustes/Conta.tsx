@@ -39,6 +39,7 @@ export function Conta() {
   const extratos = useDados((s) => s.extratos);
   const politicas = useDados((s) => s.politicas);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
+  const emailDaSessao = useSessao((s) => s.email);
   const sair = useSessao((s) => s.sair);
   const apagarConta = useSessao((s) => s.apagarConta);
   const avisar = useToast((s) => s.avisar);
@@ -162,7 +163,10 @@ export function Conta() {
         <CabecalhoGrupo titulo="Conta" />
       </View>
       <ListaAgrupada>
-        <LinhaLista titulo="E-mail da conta" subtitulo={perfil.email} />
+        <LinhaLista
+          titulo="E-mail da conta"
+          subtitulo={real ? (emailDaSessao ?? perfil.email) : perfil.email}
+        />
         {/* Sem chevron: não há para onde ir em nenhum dos modos. Com o login
             de verdade a promessa já chegou, então o texto só diz que falta. */}
         <LinhaLista
