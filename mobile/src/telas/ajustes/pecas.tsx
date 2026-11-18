@@ -65,7 +65,7 @@ export function CartaoComSwitch({
     <CartaoDeAjuste
       titulo={titulo}
       subtitulo={sub}
-      direita={<Switch ligado={ligado} aoAlternar={aoAlternar} rotulo={titulo} />}
+      direita={<Switch ligado={ligado} aoAlternar={aoAlternar} rotulo={titulo} dica={sub} />}
       estilo={[proprios.espacoCartao, estilo]}
     />
   );

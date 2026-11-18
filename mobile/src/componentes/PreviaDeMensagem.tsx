@@ -25,7 +25,7 @@ import React from 'react';
 import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 
 import { useCores } from '../tema/TemaProvider';
-import { texto, TIPO } from '../tema/tipografia';
+import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { PAD, RAIO } from '../tema/tokens';
 import { CartaoVidro } from './Blocos';
 import { BotaoCompacto, BotaoTexto } from './Controles';
@@ -165,7 +165,13 @@ export function PreviaDeMensagem({
         aoTocar={() => (numero ? abrir(numero) : copiar('escolha'))}
       />
       {notaDoBotao ? (
-        <Text style={[estilos.nota, texto(12, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
+        <Text
+          style={[
+            estilos.nota,
+            comEspaco(texto(12, 500, { altura: 1.45 }), { topo: 10 }),
+            { color: cores.tinta2 },
+          ]}
+        >
           {notaDoBotao}
         </Text>
       ) : null}
@@ -195,7 +201,7 @@ const estilos = StyleSheet.create({
     ...PAD.previaMensagem,
     borderRadius: RAIO.botaoInline,
   },
-  nota: { marginTop: 10, textAlign: 'center' },
+  nota: { textAlign: 'center' },
   // A nota acima já respira 10; o botão texto tem 44 de alvo e o rótulo
   // centrado nele, então 4 basta para não colar.
   atalho: { marginTop: 4 },

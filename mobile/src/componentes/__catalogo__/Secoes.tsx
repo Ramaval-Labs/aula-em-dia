@@ -27,7 +27,13 @@ import {
   type EstadoDoAvatar,
   type TamanhoDeAvatar,
 } from '../Blocos';
-import { CampoDeDinheiro, CampoDeTexto, SeletorDeDias, useCampoDeDinheiro } from '../Campos';
+import {
+  CampoDeDinheiro,
+  CampoDeTexto,
+  SeletorDeDias,
+  SeletorDeDisciplinas,
+  useCampoDeDinheiro,
+} from '../Campos';
 import { useAtualizarAoPuxar } from '../Chassi';
 import {
   BotaoCompacto,
@@ -654,6 +660,7 @@ function SecaoDerivados() {
   const [nome, setNome] = useState('Valentina Rocha');
   const [email, setEmail] = useState('valentina');
   const [dias, setDias] = useState<DiaDaSemana[]>(['ter', 'qui']);
+  const [disciplinas, setDisciplinas] = useState<string[]>(['Inglês', 'Piano']);
   const [marcados, setMarcados] = useState<BlocoSemanal[]>(BLOCOS);
   const [valorPorAula, setValorPorAula] = useState(80);
   const { campo: campoDeValor } = useCampoDeDinheiro(valorPorAula, setValorPorAula);
@@ -706,6 +713,25 @@ function SecaoDerivados() {
               dias={[]}
               aoMudar={() => {}}
               ajuda="Sem dia marcado, o aluno fica sem horário fixo."
+            />
+          </View>
+        </CartaoVidro>
+      </Amostra>
+
+      <Amostra rotulo="seletor de disciplinas · sem handoff">
+        <CartaoVidro>
+          <View style={estilos.colunaCampos}>
+            <SeletorDeDisciplinas
+              rotulo="Disciplinas"
+              disciplinas={disciplinas}
+              aoMudar={setDisciplinas}
+            />
+            <CampoDeTexto
+              rotulo="E-mail"
+              valor="professor@exemplo.com"
+              aoMudar={() => {}}
+              editavel={false}
+              ajuda="Só leitura: editavel={false}."
             />
           </View>
         </CartaoVidro>

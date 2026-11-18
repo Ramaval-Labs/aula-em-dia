@@ -718,7 +718,9 @@ servem também a entrada.
 ### Botões e controles (`Controles.tsx`)
 - **`BotaoPrimario`**: 54px, raio 18, `tint` com `sobreTint`, sombra colorida; aceita ícone de
   mais. Desabilitado vira `preenchimento2` com `tinta3`, sem sombra. **`NotaDoBotao`** diz, logo
-  acima, o que falta para ele acender (live region), para o botão apagado nunca ficar mudo.
+  acima, o que falta para ele acender (live region), para o botão apagado nunca ficar mudo. A única
+  exceção é o "Salvar" sem mudança das telas de ajuste (a Política do handoff §9 e as seis de
+  Ajustes): apagado e sem nota, porque não falta nada, só não há o que gravar.
 - **`BotaoSecundario`** (52px, raio 18) e **`BotaoCompacto`** (50px, raio 17, 14,5/600): `vidro2`
   com texto `tint`.
 - **`BotaoInline`**: 40px, raio 13, largura do conteúdo, dentro de bloco; variante `tint` para a

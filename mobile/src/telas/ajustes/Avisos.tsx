@@ -28,7 +28,7 @@ const ITENS_DE_AVISO = [
   {
     chave: 'pagamentoVencendo' as const,
     titulo: 'Pagamento vencendo',
-    sub: 'Três dias antes do vencimento',
+    sub: '3 dias antes do vencimento',
   },
 ];
 
@@ -43,6 +43,7 @@ export function Avisos() {
   // `antesDaAula` entrou em 13/11): o padrão completa o que falta, e salvar
   // grava o objeto inteiro.
   const [ligados, setLigados] = React.useState(() => ({ ...AVISOS_PADRAO, ...salvas }));
+  const mudou = JSON.stringify(ligados) !== JSON.stringify({ ...AVISOS_PADRAO, ...salvas });
 
   return (
     <TelaDeAjuste
@@ -51,6 +52,7 @@ export function Avisos() {
       rodape={
         <BotaoPrimario
           rotulo="Salvar"
+          desabilitado={!mudou}
           aoTocar={() => {
             salvarPreferencias(ligados);
             avisar('Preferências de aviso salvas.');

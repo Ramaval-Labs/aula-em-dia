@@ -513,6 +513,7 @@ export function Switch({
   ligado,
   aoAlternar,
   rotulo,
+  dica,
   desabilitado = false,
   estilo,
 }: {
@@ -520,6 +521,8 @@ export function Switch({
   aoAlternar: (v: boolean) => void;
   /** rótulo do leitor de tela — o switch não tem texto próprio */
   rotulo: string;
+  /** o que o leitor diz depois do rótulo: a condição da sub-linha do cartão */
+  dica?: string;
   desabilitado?: boolean;
   estilo?: StyleProp<ViewStyle>;
 }) {
@@ -549,6 +552,7 @@ export function Switch({
     <Pressable
       accessibilityRole="switch"
       accessibilityLabel={rotulo}
+      accessibilityHint={dica}
       accessibilityState={{ checked: ligado, disabled: desabilitado }}
       disabled={desabilitado}
       onPress={() => aoAlternar(!ligado)}

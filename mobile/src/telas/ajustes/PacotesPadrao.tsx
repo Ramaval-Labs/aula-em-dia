@@ -5,8 +5,8 @@
  * antes, e o visual segue os cartões de controle de §9.
  */
 
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text } from 'react-native';
 
 import { CartaoDeAjuste, CartaoVidro } from '../../componentes/Blocos';
 import { CampoDeDinheiro, useCampoDeDinheiro } from '../../componentes/Campos';
@@ -19,8 +19,8 @@ import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
-import { texto } from '../../tema/tipografia';
-import { PAD, RAIO, TAMANHO } from '../../tema/tokens';
+import { comEspaco, texto } from '../../tema/tipografia';
+import { PAD } from '../../tema/tokens';
 import { estilos } from './estilos';
 import { TelaDeAjuste } from './pecas';
 
@@ -33,19 +33,30 @@ export function PacotesPadrao() {
   const salvarPacotePadrao = useDados((s) => s.salvarPacotePadrao);
   const avisar = useToast((s) => s.avisar);
 
-  const [cfg, atualizar] = useRascunho(
-    'pacote',
-    salvo ?? {
-      aulas: 8,
-      valorPorAula: VALOR_AULA,
-      validadeDias: politicas.validadeDias,
-      somarSaldo: false,
-    },
-  );
+  const base = salvo ?? {
+    aulas: 8,
+    valorPorAula: VALOR_AULA,
+    validadeDias: politicas.validadeDias,
+    somarSaldo: false,
+  };
+  const [cfg, atualizar, , descartar] = useRascunho('pacote', base);
+
+  // A chave `pacote` é a mesma do sheet de pacote: sair pelo voltar não pode
+  // deixar a edição abandonada para ele, nem para a próxima visita.
+  useEffect(() => descartar, [descartar]);
 
   const { campo: campoDeValor, confirmar } = useCampoDeDinheiro(cfg.valorPorAula, (valorPorAula) =>
     atualizar({ valorPorAula }),
   );
+
+  // Quantos pacotes já existem: o padrão não mexe neles, e a nota diz isso.
+  const ativos = alunos.filter(temPacote).length;
+
+  // O texto do valor conta também: digitado e ainda inválido, ele não chega ao
+  // rascunho, e o Salvar apagado esconderia o erro que o toque mostraria.
+  const mudou =
+    JSON.stringify(cfg) !== JSON.stringify(base) ||
+    campoDeValor.digitado !== dinheiro(base.valorPorAula);
 
   const opcoes = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 
@@ -57,6 +68,7 @@ export function PacotesPadrao() {
       rodape={
         <BotaoPrimario
           rotulo="Salvar padrão"
+          desabilitado={!mudou}
           aoTocar={() => {
             if (!confirmar()) return;
             salvarPacotePadrao(cfg);
@@ -86,28 +98,23 @@ export function PacotesPadrao() {
         />
       </CartaoVidro>
 
-      <View
-        style={[proprios.nota, { backgroundColor: cores.preenchimento, borderColor: cores.borda }]}
+      {/* Rodapé de grupo, como o do Pagamento: texto solto no recuo do
+          cabeçalho de grupo. Era uma caixa montada à mão, fora do catálogo. */}
+      <Text
+        style={[
+          comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 14 }),
+          proprios.nota,
+          { color: cores.tinta2 },
+        ]}
       >
-        <Text style={[texto(13, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
           {`A validade vem da política de faltas: ${
             politicas.validadeDias === 0 ? 'sem prazo' : `${politicas.validadeDias} dias`
-          }. Hoje ${plural(
-            alunos.filter(temPacote).length,
-            'aluno tem',
-            'alunos têm',
-          )} pacote ativo.`}
-        </Text>
-      </View>
+          }.${ativos > 0 ? ` O padrão vale para os pacotes novos: ${plural(ativos, 'pacote ativo continua', 'pacotes ativos continuam')} como ${ativos === 1 ? 'está' : 'estão'}.` : ''}`}
+      </Text>
     </TelaDeAjuste>
   );
 }
 
 const proprios = StyleSheet.create({
-  nota: {
-    marginTop: 12,
-    ...PAD.cartaoDeAjuste,
-    borderRadius: RAIO.cartao,
-    borderWidth: TAMANHO.bordaVidro,
-  },
+  nota: PAD.recuo,
 });

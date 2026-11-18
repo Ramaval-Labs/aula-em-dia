@@ -76,7 +76,7 @@ export function ChavePix() {
           rotulo="Chave Pix"
           valor={chave}
           aoMudar={setChave}
-          placeholder="e-mail, telefone ou aleatória"
+          placeholder="CPF, e-mail, telefone ou aleatória"
           capitalizar="none"
           sufixo={
             chave ? (
@@ -95,7 +95,10 @@ export function ChavePix() {
 
       {previa ? (
         <View style={estilos.bloco}>
+          {/* A prévia usa um aluno de verdade: o "Exemplo" no cabeçalho diz que
+              ela mostra como a chave entra, e não uma cobrança a mandar agora. */}
           <PreviaDeMensagem
+            destino="Exemplo"
             texto={previa}
             aoCopiar={() => avisar(avisos.mensagemCopiada)}
           />

@@ -39,6 +39,7 @@ export function Conta() {
   const extratos = useDados((s) => s.extratos);
   const politicas = useDados((s) => s.politicas);
   const salvarPerfil = useDados((s) => s.salvarPerfil);
+  const emailDaSessao = useSessao((s) => s.email);
   const sair = useSessao((s) => s.sair);
   const apagarConta = useSessao((s) => s.apagarConta);
   const avisar = useToast((s) => s.avisar);
@@ -109,10 +110,10 @@ export function Conta() {
       }
     >
       <CartaoVidro estilo={[estilos.cartao, estilos.primeiro]}>
-        <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>Plano atual</Text>
+        <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Plano atual</Text>
         <Text
           style={[
-            comEspaco(texto(22, 800, { altura: 1.15, tracking: -0.03 }), { topo: 8 }),
+            comEspaco(TIPO.resumo, { topo: 8 }),
             { color: cores.tinta },
           ]}
         >
@@ -143,9 +144,7 @@ export function Conta() {
 
       {!pago ? (
         <CartaoVidro estilo={estilos.cartao}>
-          <Text
-            style={[texto(15.5, 700, { altura: 1.3, tracking: -0.012 }), { color: cores.tinta }]}
-          >
+          <Text style={[TIPO.tituloBloco, { color: cores.tinta }]}>
             Plano pago · R$ 29,90 por mês
           </Text>
           <View style={proprios.beneficios}>
@@ -162,7 +161,10 @@ export function Conta() {
         <CabecalhoGrupo titulo="Conta" />
       </View>
       <ListaAgrupada>
-        <LinhaLista titulo="E-mail da conta" subtitulo={perfil.email} />
+        <LinhaLista
+          titulo="E-mail da conta"
+          subtitulo={real ? (emailDaSessao ?? perfil.email) : perfil.email}
+        />
         {/* Sem chevron: não há para onde ir em nenhum dos modos. Com o login
             de verdade a promessa já chegou, então o texto só diz que falta. */}
         <LinhaLista
@@ -173,6 +175,8 @@ export function Conta() {
           titulo="Exportar meus dados"
           subtitulo="Copia alunos, extratos e políticas"
           aoTocar={exportar}
+          // executa, não leva a outra tela: sem chevron, como o "Apagar"
+          chevron={false}
         />
       </ListaAgrupada>
 

@@ -6,22 +6,30 @@
  * vidro.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Avatar, CartaoVidro } from '../../componentes/Blocos';
-import { CampoDeTexto } from '../../componentes/Campos';
+import { CampoDeTexto, SeletorDeDisciplinas } from '../../componentes/Campos';
 import { BotaoPrimario } from '../../componentes/Controles';
 import { emailValido, ERRO, iniciaisDe, nomeValido } from '../../dominio/validacao';
 import { avisos, useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
+import { loginReal } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 import { PAD } from '../../tema/tokens';
 import { estilos } from './estilos';
 import { TelaDeAjuste } from './pecas';
+
+/**
+ * "Matemática, Violão e Inglês": vírgula entre os itens e "e" só antes do
+ * último. Sem `Intl.ListFormat`, que o Hermes nem sempre traz.
+ */
+const emLista = (itens: string[]): string =>
+  itens.length < 2 ? (itens[0] ?? '') : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`;
 
 export function PerfilProfessor() {
   const { cores } = useCores();
@@ -30,12 +38,19 @@ export function PerfilProfessor() {
   const salvarPerfil = useDados((s) => s.salvarPerfil);
   const avisar = useToast((s) => s.avisar);
 
-  const [form, atualizar] = useRascunho('perfil', {
+  // Com o login de verdade, o e-mail é o de acesso: trocar aqui mudaria só o
+  // perfil, e não o login. Até haver a troca no Auth, ele fica só leitura.
+  const real = loginReal();
+
+  const [form, atualizar, , descartar] = useRascunho('perfil', {
     nome: perfil.nome,
     email: perfil.email,
     disciplinas: perfil.disciplinas,
     faixaDeAlunos: perfil.faixaDeAlunos,
   });
+  // Sair pelo voltar não passa por `concluir` nem `trocarTab`, que limpam os
+  // rascunhos: sem isto, a edição abandonada reaparecia como se fosse a salva.
+  useEffect(() => descartar, [descartar]);
 
   // O erro aparece só no campo que a pessoa mexeu: um e-mail vazio que já
   // veio assim não bloqueia salvar o nome.
@@ -94,7 +109,7 @@ export function PerfilProfessor() {
               { color: cores.tinta2 },
             ]}
           >
-            {form.disciplinas.join(' e ') || 'Nenhuma disciplina'}
+            {emLista(form.disciplinas) || 'Nenhuma disciplina'}
           </Text>
         </View>
       </CartaoVidro>
@@ -113,15 +128,13 @@ export function PerfilProfessor() {
           aoMudar={(email) => atualizar({ email })}
           erro={erroEmail}
           teclado="email"
+          editavel={!real}
+          ajuda={real ? 'É o e-mail de acesso. Trocar ainda não está disponível.' : undefined}
         />
-        <CampoDeTexto
+        <SeletorDeDisciplinas
           rotulo="Disciplinas"
-          valor={form.disciplinas.join(', ')}
-          aoMudar={(v) =>
-            atualizar({ disciplinas: v.split(',').map((s) => s.trim()).filter(Boolean) })
-          }
-          placeholder="Inglês, Violão"
-          ajuda="Separe por vírgula."
+          disciplinas={form.disciplinas}
+          aoMudar={(disciplinas) => atualizar({ disciplinas })}
         />
       </CartaoVidro>
     </TelaDeAjuste>
