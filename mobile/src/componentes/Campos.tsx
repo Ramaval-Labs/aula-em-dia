@@ -22,6 +22,7 @@
 
 import React, { useState } from 'react';
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -40,7 +41,7 @@ import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto, textoDeCampo } from '../tema/tipografia';
 import { PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAnuncio } from './anunciar';
-import { FichaDeEscolha } from './Controles';
+import { FichaDeEscolha, OPACIDADE_PRESSIONADO } from './Controles';
 
 export type TipoDeTeclado = 'texto' | 'email' | 'numerico' | 'decimal' | 'telefone';
 
@@ -152,6 +153,9 @@ export function CampoDeTexto({
               tabular: teclado === 'numerico' || teclado === 'decimal' || teclado === 'telefone',
             }),
             estilos.entrada,
+            // No navegador o campo ganhava o contorno de foco preto por dentro do
+            // trilho, duplicando a borda de 1px em tint, que é o indicador de foco.
+            Platform.OS === 'web' ? estilos.semContornoNaWeb : null,
             {
               color: cores.tinta,
               textAlignVertical: multilinha ? 'top' : 'center',
@@ -293,7 +297,7 @@ export function AcaoDoCampo({
       accessibilityLabel={rotuloAcessivel ?? rotulo}
       onPress={aoTocar}
       hitSlop={{ ...folgaDeToque(TAMANHO.alvoMinimo), left: 10, right: 10 }}
-      style={({ pressed }) => [estilos.acao, { opacity: pressed ? 0.6 : 1 }]}
+      style={({ pressed }) => [estilos.acao, { opacity: pressed ? OPACIDADE_PRESSIONADO : 1 }]}
     >
       <Text style={[texto(13.5, 600), { color: cores.tint }]}>{rotulo}</Text>
     </Pressable>
@@ -383,6 +387,7 @@ const estilos = StyleSheet.create({
     gap: 10,
   },
   entrada: { flex: 1, minWidth: 0 },
+  semContornoNaWeb: { outlineWidth: 0 },
   // 2px: a dica alinha com o texto digitado, não com a borda do trilho
   nota: { paddingHorizontal: 2 },
 });

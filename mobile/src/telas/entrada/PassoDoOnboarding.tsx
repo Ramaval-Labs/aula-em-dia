@@ -43,7 +43,13 @@ export function PassoDoOnboarding({
   return (
     <TelaDeEntrada
       comTeclado={comTeclado}
-      voltar={{ rotulo: 'Voltar', aoTocar: () => voltarEntrada() }}
+      // O voltar diz o nome da tela anterior, como no resto da entrada: o passo 1
+      // volta para a Acesso, aberta em "Criar conta". Dos passos 2 a 4 o título
+      // anterior é longo ("Quando você dá aula"), e o iOS troca o nome por "Voltar".
+      voltar={{
+        rotulo: passo === 1 ? 'Criar conta' : 'Voltar',
+        aoTocar: () => voltarEntrada(),
+      }}
       acima={<MedidorPacote variante="progresso" total={TOTAL_DE_PASSOS} usadas={passo} />}
       sobrelinha={`Passo ${passo} de ${TOTAL_DE_PASSOS}`}
       titulo={titulo}

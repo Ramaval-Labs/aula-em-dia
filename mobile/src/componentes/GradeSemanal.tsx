@@ -30,6 +30,7 @@ import { ALVO_MINIMO } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
 import { ESCALA_FONTE, PAD, RAIO } from '../tema/tokens';
+import { OPACIDADE_PRESSIONADO } from './Controles';
 
 /**
  * Largura das células ≥ 44px (alvo mínimo) na tela mais estreita que o app
@@ -141,7 +142,7 @@ export function GradeSemanal({
                 accessibilityState={{ checked: ligado }}
                 accessibilityLabel={rotulo}
                 onPress={() => aoAlternar(bloco)}
-                style={({ pressed }) => [caixa, pressed ? { opacity: 0.7 } : null]}
+                style={({ pressed }) => [caixa, pressed ? { opacity: OPACIDADE_PRESSIONADO } : null]}
               />
             );
           })}
