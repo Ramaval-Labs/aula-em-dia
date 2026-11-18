@@ -29,7 +29,7 @@ import type { BlocoSemanal, DiaDaSemana, FaixaHoraria } from '../dominio/tipos';
 import { ALVO_MINIMO } from '../tema/alvoDeToque';
 import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
-import { PAD, RAIO } from '../tema/tokens';
+import { ESCALA_FONTE, PAD, RAIO } from '../tema/tokens';
 
 /**
  * Largura das células ≥ 44px (alvo mínimo) na tela mais estreita que o app
@@ -47,7 +47,11 @@ import { PAD, RAIO } from '../tema/tokens';
  * célula fica em 44 de largura: o vão de 3 entre elas não deixa folga sem
  * sobrepor a vizinha.
  * O rótulo por nome ("fim da tarde") quebra em duas linhas e pede a coluna
- * mais larga; o de horário cabe em 30.
+ * mais larga. O de horário não cabe numa linha só: na Satoshi tabular o dígito
+ * mede 0,66em e a meia-risca 0,95em, então "14–17" a 11,5px já passa de 37px.
+ * Por isso ele vai em duas linhas de propósito, início em cima e fim embaixo,
+ * sem a meia-risca (dois dígitos dão 15px, e 20px com a fonte no teto de 1,3).
+ * Quem lê a faixa inteira ("8–12") é o rótulo de cada célula.
  */
 const COLUNA_HORARIO = 30;
 const COLUNA_NOME = 38;
@@ -97,12 +101,22 @@ export function GradeSemanal({
       {faixas.map((f) => (
         <View key={f} style={estilos.linhaDeCelulas}>
           <View style={coluna}>
-            <Text
-              style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.tinta2 }]}
-              numberOfLines={2}
-            >
-              {legenda(f)}
-            </Text>
+            {rotuloDaFaixa === 'nome' ? (
+              <Text
+                style={[texto(10.5, 500, { altura: 1.2 }), { color: cores.tinta2 }]}
+                numberOfLines={2}
+              >
+                {legenda(f)}
+              </Text>
+            ) : (
+              <Text
+                accessibilityLabel={legenda(f)}
+                maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+                style={[texto(11.5, 500, { altura: 1.2 }), { color: cores.tinta2 }]}
+              >
+                {legenda(f).split('–').join('\n')}
+              </Text>
+            )}
           </View>
 
           {dias.map((d) => {
