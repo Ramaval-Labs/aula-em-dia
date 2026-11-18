@@ -74,13 +74,18 @@ export function NovaSenha() {
       titulo="Criar uma senha nova"
       subtitulo="Depois de salvar, você já entra com ela."
       voltar={{ rotulo: 'Entrar', aoTocar: irParaEntrar }}
-      acima={falta && (senha || repetida) ? <NotaDoBotao texto={`${falta}.`} /> : null}
       rodape={
-        <BotaoPrimario
-          rotulo={enviando ? 'Salvando…' : 'Salvar e entrar'}
-          aoTocar={salvar}
-          desabilitado={!!falta || enviando || linkVencido}
-        />
+        <>
+          {/* Logo acima do primário e desde a abertura, como no onboarding: o
+              botão apagado nunca fica mudo. Com o link vencido, quem explica é
+              o bloco vermelho. */}
+          {falta && !linkVencido ? <NotaDoBotao texto={`${falta}.`} /> : null}
+          <BotaoPrimario
+            rotulo={enviando ? 'Salvando…' : 'Salvar e entrar'}
+            aoTocar={salvar}
+            desabilitado={!!falta || enviando || linkVencido}
+          />
+        </>
       }
     >
       <CartaoVidro estilo={estilos.campos}>
