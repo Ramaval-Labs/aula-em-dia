@@ -33,15 +33,13 @@ export function PacotesPadrao() {
   const salvarPacotePadrao = useDados((s) => s.salvarPacotePadrao);
   const avisar = useToast((s) => s.avisar);
 
-  const [cfg, atualizar, , descartar] = useRascunho(
-    'pacote',
-    salvo ?? {
-      aulas: 8,
-      valorPorAula: VALOR_AULA,
-      validadeDias: politicas.validadeDias,
-      somarSaldo: false,
-    },
-  );
+  const base = salvo ?? {
+    aulas: 8,
+    valorPorAula: VALOR_AULA,
+    validadeDias: politicas.validadeDias,
+    somarSaldo: false,
+  };
+  const [cfg, atualizar, , descartar] = useRascunho('pacote', base);
 
   // A chave `pacote` é a mesma do sheet de pacote: sair pelo voltar não pode
   // deixar a edição abandonada para ele, nem para a próxima visita.
@@ -54,6 +52,12 @@ export function PacotesPadrao() {
   // Quantos pacotes já existem: o padrão não mexe neles, e a nota diz isso.
   const ativos = alunos.filter(temPacote).length;
 
+  // O texto do valor conta também: digitado e ainda inválido, ele não chega ao
+  // rascunho, e o Salvar apagado esconderia o erro que o toque mostraria.
+  const mudou =
+    JSON.stringify(cfg) !== JSON.stringify(base) ||
+    campoDeValor.digitado !== dinheiro(base.valorPorAula);
+
   const opcoes = AULAS_OFERECIDAS.map((n) => ({ valor: n, rotulo: `${n} aulas` }));
 
   return (
@@ -64,6 +68,7 @@ export function PacotesPadrao() {
       rodape={
         <BotaoPrimario
           rotulo="Salvar padrão"
+          desabilitado={!mudou}
           aoTocar={() => {
             if (!confirmar()) return;
             salvarPacotePadrao(cfg);
