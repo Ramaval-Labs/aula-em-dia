@@ -3,21 +3,24 @@
  *
  * Derivada: o handoff novo não desenha esta tela. Sheet de tarefa (88%) com
  * a pergunta como título, "Passo 1 de 3" na sub-linha (padrão de §5) e a
- * grade semanal dentro de um cartão de vidro.
+ * grade de horários livres (SCRUM-101) dentro de um cartão de vidro, com a lista
+ * dos horários logo abaixo.
  */
 
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro } from '../../componentes/Blocos';
 import { BotaoPrimario } from '../../componentes/Controles';
 import {
-  GradeSemanal,
+  GradeLivre,
+  ListaDeHorarios,
   PAD_CARTAO_DA_GRADE,
   RodapeDaGrade,
-} from '../../componentes/GradeSemanal';
+} from '../../componentes/GradeLivre';
 import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
-import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
+import { DIAS_UTEIS, intervalosDe, resumoDosMarcados } from '../../dominio/disponibilidade';
+import type { Intervalo } from '../../dominio/tipos';
 import { primeiroNome } from '../../dominio/formato';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
@@ -25,6 +28,9 @@ import { useNavegacao } from '../../estado/navegacao';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 import { PAD } from '../../tema/tokens';
+
+/** Constante fora do componente: o rascunho não ganha uma lista nova a cada render. */
+const SEM_HORARIOS: Intervalo[] = [];
 
 export function DispAluno() {
   const { cores } = useCores();
@@ -34,7 +40,7 @@ export function DispAluno() {
 
   const [blocos, , substituir] = useRascunho(
     'disponibilidadeAluno',
-    aluno?.disponibilidade ?? [],
+    aluno?.disponibilidade ? intervalosDe(aluno.disponibilidade) : SEM_HORARIOS,
   );
 
   const continuar = () => {
@@ -65,14 +71,12 @@ export function DispAluno() {
       </Text>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <GradeSemanal
-          marcados={blocos}
-          dias={DIAS_UTEIS}
-          rotuloDaFaixa="nome"
-          aoAlternar={(b) => substituir(alternarBloco(blocos, b))}
-        />
-        <RodapeDaGrade esquerda={resumoMarcados(blocos)} direita="Sábado indisponível" />
+        <GradeLivre horarios={blocos} dias={DIAS_UTEIS} aoMudar={substituir} />
+        <RodapeDaGrade esquerda={resumoDosMarcados(blocos)} direita="Sábado indisponível" />
       </CartaoVidro>
+      <View style={estilos.lista}>
+        <ListaDeHorarios horarios={blocos} dias={DIAS_UTEIS} aoMudar={substituir} />
+      </View>
     </Sheet>
   );
 }
@@ -80,4 +84,5 @@ export function DispAluno() {
 const estilos = StyleSheet.create({
   recuo: PAD.recuo,
   cartao: { marginTop: 14, ...PAD_CARTAO_DA_GRADE },
+  lista: { marginTop: 12 },
 });

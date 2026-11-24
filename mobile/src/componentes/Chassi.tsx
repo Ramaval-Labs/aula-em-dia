@@ -45,6 +45,7 @@ import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { MOVIMENTO, PAD, TAMANHO } from '../tema/tokens';
 import { Icone } from './Icone';
+import { useRolagemLivre } from './travaDaRolagem';
 import { SuperficieVidro } from './Vidro';
 
 /** Tipos de tela que têm chassi próprio; `sheet` é o `Sheet.tsx`. */
@@ -368,10 +369,12 @@ export function TelaVidro({
   const padTopo = usePadTopo(tipo);
   const { opacidade, aoRolar } = useBarraComRolagem();
   const atualizarAoPuxar = useAtualizarAoPuxar(padTopo);
+  const rolagemLivre = useRolagemLivre();
 
   const rolagem = (
     <ScrollView
       style={styles.cheio}
+      scrollEnabled={rolagemLivre}
       onScroll={aoRolar}
       refreshControl={atualizarAoPuxar}
       scrollEventThrottle={16}

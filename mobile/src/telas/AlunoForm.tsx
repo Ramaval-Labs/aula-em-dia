@@ -12,10 +12,16 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro } from '../componentes/Blocos';
 import { CampoDeTexto, SeletorDeDias } from '../componentes/Campos';
-import { BotaoPrimario, BotaoTexto, NotaDoBotao } from '../componentes/Controles';
+import { BotaoPrimario, BotaoTexto, NotaDoBotao, Segmentado } from '../componentes/Controles';
+import { mascaraDeHorario } from '../componentes/GradeLivre';
 import { Sheet } from '../componentes/Sheet';
 import { useDoisToques } from '../componentes/useDoisToques';
-import { lerHora } from '../dominio/aulaFixa';
+import {
+  DURACAO_PADRAO,
+  DURACOES,
+  formatarDuracao,
+  horarioDigitado,
+} from '../dominio/disponibilidade';
 import { primeiroNome } from '../dominio/formato';
 import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
@@ -24,9 +30,6 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
-
-/** A hora que o motor não lê: só a hora cheia, de 0 a 23. */
-const HORA_INVALIDA = 'Use a hora cheia, de 0 a 23';
 
 export function AlunoForm() {
   const { cores } = useCores();
@@ -51,12 +54,10 @@ export function AlunoForm() {
         },
   );
 
-  // A hora digitada que o motor não lê ("25", "abc") era salva calada como
-  // "sem hora". A regra é a do domínio (`lerHora`); aqui só se avisa.
-  const erroDaHora =
-    form.dias.length > 0 && form.hora.trim() && lerHora(form.hora) === null
-      ? HORA_INVALIDA
-      : undefined;
+  // A hora digitada que o motor não lê ("25", "abc", "18:20") era salva calada
+  // como "sem hora". A regra é a do domínio (`horarioDigitado`); aqui só se avisa.
+  const lido = form.dias.length > 0 && form.hora.trim() ? horarioDigitado(form.hora) : null;
+  const erroDaHora = lido && 'erro' in lido ? lido.erro : undefined;
 
   const pronto = nomeValido(form.nome) && !!form.disciplina && !erroDaHora;
 
@@ -163,15 +164,35 @@ export function AlunoForm() {
         />
 
         {form.dias.length > 0 ? (
-          <CampoDeTexto
-            rotulo="Hora"
-            valor={form.hora}
-            aoMudar={(hora) => atualizar({ hora })}
-            placeholder="18"
-            teclado="numerico"
-            erro={erroDaHora}
-            ajuda="A hora cheia do começo da aula."
-          />
+          <>
+            <CampoDeTexto
+              rotulo="Hora"
+              valor={form.hora}
+              aoMudar={(hora) => atualizar({ hora: mascaraDeHorario(hora) })}
+              placeholder="18:30"
+              teclado="numerico"
+              erro={erroDaHora}
+              ajuda="O começo da aula, de 15 em 15 minutos."
+            />
+            <View>
+              <Text
+                style={[
+                  texto(11.5, 600, { tracking: 0.04, maiuscula: true }),
+                  { color: cores.tinta3 },
+                ]}
+              >
+                Duração
+              </Text>
+              <Segmentado
+                rotuloDoGrupo="Duração da aula"
+                porte="cartao"
+                opcoes={DURACOES.map((d) => ({ valor: d, rotulo: formatarDuracao(d) }))}
+                valor={form.duracao ?? DURACAO_PADRAO}
+                aoTrocar={(duracao) => atualizar({ duracao })}
+                estilo={estilos.duracao}
+              />
+            </View>
+          </>
         ) : null}
 
         <CampoDeTexto
@@ -211,4 +232,5 @@ const estilos = StyleSheet.create({
   campos: { gap: 16 },
   arquivar: { marginTop: 18, alignItems: 'center', gap: 4 },
   rodape: { gap: 10 },
+  duracao: { marginTop: 8 },
 });

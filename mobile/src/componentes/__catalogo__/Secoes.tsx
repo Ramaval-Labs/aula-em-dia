@@ -10,8 +10,9 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { DIAS_UTEIS, resumoDosHorarios } from '../../dominio/disponibilidade';
 import { dinheiro } from '../../dominio/formato';
-import type { BlocoSemanal, DiaDaSemana } from '../../dominio/tipos';
+import type { DiaDaSemana, Intervalo } from '../../dominio/tipos';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../../tema/tipografia';
 import { TAMANHO } from '../../tema/tokens';
@@ -46,7 +47,7 @@ import {
   Stepper,
   Switch,
 } from '../Controles';
-import { GradeSemanal, RodapeDaGrade } from '../GradeSemanal';
+import { GradeLivre, ListaDeHorarios, RodapeDaGrade } from '../GradeLivre';
 import { Icone, ICONES, type NomeDeIcone } from '../Icone';
 import {
   CabecalhoGrupo,
@@ -628,12 +629,12 @@ function SecaoBlocos() {
   );
 }
 
-const BLOCOS: BlocoSemanal[] = [
-  { dia: 'seg', faixa: 'noite' },
-  { dia: 'ter', faixa: 'tarde' },
-  { dia: 'qua', faixa: 'manha' },
-  { dia: 'qua', faixa: 'noite' },
-  { dia: 'sex', faixa: 'fimTarde' },
+/** Horários livres de amostra: o "só a partir das 14h30" do PO (SCRUM-101). */
+const HORARIOS: Intervalo[] = [
+  { dia: 'seg', inicio: 870, fim: 1080 },
+  { dia: 'ter', inicio: 480, fim: 600 },
+  { dia: 'qua', inicio: 1140, fim: 1290 },
+  { dia: 'sex', inicio: 840, fim: 900 },
 ];
 
 /**
@@ -661,16 +662,10 @@ function SecaoDerivados() {
   const [email, setEmail] = useState('valentina');
   const [dias, setDias] = useState<DiaDaSemana[]>(['ter', 'qui']);
   const [disciplinas, setDisciplinas] = useState<string[]>(['Inglês', 'Piano']);
-  const [marcados, setMarcados] = useState<BlocoSemanal[]>(BLOCOS);
+  const [horarios, setHorarios] = useState<Intervalo[]>(HORARIOS);
   const [valorPorAula, setValorPorAula] = useState(80);
   const { campo: campoDeValor } = useCampoDeDinheiro(valorPorAula, setValorPorAula);
 
-  const alternar = (b: BlocoSemanal) =>
-    setMarcados((atual) =>
-      atual.some((m) => m.dia === b.dia && m.faixa === b.faixa)
-        ? atual.filter((m) => !(m.dia === b.dia && m.faixa === b.faixa))
-        : [...atual, b],
-    );
 
   return (
     <Secao titulo="Derivados">
@@ -756,13 +751,20 @@ function SecaoDerivados() {
         </CartaoVidro>
       </Amostra>
 
-      <Amostra rotulo="grade semanal · sem handoff">
+      <Amostra rotulo="grade de horários livres · sem handoff">
         <CartaoVidro>
-          <GradeSemanal marcados={marcados} aoAlternar={alternar} />
-          <RodapeDaGrade
-            esquerda={`${marcados.length} blocos marcados`}
-            direita="Toque para alternar"
-          />
+          <GradeLivre horarios={horarios} aoMudar={setHorarios} />
+          <RodapeDaGrade esquerda={resumoDosHorarios(horarios)} direita="Toque ou arraste" />
+        </CartaoVidro>
+      </Amostra>
+
+      <Amostra rotulo="lista de horários · o caminho do leitor de tela">
+        <ListaDeHorarios horarios={horarios} aoMudar={setHorarios} />
+      </Amostra>
+
+      <Amostra rotulo="grade de horários livres · só leitura, dias úteis">
+        <CartaoVidro>
+          <GradeLivre horarios={horarios} dias={DIAS_UTEIS} somenteLeitura />
         </CartaoVidro>
       </Amostra>
 

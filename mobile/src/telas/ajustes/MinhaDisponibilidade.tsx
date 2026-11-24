@@ -2,7 +2,8 @@
  * E3 — Minha disponibilidade (Fluxo E), no iOS Glass.
  *
  * O handoff novo não desenha esta tela: o conteúdo e o comportamento são os de
- * antes, com a `GradeSemanal` nova e a lista de folgas em lista agrupada.
+ * antes, com a lista de folgas em lista agrupada. Desde o SCRUM-101 a grade é a
+ * `GradeLivre`, de 15 em 15 minutos, com a lista dos horários logo abaixo.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -17,18 +18,18 @@ import {
   BotaoTexto,
 } from '../../componentes/Controles';
 import {
-  GradeSemanal,
+  GradeLivre,
+  ListaDeHorarios,
   PAD_CARTAO_DA_GRADE,
   RodapeDaGrade,
-} from '../../componentes/GradeSemanal';
+} from '../../componentes/GradeLivre';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import {
   adicionarFolga,
-  alternarBloco,
   ERRO_FOLGA,
   folgaValida,
   periodoDaFolga,
-  resumo,
+  resumoDosHorarios,
 } from '../../dominio/disponibilidade';
 import type { Folga } from '../../dominio/tipos';
 import { somenteDigitos } from '../../dominio/validacao';
@@ -126,15 +127,15 @@ export function MinhaDisponibilidade() {
       }
     >
       <CartaoVidro estilo={[proprios.cartaoGrade, estilos.primeiro]}>
-        <GradeSemanal
-          marcados={d.blocos}
-          aoAlternar={(b) => atualizar({ blocos: alternarBloco(d.blocos, b) })}
-        />
-        <RodapeDaGrade esquerda={resumo(d.blocos)} direita="Domingo fechado" />
+        <GradeLivre horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
+        <RodapeDaGrade esquerda={resumoDosHorarios(d.blocos)} direita="Domingo fechado" />
       </CartaoVidro>
+      <View style={estilos.bloco}>
+        <ListaDeHorarios horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
+      </View>
 
       <CartaoComSwitch
-        titulo="Aceitar reposição fora dos blocos"
+        titulo="Aceitar reposição fora desses horários"
         sub="Só quando não houver outra saída"
         ligado={d.aceitaForaDosBlocos}
         aoAlternar={(aceitaForaDosBlocos) => atualizar({ aceitaForaDosBlocos })}

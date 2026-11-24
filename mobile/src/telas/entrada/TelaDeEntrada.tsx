@@ -44,6 +44,7 @@ import {
   useBarraComRolagem,
   usePadTopo,
 } from '../../componentes/Chassi';
+import { useRolagemLivre } from '../../componentes/travaDaRolagem';
 import { SuperficieVidro } from '../../componentes/Vidro';
 import { useReduzirMovimento } from '../../tema/movimento';
 import { useCores } from '../../tema/TemaProvider';
@@ -146,11 +147,13 @@ export function TelaDeEntrada({
   // dois se sobreporiam.
   const { opacidade, aoRolar } = useBarraComRolagem();
   const faixa = useFaixaDoRodape();
+  const rolagemLivre = useRolagemLivre();
 
   const corpo = (
     <View style={estilos.cheio}>
       <ScrollView
         style={estilos.cheio}
+        scrollEnabled={rolagemLivre}
         onScroll={(e) => {
           aoRolar(e);
           faixa.aoRolar(e);
