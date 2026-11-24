@@ -305,16 +305,21 @@ node supabase/tests/funcoes/recuperacao.test.mjs
 **Na nuvem, uma vez, pelo painel.** O `config.toml` só vale no local. **Não rode
 `supabase config push`:** ele levaria o `site_url` do `localhost` para a nuvem.
 
-1. **Resend** (resend.com, plano gratuito): crie uma API key com permissão de envio. Ela vai
-   só no painel do Supabase, nunca no git nem em `EXPO_PUBLIC_*`.
-   - **Atenção ao domínio.** Sem um domínio verificado no Resend, o remetente de teste
-     (`onboarding@resend.dev`) só manda para o e-mail da própria conta do Resend. Para mandar a
-     qualquer professor, é preciso verificar um domínio próprio, com os registros DNS que o
-     Resend mostra. O `*.vercel.app` não serve, porque não dá para pôr DNS nele.
+1. **Gmail** (PO, 24/11): o e-mail sai de uma conta Gmail do projeto, que entrega para
+   qualquer endereço sem domínio próprio, até cerca de 500 por dia. O SMTP padrão do Supabase
+   não serve: só entrega para quem é do time no projeto, e cerca de 2 por hora.
+   - Na conta Google do projeto, ligue a **verificação em duas etapas** e gere uma **senha de
+     app** (myaccount.google.com → Segurança → Senhas de app). Ela vai só no painel do
+     Supabase, nunca no git nem em `EXPO_PUBLIC_*`. A senha normal da conta não funciona aqui.
 2. **Authentication → Emails → SMTP Settings:** ligue o SMTP próprio.
-   - Host `smtp.resend.com`, porta `465`, usuário `resend` e, como senha, a API key.
-   - O remetente é `onboarding@resend.dev` no teste, ou um endereço do domínio verificado, e o
-     nome do remetente é `Aula em Dia`.
+   - Host `smtp.gmail.com`, porta `465`, usuário = o endereço Gmail inteiro e, como senha, a
+     senha de app (os 16 caracteres, sem espaços).
+   - O remetente é **o mesmo endereço Gmail**, porque o Gmail troca qualquer outro pelo da conta,
+     e o nome do remetente é `Aula em Dia`.
+   - **Depois, o Resend (`SCRUM-99`).** Para um remetente do próprio domínio, só esta etapa
+     muda: host `smtp.resend.com`, porta `465`, usuário `resend`, a API key como senha e um
+     endereço do domínio verificado no Resend. Sem domínio, o Resend só entrega para o e-mail da
+     própria conta, e o `*.vercel.app` não serve, porque não dá para pôr DNS nele.
 3. **Authentication → Emails → Templates → Reset Password:** o assunto
    `Redefinir a senha do Aula em Dia`, e o corpo é o HTML de `templates/recuperacao.html`.
 4. **Authentication → URL Configuration:**

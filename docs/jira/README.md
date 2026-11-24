@@ -888,6 +888,15 @@ depende do build adiado (`SCRUM-47`, `SCRUM-63`, `SCRUM-93`), da decisão da Sat
   entrega para o e-mail da conta do Resend. O domínio virou o `SCRUM-99`, no backlog, e o
   critério "e-mail de fora da equipe" saiu do `SCRUM-62`.
 
+**Decisão de PO de 24/11**, no meio da sprint, substituindo a de cima sobre o remetente:
+
+- **O e-mail da recuperação sai pelo Gmail**, por uma conta do projeto ligada como SMTP do
+  Supabase, com senha de app. É grátis, dispensa domínio e entrega a qualquer endereço, então o
+  critério "e-mail de fora da equipe" volta ao `SCRUM-62`. O Resend com remetente de teste foi
+  descartado porque não chega a nenhum professor de verdade.
+- **O `SCRUM-99` muda de sentido:** deixa de ser "o domínio do Resend" e passa a ser trocar o
+  Gmail pelo Resend com domínio próprio. A troca é só no painel do Supabase, sem código.
+
 **Revisado antes de abrir**, contra a `main` de 15/11:
 
 - o `SCRUM-39` subiu para o template de nove seções e foi fatiado, como o próprio card pedia:
