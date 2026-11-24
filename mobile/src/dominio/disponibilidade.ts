@@ -381,3 +381,40 @@ export function resumoDosMarcados(lista: Intervalo[]): string {
   const n = lista.length;
   return `${n} ${n === 1 ? 'horário marcado' : 'horários marcados'}`;
 }
+
+// --- Horário digitado (SCRUM-101) ---------------------------------------------
+
+/** As durações que o cadastro oferece, em minutos. */
+export const DURACOES = [30, 45, 60, 90] as const;
+
+/** As mensagens do campo de horário, conferidas letra a letra nos testes. */
+export const ERRO_HORARIO = {
+  invalido: 'Use um horário como 14:30',
+  foraDoPasso: 'Use minutos de 15 em 15: 00, 15, 30 ou 45',
+  fimAntesDoInicio: 'O fim tem de ser depois do começo',
+} as const;
+
+/** "14:30" digitado → os minutos, ou o erro que o campo mostra. */
+export function horarioDigitado(texto: string): { minutos: number } | { erro: string } {
+  const minutos = lerHorario(texto.trim() || undefined);
+  if (minutos === null) return { erro: ERRO_HORARIO.invalido };
+  if (!noPasso(minutos)) return { erro: ERRO_HORARIO.foraDoPasso };
+  return { minutos };
+}
+
+/**
+ * O "De" e o "Até" da lista sob a grade → o intervalo, ou o erro e o campo em
+ * que ele aparece.
+ */
+export function intervaloDigitado(
+  dia: DiaDaSemana,
+  de: string,
+  ate: string,
+): { intervalo: Intervalo } | { erro: string; campo: 'de' | 'ate' } {
+  const inicio = horarioDigitado(de);
+  if ('erro' in inicio) return { erro: inicio.erro, campo: 'de' };
+  const fim = horarioDigitado(ate);
+  if ('erro' in fim) return { erro: fim.erro, campo: 'ate' };
+  if (fim.minutos <= inicio.minutos) return { erro: ERRO_HORARIO.fimAntesDoInicio, campo: 'ate' };
+  return { intervalo: { dia, inicio: inicio.minutos, fim: fim.minutos } };
+}

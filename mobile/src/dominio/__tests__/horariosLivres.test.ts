@@ -15,10 +15,14 @@ import {
 import {
   cabe,
   DURACAO_PADRAO,
+  DURACOES,
+  ERRO_HORARIO,
   formatarDuracao,
   formatarHora,
   formatarIntervalo,
+  horarioDigitado,
   horarioNoPasso,
+  intervaloDigitado,
   intervalosDe,
   juntarIntervalos,
   lerHorario,
@@ -295,5 +299,45 @@ describe('a aula fixa com minutos e duração', () => {
       hora: '18h30',
     });
     expect(rotuloDaAulaFixa({ dias: ['ter'], hora: 18 })).toEqual({ dia: 'terça', hora: '18h' });
+  });
+});
+
+describe('o horário digitado', () => {
+  it('lê o que o campo aceita', () => {
+    expect(horarioDigitado('14:30')).toEqual({ minutos: h(14, 30) });
+    expect(horarioDigitado(' 9 ')).toEqual({ minutos: h(9) });
+  });
+
+  it('as três mensagens', () => {
+    expect(ERRO_HORARIO).toEqual({
+      invalido: 'Use um horário como 14:30',
+      foraDoPasso: 'Use minutos de 15 em 15: 00, 15, 30 ou 45',
+      fimAntesDoInicio: 'O fim tem de ser depois do começo',
+    });
+  });
+
+  it('vazio, fora do relógio ou fora do passo é erro', () => {
+    expect(horarioDigitado('')).toEqual({ erro: ERRO_HORARIO.invalido });
+    expect(horarioDigitado('25:00')).toEqual({ erro: ERRO_HORARIO.invalido });
+    expect(horarioDigitado('14:20')).toEqual({ erro: ERRO_HORARIO.foraDoPasso });
+  });
+
+  it('o intervalo digitado, e o campo de cada erro', () => {
+    expect(intervaloDigitado('seg', '14:30', '18:00')).toEqual({
+      intervalo: { dia: 'seg', inicio: h(14, 30), fim: h(18) },
+    });
+    expect(intervaloDigitado('seg', '14:20', '18:00')).toEqual({
+      erro: ERRO_HORARIO.foraDoPasso,
+      campo: 'de',
+    });
+    expect(intervaloDigitado('seg', '14:30', 'x')).toEqual({ erro: ERRO_HORARIO.invalido, campo: 'ate' });
+    expect(intervaloDigitado('seg', '14:30', '14:30')).toEqual({
+      erro: ERRO_HORARIO.fimAntesDoInicio,
+      campo: 'ate',
+    });
+  });
+
+  it('as durações do cadastro', () => {
+    expect(DURACOES).toEqual([30, 45, 60, 90]);
   });
 });
