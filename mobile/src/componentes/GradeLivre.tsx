@@ -20,6 +20,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Platform,
   StyleSheet,
   Text,
@@ -253,18 +254,21 @@ export function GradeLivre({
   const meioDoRotulo = (estiloDaHora.lineHeight ?? 0) / 2;
   const estiloDoAviso = texto(11.5, 500, { altura: 1.4 });
 
+  const cabecalho = (
+    <View style={estilos.linha}>
+      <View style={{ width: COLUNA_DAS_HORAS }} />
+      {dias.map((d) => (
+        <View key={d} style={estilos.cabecalhoDoDia}>
+          <Text style={[texto(10, 600, { tracking: 0.06 }), { color: cores.tinta3 }]}>
+            {diaCurto(d)}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+
   return (
     <View style={estilos.grade}>
-      <View style={estilos.linha}>
-        <View style={{ width: COLUNA_DAS_HORAS }} />
-        {dias.map((d) => (
-          <View key={d} style={estilos.cabecalhoDoDia}>
-            <Text style={[texto(10, 600, { tracking: 0.06 }), { color: cores.tinta3 }]}>
-              {diaCurto(d)}
-            </Text>
-          </View>
-        ))}
-      </View>
 
       {editavel ? (
         // A caixa do aviso tem sempre a altura da ajuda: se ela encolhesse quando
@@ -291,108 +295,112 @@ export function GradeLivre({
         </View>
       ) : null}
 
-      <View
-        {...responder}
-        accessible
-        accessibilityLabel={`Grade da semana: ${resumoDosHorarios(horarios)}.`}
-        accessibilityHint={editavel ? 'Ajuste os horários na lista abaixo da grade.' : undefined}
-        // O duplo toque do leitor de tela não pode virar um toque no meio da
-        // grade, que marcaria uma hora sem a pessoa ver qual.
-        onAccessibilityTap={editavel ? () => {} : undefined}
-        onLayout={(e: LayoutChangeEvent) => setLargura(e.nativeEvent.layout.width)}
-        style={[estilos.linha, { height: altura }, editavel ? SEM_SELECAO : null]}
-      >
-        <View pointerEvents="none" style={{ width: COLUNA_DAS_HORAS, height: altura }}>
-          {horas.map((m) => (
-            <Text
-              key={m}
-              maxFontSizeMultiplier={ESCALA_FONTE.compacta}
-              style={[
-                estiloDaHora,
-                estilos.rotuloDaHora,
-                // o rótulo centra no fio da hora; o primeiro encosta no topo
-                { top: Math.max(topo(m) - meioDoRotulo, 0), color: cores.tinta3 },
-              ]}
-            >
-              {formatarHora(m)}
-            </Text>
-          ))}
-        </View>
-
-        {dias.map((dia) => (
-          <View
-            key={dia}
-            pointerEvents="none"
-            style={[estilos.coluna, { height: altura, backgroundColor: cores.preenchimento }]}
-          >
-            {horas
-              .filter((m) => m > de)
-              .map((m) => (
-                <View
-                  key={m}
-                  style={[estilos.fio, { top: topo(m), backgroundColor: cores.fio }]}
-                />
-              ))}
-
-            {mostrados
-              .filter((i) => i.dia === dia && i.fim > de && i.inicio < ate)
-              .map((i) => {
-                const inicio = Math.max(i.inicio, de);
-                const fim = Math.min(i.fim, ate);
-                const alto = topo(fim) - topo(inicio);
-                // na coluna do arrasto quem fala é a prévia, e só ela
-                const comRotulo = alto >= ALTURA_DO_QUARTO * 2 && arrasto?.dia !== dia;
-                return (
-                  <View
-                    key={`${i.inicio}-${i.fim}`}
-                    style={[
-                      estilos.marcado,
-                      { top: topo(inicio), height: alto, backgroundColor: cores.tint },
-                    ]}
-                  >
-                    {comRotulo ? (
-                      <Text
-                        numberOfLines={alto >= ALTURA_DA_HORA ? 2 : 1}
-                        maxFontSizeMultiplier={ESCALA_FONTE.compacta}
-                        style={[texto(10, 600, { altura: 1.2 }), { color: cores.sobreTint }]}
-                      >
-                        {alto >= ALTURA_DA_HORA
-                          ? `${formatarHora(inicio)}\n${formatarHora(fim)}`
-                          : formatarHora(inicio)}
-                      </Text>
-                    ) : null}
-                  </View>
-                );
-              })}
-
-            {arrasto && previa && arrasto.dia === dia ? (
-              <View
+      {/* O cabeçalho dos dias encosta nas colunas, e o aviso fica acima dele. */}
+      <View style={estilos.cabecalhoEColunas}>
+        {cabecalho}
+        <View
+          {...responder}
+          accessible
+          accessibilityLabel={`Grade da semana: ${resumoDosHorarios(horarios)}.`}
+          accessibilityHint={editavel ? 'Ajuste os horários na lista abaixo da grade.' : undefined}
+          // O duplo toque do leitor de tela não pode virar um toque no meio da
+          // grade, que marcaria uma hora sem a pessoa ver qual.
+          onAccessibilityTap={editavel ? () => {} : undefined}
+          onLayout={(e: LayoutChangeEvent) => setLargura(e.nativeEvent.layout.width)}
+          style={[estilos.linha, { height: altura }, editavel ? SEM_SELECAO : null]}
+        >
+          <View pointerEvents="none" style={{ width: COLUNA_DAS_HORAS, height: altura }}>
+            {horas.map((m) => (
+              <Text
+                key={m}
+                maxFontSizeMultiplier={ESCALA_FONTE.compacta}
                 style={[
-                  estilos.marcado,
-                  estilos.previa,
-                  {
-                    top: topo(previa.inicio),
-                    height: topo(previa.fim) - topo(previa.inicio),
-                    // marcando, o trecho já é tint e o contorno é o do texto
-                    // sobre ele; apagando, é trilho e o contorno é tint
-                    borderColor: arrasto.ligar ? cores.sobreTint : cores.tint,
-                  },
+                  estiloDaHora,
+                  estilos.rotuloDaHora,
+                  // o rótulo centra no fio da hora; o primeiro encosta no topo
+                  { top: Math.max(topo(m) - meioDoRotulo, 0), color: cores.tinta3 },
                 ]}
               >
-                {/* O trecho junto do dedo: o aviso acima da grade pode estar fora da vista. */}
-                <Text
-                  maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+                {formatarHora(m)}
+              </Text>
+            ))}
+          </View>
+
+          {dias.map((dia) => (
+            <View
+              key={dia}
+              pointerEvents="none"
+              style={[estilos.coluna, { height: altura, backgroundColor: cores.preenchimento }]}
+            >
+              {horas
+                .filter((m) => m > de)
+                .map((m) => (
+                  <View
+                    key={m}
+                    style={[estilos.fio, { top: topo(m), backgroundColor: cores.fio }]}
+                  />
+                ))}
+
+              {mostrados
+                .filter((i) => i.dia === dia && i.fim > de && i.inicio < ate)
+                .map((i) => {
+                  const inicio = Math.max(i.inicio, de);
+                  const fim = Math.min(i.fim, ate);
+                  const alto = topo(fim) - topo(inicio);
+                  // na coluna do arrasto quem fala é a prévia, e só ela
+                  const comRotulo = alto >= ALTURA_DO_QUARTO * 2 && arrasto?.dia !== dia;
+                  return (
+                    <View
+                      key={`${i.inicio}-${i.fim}`}
+                      style={[
+                        estilos.marcado,
+                        { top: topo(inicio), height: alto, backgroundColor: cores.tint },
+                      ]}
+                    >
+                      {comRotulo ? (
+                        <Text
+                          numberOfLines={alto >= ALTURA_DA_HORA ? 2 : 1}
+                          maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+                          style={[texto(10, 600, { altura: 1.2 }), { color: cores.sobreTint }]}
+                        >
+                          {alto >= ALTURA_DA_HORA
+                            ? `${formatarHora(inicio)}\n${formatarHora(fim)}`
+                            : formatarHora(inicio)}
+                        </Text>
+                      ) : null}
+                    </View>
+                  );
+                })}
+
+              {arrasto && previa && arrasto.dia === dia ? (
+                <View
                   style={[
-                    texto(10, 700, { altura: 1.2 }),
-                    { color: arrasto.ligar ? cores.sobreTint : cores.tint },
+                    estilos.marcado,
+                    estilos.previa,
+                    {
+                      top: topo(previa.inicio),
+                      height: topo(previa.fim) - topo(previa.inicio),
+                      // marcando, o trecho já é tint e o contorno é o do texto
+                      // sobre ele; apagando, é trilho e o contorno é tint
+                      borderColor: arrasto.ligar ? cores.sobreTint : cores.tint,
+                    },
                   ]}
                 >
-                  {`${formatarHora(previa.inicio)}\n${formatarHora(previa.fim)}`}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        ))}
+                  {/* O trecho junto do dedo: o aviso acima da grade pode estar fora da vista. */}
+                  <Text
+                    maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+                    style={[
+                      texto(10, 700, { altura: 1.2 }),
+                      { color: arrasto.ligar ? cores.sobreTint : cores.tint },
+                    ]}
+                  >
+                    {`${formatarHora(previa.inicio)}\n${formatarHora(previa.fim)}`}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ))}
+        </View>
       </View>
     </View>
   );
@@ -408,18 +416,41 @@ export const mascaraDeHorario = (v: string): string => {
  * Os horários marcados, um por linha ("Segunda · 14h30–18h", com Remover), e
  * o formulário que acrescenta um pelo teclado. É o caminho do leitor de tela
  * e o acerto fino de quem pinta na grade.
+ *
+ * Para quem vê, a lista repete a grade linha por linha. Com `recolhida` ela
+ * vira uma linha só, "Ajustar pelo teclado", que abre ao toque — e já abre
+ * sozinha quando o leitor de tela está ligado, porque aí ela é o caminho.
  */
 export function ListaDeHorarios({
   horarios,
   aoMudar,
   dias = DIAS_DA_SEMANA,
   vazio = 'Nenhum horário marcado',
+  recolhida = false,
 }: {
   horarios: Intervalo[];
   aoMudar: (horarios: Intervalo[]) => void;
   dias?: DiaDaSemana[];
   vazio?: string;
+  recolhida?: boolean;
 }) {
+  const [aberta, setAberta] = useState(!recolhida);
+  useEffect(() => {
+    if (!recolhida) return undefined;
+    let vivo = true;
+    AccessibilityInfo.isScreenReaderEnabled()
+      .then((ligado) => {
+        if (vivo && ligado) setAberta(true);
+      })
+      .catch(() => {});
+    const assinatura = AccessibilityInfo.addEventListener('screenReaderChanged', (ligado) => {
+      if (ligado) setAberta(true);
+    });
+    return () => {
+      vivo = false;
+      assinatura?.remove();
+    };
+  }, [recolhida]);
   const [abrindo, setAbrindo] = useState(false);
   const [dia, setDia] = useState<DiaDaSemana>(dias[0]);
   const [de, setDe] = useState('');
@@ -442,6 +473,19 @@ export function ListaDeHorarios({
     aoMudar(pintar(horarios, lido.intervalo.dia, lido.intervalo.inicio, lido.intervalo.fim, true));
     fechar();
   };
+
+  if (!aberta) {
+    return (
+      <ListaAgrupada>
+        <LinhaLista
+          titulo="Ajustar pelo teclado"
+          subtitulo={resumoDosHorarios(horarios)}
+          aoTocar={() => setAberta(true)}
+          chevron
+        />
+      </ListaAgrupada>
+    );
+  }
 
   return (
     <View style={estilos.lista}>
@@ -539,6 +583,7 @@ export function RodapeDaGrade({
 
 const estilos = StyleSheet.create({
   grade: { gap: 8 },
+  cabecalhoEColunas: { gap: 6 },
   linha: { flexDirection: 'row', gap: VAO },
   cabecalhoDoDia: { flex: 1, alignItems: 'center' },
   rotuloDaHora: { position: 'absolute', left: 0 },

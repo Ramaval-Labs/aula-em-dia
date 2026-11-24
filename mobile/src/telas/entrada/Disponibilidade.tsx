@@ -48,7 +48,7 @@ export function Disponibilidade() {
         <RodapeDaGrade esquerda={resumoDosHorarios(form.blocos)} direita="Domingo fechado" />
       </CartaoVidro>
       <View>
-        <ListaDeHorarios horarios={form.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
+        <ListaDeHorarios recolhida horarios={form.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
       </View>
 
       <CartaoDeAjuste

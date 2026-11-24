@@ -130,10 +130,8 @@ export function MinhaDisponibilidade() {
         <GradeLivre horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
         <RodapeDaGrade esquerda={resumoDosHorarios(d.blocos)} direita="Domingo fechado" />
       </CartaoVidro>
-      <View style={estilos.bloco}>
-        <ListaDeHorarios horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
-      </View>
 
+      {/* Os dois switches mudam o que a grade vale, então ficam colados nela. */}
       <CartaoComSwitch
         titulo="Aceitar reposição fora desses horários"
         sub="Só quando não houver outra saída"
@@ -145,6 +143,15 @@ export function MinhaDisponibilidade() {
         sub="Entra na lista de horários possíveis"
         ligado={d.sugereSabado}
         aoAlternar={(sugereSabado) => atualizar({ sugereSabado })}
+      />
+
+      <View style={estilos.grupo}>
+        <CabecalhoGrupo titulo="Horários" />
+      </View>
+      <ListaDeHorarios
+        recolhida
+        horarios={d.blocos}
+        aoMudar={(blocos) => atualizar({ blocos })}
       />
 
       <View style={estilos.grupo}>
@@ -226,7 +233,7 @@ export function MinhaDisponibilidade() {
 }
 
 const proprios = StyleSheet.create({
-  cartaoGrade: { marginTop: 12, ...PAD_CARTAO_DA_GRADE },
+  cartaoGrade: PAD_CARTAO_DA_GRADE,
   folga: { gap: 16 },
   datas: { flexDirection: 'row', gap: 12 },
   flexivel: { flex: 1, minWidth: 0 },

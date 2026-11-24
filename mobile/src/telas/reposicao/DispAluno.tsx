@@ -75,7 +75,7 @@ export function DispAluno() {
         <RodapeDaGrade esquerda={resumoDosMarcados(blocos)} direita="Sábado indisponível" />
       </CartaoVidro>
       <View style={estilos.lista}>
-        <ListaDeHorarios horarios={blocos} dias={DIAS_UTEIS} aoMudar={substituir} />
+        <ListaDeHorarios recolhida horarios={blocos} dias={DIAS_UTEIS} aoMudar={substituir} />
       </View>
     </Sheet>
   );
