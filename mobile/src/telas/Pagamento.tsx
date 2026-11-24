@@ -120,9 +120,8 @@ export function Pagamento() {
       {form.meio === 'Pix' ? (
         perfil.chavePix ? (
           <CartaoVidro estilo={estilos.espaco14}>
-            <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>
-              Sua chave Pix
-            </Text>
+            {/* Dentro de cartão, o rótulo é o do cartão, e não o cabeçalho de grupo. */}
+            <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Sua chave Pix</Text>
             <View style={estilos.linhaChave}>
               <Text
                 style={[texto(15, 600, { altura: 1.3 }), estilos.flexivel, { color: cores.tinta }]}
