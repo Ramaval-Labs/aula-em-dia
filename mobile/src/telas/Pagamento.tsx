@@ -156,7 +156,7 @@ export function Pagamento() {
           { color: cores.tinta2 },
         ]}
       >
-        O registro é manual. A cobrança automática por Pix entra numa fase futura, com o backend.
+        O app não confere o pagamento: confirme no seu banco antes de registrar.
       </Text>
     </Sheet>
   );
