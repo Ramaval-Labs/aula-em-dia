@@ -14,7 +14,7 @@ import { TelaVidro, TituloDeConteudo } from '../../componentes/Chassi';
 import { BotaoCompacto, BotaoPrimario } from '../../componentes/Controles';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { diasEntre } from '../../dominio/datas';
-import { primeiroNome } from '../../dominio/formato';
+import { plural, primeiroNome } from '../../dominio/formato';
 import { avisos, useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
 import { useToast } from '../../estado/toast';
@@ -101,23 +101,26 @@ export function AguardandoAceite() {
       <TituloDeConteudo
         acima="Aguardando resposta"
         titulo={titulo}
-        abaixo={`Enviada em ${proposta.enviadaEm}${dias > 0 ? `, há ${dias} dias` : ', hoje'}`}
+        abaixo={`Enviada em ${proposta.enviadaEm}${
+          dias > 0 ? `, há ${plural(dias, 'dia', 'dias')}` : ', hoje'
+        }`}
       />
 
       <BlocoStatus
         tom="ambar"
         icone="alerta"
         titulo={`${primeiroNome(aluno.name)} ainda não respondeu`}
-        texto="Enquanto isso o horário fica reservado na sua agenda, mas a reposição não conta como marcada."
+        // Sem "reservado na sua agenda": o motor só bloqueia aula fixa e
+        // reposição marcada, e o mesmo horário pode ir para outro aluno.
+        texto={`A reposição só conta como marcada quando ${primeiroNome(
+          aluno.name,
+        )} aceitar ou quando você confirmar.`}
         estilo={estilos.bloco}
       />
 
       {proposta.alternativas.length > 0 ? (
         <>
-          <CabecalhoGrupo
-            titulo="Alternativas que ele também recebeu"
-            estilo={estilos.cabecalho}
-          />
+          <CabecalhoGrupo titulo="Também enviadas" estilo={estilos.cabecalho} />
           <ListaAgrupada estilo={estilos.lista}>
             {proposta.alternativas.map((j) => (
               <LinhaLista key={`${j.dia}-${j.hora}`} titulo={`${j.dia} · ${j.hora}`} />

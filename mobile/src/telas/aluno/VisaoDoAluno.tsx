@@ -29,6 +29,7 @@ import {
   BotaoSecundario,
   BotaoTexto,
   CartaoEscolha,
+  NotaDoBotao,
 } from '../../componentes/Controles';
 import {
   GradeSemanal,
@@ -45,6 +46,7 @@ import {
   type JanelaDaPagina,
   type PaginaDoAluno,
 } from '../../dominio/paginaDoAluno';
+import { SALDO_BAIXO } from '../../dominio/politica';
 import type { BlocoSemanal, Lancamento } from '../../dominio/tipos';
 import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
@@ -187,7 +189,7 @@ export function VerComoAluno() {
         />
         <LinhaLista
           titulo="Informar disponibilidade"
-          subtitulo="A grade que ele devolve quando nenhum horário serve"
+          subtitulo="A grade que o aluno devolve quando nenhum horário serve"
           aoTocar={() => ir('alunoDisponibilidade')}
         />
       </ListaAgrupada>
@@ -196,6 +198,21 @@ export function VerComoAluno() {
 }
 
 // --- F1, meu saldo --------------------------------------------------------
+
+/** "segunda" → "Segunda": o dia chega da semente no formato de meio de frase. */
+const comInicialMaiuscula = (s: string): string =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+/**
+ * O número do saldo, igual nas duas páginas que o mostram (saldo e proposta):
+ * `tint`, âmbar no saldo baixo (`SALDO_BAIXO`, a regra do domínio) e "—" em
+ * `tinta3` sem pacote. A proposta mostrava o mesmo "2" na cor de texto.
+ */
+function NumeroDoSaldo({ saldo, temPacote }: { saldo: number; temPacote: boolean }) {
+  const { cores } = useCores();
+  const cor = !temPacote ? cores.tinta3 : saldo <= SALDO_BAIXO ? cores.ambarTexto : cores.tint;
+  return <Text style={[TIPO.saldoCartao, { color: cor }]}>{temPacote ? String(saldo) : '—'}</Text>;
+}
 
 export function PaginaSaldo({
   pagina,
@@ -224,14 +241,7 @@ export function PaginaSaldo({
           }
           style={estilos.numeroDoSaldo}
         >
-          <Text
-            style={[
-              TIPO.saldoCartao,
-              { color: !com ? cores.tinta3 : restam <= 2 ? cores.ambarTexto : cores.tint },
-            ]}
-          >
-            {com ? String(restam) : '—'}
-          </Text>
+          <NumeroDoSaldo saldo={restam} temPacote={com} />
           <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
             {unidade(restam, 'aula', 'aulas')}
           </Text>
@@ -258,7 +268,9 @@ export function PaginaSaldo({
       <CabecalhoGrupo titulo="Próximas aulas" estilo={estilos.tituloGrupo} />
       <ListaAgrupada estilo={estilos.lista}>
         <LinhaLista
-          titulo={pagina.hora ? `${pagina.dia}, ${pagina.hora}` : 'Sem horário fixo'}
+          titulo={
+            pagina.hora ? `${comInicialMaiuscula(pagina.dia)} · ${pagina.hora}` : 'Sem horário fixo'
+          }
           subtitulo="Aula fixa"
         />
         {pagina.agendada ? (
@@ -305,9 +317,34 @@ export function PaginaSaldo({
   );
 }
 
+/**
+ * As ações da página de saldo, as mesmas no link (`AppDoAluno`) e na prévia:
+ * ver a proposta, quando há uma, e informar a disponibilidade. A prévia tinha
+ * "Avisar que não posso ir" e "Falar com…", que só mostravam um toast e não
+ * existem no link (SCRUM-100).
+ */
+export function AcoesDoSaldo({
+  temProposta,
+  aoVerProposta,
+  aoInformar,
+}: {
+  temProposta: boolean;
+  aoVerProposta: () => void;
+  aoInformar: () => void;
+}) {
+  return (
+    <View style={estilos.acoes}>
+      {temProposta ? (
+        <BotaoPrimario rotulo="Ver a proposta de reposição" aoTocar={aoVerProposta} />
+      ) : null}
+      <BotaoSecundario rotulo="Informar disponibilidade" aoTocar={aoInformar} />
+    </View>
+  );
+}
+
 export function AlunoSaldo() {
   const { pagina } = usePaginaDaPrevia();
-  const avisar = useToast((s) => s.avisar);
+  const { ir } = useNavegacao();
   const assinatura = useAssinatura();
 
   if (!pagina) return <SemAluno titulo="Meu saldo" />;
@@ -317,16 +354,11 @@ export function AlunoSaldo() {
       pagina={pagina}
       moldura={{ topo: <FaixaPrevia texto={assinatura} />, voltar: { rotulo: VOLTAR_PARA_PREVIA } }}
       rodape={
-        <View style={estilos.acoes}>
-          <BotaoPrimario
-            rotulo="Avisar que não posso ir"
-            aoTocar={() => avisar('O professor recebeu o aviso da falta.')}
-          />
-          <BotaoSecundario
-            rotulo={`Falar com ${pagina.professor.nome}`}
-            aoTocar={() => avisar('Conversa aberta com o professor.')}
-          />
-        </View>
+        <AcoesDoSaldo
+          temProposta={!!pagina.proposta}
+          aoVerProposta={() => ir('alunoProposta')}
+          aoInformar={() => ir('alunoDisponibilidade')}
+        />
       }
     />
   );
@@ -466,7 +498,7 @@ export function PaginaProposta({
       <CartaoVidro estilo={estilos.cartao}>
         <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo hoje</Text>
         <View style={estilos.numeroDoSaldo}>
-          <Text style={[TIPO.saldoCartao, { color: cores.tinta }]}>{String(pagina.saldo)}</Text>
+          <NumeroDoSaldo saldo={pagina.saldo} temPacote={pagina.temPacote} />
           <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
             {unidade(pagina.saldo, 'aula', 'aulas')}
           </Text>
@@ -553,11 +585,17 @@ export function PaginaDisponibilidade({
       titulo="Disponibilidade"
       moldura={moldura}
       rodape={
-        <BotaoPrimario
-          rotulo="Enviar disponibilidade"
-          desabilitado={blocos.length === 0 || ocupado}
-          aoTocar={aoEnviar}
-        />
+        <View style={estilos.acoes}>
+          {/* O botão apagado diz o que falta, no link e na prévia. */}
+          {blocos.length === 0 ? (
+            <NotaDoBotao texto="Marque ao menos um bloco para enviar." />
+          ) : null}
+          <BotaoPrimario
+            rotulo="Enviar disponibilidade"
+            desabilitado={blocos.length === 0 || ocupado}
+            aoTocar={aoEnviar}
+          />
+        </View>
       }
     >
       <TituloDeConteudo

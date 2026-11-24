@@ -19,7 +19,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 
 import { CartaoVidro, EstadoVazio } from '../../componentes/Blocos';
 import { TelaVidro, TituloDeConteudo } from '../../componentes/Chassi';
-import { BotaoPrimario, BotaoSecundario } from '../../componentes/Controles';
+import { BotaoSecundario } from '../../componentes/Controles';
 import { Toast } from '../../componentes/Toast';
 import { AlvoDeDesfoque, FundoRefracao, ProvedorDeDesfoque } from '../../componentes/Vidro';
 import {
@@ -34,6 +34,7 @@ import type { BlocoSemanal } from '../../dominio/tipos';
 import { avisos } from '../../estado/avisos';
 import { useToast } from '../../estado/toast';
 import {
+  AcoesDoSaldo,
   assinaturaDe,
   PaginaDisponibilidade,
   PaginaProposta,
@@ -200,14 +201,12 @@ export function AppDoAluno({ token }: { token: string | null }) {
         pagina={pagina}
         moldura={{ topo: <TituloDeConteudo acima={assinaturaDe(pagina)} titulo="Meu saldo" /> }}
         rodape={
-          // As duas outras páginas. A prévia tem aqui "Avisar que não posso ir"
-          // e "Falar com…", que não têm para onde ir: o link não manda nada.
-          <View style={estilos.acoes}>
-            {pagina.proposta ? (
-              <BotaoPrimario rotulo="Ver a proposta de reposição" aoTocar={() => setQual('proposta')} />
-            ) : null}
-            <BotaoSecundario rotulo="Informar disponibilidade" aoTocar={() => setQual('disponibilidade')} />
-          </View>
+          // As duas outras páginas, pela mesma peça da prévia do professor.
+          <AcoesDoSaldo
+            temProposta={!!pagina.proposta}
+            aoVerProposta={() => setQual('proposta')}
+            aoInformar={() => setQual('disponibilidade')}
+          />
         }
       />
     );
@@ -254,5 +253,4 @@ function DisponibilidadeDoLink({
 const estilos = StyleSheet.create({
   cheio: { flex: 1 },
   aviso: { marginTop: 18 },
-  acoes: { gap: 10 },
 });
