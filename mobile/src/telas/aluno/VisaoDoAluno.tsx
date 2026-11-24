@@ -29,6 +29,7 @@ import {
   BotaoSecundario,
   BotaoTexto,
   CartaoEscolha,
+  NotaDoBotao,
 } from '../../componentes/Controles';
 import {
   GradeSemanal,
@@ -45,6 +46,7 @@ import {
   type JanelaDaPagina,
   type PaginaDoAluno,
 } from '../../dominio/paginaDoAluno';
+import { SALDO_BAIXO } from '../../dominio/politica';
 import type { BlocoSemanal, Lancamento } from '../../dominio/tipos';
 import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
@@ -197,6 +199,21 @@ export function VerComoAluno() {
 
 // --- F1, meu saldo --------------------------------------------------------
 
+/** "segunda" → "Segunda": o dia chega da semente no formato de meio de frase. */
+const comInicialMaiuscula = (s: string): string =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+/**
+ * O número do saldo, igual nas duas páginas que o mostram (saldo e proposta):
+ * `tint`, âmbar no saldo baixo (`SALDO_BAIXO`, a regra do domínio) e "—" em
+ * `tinta3` sem pacote. A proposta mostrava o mesmo "2" na cor de texto.
+ */
+function NumeroDoSaldo({ saldo, temPacote }: { saldo: number; temPacote: boolean }) {
+  const { cores } = useCores();
+  const cor = !temPacote ? cores.tinta3 : saldo <= SALDO_BAIXO ? cores.ambarTexto : cores.tint;
+  return <Text style={[TIPO.saldoCartao, { color: cor }]}>{temPacote ? String(saldo) : '—'}</Text>;
+}
+
 export function PaginaSaldo({
   pagina,
   moldura,
@@ -224,14 +241,7 @@ export function PaginaSaldo({
           }
           style={estilos.numeroDoSaldo}
         >
-          <Text
-            style={[
-              TIPO.saldoCartao,
-              { color: !com ? cores.tinta3 : restam <= 2 ? cores.ambarTexto : cores.tint },
-            ]}
-          >
-            {com ? String(restam) : '—'}
-          </Text>
+          <NumeroDoSaldo saldo={restam} temPacote={com} />
           <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
             {unidade(restam, 'aula', 'aulas')}
           </Text>
@@ -258,7 +268,9 @@ export function PaginaSaldo({
       <CabecalhoGrupo titulo="Próximas aulas" estilo={estilos.tituloGrupo} />
       <ListaAgrupada estilo={estilos.lista}>
         <LinhaLista
-          titulo={pagina.hora ? `${pagina.dia}, ${pagina.hora}` : 'Sem horário fixo'}
+          titulo={
+            pagina.hora ? `${comInicialMaiuscula(pagina.dia)} · ${pagina.hora}` : 'Sem horário fixo'
+          }
           subtitulo="Aula fixa"
         />
         {pagina.agendada ? (
@@ -486,7 +498,7 @@ export function PaginaProposta({
       <CartaoVidro estilo={estilos.cartao}>
         <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Seu saldo hoje</Text>
         <View style={estilos.numeroDoSaldo}>
-          <Text style={[TIPO.saldoCartao, { color: cores.tinta }]}>{String(pagina.saldo)}</Text>
+          <NumeroDoSaldo saldo={pagina.saldo} temPacote={pagina.temPacote} />
           <Text style={[texto(14, 600), { color: cores.tinta2 }]}>
             {unidade(pagina.saldo, 'aula', 'aulas')}
           </Text>
@@ -573,11 +585,17 @@ export function PaginaDisponibilidade({
       titulo="Disponibilidade"
       moldura={moldura}
       rodape={
-        <BotaoPrimario
-          rotulo="Enviar disponibilidade"
-          desabilitado={blocos.length === 0 || ocupado}
-          aoTocar={aoEnviar}
-        />
+        <View style={estilos.acoes}>
+          {/* O botão apagado diz o que falta, no link e na prévia. */}
+          {blocos.length === 0 ? (
+            <NotaDoBotao texto="Marque ao menos um bloco para enviar." />
+          ) : null}
+          <BotaoPrimario
+            rotulo="Enviar disponibilidade"
+            desabilitado={blocos.length === 0 || ocupado}
+            aoTocar={aoEnviar}
+          />
+        </View>
       }
     >
       <TituloDeConteudo
