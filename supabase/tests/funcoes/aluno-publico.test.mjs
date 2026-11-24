@@ -430,9 +430,12 @@ try {
       cabecalhos: { 'Content-Type': 'application/json' },
       corpo: { token: tokenNovo, acao: 'disponibilidade', blocos },
     });
+  // O jsonb reordena as chaves (dia, fim, inicio): compara-se o conteúdo, não o texto.
+  const comoTexto = (lista) =>
+    JSON.stringify((lista ?? []).map((i) => (i.faixa ? i : { dia: i.dia, inicio: i.inicio, fim: i.fim, ...Object.fromEntries(Object.entries(i).filter(([k]) => !['dia', 'inicio', 'fim'].includes(k))) })));
   const gravada = async () => {
     const [a] = await exigir('ler a disponibilidade', rest(`alunos?id=eq.${ALUNO_1.id}&select=disponibilidade`, { cabecalhos: comoServico }));
-    return JSON.stringify(a.disponibilidade);
+    return comoTexto(a.disponibilidade);
   };
   r = await disponibilidade([
     { dia: 'seg', inicio: 870, fim: 960 },
@@ -441,11 +444,11 @@ try {
   conferir('horário livre das 14h30: 200', r.status === 200, `HTTP ${r.status}`);
   conferir(
     '  e grava junto, só com os três campos',
-    (await gravada()) === JSON.stringify([{ dia: 'seg', inicio: 870, fim: 1080 }]),
+    (await gravada()) === comoTexto([{ dia: 'seg', inicio: 870, fim: 1080 }]),
   );
   r = await disponibilidade([{ dia: 'ter', faixa: 'manha' }]);
   conferir('o formato antigo ainda passa: 200', r.status === 200, `HTTP ${r.status}`);
-  conferir('  e vira horário livre', (await gravada()) === JSON.stringify([{ dia: 'ter', inicio: 480, fim: 720 }]));
+  conferir('  e vira horário livre', (await gravada()) === comoTexto([{ dia: 'ter', inicio: 480, fim: 720 }]));
   antes = await gravada();
   for (const [nome, blocos] of [
     ['fora do passo', [{ dia: 'seg', inicio: 870, fim: 905 }]],
