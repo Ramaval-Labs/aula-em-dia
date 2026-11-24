@@ -346,7 +346,15 @@ export function GradeLivre({
                     backgroundColor: arrasto.ligar ? cores.tintSuave : cores.preenchimento2,
                   },
                 ]}
-              />
+              >
+                {/* O trecho junto do dedo: o aviso acima da grade pode estar fora da vista. */}
+                <Text
+                  maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+                  style={[texto(10, 700, { altura: 1.2 }), { color: cores.tint }]}
+                >
+                  {`${formatarHora(previa.inicio)}\n${formatarHora(previa.fim)}`}
+                </Text>
+              </View>
             ) : null}
           </View>
         ))}
