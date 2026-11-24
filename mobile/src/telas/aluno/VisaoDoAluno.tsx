@@ -187,7 +187,7 @@ export function VerComoAluno() {
         />
         <LinhaLista
           titulo="Informar disponibilidade"
-          subtitulo="A grade que ele devolve quando nenhum horário serve"
+          subtitulo="A grade que o aluno devolve quando nenhum horário serve"
           aoTocar={() => ir('alunoDisponibilidade')}
         />
       </ListaAgrupada>
@@ -305,9 +305,34 @@ export function PaginaSaldo({
   );
 }
 
+/**
+ * As ações da página de saldo, as mesmas no link (`AppDoAluno`) e na prévia:
+ * ver a proposta, quando há uma, e informar a disponibilidade. A prévia tinha
+ * "Avisar que não posso ir" e "Falar com…", que só mostravam um toast e não
+ * existem no link (SCRUM-100).
+ */
+export function AcoesDoSaldo({
+  temProposta,
+  aoVerProposta,
+  aoInformar,
+}: {
+  temProposta: boolean;
+  aoVerProposta: () => void;
+  aoInformar: () => void;
+}) {
+  return (
+    <View style={estilos.acoes}>
+      {temProposta ? (
+        <BotaoPrimario rotulo="Ver a proposta de reposição" aoTocar={aoVerProposta} />
+      ) : null}
+      <BotaoSecundario rotulo="Informar disponibilidade" aoTocar={aoInformar} />
+    </View>
+  );
+}
+
 export function AlunoSaldo() {
   const { pagina } = usePaginaDaPrevia();
-  const avisar = useToast((s) => s.avisar);
+  const { ir } = useNavegacao();
   const assinatura = useAssinatura();
 
   if (!pagina) return <SemAluno titulo="Meu saldo" />;
@@ -317,16 +342,11 @@ export function AlunoSaldo() {
       pagina={pagina}
       moldura={{ topo: <FaixaPrevia texto={assinatura} />, voltar: { rotulo: VOLTAR_PARA_PREVIA } }}
       rodape={
-        <View style={estilos.acoes}>
-          <BotaoPrimario
-            rotulo="Avisar que não posso ir"
-            aoTocar={() => avisar('O professor recebeu o aviso da falta.')}
-          />
-          <BotaoSecundario
-            rotulo={`Falar com ${pagina.professor.nome}`}
-            aoTocar={() => avisar('Conversa aberta com o professor.')}
-          />
-        </View>
+        <AcoesDoSaldo
+          temProposta={!!pagina.proposta}
+          aoVerProposta={() => ir('alunoProposta')}
+          aoInformar={() => ir('alunoDisponibilidade')}
+        />
       }
     />
   );
