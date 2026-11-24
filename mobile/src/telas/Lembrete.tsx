@@ -77,7 +77,24 @@ export function Lembrete() {
     >
       <SubLinhaSheet texto={`Para ${nome}`} />
 
-      <CartaoDeAjuste titulo="Tom da mensagem" estilo={estilos.espaco16}>
+      {/* O lembrete repetido vem antes de tudo: é o fato que pesa antes de
+          mandar mais uma cobrança. Embaixo da prévia, ficava escondido pelo
+          rodapé. */}
+      {segundoLembrete ? (
+        <BlocoStatus
+          tom="ambar"
+          titulo={`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete`}
+          texto={`${
+            aluno.ultimoLembrete ? `O último foi em ${aluno.ultimoLembrete}. ` : ''
+          }Vale considerar pausar as aulas ou combinar parcelamento.`}
+          estilo={estilos.espaco16}
+        />
+      ) : null}
+
+      <CartaoDeAjuste
+        titulo="Tom da mensagem"
+        estilo={segundoLembrete ? estilos.espaco14 : estilos.espaco16}
+      >
         <Segmentado
           porte="cartao"
           opcoes={TONS}
@@ -108,17 +125,6 @@ export function Lembrete() {
           }}
         />
       </View>
-
-      {segundoLembrete ? (
-        <BlocoStatus
-          tom="ambar"
-          titulo={`Este é o ${(aluno.lembretes ?? 0) + 1}º lembrete`}
-          texto={`${
-            aluno.ultimoLembrete ? `O último foi em ${aluno.ultimoLembrete}. ` : ''
-          }Vale considerar pausar as aulas ou combinar parcelamento.`}
-          estilo={estilos.espaco14}
-        />
-      ) : null}
     </Sheet>
   );
 }
