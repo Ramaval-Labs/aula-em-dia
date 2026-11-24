@@ -86,7 +86,28 @@ export function Pagamento() {
     >
       <SubLinhaSheet texto={`${aluno.name} · pacote de ${aluno.total} aulas`} />
 
-      <CartaoDeAjuste titulo="Como você recebeu" estilo={estilos.espaco16}>
+      {/* O que está sendo confirmado vem primeiro, como no cartão de débito de
+          H§7: o valor grande à esquerda, a data à direita, a nota depois do
+          fio. O meio vem depois, e o bloco do Pix não empurra mais o valor. */}
+      <CartaoDeDebito
+        tom="neutro"
+        rotulo="Valor"
+        valor={dinheiro(valorPacote(aluno))}
+        estilo={estilos.espaco16}
+        direita={
+          <View style={estilos.direita}>
+            <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>Data</Text>
+            <Text style={[texto(15, 700, { altura: 1.3 }), { color: cores.tinta }]}>{hoje()}</Text>
+          </View>
+        }
+      >
+        <Text style={[texto(12.5, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
+          Registra o valor do pacote com a data de hoje. Pagamento parcial ou em outra data
+          ainda não entra no app.
+        </Text>
+      </CartaoDeDebito>
+
+      <CartaoDeAjuste titulo="Como você recebeu" estilo={estilos.espaco14}>
         <Segmentado
           porte="cartao"
           opcoes={MEIOS}
@@ -99,9 +120,8 @@ export function Pagamento() {
       {form.meio === 'Pix' ? (
         perfil.chavePix ? (
           <CartaoVidro estilo={estilos.espaco14}>
-            <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>
-              Sua chave Pix
-            </Text>
+            {/* Dentro de cartão, o rótulo é o do cartão, e não o cabeçalho de grupo. */}
+            <Text style={[TIPO.rotuloCartao, { color: cores.tinta3 }]}>Sua chave Pix</Text>
             <View style={estilos.linhaChave}>
               <Text
                 style={[texto(15, 600, { altura: 1.3 }), estilos.flexivel, { color: cores.tinta }]}
@@ -128,30 +148,6 @@ export function Pagamento() {
         )
       ) : null}
 
-      {/* O cartão de débito da Cobrança em vidro neutro — valor grande à
-          esquerda, a data à direita, a nota depois do fio. */}
-      <CartaoDeDebito
-        tom="neutro"
-        rotulo="Valor"
-        valor={dinheiro(valorPacote(aluno))}
-        estilo={estilos.espaco14}
-        direita={
-          <View style={estilos.direita}>
-            <Text style={[TIPO.cabecalhoGrupo, { color: cores.tinta3 }]}>Data</Text>
-            <Text
-              style={[comEspaco(texto(15, 700, { altura: 1.3 }), { topo: 9 }), { color: cores.tinta }]}
-            >
-              {hoje()}
-            </Text>
-          </View>
-        }
-      >
-        <Text style={[texto(12.5, 500, { altura: 1.45 }), { color: cores.tinta2 }]}>
-          Registra o valor do pacote com a data de hoje. Pagamento parcial ou em outra data
-          ainda não entra no app.
-        </Text>
-      </CartaoDeDebito>
-
       <Text
         style={[
           comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 14 }),
@@ -159,7 +155,7 @@ export function Pagamento() {
           { color: cores.tinta2 },
         ]}
       >
-        O registro é manual. A cobrança automática por Pix entra numa fase futura, com o backend.
+        O app não confere o pagamento: confirme no seu banco antes de registrar.
       </Text>
     </Sheet>
   );
@@ -167,7 +163,9 @@ export function Pagamento() {
 
 const estilos = StyleSheet.create({
   flexivel: { flex: 1, minWidth: 0 },
-  direita: { alignItems: 'flex-end' },
+  // A coluna da data ocupa a altura do valor: o rótulo alinha no topo com o
+  // "VALOR" e a data na base com o número. O cartão alinha a linha pela base.
+  direita: { alignItems: 'flex-end', alignSelf: 'stretch', justifyContent: 'space-between' },
   nota: PAD.recuo,
   espaco14: { marginTop: 14 },
   espaco16: { marginTop: 16 },
