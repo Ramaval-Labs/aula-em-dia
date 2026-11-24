@@ -10,7 +10,7 @@ import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 import { CartaoVidro } from '../../componentes/Blocos';
-import { BotaoPrimario, BotaoTexto } from '../../componentes/Controles';
+import { BotaoPrimario } from '../../componentes/Controles';
 import {
   GradeSemanal,
   PAD_CARTAO_DA_GRADE,
@@ -22,7 +22,6 @@ import { primeiroNome } from '../../dominio/formato';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useNavegacao } from '../../estado/navegacao';
-import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto } from '../../tema/tipografia';
 import { PAD } from '../../tema/tokens';
@@ -32,7 +31,6 @@ export function DispAluno() {
   const { alunoId, ir } = useNavegacao();
   const aluno = useDados((s) => s.alunos.find((a) => a.id === alunoId));
   const salvar = useDados((s) => s.salvarDisponibilidadeDoAluno);
-  const avisar = useToast((s) => s.avisar);
 
   const [blocos, , substituir] = useRascunho(
     'disponibilidadeAluno',
@@ -48,21 +46,10 @@ export function DispAluno() {
   return (
     <Sheet
       titulo={aluno ? `Quando o ${primeiroNome(aluno.name)} pode?` : 'Quando ele pode?'}
-      rodape={
-        <>
-          <BotaoPrimario rotulo="Ver sugestões" aoTocar={continuar} />
-          <BotaoTexto
-            rotulo="Enviar link para ele preencher"
-            aoTocar={() =>
-              avisar(
-                aluno
-                  ? `Link de disponibilidade copiado para ${primeiroNome(aluno.name)}.`
-                  : 'Link copiado.',
-              )
-            }
-          />
-        </>
-      }
+      // "Enviar link para ele preencher" saiu (SCRUM-100): o toque dizia ter
+      // copiado um link que não existia. O aluno marca a disponibilidade pela
+      // página dele, no link da ficha.
+      rodape={<BotaoPrimario rotulo="Ver sugestões" aoTocar={continuar} />}
     >
       <SubLinhaSheet passo="Passo 1 de 3" texto={aluno?.name} />
 

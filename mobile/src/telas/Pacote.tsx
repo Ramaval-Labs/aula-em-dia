@@ -106,11 +106,9 @@ export function Pacote() {
       </View>
 
       <CartaoVidro estilo={estilos.cartao}>
-        <CampoDeDinheiro
-          {...campoDeValor}
-          rotulo="Valor por aula"
-          ajuda={`Total do pacote: ${dinheiro(calculado.valorTotal)}`}
-        />
+        {/* Sem a ajuda "Total do pacote": o total já está no cartão escolhido e
+            no "Valor total" do resumo. */}
+        <CampoDeDinheiro {...campoDeValor} rotulo="Valor por aula" />
       </CartaoVidro>
 
       <CartaoDeAjuste titulo="Validade" estilo={estilos.cartao}>
@@ -157,7 +155,9 @@ export function Pacote() {
         <View style={[estilos.linhas, { borderTopColor: cores.fio }]}>
           <Linha rotulo="Valor total" valor={dinheiro(calculado.valorTotal)} />
           <Linha rotulo="Validade" valor={calculado.validade} />
-          <Linha rotulo="Vence em" valor={calculado.vence} />
+          {/* É o vencimento do pagamento (DIAS_ATE_VENCER), e não o do pacote,
+              que é a "Validade" logo acima. */}
+          <Linha rotulo="Pagamento vence em" valor={calculado.vence} />
         </View>
       </CartaoVidro>
     </Sheet>
