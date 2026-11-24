@@ -10,7 +10,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro } from '../../componentes/Blocos';
-import { BotaoPrimario, BotaoTexto, Switch } from '../../componentes/Controles';
+import { BotaoPrimario, BotaoTexto, NotaDoBotao, Switch } from '../../componentes/Controles';
 import { CabecalhoGrupo } from '../../componentes/Listas';
 import { abreNoWhatsApp, PreviaDeMensagem } from '../../componentes/PreviaDeMensagem';
 import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
@@ -88,6 +88,7 @@ export function ConfirmarReposicao() {
       titulo="Confirmar reposição"
       rodape={
         <>
+          {janela ? null : <NotaDoBotao texto="Escolha um horário para continuar." />}
           <BotaoPrimario
             rotulo={pedirConfirmacao ? 'Confirmar e avisar o aluno' : 'Agendar sem avisar'}
             desabilitado={!janela}

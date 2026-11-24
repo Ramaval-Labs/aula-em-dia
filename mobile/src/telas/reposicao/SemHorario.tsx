@@ -74,11 +74,12 @@ export function SemHorario() {
     },
     {
       titulo: 'Devolver a aula como crédito',
-      sub: 'A aula volta ao saldo e a pendência é encerrada',
+      // Falta com reposição já devolveu a aula ao saldo; aqui só a pendência fecha.
+      sub: 'A aula fica no saldo e a pendência é encerrada',
       aoTocar: () => {
         if (!aluno) return;
         atualizarAluno(aluno.id, { pendencia: null });
-        avisar(`A aula de ${primeiroNome(aluno.name)} voltou ao saldo, sem reposição marcada.`);
+        avisar(`A pendência de ${primeiroNome(aluno.name)} foi encerrada: a aula fica no saldo.`);
         concluir('aluno', aluno.id);
       },
     },

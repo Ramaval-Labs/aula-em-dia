@@ -9,7 +9,12 @@ import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { EstadoVazio } from '../../componentes/Blocos';
-import { BotaoPrimario, CartaoEscolha, Segmentado } from '../../componentes/Controles';
+import {
+  BotaoPrimario,
+  CartaoEscolha,
+  NotaDoBotao,
+  Segmentado,
+} from '../../componentes/Controles';
 import { CabecalhoGrupo, ListaAgrupada } from '../../componentes/Listas';
 import { Sheet, SubLinhaSheet } from '../../componentes/Sheet';
 import { candidatos, filtrar, porSemana } from '../../dominio/agenda';
@@ -48,18 +53,21 @@ export function OutroHorario() {
 
   const sub =
     visiveis.length > MAXIMO_NA_LISTA
-      ? `Os ${MAXIMO_NA_LISTA} mais próximos de ${lista.length} horários possíveis`
-      : `${lista.length} horários possíveis até a validade do pacote`;
+      ? `Os ${MAXIMO_NA_LISTA} mais próximos de ${visiveis.length} horários possíveis`
+      : `${visiveis.length} horários possíveis até a validade do pacote`;
 
   return (
     <Sheet
       titulo="Escolher outro horário"
       rodape={
-        <BotaoPrimario
-          rotulo="Usar este horário"
-          desabilitado={!escolhida}
-          aoTocar={() => ir('confirmarReposicao')}
-        />
+        <>
+          {escolhida ? null : <NotaDoBotao texto="Escolha um horário para continuar." />}
+          <BotaoPrimario
+            rotulo="Usar este horário"
+            desabilitado={!escolhida}
+            aoTocar={() => ir('confirmarReposicao')}
+          />
+        </>
       }
     >
       <SubLinhaSheet texto={sub} />
