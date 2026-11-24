@@ -15,6 +15,7 @@ import { CampoDeTexto, SeletorDeDias } from '../componentes/Campos';
 import { BotaoPrimario, BotaoTexto, NotaDoBotao } from '../componentes/Controles';
 import { Sheet } from '../componentes/Sheet';
 import { useDoisToques } from '../componentes/useDoisToques';
+import { lerHora } from '../dominio/aulaFixa';
 import { primeiroNome } from '../dominio/formato';
 import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
@@ -23,6 +24,9 @@ import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { texto } from '../tema/tipografia';
+
+/** A hora que o motor não lê: só a hora cheia, de 0 a 23. */
+const HORA_INVALIDA = 'Use a hora cheia, de 0 a 23';
 
 export function AlunoForm() {
   const { cores } = useCores();
@@ -47,7 +51,14 @@ export function AlunoForm() {
         },
   );
 
-  const pronto = nomeValido(form.nome) && !!form.disciplina;
+  // A hora digitada que o motor não lê ("25", "abc") era salva calada como
+  // "sem hora". A regra é a do domínio (`lerHora`); aqui só se avisa.
+  const erroDaHora =
+    form.dias.length > 0 && form.hora.trim() && lerHora(form.hora) === null
+      ? HORA_INVALIDA
+      : undefined;
+
+  const pronto = nomeValido(form.nome) && !!form.disciplina && !erroDaHora;
 
   // O erro do nome só aparece depois que a pessoa mexeu no campo: acusar
   // um campo que ela nem tocou é bronca antes da hora. Morre com a tela.
@@ -63,6 +74,7 @@ export function AlunoForm() {
   const faltando = [
     nomeValido(form.nome) ? null : 'o nome',
     form.disciplina.trim() ? null : 'a disciplina',
+    erroDaHora ? 'uma hora válida' : null,
   ].filter(Boolean);
   const notaDoQueFalta = faltando.length
     ? `Para ${emEdicao ? 'salvar' : 'criar'}, falta informar ${faltando.join(' e ')}.`
@@ -157,13 +169,16 @@ export function AlunoForm() {
             aoMudar={(hora) => atualizar({ hora })}
             placeholder="18"
             teclado="numerico"
+            erro={erroDaHora}
             ajuda="A hora cheia do começo da aula."
           />
         ) : null}
 
         <CampoDeTexto
           rotulo="Telefone"
-          valor={form.telefone}
+          // O telefone salvo vem só com os dígitos: a máscara vale também ao
+          // abrir a edição, e não só depois da primeira tecla.
+          valor={formatarTelefone(form.telefone)}
           aoMudar={(telefone) => atualizar({ telefone: formatarTelefone(telefone) })}
           placeholder="(51) 99999-4182"
           teclado="telefone"
