@@ -126,6 +126,28 @@ export function ConfirmarReposicao() {
         </>
       ) : null}
 
+      {/* O switch vem antes da mensagem: ele decide o rótulo do primário
+          ("Confirmar e avisar" ou "Agendar sem avisar"), e embaixo da prévia
+          ficava escondido pelo rodapé. */}
+      <CartaoVidro estilo={[estilos.bloco, estilos.linhaSwitch]}>
+        <View style={estilos.flexivel}>
+          <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
+            Pedir confirmação dele
+          </Text>
+          <Text
+            style={[
+              comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
+              { color: cores.tinta2 },
+            ]}
+          >
+            {pedirConfirmacao
+              ? 'A reposição fica aguardando o aceite'
+              : 'A reposição já entra marcada na agenda'}
+          </Text>
+        </View>
+        <Switch ligado={pedirConfirmacao} aoAlternar={setPedir} rotulo="Pedir confirmação dele" />
+      </CartaoVidro>
+
       <View style={estilos.bloco}>
         <PreviaDeMensagem
           texto={texto_ || 'Escolha um horário para montar a mensagem.'}
@@ -150,25 +172,6 @@ export function ConfirmarReposicao() {
           }
         />
       </View>
-
-      <CartaoVidro estilo={[estilos.bloco, estilos.linhaSwitch]}>
-        <View style={estilos.flexivel}>
-          <Text style={[texto(15, 700, { altura: 1.3, tracking: -0.01 }), { color: cores.tinta }]}>
-            Pedir confirmação dele
-          </Text>
-          <Text
-            style={[
-              comEspaco(texto(12.5, 500, { altura: 1.4 }), { topo: 3 }),
-              { color: cores.tinta2 },
-            ]}
-          >
-            {pedirConfirmacao
-              ? 'A reposição fica aguardando o aceite'
-              : 'A reposição já entra marcada na agenda'}
-          </Text>
-        </View>
-        <Switch ligado={pedirConfirmacao} aoAlternar={setPedir} rotulo="Pedir confirmação dele" />
-      </CartaoVidro>
 
       {msg.editado ? (
         <Text
