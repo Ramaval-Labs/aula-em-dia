@@ -17,12 +17,12 @@
  */
 
 import { hoje, somarDias } from '../dominio/datas';
-import { DIAS, diaDaSemanaDe } from '../dominio/disponibilidade';
+import { DIAS, diaDaSemanaDe, intervalosDe } from '../dominio/disponibilidade';
 import type {
   Aluno,
-  BlocoSemanal,
   Disponibilidade,
   Extratos,
+  Intervalo,
   Janela,
   Perfil,
   Politicas,
@@ -154,8 +154,11 @@ export const PERFIL_PADRAO: Perfil = {
   plano: 'gratuito',
 };
 
-/** A grade desenhada em A5: 13 blocos. */
-const BLOCOS_PADRAO: BlocoSemanal[] = [
+/**
+ * A grade desenhada em A5, em horários livres (SCRUM-101): os 13 blocos do
+ * handoff, escritos como faixas e lidos por `intervalosDe`.
+ */
+const BLOCOS_PADRAO: Intervalo[] = intervalosDe([
   { dia: 'ter', faixa: 'manha' },
   { dia: 'qui', faixa: 'manha' },
   { dia: 'seg', faixa: 'tarde' },
@@ -169,7 +172,7 @@ const BLOCOS_PADRAO: BlocoSemanal[] = [
   { dia: 'qui', faixa: 'fimTarde' },
   { dia: 'sex', faixa: 'fimTarde' },
   { dia: 'qua', faixa: 'noite' },
-];
+]);
 
 /** Na notação da semente: a viagem anda com o hoje. */
 export const DISPONIBILIDADE_DA_SEMENTE: Disponibilidade = {

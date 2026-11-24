@@ -22,6 +22,7 @@ import { estadoVazio } from '../dados/conversor';
 import { ehConflitoDeVersao } from '../dados/repositorioSupabase';
 import { estadoInicial, type EstadoPersistivel } from '../dados/semente';
 import { hoje, somarDias } from '../dominio/datas';
+import { intervalosDe } from '../dominio/disponibilidade';
 import {
   estenderValidade as regraEstenderValidade,
   marcarReposicao as regraMarcarReposicao,
@@ -33,11 +34,11 @@ import { calcularPacote, type PacoteCalculado } from '../dominio/pacote';
 import type {
   Aluno,
   AulaFixa,
-  BlocoSemanal,
   ConfigPacote,
   Desfecho,
   Disponibilidade,
   EfeitoRegistro,
+  Intervalo,
   Extratos,
   Janela,
   Lancamento,
@@ -100,7 +101,7 @@ type Dados = Persistido & {
   arquivarAluno: (id: string) => void;
   criarPacoteCom: (id: string, cfg: ConfigPacote) => PacoteCalculado;
   registrarPagamentoCom: (id: string, meio: MeioDePagamento) => void;
-  salvarDisponibilidadeDoAluno: (id: string, blocos: BlocoSemanal[]) => void;
+  salvarDisponibilidadeDoAluno: (id: string, horarios: Intervalo[]) => void;
   enviarProposta: (id: string, janela: { dia: string; hora: string }, alternativas: Janela[]) => void;
   /**
    * `janela` é a que o aluno tocou — a principal ou uma alternativa. Sem ela,
@@ -212,6 +213,29 @@ function validadeDoPacote(p: Politicas): string {
   return p.validadeDias === 0 ? 'sem prazo' : somarDias(hoje(), p.validadeDias);
 }
 
+/**
+ * O que foi gravado antes do SCRUM-101 (o cache do aparelho, a nuvem de antes)
+ * guarda a disponibilidade como `{ dia, faixa }`. Na carga ela vira horário
+ * livre, e daí em diante só o formato novo circula pela store.
+ */
+function comHorariosLivres<T extends { alunos?: Aluno[]; disponibilidade?: Disponibilidade }>(
+  g: T,
+): T {
+  return {
+    ...g,
+    ...(g.disponibilidade
+      ? { disponibilidade: { ...g.disponibilidade, blocos: intervalosDe(g.disponibilidade.blocos) } }
+      : {}),
+    ...(g.alunos
+      ? {
+          alunos: g.alunos.map((a) =>
+            a.disponibilidade ? { ...a, disponibilidade: intervalosDe(a.disponibilidade) } : a,
+          ),
+        }
+      : {}),
+  };
+}
+
 export const useDados = create<Dados>((set, get) => {
   /** Aplica uma transformação num aluno. Não muta o estado antigo. */
   const mutar = (id: string, fn: (a: Aluno) => Aluno) => {
@@ -247,13 +271,13 @@ export const useDados = create<Dados>((set, get) => {
     async carregar() {
       // O remoto mostra o cache primeiro, e o banco atualiza quando responder.
       const doCache = await repositorio.lerCache?.().catch(() => null);
-      if (doCache) set({ ...partida(), ...doCache, carregado: true });
+      if (doCache) set({ ...partida(), ...comHorariosLivres(doCache), carregado: true });
       try {
         const gravado = await repositorio.carregar();
         // Espalhar sobre o ponto de partida, e não substituir campo a campo:
         // o estado persistido cresce a cada fase, e um payload gravado por
         // uma versão anterior deixaria os campos novos indefinidos.
-        if (gravado) set({ ...partida(), ...gravado });
+        if (gravado) set({ ...partida(), ...comHorariosLivres(gravado) });
       } catch (erro) {
         // Estado corrompido ou ilegível, ou banco fora sem cache: segue com
         // o que tem.
@@ -517,8 +541,8 @@ export const useDados = create<Dados>((set, get) => {
       persistir({ tipo: 'registrarPagamentoCom', aluno, lancamento });
     },
 
-    salvarDisponibilidadeDoAluno(id, blocos) {
-      mutar(id, (a) => ({ ...a, disponibilidade: blocos }));
+    salvarDisponibilidadeDoAluno(id, horarios) {
+      mutar(id, (a) => ({ ...a, disponibilidade: intervalosDe(horarios) }));
       persistirAluno(id, (aluno) => ({ tipo: 'salvarDisponibilidadeDoAluno', aluno }));
     },
 

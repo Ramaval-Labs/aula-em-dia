@@ -423,6 +423,43 @@ try {
   }
   conferir('  e sem origem não é estranho', !cors.origemEstranha(null) && cors.origemEstranha(ESTRANHA));
 
+  // 6. A disponibilidade em horários livres (SCRUM-101): minutos de 15 em 15.
+  const disponibilidade = (blocos) =>
+    pedir(FUNCAO, {
+      metodo: 'POST',
+      cabecalhos: { 'Content-Type': 'application/json' },
+      corpo: { token: tokenNovo, acao: 'disponibilidade', blocos },
+    });
+  const gravada = async () => {
+    const [a] = await exigir('ler a disponibilidade', rest(`alunos?id=eq.${ALUNO_1.id}&select=disponibilidade`, { cabecalhos: comoServico }));
+    return JSON.stringify(a.disponibilidade);
+  };
+  r = await disponibilidade([
+    { dia: 'seg', inicio: 870, fim: 960 },
+    { dia: 'seg', inicio: 960, fim: 1080 },
+  ]);
+  conferir('horário livre das 14h30: 200', r.status === 200, `HTTP ${r.status}`);
+  conferir(
+    '  e grava junto, só com os três campos',
+    (await gravada()) === JSON.stringify([{ dia: 'seg', inicio: 870, fim: 1080 }]),
+  );
+  r = await disponibilidade([{ dia: 'ter', faixa: 'manha' }]);
+  conferir('o formato antigo ainda passa: 200', r.status === 200, `HTTP ${r.status}`);
+  conferir('  e vira horário livre', (await gravada()) === JSON.stringify([{ dia: 'ter', inicio: 480, fim: 720 }]));
+  antes = await gravada();
+  for (const [nome, blocos] of [
+    ['fora do passo', [{ dia: 'seg', inicio: 870, fim: 905 }]],
+    ['ao contrário', [{ dia: 'seg', inicio: 900, fim: 870 }]],
+    ['depois da meia-noite', [{ dia: 'seg', inicio: 1380, fim: 1455 }]],
+    ['dia que não existe', [{ dia: 'xyz', inicio: 870, fim: 900 }]],
+    ['texto no lugar do número', [{ dia: 'seg', inicio: '870', fim: 900 }]],
+    ['lista grande demais', Array.from({ length: 400 }, () => ({ dia: 'seg', inicio: 0, fim: 15 }))],
+  ]) {
+    r = await disponibilidade(blocos);
+    conferir(`disponibilidade ${nome}: 400`, r.status === 400, `HTTP ${r.status}`);
+  }
+  conferir('  e nada foi gravado', (await gravada()) === antes);
+
   // O aluno arquivado.
   const r2 = await pagina(token2);
   conferir('o aluno 2, antes de arquivar: 200', r2.status === 200, `HTTP ${r2.status}`);

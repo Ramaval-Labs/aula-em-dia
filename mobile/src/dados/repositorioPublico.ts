@@ -13,7 +13,7 @@
  */
 
 import type { PaginaDoAluno } from '../dominio/paginaDoAluno';
-import type { BlocoSemanal } from '../dominio/tipos';
+import type { Intervalo } from '../dominio/tipos';
 
 /** A chamada à função falhou. `status` é `null` quando nem houve resposta (sem rede). */
 export class ErroDoLink extends Error {
@@ -88,7 +88,8 @@ export async function responder(
   });
 }
 
-/** Os horários em que o aluno pode, no lugar dos que ele tinha mandado. */
-export async function enviarDisponibilidade(token: string, blocos: BlocoSemanal[]): Promise<PaginaDoAluno> {
-  return postar('enviar a disponibilidade', { token, acao: 'disponibilidade', blocos });
+/** Os horários livres em que o aluno pode (SCRUM-101), no lugar dos que ele tinha mandado. */
+export async function enviarDisponibilidade(token: string, horarios: Intervalo[]): Promise<PaginaDoAluno> {
+  // a chave continua `blocos`: é o contrato da função `aluno-publico`
+  return postar('enviar a disponibilidade', { token, acao: 'disponibilidade', blocos: horarios });
 }

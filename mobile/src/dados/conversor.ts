@@ -14,6 +14,7 @@
 
 import { formatarDdMm, hojeComoData, lerDdMm } from '../dominio/datas';
 import { aulaFixaDe, temAulaNoDia } from '../dominio/aulaFixa';
+import { intervalosDe } from '../dominio/disponibilidade';
 import type {
   Aluno,
   AulaFixa,
@@ -264,7 +265,7 @@ export function alunoDoBanco(
       : {}),
     ...(l.agendada !== null ? { agendada: l.agendada as unknown as Aluno['agendada'] } : {}),
     ...(l.disponibilidade !== null
-      ? { disponibilidade: l.disponibilidade as unknown as Aluno['disponibilidade'] }
+      ? { disponibilidade: intervalosDe(l.disponibilidade) } // o formato antigo vira horário livre
       : {}),
     ...(l.pausado ? { pausado: true } : {}),
     ...(l.lembretes > 0 ? { lembretes: l.lembretes } : {}),
@@ -311,7 +312,7 @@ export function politicasDoBanco(p: LinhaDaPolitica): Politicas {
 
 export function disponibilidadeDoBanco(d: LinhaDaDisponibilidade): Disponibilidade {
   return {
-    blocos: d.blocos as unknown as Disponibilidade['blocos'],
+    blocos: intervalosDe(d.blocos), // `{ dia, faixa }` de antes do SCRUM-101 também
     aceitaForaDosBlocos: d.aceita_fora_dos_blocos,
     sugereSabado: d.sugere_sabado,
     folgas: d.folgas as unknown as Disponibilidade['folgas'],

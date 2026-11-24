@@ -245,6 +245,23 @@ describe('aluno: os derivados saem do banco', () => {
     expect(alunoDoBanco(linha({ validade: null }), undefined, QUARTA).validade).toBe('sem prazo');
   });
 
+  // SCRUM-101: a linha gravada antes guarda `{ dia, faixa }`.
+  it('a disponibilidade do formato antigo volta como horário livre', () => {
+    const a = alunoDoBanco(
+      linha({ disponibilidade: [{ dia: 'seg', faixa: 'tarde' }, { dia: 'seg', faixa: 'fimTarde' }] }),
+      undefined,
+      QUARTA,
+    );
+    expect(a.disponibilidade).toEqual([{ dia: 'seg', inicio: 840, fim: 1200 }]);
+  });
+
+  it('a disponibilidade nova passa como está', () => {
+    const horarios = [{ dia: 'seg', inicio: 870, fim: 1080 }];
+    expect(alunoDoBanco(linha({ disponibilidade: horarios }), undefined, QUARTA).disponibilidade).toEqual(
+      horarios,
+    );
+  });
+
   it('criadoEm é o dia do criado_em, no fuso do aparelho', () => {
     expect(alunoDoBanco(linha({}), undefined, QUARTA).criadoEm).toBe(
       formatarDdMm(new Date(2026, 9, 1, 15)),
