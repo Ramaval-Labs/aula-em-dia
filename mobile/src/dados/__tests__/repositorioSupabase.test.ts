@@ -251,9 +251,9 @@ describe('registrar — o que não mexe em saldo vai para o banco', () => {
       'salvarDisponibilidadeDoAluno',
       {
         tipo: 'salvarDisponibilidadeDoAluno',
-        aluno: { ...val, disponibilidade: [{ dia: 'seg', faixa: 'tarde' }] },
+        aluno: { ...val, disponibilidade: [{ dia: 'seg', inicio: 870, fim: 1080 }] },
       },
-      { disponibilidade: [{ dia: 'seg', faixa: 'tarde' }] },
+      { disponibilidade: [{ dia: 'seg', inicio: 870, fim: 1080 }] },
     ],
     [
       'atualizarAluno com nome e telefone',

@@ -14,13 +14,14 @@
 
 import { candidatos, MELHORES, melhores, type Candidata } from './agenda';
 import { diasEntre, hoje } from './datas';
+import { intervalosDe } from './disponibilidade';
 import { primeiroNome } from './formato';
 import { comoOAlunoVaiLer } from './mensagens';
 import { saldo, temPacote } from './politica';
 import type {
   Aluno,
-  BlocoSemanal,
   Disponibilidade,
+  Intervalo,
   Lancamento,
   Perfil,
   Politicas,
@@ -61,7 +62,7 @@ export interface PaginaDoAluno {
   /** a proposta aberta, ou `null` */
   proposta: PropostaDaPagina | null;
   /** o que o próprio aluno informou, nunca a grade do professor */
-  disponibilidade: BlocoSemanal[];
+  disponibilidade: Intervalo[];
 }
 
 /**
@@ -158,6 +159,6 @@ export function paginaDoAluno(
       aluno.proposta?.status === 'enviada'
         ? propostaDaPagina(aluno.proposta, aluno, alunos, disponibilidade, referencia)
         : null,
-    disponibilidade: aluno.disponibilidade ?? [],
+    disponibilidade: intervalosDe(aluno.disponibilidade),
   };
 }

@@ -19,17 +19,18 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 
-import { aulaFixaDe, lerHora, rotuloDaAulaFixa } from '../dominio/aulaFixa';
+import { aulaFixaDe, duracaoDaAula, rotuloDaAulaFixa } from '../dominio/aulaFixa';
+import { DURACAO_PADRAO, lerHorario } from '../dominio/disponibilidade';
 import type {
   AulaFixa,
   Aluno,
-  BlocoSemanal,
   ConfigPacote,
   DiaDaSemana,
   Desfecho,
   Disponibilidade,
   FaixaDeAlunos,
   FiltroDeAgenda,
+  Intervalo,
   MeioDePagamento,
   Politicas,
   TomDeMensagem,
@@ -56,8 +57,10 @@ export interface RascunhoAluno {
   disciplina: string;
   /** os dias da aula fixa, na ordem da semana; vazio = sem horário fixo (SCRUM-90) */
   dias: DiaDaSemana[];
-  /** a hora como foi digitada no campo numérico ("18"); `lerHora` a lê ao salvar */
+  /** o começo como foi digitado ("18", "18:30"); `lerHorario` o lê ao salvar */
   hora: string;
+  /** quanto a aula dura, em minutos (SCRUM-101); ausente = 1h */
+  duracao?: number;
   telefone: string;
   /**
    * Para onde salvar volta, quando a edição foi aberta de dentro de outra
@@ -126,7 +129,7 @@ export interface MapaDeRascunhos {
   pagamento: RascunhoPagamento;
   mensagem: RascunhoMensagem;
   disponibilidadeProfessor: Disponibilidade;
-  disponibilidadeAluno: BlocoSemanal[];
+  disponibilidadeAluno: Intervalo[];
   registro: RascunhoRegistro;
   reposicao: RascunhoReposicao;
 }
@@ -153,9 +156,12 @@ export const REPOSICAO_INICIAL: RascunhoReposicao = {
  * A aula fixa do aluno → os campos do rascunho. Quem lê o horário é o
  * domínio (`aulaFixaDe`): a estrutura quando o aluno tem, senão o texto de antes.
  */
-function horarioParaORascunho(aluno: Aluno): Pick<RascunhoAluno, 'dias' | 'hora'> {
-  const { dias, hora } = aulaFixaDe(aluno);
-  return { dias, hora: hora === null ? '' : String(hora) };
+function horarioParaORascunho(aluno: Aluno): Pick<RascunhoAluno, 'dias' | 'hora' | 'duracao'> {
+  const af = aulaFixaDe(aluno);
+  const minuto = af.minuto ?? 0;
+  const hora =
+    af.hora === null ? '' : minuto ? `${af.hora}:${String(minuto).padStart(2, '0')}` : String(af.hora);
+  return { dias: af.dias, hora, duracao: duracaoDaAula(af) };
 }
 
 /**
@@ -163,14 +169,20 @@ function horarioParaORascunho(aluno: Aluno): Pick<RascunhoAluno, 'dias' | 'hora'
  * texto que a lista e a página do aluno mostram, gerado dela. Sem dia
  * marcado não há aula fixa, então a hora digitada não vale sozinha.
  */
-export function horarioDoRascunho(r: Pick<RascunhoAluno, 'dias' | 'hora'>): {
+export function horarioDoRascunho(r: Pick<RascunhoAluno, 'dias' | 'hora' | 'duracao'>): {
   aulaFixa: AulaFixa;
   dia: string;
   hora: string;
 } {
+  const inicio = r.dias.length > 0 ? lerHorario(r.hora) : null;
+  const minuto = inicio === null ? 0 : inicio % 60;
+  // A duração padrão não é gravada: o aluno de antes, sem ela, vale 1h também.
+  const duracao = r.duracao && r.duracao !== DURACAO_PADRAO ? r.duracao : undefined;
   const aulaFixa: AulaFixa = {
     dias: r.dias,
-    hora: r.dias.length > 0 ? lerHora(r.hora) : null,
+    hora: inicio === null ? null : Math.floor(inicio / 60),
+    ...(minuto ? { minuto } : {}),
+    ...(duracao && r.dias.length > 0 ? { duracao } : {}),
   };
   return { aulaFixa, ...rotuloDaAulaFixa(aulaFixa) };
 }

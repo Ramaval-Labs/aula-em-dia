@@ -103,7 +103,7 @@ insert into public.disponibilidades (
   professor_id, blocos, aceita_fora_dos_blocos, sugere_sabado, folgas
 ) values (
   '00000000-0000-4000-8000-000000000001',
-  '[{"dia":"ter","faixa":"manha"},{"dia":"qui","faixa":"manha"},{"dia":"seg","faixa":"tarde"},{"dia":"ter","faixa":"tarde"},{"dia":"qua","faixa":"tarde"},{"dia":"qui","faixa":"tarde"},{"dia":"sex","faixa":"tarde"},{"dia":"seg","faixa":"fimTarde"},{"dia":"ter","faixa":"fimTarde"},{"dia":"qua","faixa":"fimTarde"},{"dia":"qui","faixa":"fimTarde"},{"dia":"sex","faixa":"fimTarde"},{"dia":"qua","faixa":"noite"}]'::jsonb,
+  '[{"dia":"seg","inicio":840,"fim":1200},{"dia":"ter","inicio":480,"fim":720},{"dia":"ter","inicio":840,"fim":1200},{"dia":"qua","inicio":840,"fim":1320},{"dia":"qui","inicio":480,"fim":720},{"dia":"qui","inicio":840,"fim":1200},{"dia":"sex","inicio":840,"fim":1200}]'::jsonb,
   true, false,
   jsonb_build_array('{"de":"07/09","ate":"07/09","motivo":"feriado"}'::jsonb, jsonb_build_object('de', to_jsonb(pg_temp.ddmm(17)), 'ate', to_jsonb(pg_temp.ddmm(24)), 'motivo', '"viagem"'::jsonb))
 )

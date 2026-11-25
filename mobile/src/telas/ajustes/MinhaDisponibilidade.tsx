@@ -2,7 +2,8 @@
  * E3 — Minha disponibilidade (Fluxo E), no iOS Glass.
  *
  * O handoff novo não desenha esta tela: o conteúdo e o comportamento são os de
- * antes, com a `GradeSemanal` nova e a lista de folgas em lista agrupada.
+ * antes, com a lista de folgas em lista agrupada. Desde o SCRUM-101 a grade é a
+ * `GradeLivre`, de 15 em 15 minutos, com a lista dos horários logo abaixo.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -17,20 +18,20 @@ import {
   BotaoTexto,
 } from '../../componentes/Controles';
 import {
-  GradeSemanal,
+  GradeLivre,
+  ListaDeHorarios,
   PAD_CARTAO_DA_GRADE,
   RodapeDaGrade,
-} from '../../componentes/GradeSemanal';
+} from '../../componentes/GradeLivre';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import {
   adicionarFolga,
-  alternarBloco,
   ERRO_FOLGA,
   folgaValida,
   periodoDaFolga,
-  resumo,
+  resumoDosHorarios,
 } from '../../dominio/disponibilidade';
-import type { Folga } from '../../dominio/tipos';
+import type { DiaDaSemana, Folga } from '../../dominio/tipos';
 import { somenteDigitos } from '../../dominio/validacao';
 import { avisos, useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
@@ -50,6 +51,9 @@ const CAMPO_DO_ERRO: Record<string, 'de' | 'ate'> = {
   [ERRO_FOLGA.fimInvalido]: 'ate',
   [ERRO_FOLGA.fimAntesDoInicio]: 'ate',
 };
+
+/** O sábado, apagado na grade enquanto "Sugerir sábados" está desligado. */
+const SO_SABADO: DiaDaSemana[] = ['sab'];
 
 export function MinhaDisponibilidade() {
   const { concluir } = useNavegacao();
@@ -126,15 +130,22 @@ export function MinhaDisponibilidade() {
       }
     >
       <CartaoVidro estilo={[proprios.cartaoGrade, estilos.primeiro]}>
-        <GradeSemanal
-          marcados={d.blocos}
-          aoAlternar={(b) => atualizar({ blocos: alternarBloco(d.blocos, b) })}
+        <GradeLivre
+          horarios={d.blocos}
+          diasApagados={d.sugereSabado ? undefined : SO_SABADO}
+          aoMudar={(blocos) => atualizar({ blocos })}
         />
-        <RodapeDaGrade esquerda={resumo(d.blocos)} direita="Domingo fechado" />
+        {/* Sem "Sugerir sábados", o sábado pintado não entra nas sugestões: o
+            rodapé diz isso junto da grade, e não só no switch. */}
+        <RodapeDaGrade
+          esquerda={resumoDosHorarios(d.blocos)}
+          direita={d.sugereSabado ? 'Domingo fechado' : 'Sábado e domingo fora'}
+        />
       </CartaoVidro>
 
+      {/* Os dois switches mudam o que a grade vale, então ficam colados nela. */}
       <CartaoComSwitch
-        titulo="Aceitar reposição fora dos blocos"
+        titulo="Aceitar reposição fora desses horários"
         sub="Só quando não houver outra saída"
         ligado={d.aceitaForaDosBlocos}
         aoAlternar={(aceitaForaDosBlocos) => atualizar({ aceitaForaDosBlocos })}
@@ -144,6 +155,15 @@ export function MinhaDisponibilidade() {
         sub="Entra na lista de horários possíveis"
         ligado={d.sugereSabado}
         aoAlternar={(sugereSabado) => atualizar({ sugereSabado })}
+      />
+
+      <View style={estilos.grupo}>
+        <CabecalhoGrupo titulo="Horários" />
+      </View>
+      <ListaDeHorarios
+        recolhida
+        horarios={d.blocos}
+        aoMudar={(blocos) => atualizar({ blocos })}
       />
 
       <View style={estilos.grupo}>
@@ -225,7 +245,7 @@ export function MinhaDisponibilidade() {
 }
 
 const proprios = StyleSheet.create({
-  cartaoGrade: { marginTop: 12, ...PAD_CARTAO_DA_GRADE },
+  cartaoGrade: PAD_CARTAO_DA_GRADE,
   folga: { gap: 16 },
   datas: { flexDirection: 'row', gap: 12 },
   flexivel: { flex: 1, minWidth: 0 },

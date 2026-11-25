@@ -91,7 +91,7 @@ const ACOES: Record<Mudanca['tipo'], () => unknown> = {
   atualizarAluno: () => d().atualizarAluno('mar', { hora: '19h' }),
   arquivarAluno: () => d().arquivarAluno('bea'),
   salvarDisponibilidadeDoAluno: () =>
-    d().salvarDisponibilidadeDoAluno('mar', [{ dia: 'sex', faixa: 'tarde' }]),
+    d().salvarDisponibilidadeDoAluno('mar', [{ dia: 'sex', inicio: 870, fim: 1020 }]),
   cobrarTodosEmAtraso: () => d().cobrarTodosEmAtraso(),
   salvarPoliticas: () => d().salvarPoliticas({ ...d().politicas, avisoHoras: 12 }),
   salvarPerfil: () => d().salvarPerfil({ ...d().perfil, nome: 'Outro Nome' }),
@@ -314,6 +314,25 @@ describe('carregar e zerar', () => {
     expect(d().alunos).toHaveLength(1);
     expect(d().perfil).toEqual(estadoInicial().perfil);
     expect(d().disponibilidade).toEqual(estadoInicial().disponibilidade);
+  });
+
+  // SCRUM-101: o aparelho guardou a disponibilidade em faixas.
+  it('disponibilidade gravada em faixas volta como horário livre', async () => {
+    const gravado = persistido();
+    const [primeiro, ...resto] = gravado.alunos;
+    await AsyncStorage.setItem(
+      CHAVE_ESTADO,
+      JSON.stringify({
+        ...gravado,
+        alunos: [{ ...primeiro, disponibilidade: [{ dia: 'sex', faixa: 'tarde' }] }, ...resto],
+        disponibilidade: { ...gravado.disponibilidade, blocos: [{ dia: 'seg', faixa: 'manha' }] },
+      }),
+    );
+
+    await d().carregar();
+
+    expect(d().alunos[0].disponibilidade).toEqual([{ dia: 'sex', inicio: 840, fim: 1020 }]);
+    expect(d().disponibilidade.blocos).toEqual([{ dia: 'seg', inicio: 480, fim: 720 }]);
   });
 
   it('disco corrompido segue com a semente, e o erro aparece', async () => {

@@ -30,7 +30,8 @@ import {
   responder,
 } from '../../dados/repositorioPublico';
 import type { PaginaDoAluno } from '../../dominio/paginaDoAluno';
-import type { BlocoSemanal } from '../../dominio/tipos';
+import { intervalosDe } from '../../dominio/disponibilidade';
+import type { Intervalo } from '../../dominio/tipos';
 import { avisos } from '../../estado/avisos';
 import { useToast } from '../../estado/toast';
 import {
@@ -235,9 +236,10 @@ function DisponibilidadeDoLink({
   pagina: PaginaDoAluno;
   voltar: { rotulo: string; aoVoltar: () => void };
   ocupado: boolean;
-  aoEnviar: (blocos: BlocoSemanal[]) => void;
+  aoEnviar: (blocos: Intervalo[]) => void;
 }) {
-  const [blocos, setBlocos] = useState<BlocoSemanal[]>(pagina.disponibilidade);
+  // A função publicada antes do SCRUM-101 ainda devolve `{ dia, faixa }`.
+  const [blocos, setBlocos] = useState<Intervalo[]>(() => intervalosDe(pagina.disponibilidade));
   return (
     <PaginaDisponibilidade
       pagina={pagina}

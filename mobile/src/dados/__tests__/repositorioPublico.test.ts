@@ -141,10 +141,10 @@ describe('responder', () => {
 });
 
 describe('enviarDisponibilidade', () => {
-  it('manda os blocos para a função', async () => {
+  it('manda os horários livres para a função, na chave `blocos` (SCRUM-101)', async () => {
     const blocos = [
-      { dia: 'seg' as const, faixa: 'tarde' as const },
-      { dia: 'qua' as const, faixa: 'noite' as const },
+      { dia: 'seg' as const, inicio: 870, fim: 1080 },
+      { dia: 'qua' as const, inicio: 1200, fim: 1320 },
     ];
     responde(200, { ...PAGINA, disponibilidade: blocos });
 

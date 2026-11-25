@@ -45,6 +45,7 @@ import { useReduzirMovimento } from '../tema/movimento';
 import { comEspaco, texto, TIPO } from '../tema/tipografia';
 import { ESCALA_FONTE, MOVIMENTO, PAD, RAIO, TAMANHO } from '../tema/tokens';
 import { useAlturaDoTeclado } from './teclado';
+import { useRolagemLivre } from './travaDaRolagem';
 import { SuperficieVidro } from './Vidro';
 
 /** 88% para sheet de tarefa, 74% para o de resultado. */
@@ -277,6 +278,9 @@ export function Sheet({
   }, [temRodape, alturaDoRodape, insets.bottom, teclado, reservarSheet]);
   useEffect(() => () => reservarSheet(null), [reservarSheet]);
 
+  // A grade de horários livres trava a rolagem enquanto pinta (SCRUM-101).
+  const rolagemLivre = useRolagemLivre();
+
   // O voltar do Android fecha o painel antes de mexer na pilha da tela.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -289,6 +293,7 @@ export function Sheet({
   const corpo = (
     <ScrollView
       style={{ flex: 1 }}
+      scrollEnabled={rolagemLivre}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps={comTeclado ? 'handled' : undefined}
       keyboardDismissMode={comTeclado ? 'interactive' : undefined}

@@ -10,8 +10,8 @@
  * aqui, uma porta só. Nenhum outro lugar do app interpreta "terça e quinta".
  */
 
-import { DIAS } from './disponibilidade';
-import type { Aluno, AulaFixa, DiaDaSemana } from './tipos';
+import { DIAS, DURACAO_PADRAO, formatarHora, lerHorario } from './disponibilidade';
+import type { Aluno, AulaFixa, DiaDaSemana, Intervalo } from './tipos';
 
 /** O texto que o app grava quando o aluno não tem dia de aula. */
 export const SEM_HORARIO_FIXO = 'sem horário fixo';
@@ -54,9 +54,18 @@ export function lerHora(texto: string | undefined): number | null {
   return hora <= 23 ? hora : null;
 }
 
-/** O texto livre de antes → a estrutura. */
+/**
+ * O texto livre de antes → a estrutura. "18h30" guarda os minutos (SCRUM-101);
+ * a hora cheia continua em `hora`, que é o que o banco e os avisos leem.
+ */
 export function lerAulaFixa(dia: string | undefined, hora: string | undefined): AulaFixa {
-  return { dias: lerDias(dia), hora: lerHora(hora) };
+  const inicio = lerHorario(hora);
+  const minuto = inicio === null ? 0 : inicio % 60;
+  return {
+    dias: lerDias(dia),
+    hora: inicio === null ? null : Math.floor(inicio / 60),
+    ...(minuto ? { minuto } : {}),
+  };
 }
 
 /**
@@ -64,8 +73,35 @@ export function lerAulaFixa(dia: string | undefined, hora: string | undefined): 
  * É a única porta de leitura do horário fixo no domínio.
  */
 export function aulaFixaDe(a: Pick<Aluno, 'dia' | 'hora' | 'aulaFixa'>): AulaFixa {
-  if (a.aulaFixa) return { dias: naOrdem(a.aulaFixa.dias), hora: a.aulaFixa.hora };
+  if (a.aulaFixa) {
+    const { minuto, duracao } = a.aulaFixa;
+    return {
+      dias: naOrdem(a.aulaFixa.dias),
+      hora: a.aulaFixa.hora,
+      ...(minuto ? { minuto } : {}),
+      ...(duracao ? { duracao } : {}),
+    };
+  }
   return lerAulaFixa(a.dia, a.hora);
+}
+
+/** O começo da aula em minutos desde a meia-noite (18h30 → 1110); `null` sem hora. */
+export const inicioDaAula = (af: AulaFixa): number | null =>
+  af.hora === null ? null : af.hora * 60 + (af.minuto ?? 0);
+
+/** Quanto a aula dura, em minutos: a do aluno ou a padrão (1h). */
+export const duracaoDaAula = (af: AulaFixa): number => af.duracao ?? DURACAO_PADRAO;
+
+/**
+ * Os trechos da semana que a aula fixa ocupa: um por dia, do começo ao fim
+ * (terça 18h30, 90 min → `{ dia: 'ter', inicio: 1110, fim: 1200 }`).
+ */
+export function trechosDaAulaFixa(a: Pick<Aluno, 'dia' | 'hora' | 'aulaFixa'>): Intervalo[] {
+  const af = aulaFixaDe(a);
+  const inicio = inicioDaAula(af);
+  if (inicio === null) return [];
+  const fim = inicio + duracaoDaAula(af);
+  return af.dias.map((dia) => ({ dia, inicio, fim }));
 }
 
 /** "segunda", "terça e quinta", "segunda, quarta e sexta". */
@@ -85,7 +121,7 @@ export function rotuloDaAulaFixa(af: AulaFixa): { dia: string; hora: string } {
   );
   return {
     dia: nomes.length > 0 ? juntar(nomes) : SEM_HORARIO_FIXO,
-    hora: af.hora === null ? '' : `${af.hora}h`,
+    hora: af.hora === null ? '' : formatarHora(af.hora * 60 + (af.minuto ?? 0)),
   };
 }
 

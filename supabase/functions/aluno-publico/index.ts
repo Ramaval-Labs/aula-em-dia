@@ -38,10 +38,12 @@ import {
   DIAS,
   FAIXAS_HORARIAS,
   hoje,
+  intervalosDe,
   lancamentoDoMovimento,
   marcarReposicao,
   montarPersistido,
   paginaDoAluno,
+  PASSO_MINUTOS,
 } from '../_shared/dominio.js';
 
 import { corsPara, origemEstranha } from './cors.mjs';
@@ -211,25 +213,37 @@ async function responder(banco: Banco, token: string, corpo: Record<string, unkn
 
 const DIAS_VALIDOS = new Set<string>(DIAS.map((d: { chave: string }) => d.chave));
 const FAIXAS_VALIDAS = new Set<string>(FAIXAS_HORARIAS);
+const MINUTOS_NO_DIA = 24 * 60;
+/** Teto do envio: meia hora por item, o dia inteiro, a semana toda. */
+const MAXIMO_DE_HORARIOS = DIAS_VALIDOS.size * (MINUTOS_NO_DIA / 30);
 
-/** Os blocos como o app grava, `{ dia, faixa }`, sem campo a mais e sem repetido. */
-function blocosValidos(blocos: unknown): { dia: string; faixa: string }[] | null {
-  if (!Array.isArray(blocos) || blocos.length > DIAS_VALIDOS.size * FAIXAS_VALIDAS.size) return null;
-  const vistos = new Set<string>();
-  const saida: { dia: string; faixa: string }[] = [];
-  for (const b of blocos) {
-    const { dia, faixa } = (b ?? {}) as { dia?: unknown; faixa?: unknown };
+const noPasso = (m: unknown): m is number =>
+  typeof m === 'number' && Number.isInteger(m) && m % PASSO_MINUTOS === 0;
+
+/**
+ * Os horários livres como o app grava (SCRUM-101), `{ dia, inicio, fim }` em
+ * minutos de 15 em 15, com `0 ≤ inicio < fim ≤ 1440`. O formato antigo
+ * `{ dia, faixa }` ainda passa, para a página aberta antes da publicação. Um
+ * item inválido recusa o envio inteiro; o que sai é o que `intervalosDe` lê,
+ * junto e sem repetido, só com os três campos.
+ */
+function horariosValidos(lista: unknown): { dia: string; inicio: number; fim: number }[] | null {
+  if (!Array.isArray(lista) || lista.length > MAXIMO_DE_HORARIOS) return null;
+  for (const b of lista) {
+    const { dia, faixa, inicio, fim } = (b ?? {}) as Record<string, unknown>;
     if (typeof dia !== 'string' || !DIAS_VALIDOS.has(dia)) return null;
-    if (typeof faixa !== 'string' || !FAIXAS_VALIDAS.has(faixa)) return null;
-    const chave = `${dia}:${faixa}`;
-    if (!vistos.has(chave)) saida.push({ dia, faixa });
-    vistos.add(chave);
+    if (faixa !== undefined) {
+      if (typeof faixa !== 'string' || !FAIXAS_VALIDAS.has(faixa)) return null;
+      continue;
+    }
+    if (!noPasso(inicio) || !noPasso(fim)) return null;
+    if (inicio < 0 || fim > MINUTOS_NO_DIA || inicio >= fim) return null;
   }
-  return saida;
+  return intervalosDe(lista);
 }
 
 async function enviarDisponibilidade(banco: Banco, token: string, corpo: Record<string, unknown>) {
-  const blocos = blocosValidos(corpo.blocos);
+  const blocos = horariosValidos(corpo.blocos);
   if (!blocos) throw new Recusa(PEDIDO_INVALIDO);
   if (!UUID.test(token)) throw new Recusa(NAO_ACHOU);
 

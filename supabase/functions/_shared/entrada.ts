@@ -19,7 +19,12 @@
 export { janelaVencida, paginaDoAluno } from '../../../mobile/src/dominio/paginaDoAluno';
 export { marcarReposicao } from '../../../mobile/src/dominio/politica';
 export { hoje } from '../../../mobile/src/dominio/datas';
-export { DIAS, FAIXAS_HORARIAS } from '../../../mobile/src/dominio/disponibilidade';
+export {
+  DIAS,
+  FAIXAS_HORARIAS,
+  intervalosDe,
+  PASSO_MINUTOS,
+} from '../../../mobile/src/dominio/disponibilidade';
 export {
   alunoDoBanco,
   alunoParaBanco,

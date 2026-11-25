@@ -159,9 +159,10 @@ describe('o que não sai do recorte', () => {
   });
 
   it('nem a grade do professor: a disponibilidade é só a que o aluno informou', () => {
-    const a: Aluno = { ...alunoPor('val'), disponibilidade: [{ dia: 'seg', faixa: 'manha' }] };
+    const a: Aluno = { ...alunoPor('val'), disponibilidade: [{ dia: 'seg', faixa: 'manha' }] as unknown as Aluno['disponibilidade'] };
 
-    expect(pagina(a).disponibilidade).toEqual([{ dia: 'seg', faixa: 'manha' }]);
+    // o formato antigo sai já lido, como horário livre (SCRUM-101)
+    expect(pagina(a).disponibilidade).toEqual([{ dia: 'seg', inicio: 480, fim: 720 }]);
     expect(comoJson(a)).not.toContain('"folgas"');
     expect(comoJson(a)).not.toContain(semente.disponibilidade.folgas[0].motivo);
     expect(comoJson(a)).not.toContain('"aceitaForaDosBlocos"');
@@ -453,7 +454,7 @@ describe('a proposta', () => {
     expect(pagina(a, OUTRO_DIA).proposta).toBeNull();
   });
 
-  it('os outros alunos entram na conta: bloco ocupado por outro não é mais sugerido', () => {
+  it('os outros alunos entram na conta: horário ocupado por outro não é mais sugerido', () => {
     const [alvo] = lista();
     const a: Aluno = {
       ...alunoPor('val'),
@@ -461,7 +462,7 @@ describe('a proposta', () => {
     };
     const ocupa: Aluno = {
       ...alunoPor('mar'),
-      dia: nomeDoDia(alvo.bloco.dia).toLowerCase(),
+      dia: nomeDoDia(alvo.diaDaSemana).toLowerCase(),
       hora: alvo.hora,
     };
     const semOutros = [a, ...semente.alunos.filter((x) => x.id !== 'val' && x.id !== 'mar')];

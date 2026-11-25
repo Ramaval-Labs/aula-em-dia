@@ -32,14 +32,15 @@ import {
   NotaDoBotao,
 } from '../../componentes/Controles';
 import {
-  GradeSemanal,
+  GradeLivre,
+  ListaDeHorarios,
   PAD_CARTAO_DA_GRADE,
   RodapeDaGrade,
-} from '../../componentes/GradeSemanal';
+} from '../../componentes/GradeLivre';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../../componentes/Listas';
 import { candidatos, melhores } from '../../dominio/agenda';
 import { hoje } from '../../dominio/datas';
-import { alternarBloco, DIAS_UTEIS, resumoMarcados } from '../../dominio/disponibilidade';
+import { DIAS_UTEIS, intervalosDe, resumoDosMarcados } from '../../dominio/disponibilidade';
 import { plural, primeiroNome, unidade } from '../../dominio/formato';
 import {
   paginaDoAluno,
@@ -47,7 +48,7 @@ import {
   type PaginaDoAluno,
 } from '../../dominio/paginaDoAluno';
 import { SALDO_BAIXO } from '../../dominio/politica';
-import type { BlocoSemanal, Lancamento } from '../../dominio/tipos';
+import type { Intervalo, Lancamento } from '../../dominio/tipos';
 import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
@@ -573,8 +574,8 @@ export function PaginaDisponibilidade({
   pagina: PaginaDoAluno;
   moldura: Moldura;
   /** o que está marcado na grade; quem guarda é quem monta a página */
-  blocos: BlocoSemanal[];
-  aoMudar: (blocos: BlocoSemanal[]) => void;
+  blocos: Intervalo[];
+  aoMudar: (blocos: Intervalo[]) => void;
   aoEnviar: () => void;
   ocupado?: boolean;
 }) {
@@ -588,7 +589,7 @@ export function PaginaDisponibilidade({
         <View style={estilos.acoes}>
           {/* O botão apagado diz o que falta, no link e na prévia. */}
           {blocos.length === 0 ? (
-            <NotaDoBotao texto="Marque ao menos um bloco para enviar." />
+            <NotaDoBotao texto="Marque ao menos um horário para enviar." />
           ) : null}
           <BotaoPrimario
             rotulo="Enviar disponibilidade"
@@ -600,20 +601,17 @@ export function PaginaDisponibilidade({
     >
       <TituloDeConteudo
         titulo="Quando você pode repor?"
-        abaixo="Marque os blocos possíveis. Nada é agendado agora."
+        abaixo="Marque os horários em que você pode. Nada é agendado agora."
         estilo={estilos.titulo}
       />
 
       <CartaoVidro estilo={[estilos.cartaoGrande, PAD_CARTAO_DA_GRADE]}>
-        <GradeSemanal
-          marcados={blocos}
-          dias={DIAS_UTEIS}
-          rotuloDaFaixa="nome"
-          alturaDaCelula={52}
-          aoAlternar={(b) => aoMudar(alternarBloco(blocos, b))}
-        />
-        <RodapeDaGrade esquerda={resumoMarcados(blocos)} direita="Toque para marcar" />
+        <GradeLivre horarios={blocos} dias={DIAS_UTEIS} aoMudar={aoMudar} />
+        <RodapeDaGrade esquerda={resumoDosMarcados(blocos)} direita="Toque ou arraste" />
       </CartaoVidro>
+      <View style={estilos.listaDeHorarios}>
+        <ListaDeHorarios recolhida horarios={blocos} dias={DIAS_UTEIS} aoMudar={aoMudar} />
+      </View>
 
       <Text
         style={[
@@ -628,6 +626,9 @@ export function PaginaDisponibilidade({
   );
 }
 
+/** Constante fora do componente: o rascunho não ganha uma lista nova a cada render. */
+const SEM_HORARIOS: Intervalo[] = [];
+
 export function AlunoDisponibilidade() {
   const concluir = useNavegacao((s) => s.concluir);
   const { aluno, pagina } = usePaginaDaPrevia();
@@ -638,7 +639,7 @@ export function AlunoDisponibilidade() {
   // Rascunho de assistente: sobrevive ao chassi desmontar a tela ao navegar.
   const [blocos, , substituir] = useRascunho(
     'disponibilidadeAluno',
-    aluno?.disponibilidade ?? [],
+    aluno?.disponibilidade ? intervalosDe(aluno.disponibilidade) : SEM_HORARIOS,
   );
 
   if (!aluno || !pagina) return <SemAluno titulo="Disponibilidade" />;
@@ -666,6 +667,7 @@ const estilos = StyleSheet.create({
   lista: { marginTop: 9 },
   cartao: { marginTop: 14 },
   cartaoGrande: { marginTop: 18 },
+  listaDeHorarios: { marginTop: 12 },
   numeroDoSaldo: { marginTop: 9, flexDirection: 'row', alignItems: 'baseline', gap: 7 },
   acoes: { gap: 10 },
   razoes: { marginTop: 12, gap: 11 },

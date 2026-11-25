@@ -1,0 +1,672 @@
+/**
+ * Grade de horários livres no idioma iOS Glass (SCRUM-101) — **derivada**: o
+ * handoff não desenha a tela de disponibilidade. Substitui a grade de quatro
+ * faixas nas cinco telas que dependem dela (onboarding do professor, Minha
+ * disponibilidade, disponibilidade do aluno no assistente, prévia do aluno e
+ * a página do link).
+ *
+ * Uma coluna por dia e o dia em linhas de 15 minutos, como uma agenda:
+ * - o trilho é `preenchimento` e o horário marcado é tint, a mesma dupla da
+ *   grade de antes, do segmentado e do switch;
+ * - **toque** marca ou apaga a hora cheia sob o dedo;
+ * - **segure e arraste** pinta de 15 em 15 minutos; começar num horário já
+ *   marcado apaga. O arrasto rápido continua rolando a página: só o toque
+ *   longo trava a rolagem (`travaDaRolagem.ts`).
+ *
+ * O leitor de tela não arrasta. O caminho dele é a `ListaDeHorarios`, que mora
+ * sob a grade e lista, remove e acrescenta horários pelo teclado — e serve de
+ * acerto fino para quem vê.
+ */
+
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  AccessibilityInfo,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  type GestureResponderEvent,
+  type LayoutChangeEvent,
+  type ViewStyle,
+} from 'react-native';
+
+import {
+  diaCurto,
+  DIAS_DA_SEMANA,
+  FIM_DO_DIA,
+  formatarHora,
+  formatarIntervalo,
+  INICIO_DO_DIA,
+  intervaloDigitado,
+  livreEm,
+  nomeDoDia,
+  PASSO_MINUTOS,
+  pintar,
+  removerIntervalo,
+  resumoDosHorarios,
+} from '../dominio/disponibilidade';
+import type { DiaDaSemana, Intervalo } from '../dominio/tipos';
+import { ALVO_MINIMO } from '../tema/alvoDeToque';
+import { useCores } from '../tema/TemaProvider';
+import { texto } from '../tema/tipografia';
+import { ESCALA_FONTE, PAD, RAIO } from '../tema/tokens';
+import { CartaoVidro, EstadoVazio } from './Blocos';
+import { CampoDeTexto } from './Campos';
+import { BotaoInline, BotaoSecundario, BotaoTexto, Segmentado } from './Controles';
+import { LinhaLista, ListaAgrupada } from './Listas';
+import { useTravaDaRolagem } from './travaDaRolagem';
+
+/**
+ * Uma hora da grade tem a altura do alvo mínimo (44, ou 48 no Android), para
+ * o toque que marca a hora cheia; cada linha de 15 minutos é um quarto dela.
+ */
+const ALTURA_DA_HORA = ALVO_MINIMO;
+const ALTURA_DO_QUARTO = ALTURA_DA_HORA / (60 / PASSO_MINUTOS);
+/** A coluna dos rótulos "14h": dois dígitos e o h, a 10,5px. */
+const COLUNA_DAS_HORAS = 30;
+const VAO = 3;
+/** Quanto o dedo fica parado para o toque virar arrasto. */
+const ESPERA_DO_ARRASTO = 250;
+/** Quanto o dedo pode tremer antes de virar rolagem. */
+const TOLERANCIA = 8;
+
+/** A ajuda fixa acima da grade. */
+const AJUDA_DA_GRADE = 'Toque marca ou apaga 1 hora. Segure e arraste: 15 em 15 min.';
+
+/** Padding do cartão que envolve a grade. */
+export const PAD_CARTAO_DA_GRADE = PAD.cartaoDaGrade;
+
+interface Arrasto {
+  dia: DiaDaSemana;
+  de: number;
+  ate: number;
+  ligar: boolean;
+}
+
+/** O trecho que o arrasto cobre, já em ordem e com a última linha inteira. */
+const trechoDo = (a: Arrasto) => ({
+  inicio: Math.min(a.de, a.ate),
+  fim: Math.max(a.de, a.ate) + PASSO_MINUTOS,
+});
+
+/** Só na web: sem seleção de texto nem o menu do toque longo do Safari. */
+const SEM_SELECAO = (Platform.OS === 'web'
+  ? { userSelect: 'none', WebkitTouchCallout: 'none', touchAction: 'pan-y' }
+  : {}) as unknown as ViewStyle;
+
+export function GradeLivre({
+  horarios,
+  aoMudar,
+  dias = DIAS_DA_SEMANA,
+  diasApagados = SEM_DIAS,
+  de = INICIO_DO_DIA,
+  ate = FIM_DO_DIA,
+  somenteLeitura = false,
+}: {
+  horarios: Intervalo[];
+  aoMudar?: (horarios: Intervalo[]) => void;
+  dias?: DiaDaSemana[];
+  /** dias que aparecem mas não entram nas sugestões (o sábado, sem "Sugerir sábados") */
+  diasApagados?: DiaDaSemana[];
+  /** o começo e o fim do dia que a grade mostra, em minutos */
+  de?: number;
+  ate?: number;
+  somenteLeitura?: boolean;
+}) {
+  const { cores } = useCores();
+  const travar = useTravaDaRolagem((s) => s.travar);
+  const editavel = !somenteLeitura && !!aoMudar;
+
+  const [largura, setLargura] = useState(0);
+  const [arrasto, setArrasto] = useState<Arrasto | null>(null);
+
+  // O que os manipuladores do toque leem sem esperar o próximo render.
+  const atuais = useRef(horarios);
+  atuais.current = horarios;
+  const toque = useRef<{
+    x0: number;
+    y0: number;
+    origemX: number;
+    origemY: number;
+    dia: DiaDaSemana;
+    minuto: number;
+    movido: boolean;
+    arrasto: Arrasto | null;
+    espera: ReturnType<typeof setTimeout> | null;
+  } | null>(null);
+
+  // Desmontar no meio do arrasto não deixa a rolagem presa.
+  useEffect(
+    () => () => {
+      if (toque.current?.espera) clearTimeout(toque.current.espera);
+      travar(false);
+    },
+    [travar],
+  );
+
+  const horas: number[] = [];
+  for (let m = Math.ceil(de / 60) * 60; m <= ate; m += 60) horas.push(m);
+  const altura = ((ate - de) / PASSO_MINUTOS) * ALTURA_DO_QUARTO;
+  const larguraDaColuna = largura
+    ? (largura - COLUNA_DAS_HORAS - VAO * dias.length) / dias.length
+    : 0;
+
+  /** O dia e a linha sob o ponto, ou `null` fora das colunas. */
+  const celulaEm = (x: number, y: number): { dia: DiaDaSemana; minuto: number } | null => {
+    if (!larguraDaColuna) return null;
+    const i = Math.floor((x - COLUNA_DAS_HORAS - VAO) / (larguraDaColuna + VAO));
+    if (i < 0 || i >= dias.length) return null;
+    return { dia: dias[i], minuto: minutoEm(y) };
+  };
+  const minutoEm = (y: number) => {
+    const linha = Math.floor(y / ALTURA_DO_QUARTO);
+    return Math.min(Math.max(de + linha * PASSO_MINUTOS, de), ate - PASSO_MINUTOS);
+  };
+
+  const soltar = () => {
+    if (toque.current?.espera) clearTimeout(toque.current.espera);
+    toque.current = null;
+    setArrasto(null);
+    travar(false);
+  };
+
+  const aoComecar = (e: GestureResponderEvent) => {
+    const { pageX, pageY, locationX, locationY } = e.nativeEvent;
+    const celula = celulaEm(locationX, locationY);
+    if (!celula) return;
+    const t = {
+      x0: pageX,
+      y0: pageY,
+      // Os filhos não recebem toque: a origem do `location` é a da grade.
+      origemX: pageX - locationX,
+      origemY: pageY - locationY,
+      ...celula,
+      movido: false,
+      arrasto: null as Arrasto | null,
+      espera: null as ReturnType<typeof setTimeout> | null,
+    };
+    t.espera = setTimeout(() => {
+      if (toque.current !== t || t.movido) return;
+      t.arrasto = {
+        dia: t.dia,
+        de: t.minuto,
+        ate: t.minuto,
+        ligar: !livreEm(atuais.current, t.dia, t.minuto),
+      };
+      travar(true);
+      setArrasto(t.arrasto);
+    }, ESPERA_DO_ARRASTO);
+    toque.current = t;
+  };
+
+  const aoMover = (e: GestureResponderEvent) => {
+    const t = toque.current;
+    if (!t) return;
+    const { pageX, pageY } = e.nativeEvent;
+    if (!t.arrasto) {
+      if (Math.abs(pageX - t.x0) > TOLERANCIA || Math.abs(pageY - t.y0) > TOLERANCIA) {
+        t.movido = true;
+      }
+      return;
+    }
+    const minuto = minutoEm(pageY - t.origemY);
+    if (minuto !== t.arrasto.ate) {
+      t.arrasto = { ...t.arrasto, ate: minuto };
+      setArrasto(t.arrasto);
+    }
+  };
+
+  const aoTerminar = () => {
+    const t = toque.current;
+    if (t && aoMudar) {
+      if (t.arrasto) {
+        const { inicio, fim } = trechoDo(t.arrasto);
+        aoMudar(pintar(atuais.current, t.dia, inicio, fim, t.arrasto.ligar));
+      } else if (!t.movido) {
+        // O toque marca, ou apaga, a hora cheia sob o dedo.
+        const hora = Math.max(Math.floor(t.minuto / 60) * 60, de);
+        const ligar = !livreEm(atuais.current, t.dia, t.minuto);
+        aoMudar(pintar(atuais.current, t.dia, hora, Math.min(hora + 60, ate), ligar));
+      }
+    }
+    soltar();
+  };
+
+  const responder = editavel
+    ? {
+        onStartShouldSetResponder: () => true,
+        // Pintando, o arrasto é da grade; antes disso, a rolagem pode levar.
+        onResponderTerminationRequest: () => !toque.current?.arrasto,
+        onResponderGrant: aoComecar,
+        onResponderMove: aoMover,
+        onResponderRelease: aoTerminar,
+        onResponderTerminate: soltar,
+      }
+    : {};
+
+  const topo = (m: number) => ((m - de) / PASSO_MINUTOS) * ALTURA_DO_QUARTO;
+  const previa = arrasto ? trechoDo(arrasto) : null;
+  // Durante o arrasto a coluna já mostra o resultado, como `pintar` vai
+  // gravar: nada translúcido por cima de um horário marcado e do texto dele.
+  const mostrados =
+    arrasto && previa
+      ? pintar(horarios, arrasto.dia, previa.inicio, previa.fim, arrasto.ligar)
+      : horarios;
+  const estiloDaHora = texto(11.5, 500, { altura: 1.2 });
+  // o rótulo centra no fio da hora pela própria entrelinha, e não por um número
+  const meioDoRotulo = (estiloDaHora.lineHeight ?? 0) / 2;
+  const estiloDoAviso = texto(11.5, 500, { altura: 1.4 });
+
+  const cabecalho = (
+    <View style={estilos.linha}>
+      <View style={{ width: COLUNA_DAS_HORAS }} />
+      {dias.map((d) => (
+        <View key={d} style={estilos.cabecalhoDoDia}>
+          <Text
+            maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+            style={[
+              texto(12, 600, { tracking: 0.04 }),
+              { color: diasApagados.includes(d) ? cores.tinta3 : cores.tinta2 },
+            ]}
+          >
+            {diaCurto(d)}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+
+  return (
+    <View style={estilos.grade}>
+      {editavel ? (
+        // A caixa do aviso tem sempre a altura da ajuda: se ela encolhesse quando
+        // o arrasto liga, a grade subiria e a pintura sairia de baixo do dedo.
+        <View>
+          <Text
+            accessibilityElementsHidden={!!arrasto}
+            importantForAccessibility={arrasto ? 'no-hide-descendants' : 'auto'}
+            style={[estiloDoAviso, { color: cores.tinta2, opacity: arrasto ? 0 : 1 }]}
+          >
+            {AJUDA_DA_GRADE}
+          </Text>
+          {arrasto && previa ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              numberOfLines={2}
+              style={[estiloDoAviso, estilos.sobreposto, { color: cores.tint }]}
+            >
+              {`${arrasto.ligar ? 'Marcar' : 'Apagar'} ${nomeDoDia(arrasto.dia).toLowerCase()}, ${formatarIntervalo(previa)}`}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      {/* O cabeçalho dos dias encosta nas colunas, e o aviso fica acima dele. */}
+      <View style={estilos.cabecalhoEColunas}>
+        {cabecalho}
+        <View
+          {...responder}
+          accessible
+          accessibilityLabel={`Grade da semana: ${resumoDosHorarios(horarios)}.`}
+          accessibilityHint={editavel ? 'Ajuste os horários na lista abaixo da grade.' : undefined}
+          // O duplo toque do leitor de tela não pode virar um toque no meio da
+          // grade, que marcaria uma hora sem a pessoa ver qual.
+          onAccessibilityTap={editavel ? () => {} : undefined}
+          onLayout={(e: LayoutChangeEvent) => setLargura(e.nativeEvent.layout.width)}
+          style={[estilos.linha, { height: altura }, editavel ? SEM_SELECAO : null]}
+        >
+          <View pointerEvents="none" style={{ width: COLUNA_DAS_HORAS, height: altura }}>
+            {horas.map((m) => (
+              <Text
+                key={m}
+                maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+                style={[
+                  estiloDaHora,
+                  estilos.rotuloDaHora,
+                  // o rótulo centra no fio da hora; o primeiro e o último
+                  // encostam na borda da grade
+                  {
+                    top: Math.min(
+                      Math.max(topo(m) - meioDoRotulo, 0),
+                      altura - meioDoRotulo * 2,
+                    ),
+                    color: cores.tinta2,
+                  },
+                ]}
+              >
+                {formatarHora(m)}
+              </Text>
+            ))}
+          </View>
+
+          {dias.map((dia) => (
+            <View
+              key={dia}
+              pointerEvents="none"
+              style={[estilos.coluna, { height: altura, backgroundColor: cores.preenchimento }]}
+            >
+              {horas
+                .filter((m) => m > de && m < ate)
+                .map((m) => (
+                  <View
+                    key={m}
+                    style={[estilos.fio, { top: topo(m), backgroundColor: cores.fio }]}
+                  />
+                ))}
+
+              {mostrados
+                .filter((i) => i.dia === dia && i.fim > de && i.inicio < ate)
+                .map((i) => {
+                  const inicio = Math.max(i.inicio, de);
+                  const fim = Math.min(i.fim, ate);
+                  const alto = topo(fim) - topo(inicio);
+                  // na coluna do arrasto quem fala é a prévia, e só ela
+                  const comRotulo = alto >= ALTURA_DO_QUARTO * 2 && arrasto?.dia !== dia;
+                  return (
+                    <View
+                      key={`${i.inicio}-${i.fim}`}
+                      style={[
+                        estilos.marcado,
+                        { top: topo(inicio), height: alto, backgroundColor: cores.tint },
+                      ]}
+                    >
+                      {comRotulo ? (
+                        <RotuloDoTrecho
+                          inicio={inicio}
+                          fim={fim}
+                          alto={alto}
+                          cor={cores.sobreTint}
+                        />
+                      ) : null}
+                    </View>
+                  );
+                })}
+
+              {arrasto && previa && arrasto.dia === dia ? (
+                <View
+                  style={[
+                    estilos.marcado,
+                    estilos.previa,
+                    {
+                      top: topo(previa.inicio),
+                      height: topo(previa.fim) - topo(previa.inicio),
+                      // marcando, o trecho já é tint e o contorno é o do texto
+                      // sobre ele; apagando, é trilho e o contorno é tint
+                      borderColor: arrasto.ligar ? cores.sobreTint : cores.tint,
+                    },
+                  ]}
+                >
+                  {/* O trecho junto do dedo: o aviso acima da grade pode estar fora da vista. */}
+                  <RotuloDoTrecho
+                    inicio={previa.inicio}
+                    fim={previa.fim}
+                    alto={topo(previa.fim) - topo(previa.inicio)}
+                    cor={arrasto.ligar ? cores.sobreTint : cores.tint}
+                  />
+                </View>
+              ) : null}
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/**
+ * O começo no topo do trecho e o fim ancorado na base, onde ele termina — e
+ * não empilhados no topo, como dois itens soltos. Trecho de meia hora mostra
+ * só o começo; menor que isso, nada (a lista e o aviso dizem o resto).
+ *
+ * 11px: "14h30" a 700 mede ~35px, e o miolo da coluna a 360dp tem 36.
+ */
+function RotuloDoTrecho({
+  inicio,
+  fim,
+  alto,
+  cor,
+}: {
+  inicio: number;
+  fim: number;
+  alto: number;
+  cor: string;
+}) {
+  if (alto < ALTURA_DO_QUARTO * 2) return null;
+  const estilo = [texto(11, 700, { altura: 1.2 }), { color: cor }];
+  return (
+    <>
+      <Text numberOfLines={1} maxFontSizeMultiplier={ESCALA_FONTE.compacta} style={estilo}>
+        {formatarHora(inicio)}
+      </Text>
+      {alto >= ALTURA_DA_HORA ? (
+        <Text
+          numberOfLines={1}
+          maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+          style={[estilo, estilos.fimDoTrecho]}
+        >
+          {formatarHora(fim)}
+        </Text>
+      ) : null}
+    </>
+  );
+}
+
+/** Para o padrão de `diasApagados` não ser uma lista nova a cada render. */
+const SEM_DIAS: DiaDaSemana[] = [];
+
+/** "1430" → "14:30": o teclado numérico do iOS não tem dois-pontos. */
+export const mascaraDeHorario = (v: string): string => {
+  const d = v.replace(/\D/g, '').slice(0, 4);
+  return d.length > 2 ? `${d.slice(0, 2)}:${d.slice(2)}` : d;
+};
+
+/**
+ * Os horários marcados, um por linha ("Segunda · 14h30–18h", com Remover), e
+ * o formulário que acrescenta um pelo teclado. É o caminho do leitor de tela
+ * e o acerto fino de quem pinta na grade.
+ *
+ * Para quem vê, a lista repete a grade linha por linha. Com `recolhida` ela
+ * vira uma linha só, "Ajustar pelo teclado", que abre ao toque — e já abre
+ * sozinha quando o leitor de tela está ligado, porque aí ela é o caminho.
+ */
+export function ListaDeHorarios({
+  horarios,
+  aoMudar,
+  dias = DIAS_DA_SEMANA,
+  vazio = 'Nenhum horário marcado',
+  recolhida = false,
+}: {
+  horarios: Intervalo[];
+  aoMudar: (horarios: Intervalo[]) => void;
+  dias?: DiaDaSemana[];
+  vazio?: string;
+  recolhida?: boolean;
+}) {
+  const [aberta, setAberta] = useState(!recolhida);
+  useEffect(() => {
+    // No navegador o react-native-web responde sempre "ligado" e não há como
+    // saber: lá a linha recolhida, que é um botão, é o caminho.
+    if (!recolhida || Platform.OS === 'web') return undefined;
+    let vivo = true;
+    AccessibilityInfo.isScreenReaderEnabled()
+      .then((ligado) => {
+        if (vivo && ligado) setAberta(true);
+      })
+      .catch(() => {});
+    const assinatura = AccessibilityInfo.addEventListener('screenReaderChanged', (ligado) => {
+      if (ligado) setAberta(true);
+    });
+    return () => {
+      vivo = false;
+      assinatura?.remove();
+    };
+  }, [recolhida]);
+  const [abrindo, setAbrindo] = useState(false);
+  const [dia, setDia] = useState<DiaDaSemana>(dias[0]);
+  const [de, setDe] = useState('');
+  const [ate, setAte] = useState('');
+  const [erro, setErro] = useState<{ texto: string; campo: 'de' | 'ate' } | null>(null);
+
+  const fechar = () => {
+    setAbrindo(false);
+    setDe('');
+    setAte('');
+    setErro(null);
+  };
+
+  const adicionar = () => {
+    const lido = intervaloDigitado(dia, de, ate);
+    if ('erro' in lido) {
+      setErro({ texto: lido.erro, campo: lido.campo });
+      return;
+    }
+    aoMudar(pintar(horarios, lido.intervalo.dia, lido.intervalo.inicio, lido.intervalo.fim, true));
+    fechar();
+  };
+
+  if (!aberta) {
+    return (
+      <ListaAgrupada>
+        <LinhaLista
+          titulo="Ajustar pelo teclado"
+          subtitulo={resumoDosHorarios(horarios)}
+          aoTocar={() => setAberta(true)}
+          chevron
+        />
+      </ListaAgrupada>
+    );
+  }
+
+  return (
+    <View style={estilos.lista}>
+      <ListaAgrupada>
+        {horarios.length === 0 ? (
+          <EstadoVazio titulo={vazio} />
+        ) : (
+          horarios.map((i) => (
+            <LinhaLista
+              key={`${i.dia}-${i.inicio}`}
+              titulo={nomeDoDia(i.dia)}
+              subtitulo={formatarIntervalo(i)}
+              direita={
+                <BotaoInline
+                  rotulo="Remover"
+                  variante="vidro"
+                  rotuloAcessivel={`Remover ${nomeDoDia(i.dia).toLowerCase()}, ${formatarIntervalo(i)}`}
+                  aoTocar={() => aoMudar(removerIntervalo(horarios, i))}
+                />
+              }
+            />
+          ))
+        )}
+      </ListaAgrupada>
+
+      {abrindo ? (
+        <CartaoVidro estilo={estilos.formulario}>
+          <Segmentado
+            rotuloDoGrupo="Dia"
+            porte="cartao"
+            opcoes={dias.map((d) => ({ valor: d, rotulo: diaCurto(d) }))}
+            valor={dia}
+            aoTrocar={setDia}
+          />
+          <View style={estilos.campos}>
+            <CampoDeTexto
+              rotulo="De"
+              valor={de}
+              aoMudar={(v) => {
+                setDe(mascaraDeHorario(v));
+                setErro(null);
+              }}
+              placeholder="14:30"
+              teclado="numerico"
+              erro={erro?.campo === 'de' ? erro.texto : undefined}
+              autoFoco
+              estilo={estilos.flexivel}
+            />
+            <CampoDeTexto
+              rotulo="Até"
+              valor={ate}
+              aoMudar={(v) => {
+                setAte(mascaraDeHorario(v));
+                setErro(null);
+              }}
+              placeholder="18:00"
+              teclado="numerico"
+              erro={erro?.campo === 'ate' ? erro.texto : undefined}
+              aoEnviar={adicionar}
+              estilo={estilos.flexivel}
+            />
+          </View>
+          <BotaoSecundario rotulo="Adicionar" aoTocar={adicionar} desabilitado={!de || !ate} />
+          <BotaoTexto rotulo="Cancelar" aoTocar={fechar} />
+        </CartaoVidro>
+      ) : (
+        <BotaoSecundario rotulo="Adicionar horário" aoTocar={() => setAbrindo(true)} />
+      )}
+    </View>
+  );
+}
+
+/** Rodapé da grade: resumo à esquerda, nota à direita, separados por um fio. */
+export function RodapeDaGrade({
+  esquerda,
+  direita,
+}: {
+  esquerda: string;
+  direita?: string;
+}) {
+  const { cores } = useCores();
+  return (
+    <View style={[estilos.rodape, { borderTopColor: cores.fio }]}>
+      <Text style={[texto(11.5, 500, { altura: 1.4 }), { color: cores.tinta2 }]}>{esquerda}</Text>
+      {direita ? (
+        <Text
+          style={[texto(11.5, 500, { altura: 1.4 }), estilos.direita, { color: cores.tinta2 }]}
+        >
+          {direita}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  grade: { gap: 8 },
+  cabecalhoEColunas: { gap: 6 },
+  linha: { flexDirection: 'row', gap: VAO },
+  cabecalhoDoDia: { flex: 1, alignItems: 'center' },
+  rotuloDaHora: { position: 'absolute', left: 0 },
+  coluna: { flex: 1, borderRadius: RAIO.segmento, overflow: 'hidden' },
+  fio: { position: 'absolute', left: 0, right: 0, height: StyleSheet.hairlineWidth },
+  marcado: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    borderRadius: RAIO.segmento,
+    ...PAD.blocoDaGrade,
+    overflow: 'hidden',
+  },
+  // a mesma espessura do foco do campo de texto
+  previa: { borderWidth: 1 },
+  sobreposto: { position: 'absolute', top: 0, left: 0, right: 0 },
+  fimDoTrecho: {
+    position: 'absolute',
+    left: PAD.blocoDaGrade.paddingHorizontal,
+    right: PAD.blocoDaGrade.paddingHorizontal,
+    bottom: PAD.blocoDaGrade.paddingVertical,
+  },
+  lista: { gap: 12 },
+  formulario: { gap: 16 },
+  campos: { flexDirection: 'row', gap: 12 },
+  flexivel: { flex: 1, minWidth: 0 },
+  direita: { textAlign: 'right' },
+  rodape: {
+    marginTop: 13,
+    ...PAD.rodapeDoCartao,
+    borderTopWidth: 0.5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+});

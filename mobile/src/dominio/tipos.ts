@@ -89,7 +89,11 @@ export interface Aluno {
   email?: string;
   /** sobrepõe VALOR_AULA quando o pacote deste aluno tem outro preço */
   valorPorAula?: number;
-  disponibilidade?: BlocoSemanal[];
+  /**
+   * Quando o aluno pode repor, em horários livres (SCRUM-101). O aluno salvo
+   * antes guarda `{ dia, faixa }`: quem lê passa por `intervalosDe`.
+   */
+  disponibilidade?: Intervalo[];
   /**
    * A aula fixa estruturada (SCRUM-31). Ausente no aluno salvo antes dela: aí
    * o horário é lido de `dia` e `hora` por `aulaFixaDe`, em `aulaFixa.ts`.
@@ -144,12 +148,28 @@ export interface Faixa {
 
 export type DiaDaSemana = 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab' | 'dom';
 
-/** As quatro faixas que o handoff usa nas grades (A5, C2, E3, F3). */
+/**
+ * As quatro faixas que o handoff usava nas grades (A5, C2, E3, F3). Desde o
+ * SCRUM-101 são só o **formato antigo**, que `intervalosDe` ainda lê: a
+ * semente, a nuvem e o cache do aparelho guardam `{ dia, faixa }`.
+ */
 export type FaixaHoraria = 'manha' | 'tarde' | 'fimTarde' | 'noite';
 
+/** O bloco do formato antigo: um dia e uma faixa. Só leitura. */
 export interface BlocoSemanal {
   dia: DiaDaSemana;
   faixa: FaixaHoraria;
+}
+
+/**
+ * Um horário livre da semana (SCRUM-101): o dia e o começo e o fim em minutos
+ * desde a meia-noite, de 15 em 15 (`PASSO_MINUTOS`). `inicio < fim`.
+ * "Segunda, 14h30 às 18h" é `{ dia: 'seg', inicio: 870, fim: 1080 }`.
+ */
+export interface Intervalo {
+  dia: DiaDaSemana;
+  inicio: number;
+  fim: number;
 }
 
 /**
@@ -162,6 +182,13 @@ export interface AulaFixa {
   dias: DiaDaSemana[];
   /** a hora cheia do começo da aula (18 para "18h" e para "18h30"); `null` = sem hora */
   hora: number | null;
+  /**
+   * Os minutos do começo: 0, 15, 30 ou 45 (SCRUM-101). Ausente no aluno salvo
+   * antes, que começa na hora cheia. "18h30" é `{ hora: 18, minuto: 30 }`.
+   */
+  minuto?: number;
+  /** quanto a aula dura, em minutos, de 15 em 15; ausente = `DURACAO_PADRAO` (60) */
+  duracao?: number;
 }
 
 export interface Folga {
@@ -173,7 +200,8 @@ export interface Folga {
 }
 
 export interface Disponibilidade {
-  blocos: BlocoSemanal[];
+  /** os horários livres do professor (SCRUM-101; o formato antigo é lido por `intervalosDe`) */
+  blocos: Intervalo[];
   aceitaForaDosBlocos: boolean;
   sugereSabado: boolean;
   folgas: Folga[];

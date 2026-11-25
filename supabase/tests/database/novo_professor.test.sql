@@ -94,7 +94,8 @@ select is(
 select is(
   (select jsonb_array_length(blocos) from public.disponibilidades
     where professor_id = '00000000-0000-4000-8000-000000000001'),
-  13,
+  -- os 13 blocos de A5 viram 7 horários livres, juntos por dia (SCRUM-101)
+  7,
   'e a disponibilidade do seed, não a vazia do trigger'
 );
 select is(

@@ -8,7 +8,7 @@ import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { Segmentado } from '../componentes/Controles';
 import { Icone } from '../componentes/Icone';
 import { CabecalhoGrupo, LinhaLista, ListaAgrupada } from '../componentes/Listas';
-import { resumo as resumoDaDisponibilidade } from '../dominio/disponibilidade';
+import { resumoDosHorarios as resumoDaDisponibilidade } from '../dominio/disponibilidade';
 import { dinheiro } from '../dominio/formato';
 import { temPacote, VALOR_AULA } from '../dominio/politica';
 import { useDados } from '../estado/dados';

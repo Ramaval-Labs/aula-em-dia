@@ -7,6 +7,10 @@
  * sobreviver à virada de `USAR_DATA_REAL`. Pelo mesmo motivo nenhum nome de
  * dia da semana é escrito à mão — sai de `diaDaSemanaDe`, porque o ano de um
  * dd/mm é inferido e o dia da semana muda com ele.
+ *
+ * Desde o SCRUM-101 o motor conta em minutos, de 15 em 15. Em cada dia ele
+ * devolve um começo por trecho livre contínuo, então os testes falam de
+ * "começos de um dia da semana" e de "nenhuma janela toca este trecho".
  */
 
 import {
@@ -27,7 +31,14 @@ import {
 import { estadoInicial } from '../../dados/semente';
 import { lerAulaFixa } from '../aulaFixa';
 import { diasEntre, somarDias } from '../datas';
-import { diaDaSemanaDe, nomeDoDia, temBloco } from '../disponibilidade';
+import {
+  cabe,
+  diaDaSemanaDe,
+  intervalosDe,
+  nomeDoDia,
+  pintar,
+  sobrepoe,
+} from '../disponibilidade';
 import type {
   Aluno,
   BlocoSemanal,
@@ -35,11 +46,15 @@ import type {
   Disponibilidade,
   FaixaHoraria,
   Folga,
+  Intervalo,
 } from '../tipos';
 
 const HOJE = '28/08';
 
-/** O padrão desenhado em A5: 13 blocos. */
+/** 14h30 → 870 */
+const h = (hora: number, minuto = 0) => hora * 60 + minuto;
+
+/** O padrão desenhado em A5: 13 blocos, no formato antigo. */
 const PADRAO_A5: BlocoSemanal[] = [
   { dia: 'ter', faixa: 'manha' },
   { dia: 'qui', faixa: 'manha' },
@@ -54,6 +69,9 @@ const PADRAO_A5: BlocoSemanal[] = [
   { dia: 'qua', faixa: 'noite' },
 ];
 
+/** O mesmo padrão em horários livres: o que `intervalosDe` faz dele. */
+const PADRAO_LIVRE: Intervalo[] = intervalosDe(PADRAO_A5);
+
 /** As duas folgas de `dados/semente.ts`. */
 const FOLGAS: Folga[] = [
   { de: '07/09', ate: '07/09', motivo: 'feriado' },
@@ -61,7 +79,7 @@ const FOLGAS: Folga[] = [
 ];
 
 const DISPONIBILIDADE: Disponibilidade = {
-  blocos: PADRAO_A5,
+  blocos: PADRAO_LIVRE,
   sugereSabado: false,
   aceitaForaDosBlocos: false,
   folgas: FOLGAS,
@@ -71,12 +89,15 @@ const TODOS_OS_DIAS: DiaDaSemana[] = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 
 const TODAS_AS_FAIXAS: FaixaHoraria[] = ['manha', 'tarde', 'fimTarde', 'noite'];
 
 /**
- * Agenda sem restrição nenhuma: todo bloco livre, sábado ligado, sem folga.
- * Cada teste de descarte parte dela e muda UMA coisa, para que a regra
- * testada seja a única que pode tirar a janela da lista.
+ * Agenda sem restrição nenhuma: as quatro faixas de todo dia (8h–12h e
+ * 14h–22h), sábado ligado, sem folga. Cada teste de descarte parte dela e
+ * muda UMA coisa, para que a regra testada seja a única que pode tirar a
+ * janela da lista.
  */
 const ABERTA: Disponibilidade = {
-  blocos: TODOS_OS_DIAS.flatMap((dia) => TODAS_AS_FAIXAS.map((faixa) => ({ dia, faixa }))),
+  blocos: intervalosDe(
+    TODOS_OS_DIAS.flatMap((dia) => TODAS_AS_FAIXAS.map((faixa) => ({ dia, faixa }))),
+  ),
   sugereSabado: true,
   aceitaForaDosBlocos: false,
   folgas: [],
@@ -102,8 +123,16 @@ const com = (extra: Partial<Aluno>): Aluno => ({ ...aluno, ...extra });
 const ATE_A_VALIDADE = 63;
 
 const datas = (lista: Candidata[]) => lista.map((c) => c.data);
-const temJanela = (lista: Candidata[], b: BlocoSemanal) =>
-  lista.some((c) => c.bloco.dia === b.dia && c.bloco.faixa === b.faixa);
+const doDia = (lista: Candidata[], dia: DiaDaSemana) =>
+  lista.filter((c) => c.diaDaSemana === dia);
+/** Os começos sugeridos num dia da semana, em ordem, sem repetir. */
+const comecos = (lista: Candidata[], dia: DiaDaSemana) =>
+  [...new Set(doDia(lista, dia).map((c) => c.inicio))].sort((a, b) => a - b);
+const comecaEm = (lista: Candidata[], dia: DiaDaSemana, inicio: number) =>
+  doDia(lista, dia).filter((c) => c.inicio === inicio);
+/** Alguma janela daquele dia da semana encosta por dentro no trecho? */
+const toca = (lista: Candidata[], dia: DiaDaSemana, de: number, ate: number) =>
+  doDia(lista, dia).some((c) => sobrepoe(c.inicio, c.fim, de, ate));
 
 // --- leitura do horário fixo ----------------------------------------------
 
@@ -147,7 +176,7 @@ describe('horaDoAluno', () => {
   });
 });
 
-describe('faixaDaHora', () => {
+describe('faixaDaHora (formato antigo)', () => {
   it('o início da faixa pertence a ela', () => {
     expect(faixaDaHora(8)).toBe('manha');
     expect(faixaDaHora(14)).toBe('tarde');
@@ -162,9 +191,6 @@ describe('faixaDaHora', () => {
     expect(faixaDaHora(22)).toBeNull();
   });
 
-  // Lacuna do modelo, afirmada de propósito: FAIXAS vai de 8–12 e retoma em
-  // 14–17, então o almoço não tem faixa. Aula fixa às 12h ou 13h não ocupa
-  // bloco nenhum. Mudar isso é decisão de produto, não conserto de teste.
   it('12h e 13h não caem em faixa nenhuma', () => {
     expect(faixaDaHora(12)).toBeNull();
     expect(faixaDaHora(13)).toBeNull();
@@ -175,7 +201,7 @@ describe('faixaDaHora', () => {
   });
 });
 
-describe('blocosDaAulaFixa', () => {
+describe('blocosDaAulaFixa (formato antigo)', () => {
   it('um bloco por dia, na faixa da hora', () => {
     expect(blocosDaAulaFixa(com({ dia: 'terça e quinta', hora: '18h' }))).toEqual([
       { dia: 'ter', faixa: 'fimTarde' },
@@ -185,10 +211,6 @@ describe('blocosDaAulaFixa', () => {
 
   it('aluno sem hora reconhecível não ocupa bloco', () => {
     expect(blocosDaAulaFixa(com({ hora: 'a combinar' }))).toEqual([]);
-  });
-
-  it('aula fixa no almoço não ocupa bloco', () => {
-    expect(blocosDaAulaFixa(com({ hora: '12h' }))).toEqual([]);
   });
 });
 
@@ -207,29 +229,46 @@ describe('candidatos — descarte', () => {
   });
 
   it('sábado só aparece quando o professor aceita sugerir sábado', () => {
-    const ehSabado = (c: Candidata) => c.bloco.dia === 'sab';
     const sem = candidatos(aluno, [aluno], { ...ABERTA, sugereSabado: false }, HOJE);
     const comSabado = candidatos(aluno, [aluno], ABERTA, HOJE);
 
-    expect(sem.some(ehSabado)).toBe(false);
-    expect(comSabado.some(ehSabado)).toBe(true);
+    expect(doDia(sem, 'sab')).toHaveLength(0);
+    expect(doDia(comSabado, 'sab').length).toBeGreaterThan(0);
   });
 
-  it('bloco fora da disponibilidade do professor sai quando ele não aceita', () => {
+  it('horário fora da disponibilidade do professor sai quando ele não aceita', () => {
     const lista = candidatos(aluno, [aluno], DISPONIBILIDADE, HOJE);
     expect(lista.length).toBeGreaterThan(0);
-    expect(lista.every((c) => temBloco(PADRAO_A5, c.bloco))).toBe(true);
+    expect(lista.every((c) => cabe(PADRAO_LIVRE, c.diaDaSemana, c.inicio, c.fim))).toBe(true);
 
     const aceita = candidatos(aluno, [aluno], { ...DISPONIBILIDADE, aceitaForaDosBlocos: true }, HOJE);
-    expect(aceita.some((c) => !temBloco(PADRAO_A5, c.bloco))).toBe(true);
+    expect(aceita.some((c) => !cabe(PADRAO_LIVRE, c.diaDaSemana, c.inicio, c.fim))).toBe(true);
   });
 
-  it('bloco da aula fixa de outro aluno não aparece', () => {
+  it('a aula fixa de outro aluno ocupa do começo ao fim dela', () => {
     const outro = com({ id: 'b', dia: 'segunda', hora: '15h' });
-    const segTarde: BlocoSemanal = { dia: 'seg', faixa: 'tarde' };
+    expect(comecos(candidatos(aluno, [aluno], ABERTA, HOJE), 'seg')).toEqual([h(8), h(17)]);
 
-    expect(temJanela(candidatos(aluno, [aluno], ABERTA, HOJE), segTarde)).toBe(true);
-    expect(temJanela(candidatos(aluno, [aluno, outro], ABERTA, HOJE), segTarde)).toBe(false);
+    const lista = candidatos(aluno, [aluno, outro], ABERTA, HOJE);
+    expect(toca(lista, 'seg', h(15), h(16))).toBe(false);
+    // a tarde de segunda vira dois trechos: 14h–15h e o que sobra das 16h
+    expect(comecos(lista, 'seg')).toEqual([h(8), h(14), h(17)]);
+  });
+
+  // O exemplo do PO (24/11): a aula das 14h30 com 1h ocupa 14h30–15h30.
+  it('a colisão é de trecho, não de hora cheia (SCRUM-101)', () => {
+    const das15 = com({ hora: '', aulaFixa: { dias: ['qua'], hora: 15 } });
+    const as1430 = com({ id: 'b', dia: '', hora: '', aulaFixa: { dias: ['seg'], hora: 14, minuto: 30 } });
+    const as14 = com({ id: 'c', dia: '', hora: '', aulaFixa: { dias: ['seg'], hora: 14 } });
+
+    const comA1430 = candidatos(das15, [das15, as1430], ABERTA, HOJE);
+    expect(comecaEm(comA1430, 'seg', h(15))).toHaveLength(0);
+    expect(comecaEm(comA1430, 'seg', h(15, 30)).length).toBeGreaterThan(0);
+    expect(toca(comA1430, 'seg', h(14, 30), h(15, 30))).toBe(false);
+
+    // a das 14h termina às 15h: aí as 15h ficam livres, coladas nela
+    const comA14 = candidatos(das15, [das15, as14], ABERTA, HOJE);
+    expect(comecaEm(comA14, 'seg', h(15)).length).toBeGreaterThan(0);
   });
 
   // SCRUM-84: no teste em produção, a Bia (aula fixa terça 18h) faltou e a
@@ -237,36 +276,41 @@ describe('candidatos — descarte', () => {
   it('a aula fixa do próprio aluno não vira janela (SCRUM-84)', () => {
     const bia = com({ dia: 'terça', hora: '18h' });
     const lista = candidatos(bia, [bia], ABERTA, HOJE);
-    expect(temJanela(lista, { dia: 'ter', faixa: 'fimTarde' })).toBe(false);
-    // o resto da terça e a mesma faixa nos outros dias continuam
-    expect(temJanela(lista, { dia: 'ter', faixa: 'manha' })).toBe(true);
-    expect(temJanela(lista, { dia: 'qui', faixa: 'fimTarde' })).toBe(true);
+    expect(toca(lista, 'ter', h(18), h(19))).toBe(false);
+    // o resto da terça e a mesma hora nos outros dias continuam
+    expect(comecaEm(lista, 'ter', h(8)).length).toBeGreaterThan(0);
+    expect(comecaEm(lista, 'qui', h(18)).length).toBeGreaterThan(0);
   });
 
   it('com dois dias de aula fixa, os dois saem', () => {
     const duasVezes = com({ dia: 'terça e quinta', hora: '18h' });
     const lista = candidatos(duasVezes, [duasVezes], ABERTA, HOJE);
-    expect(temJanela(lista, { dia: 'ter', faixa: 'fimTarde' })).toBe(false);
-    expect(temJanela(lista, { dia: 'qui', faixa: 'fimTarde' })).toBe(false);
-    expect(temJanela(lista, { dia: 'seg', faixa: 'fimTarde' })).toBe(true);
+    expect(toca(lista, 'ter', h(18), h(19))).toBe(false);
+    expect(toca(lista, 'qui', h(18), h(19))).toBe(false);
+    expect(comecaEm(lista, 'seg', h(18)).length).toBeGreaterThan(0);
   });
 
   // SCRUM-31: a estrutura é a fonte. O texto é só o que a tela mostra.
   it('com a aula fixa estruturada, vale ela, e não o texto', () => {
     const estruturado = com({ dia: '', hora: '', aulaFixa: { dias: ['ter'], hora: 18 } });
-    const lista = candidatos(estruturado, [estruturado], ABERTA, HOJE);
-    expect(temJanela(lista, { dia: 'ter', faixa: 'fimTarde' })).toBe(false);
+    expect(toca(candidatos(estruturado, [estruturado], ABERTA, HOJE), 'ter', h(18), h(19))).toBe(false);
 
     const divergente = com({ dia: 'quarta', hora: '17h', aulaFixa: { dias: ['ter'], hora: 18 } });
     const outra = candidatos(divergente, [divergente], ABERTA, HOJE);
-    expect(temJanela(outra, { dia: 'ter', faixa: 'fimTarde' })).toBe(false);
-    expect(temJanela(outra, QUA_FIM_TARDE)).toBe(true);
+    expect(toca(outra, 'ter', h(18), h(19))).toBe(false);
+    // a quarta está livre, e a hora de sempre é a da estrutura
+    expect(comecaEm(outra, 'qua', h(18)).length).toBeGreaterThan(0);
   });
 
-  it('a aula fixa estruturada de outro aluno ocupa o bloco dele', () => {
+  it('a aula fixa estruturada de outro aluno ocupa o trecho dela', () => {
     const outro = com({ id: 'b', dia: '', hora: '', aulaFixa: { dias: ['seg'], hora: 15 } });
-    const segTarde: BlocoSemanal = { dia: 'seg', faixa: 'tarde' };
-    expect(temJanela(candidatos(aluno, [aluno, outro], ABERTA, HOJE), segTarde)).toBe(false);
+    expect(toca(candidatos(aluno, [aluno, outro], ABERTA, HOJE), 'seg', h(15), h(16))).toBe(false);
+  });
+
+  it('a duração do outro aluno conta: 90 min ocupam até 16h30', () => {
+    const outro = com({ id: 'b', dia: '', hora: '', aulaFixa: { dias: ['seg'], hora: 15, duracao: 90 } });
+    const lista = candidatos(aluno, [aluno, outro], ABERTA, HOJE);
+    expect(toca(lista, 'seg', h(15), h(16, 30))).toBe(false);
   });
 
   it('estruturar a semente não muda nenhuma janela', () => {
@@ -282,56 +326,90 @@ describe('candidatos — descarte', () => {
     }
   });
 
-  it('aluno sem hora reconhecível não perde bloco nenhum', () => {
+  it('aluno sem hora reconhecível não perde trecho nenhum', () => {
     const semHora = com({ hora: '' });
-    expect(temJanela(candidatos(semHora, [semHora], ABERTA, HOJE), QUA_FIM_TARDE)).toBe(true);
+    expect(comecos(candidatos(semHora, [semHora], ABERTA, HOJE), 'qua')).toEqual([h(8), h(14)]);
   });
 
-  it('aluno arquivado não ocupa bloco nenhum', () => {
+  it('aluno arquivado não ocupa trecho nenhum', () => {
     const arquivado = com({ id: 'b', dia: 'segunda', hora: '15h', arquivado: true });
-    const segTarde: BlocoSemanal = { dia: 'seg', faixa: 'tarde' };
-    expect(temJanela(candidatos(aluno, [aluno, arquivado], ABERTA, HOJE), segTarde)).toBe(true);
+    expect(comecos(candidatos(aluno, [aluno, arquivado], ABERTA, HOJE), 'seg')).toEqual([
+      h(8),
+      h(17),
+    ]);
   });
 
   // 03/09 e não a quarta 02/09: a quarta 17h é a aula fixa do `aluno`, que já
   // não vira janela (SCRUM-84).
-  it('reposição marcada de outro aluno ocupa a data e a faixa dela (SCRUM-83)', () => {
+  it('reposição marcada de outro aluno ocupa a data e o trecho dela (SCRUM-83)', () => {
     const livre = candidatos(aluno, [aluno], ABERTA, HOJE);
-    const alvo = livre.find((c) => c.data === '03/09' && c.bloco.faixa === 'fimTarde');
+    const alvo = livre.find((c) => c.data === '03/09' && c.inicio === h(17));
     expect(alvo).toBeDefined();
 
-    const outro = com({ id: 'b', dia: 'sem horário fixo', hora: '', agendada: { dia: alvo!.dia, hora: '18h' } });
+    const outro = com({ id: 'b', dia: 'sem horário fixo', hora: '', agendada: { dia: alvo!.dia, hora: '17h' } });
     const lista = candidatos(aluno, [aluno, outro], ABERTA, HOJE);
+    const em = (data: string) => lista.filter((c) => c.data === data);
 
-    expect(lista.some((c) => c.data === '03/09' && c.bloco.faixa === 'fimTarde')).toBe(false);
-    // Só aquela data: a mesma faixa na semana seguinte segue livre.
-    expect(lista.some((c) => c.data === '10/09' && c.bloco.faixa === 'fimTarde')).toBe(true);
-    // E as outras faixas do mesmo dia também.
-    expect(lista.some((c) => c.data === '03/09' && c.bloco.faixa === 'tarde')).toBe(true);
+    expect(em('03/09').some((c) => sobrepoe(c.inicio, c.fim, h(17), h(18)))).toBe(false);
+    // Só aquela data: o mesmo horário na semana seguinte segue livre.
+    expect(em('10/09').some((c) => c.inicio === h(17))).toBe(true);
+    // E o resto do mesmo dia também.
+    expect(em('03/09').some((c) => c.inicio === h(8))).toBe(true);
   });
 
   it('a reposição marcada do próprio aluno, ou de arquivado, não ocupa nada', () => {
     const livre = candidatos(aluno, [aluno], ABERTA, HOJE);
-    const alvo = livre.find((c) => c.data === '03/09' && c.bloco.faixa === 'fimTarde')!;
-    const agendada = { dia: alvo.dia, hora: '18h' };
+    const alvo = livre.find((c) => c.data === '03/09' && c.inicio === h(17))!;
+    const agendada = { dia: alvo.dia, hora: '17h' };
 
     const proprio = com({ agendada });
     const arquivado = com({ id: 'b', dia: 'sem horário fixo', hora: '', agendada, arquivado: true });
     for (const todos of [[proprio], [aluno, arquivado]]) {
       const lista = candidatos(todos[0], todos, ABERTA, HOJE);
-      expect(lista.some((c) => c.data === '03/09' && c.bloco.faixa === 'fimTarde')).toBe(true);
+      expect(lista.some((c) => c.data === '03/09' && c.inicio === h(17))).toBe(true);
     }
   });
 
   it('aluno que declarou disponibilidade só recebe janela dentro dela', () => {
-    const disp: BlocoSemanal[] = [
-      { dia: 'ter', faixa: 'noite' },
-      { dia: 'sex', faixa: 'manha' },
+    const disp: Intervalo[] = [
+      { dia: 'ter', inicio: h(20), fim: h(22) },
+      { dia: 'sex', inicio: h(8), fim: h(12) },
     ];
     const lista = candidatos(com({ disponibilidade: disp }), [aluno], ABERTA, HOJE);
 
     expect(lista.length).toBeGreaterThan(0);
-    expect(lista.every((c) => temBloco(disp, c.bloco))).toBe(true);
+    expect(lista.every((c) => cabe(disp, c.diaDaSemana, c.inicio, c.fim))).toBe(true);
+  });
+
+  // O exemplo do PO (24/11): "tenho compromisso até as 14h, só posso às 14h30".
+  it('quem só pode a partir das 14h30 recebe as 14h30 (SCRUM-101)', () => {
+    const semHora = com({
+      hora: '',
+      disponibilidade: [{ dia: 'seg', inicio: h(14, 30), fim: h(18) }],
+    });
+    const lista = candidatos(semHora, [semHora], ABERTA, HOJE);
+    expect(lista.length).toBeGreaterThan(0);
+    expect(comecos(lista, 'seg')).toEqual([h(14, 30)]);
+    expect(lista[0].hora).toBe('14h30');
+  });
+
+  it('a disponibilidade no formato antigo dá as mesmas janelas (regressão)', () => {
+    const antigo = [
+      { dia: 'ter', faixa: 'noite' },
+      { dia: 'sex', faixa: 'manha' },
+    ] as unknown as Intervalo[];
+    const novo: Intervalo[] = [
+      { dia: 'ter', inicio: h(20), fim: h(22) },
+      { dia: 'sex', inicio: h(8), fim: h(12) },
+    ];
+    expect(candidatos(com({ disponibilidade: antigo }), [aluno], ABERTA, HOJE)).toEqual(
+      candidatos(com({ disponibilidade: novo }), [aluno], ABERTA, HOJE),
+    );
+
+    const professorAntigo = { ...DISPONIBILIDADE, blocos: PADRAO_A5 as unknown as Intervalo[] };
+    expect(candidatos(aluno, [aluno], professorAntigo, HOJE)).toEqual(
+      candidatos(aluno, [aluno], DISPONIBILIDADE, HOJE),
+    );
   });
 
   it('pacote vencido não tem janela', () => {
@@ -340,6 +418,42 @@ describe('candidatos — descarte', () => {
 
   it('pacote que vence hoje não tem janela', () => {
     expect(candidatos(com({ validade: HOJE }), [aluno], ABERTA, HOJE)).toEqual([]);
+  });
+});
+
+describe('candidatos — duração e trechos', () => {
+  it('a janela dura o que a aula do aluno dura (1h por padrão)', () => {
+    for (const c of candidatos(aluno, [aluno], ABERTA, HOJE)) {
+      expect(c.fim - c.inicio).toBe(60);
+    }
+  });
+
+  it('com 90 min, a janela inteira cabe na agenda', () => {
+    const longa = com({ aulaFixa: { dias: ['qua'], hora: 17, duracao: 90 } });
+    const lista = candidatos(longa, [longa], ABERTA, HOJE);
+    expect(lista.length).toBeGreaterThan(0);
+    for (const c of lista) {
+      expect(c.fim - c.inicio).toBe(90);
+      expect(cabe(ABERTA.blocos, c.diaDaSemana, c.inicio, c.fim)).toBe(true);
+    }
+    // a quarta 17h–18h30 é a aula dele
+    expect(toca(lista, 'qua', h(17), h(18, 30))).toBe(false);
+  });
+
+  it('um começo por trecho livre: a manhã e a tarde', () => {
+    const semHora = com({ hora: '' });
+    expect(comecos(candidatos(semHora, [semHora], ABERTA, HOJE), 'seg')).toEqual([h(8), h(14)]);
+  });
+
+  it('no máximo três janelas no mesmo dia', () => {
+    const outros = [9, 11, 15, 18, 20].map((hora, i) =>
+      com({ id: `o${i}`, dia: '', hora: '', aulaFixa: { dias: ['seg'], hora } }),
+    );
+    const semHora = com({ hora: '' });
+    const lista = candidatos(semHora, [semHora, ...outros], ABERTA, HOJE);
+    const porData = new Map<string, number>();
+    for (const c of lista) porData.set(c.data, (porData.get(c.data) ?? 0) + 1);
+    expect(Math.max(...porData.values())).toBe(3);
   });
 });
 
@@ -381,26 +495,19 @@ describe('candidatos — horizonte', () => {
 const BASE = 100;
 const MESMO_HORARIO = 40;
 const MARCOU_DISPONIVEL = 25;
+const ENCAIXA = 10;
 const FORA_DO_HABITUAL = -30;
 
 const RAZAO_MESMO_HORARIO = 'No mesmo horário da aula dele.';
-const RAZAO_MARCOU = 'Ele marcou esse bloco como disponível.';
-const RAZAO_FORA = 'Está fora dos seus blocos habituais.';
+const RAZAO_MARCOU = 'Ele marcou esse horário como disponível.';
+const RAZAO_ENCAIXA = 'Encaixa logo antes ou depois de outra aula.';
+const RAZAO_FORA = 'Está fora dos seus horários habituais.';
 const razaoDoPrazo = (c: Candidata) =>
   `Acontece ${ATE_A_VALIDADE - c.emDias} dias antes do pacote vencer, em 30/10.`;
 
-const noBloco = (lista: Candidata[], b: BlocoSemanal) =>
-  lista.filter((c) => c.bloco.dia === b.dia && c.bloco.faixa === b.faixa);
-
-/** a aula fixa do `aluno` (quarta 17h) */
-const QUA_FIM_TARDE: BlocoSemanal = { dia: 'qua', faixa: 'fimTarde' };
-const SEG_MANHA: BlocoSemanal = { dia: 'seg', faixa: 'manha' };
-/** a faixa da aula fixa do `aluno` (quarta 17h), num outro dia */
-const SEG_FIM_TARDE: BlocoSemanal = { dia: 'seg', faixa: 'fimTarde' };
-
 describe('candidatos — pontuação', () => {
   it('sem parcela nenhuma, vale mais quanto mais cedo', () => {
-    const janelas = noBloco(candidatos(aluno, [aluno], ABERTA, HOJE), SEG_MANHA);
+    const janelas = comecaEm(candidatos(aluno, [aluno], ABERTA, HOJE), 'seg', h(8));
     expect(janelas.length).toBeGreaterThan(0);
     for (const c of janelas) {
       expect(c.pontos).toBe(BASE - c.emDias);
@@ -408,8 +515,8 @@ describe('candidatos — pontuação', () => {
     }
   });
 
-  it('a faixa da aula fixa, em outro dia, soma', () => {
-    const janelas = noBloco(candidatos(aluno, [aluno], ABERTA, HOJE), SEG_FIM_TARDE);
+  it('a hora da aula fixa, em outro dia, soma', () => {
+    const janelas = comecaEm(candidatos(aluno, [aluno], ABERTA, HOJE), 'seg', h(17));
     expect(janelas.length).toBeGreaterThan(0);
     for (const c of janelas) {
       expect(c.pontos).toBe(BASE - c.emDias + MESMO_HORARIO);
@@ -417,8 +524,9 @@ describe('candidatos — pontuação', () => {
     }
   });
 
-  it('o bloco que o aluno marcou como disponível soma', () => {
-    const lista = candidatos(com({ disponibilidade: [SEG_MANHA] }), [aluno], ABERTA, HOJE);
+  it('o horário que o aluno marcou como disponível soma', () => {
+    const disp: Intervalo[] = [{ dia: 'seg', inicio: h(8), fim: h(12) }];
+    const lista = candidatos(com({ disponibilidade: disp }), [aluno], ABERTA, HOJE);
     expect(lista.length).toBeGreaterThan(0);
     for (const c of lista) {
       expect(c.pontos).toBe(BASE - c.emDias + MARCOU_DISPONIVEL);
@@ -426,25 +534,50 @@ describe('candidatos — pontuação', () => {
     }
   });
 
-  it('o bloco fora dos habituais do professor desconta', () => {
-    const disp = { ...DISPONIBILIDADE, folgas: [], aceitaForaDosBlocos: true };
-    const janelas = noBloco(candidatos(aluno, [aluno], disp, HOJE), SEG_MANHA);
-    expect(temBloco(PADRAO_A5, SEG_MANHA)).toBe(false);
+  it('colada em outra aula, soma', () => {
+    const outro = com({ id: 'b', dia: 'segunda', hora: '15h' });
+    const semHora = com({ hora: '' });
+    const janelas = comecaEm(candidatos(semHora, [semHora, outro], ABERTA, HOJE), 'seg', h(14));
     expect(janelas.length).toBeGreaterThan(0);
     for (const c of janelas) {
+      expect(c.pontos).toBe(BASE - c.emDias + ENCAIXA);
+      expect(c.razoes).toEqual([RAZAO_ENCAIXA, razaoDoPrazo(c)]);
+    }
+  });
+
+  it('o horário fora dos habituais do professor desconta', () => {
+    const disp = { ...DISPONIBILIDADE, folgas: [], aceitaForaDosBlocos: true };
+    const semHora = com({ hora: '' });
+    const fora = candidatos(semHora, [semHora], disp, HOJE).filter(
+      (c) => !cabe(PADRAO_LIVRE, c.diaDaSemana, c.inicio, c.fim),
+    );
+    expect(fora.length).toBeGreaterThan(0);
+    for (const c of fora) {
       expect(c.pontos).toBe(BASE - c.emDias + FORA_DO_HABITUAL);
       expect(c.razoes).toEqual([RAZAO_FORA, razaoDoPrazo(c)]);
     }
+  });
+
+  it('dentro e fora do habitual são trechos diferentes', () => {
+    const disp = { ...DISPONIBILIDADE, folgas: [], aceitaForaDosBlocos: true };
+    const semHora = com({ hora: '' });
+    // segunda: o habitual é 14h–20h; antes e depois dele, o dia é "fora"
+    expect(comecos(candidatos(semHora, [semHora], disp, HOJE), 'seg')).toEqual([
+      h(6),
+      h(14),
+      h(19, 15),
+    ]);
   });
 
   // A tela mostra `razoes[0]` como o motivo da janela, então a ordem é contrato.
   it('com todas as parcelas, as razões saem nesta ordem', () => {
     const professor: Disponibilidade = {
       ...ABERTA,
-      blocos: ABERTA.blocos.filter((b) => !(b.dia === 'seg' && b.faixa === 'fimTarde')),
+      blocos: pintar(ABERTA.blocos, 'seg', h(17), h(20), false),
       aceitaForaDosBlocos: true,
     };
-    const lista = candidatos(com({ disponibilidade: [SEG_FIM_TARDE] }), [aluno], professor, HOJE);
+    const disp: Intervalo[] = [{ dia: 'seg', inicio: h(17), fim: h(20) }];
+    const lista = candidatos(com({ disponibilidade: disp }), [aluno], professor, HOJE);
     expect(lista.length).toBeGreaterThan(0);
     for (const c of lista) {
       expect(c.razoes).toEqual([RAZAO_MESMO_HORARIO, RAZAO_MARCOU, RAZAO_FORA, razaoDoPrazo(c)]);
@@ -465,10 +598,10 @@ describe('candidatos — pontuação', () => {
     expect(pontos).toEqual([...pontos].sort((a, b) => b - a));
   });
 
-  it('a faixa da aula fixa, em outro dia, vem antes das outras faixas', () => {
+  it('a hora da aula fixa, em outro dia, vem antes das outras', () => {
     const [primeira] = candidatos(aluno, [aluno], ABERTA, HOJE);
-    expect(primeira.bloco.faixa).toBe('fimTarde');
-    expect(primeira.bloco.dia).not.toBe('qua');
+    expect(primeira.inicio).toBe(h(17));
+    expect(primeira.diaDaSemana).not.toBe('qua');
     expect(primeira.razoes[0]).toBe(RAZAO_MESMO_HORARIO);
   });
 
@@ -476,8 +609,7 @@ describe('candidatos — pontuação', () => {
     expect(candidatos(aluno, [aluno], ABERTA, HOJE).some((c) => c.melhor)).toBe(false);
   });
 
-  // Mesma regra de plural que o resto da copy segue ("1 bloco", "1 bloco
-  // marcado"). Corrigido no SCRUM-64.
+  // Mesma regra de plural que o resto da copy segue. Corrigido no SCRUM-64.
   it('um dia antes do vencimento a razão fica no singular', () => {
     const lista = candidatos(com({ validade: '05/09' }), [aluno], ABERTA, HOJE);
     const vespera = lista.find((c) => c.data === '04/09');
@@ -490,26 +622,27 @@ describe('candidatos — o que a tela mostra', () => {
     for (const c of candidatos(aluno, [aluno], ABERTA, HOJE).slice(0, 10)) {
       const dia = diaDaSemanaDe(c.data) as DiaDaSemana;
       expect(c.dia).toBe(`${nomeDoDia(dia)}, ${c.data}`);
-      expect(c.bloco.dia).toBe(dia);
+      expect(c.diaDaSemana).toBe(dia);
     }
   });
 
-  it('na faixa da aula fixa, sugere a hora de sempre', () => {
-    const [c] = noBloco(candidatos(aluno, [aluno], ABERTA, HOJE), SEG_FIM_TARDE);
+  it('no trecho da aula fixa, sugere a hora de sempre', () => {
+    const [c] = comecaEm(candidatos(aluno, [aluno], ABERTA, HOJE), 'seg', h(17));
     expect(c.hora).toBe('17h');
   });
 
-  it('em outra faixa, sugere o início dela', () => {
-    const lista = candidatos(aluno, [aluno], ABERTA, HOJE);
-    expect(noBloco(lista, SEG_MANHA)[0].hora).toBe('8h');
-    expect(noBloco(lista, { dia: 'seg', faixa: 'tarde' })[0].hora).toBe('14h');
-    expect(noBloco(lista, { dia: 'seg', faixa: 'noite' })[0].hora).toBe('20h');
+  it('em outro trecho, sugere o começo dele', () => {
+    const semHora = com({ hora: '' });
+    const lista = candidatos(semHora, [semHora], ABERTA, HOJE);
+    expect(comecaEm(lista, 'seg', h(8))[0].hora).toBe('8h');
+    expect(comecaEm(lista, 'seg', h(14))[0].hora).toBe('14h');
   });
 
-  it('aluno sem hora recebe o início da faixa', () => {
-    const lista = candidatos(com({ hora: '' }), [aluno], ABERTA, HOJE);
-    expect(noBloco(lista, { dia: 'qua', faixa: 'fimTarde' })[0].hora).toBe('17h');
-    expect(noBloco(lista, SEG_MANHA)[0].hora).toBe('8h');
+  it('a hora sai com os minutos', () => {
+    const quebrado = com({ aulaFixa: { dias: ['qua'], hora: 14, minuto: 30 } });
+    const [c] = comecaEm(candidatos(quebrado, [quebrado], ABERTA, HOJE), 'seg', h(14, 30));
+    expect(c.hora).toBe('14h30');
+    expect(c.razoes[0]).toBe(RAZAO_MESMO_HORARIO);
   });
 });
 
@@ -543,14 +676,13 @@ describe('melhores', () => {
 
 describe('filtrar', () => {
   const lista = candidatos(aluno, [aluno], ABERTA, HOJE);
+  const ehFimDeSemana = (c: Candidata) => c.diaDaSemana === 'sab' || c.diaDaSemana === 'dom';
 
   it('fim de semana deixa só sábado e domingo', () => {
     const fds = filtrar(lista, 'fimDeSemana');
     expect(fds.length).toBeGreaterThan(0);
-    expect(fds.every((c) => c.bloco.dia === 'sab' || c.bloco.dia === 'dom')).toBe(true);
-    expect(fds).toHaveLength(
-      lista.filter((c) => c.bloco.dia === 'sab' || c.bloco.dia === 'dom').length,
-    );
+    expect(fds.every(ehFimDeSemana)).toBe(true);
+    expect(fds).toHaveLength(lista.filter(ehFimDeSemana).length);
   });
 
   it('os outros filtros devolvem a lista inteira', () => {
@@ -581,8 +713,8 @@ describe('porSemana', () => {
 
   it('dentro do grupo, as janelas vão da mais cedo para a mais tarde', () => {
     for (const g of grupos) {
-      const dias = g.janelas.map((c) => c.emDias);
-      expect(dias).toEqual([...dias].sort((a, b) => a - b));
+      const ordem = g.janelas.map((c) => c.emDias * 10000 + c.inicio);
+      expect(ordem).toEqual([...ordem].sort((a, b) => a - b));
     }
   });
 
@@ -603,19 +735,26 @@ describe('motivosDaFalta', () => {
   it('pacote em dia, agenda marcada, aluno sem disponibilidade', () => {
     expect(motivosDaFalta(aluno, [aluno], DISPONIBILIDADE, HOJE)).toEqual([
       `O pacote vence em 30/10, daqui a ${ATE_A_VALIDADE} dias.`,
-      'Seus 13 blocos livres batem com aula fixa de outro aluno.',
+      'Seus 7 horários livres batem com aula fixa de outro aluno.',
       'Ele ainda não informou quando pode repor.',
     ]);
   });
 
-  it('professor sem bloco marcado', () => {
+  it('um horário só fica no singular', () => {
+    const um = { ...DISPONIBILIDADE, blocos: [{ dia: 'seg' as const, inicio: h(14), fim: h(18) }] };
+    expect(motivosDaFalta(aluno, [aluno], um, HOJE)[1]).toBe(
+      'Seu horário livre bate com aula fixa de outro aluno.',
+    );
+  });
+
+  it('professor sem horário marcado', () => {
     const razoes = motivosDaFalta(aluno, [aluno], { ...DISPONIBILIDADE, blocos: [] }, HOJE);
-    expect(razoes[1]).toBe('Você ainda não marcou nenhum bloco na sua disponibilidade.');
+    expect(razoes[1]).toBe('Você ainda não marcou nenhum horário na sua disponibilidade.');
   });
 
   it('aluno com disponibilidade que não cruza', () => {
     const razoes = motivosDaFalta(
-      com({ disponibilidade: [{ dia: 'sab', faixa: 'noite' }] }),
+      com({ disponibilidade: [{ dia: 'sab', inicio: h(20), fim: h(22) }] }),
       [aluno],
       DISPONIBILIDADE,
       HOJE,
@@ -646,21 +785,38 @@ describe('motivosDaFalta', () => {
 });
 
 describe('horasLivres', () => {
-  it('soma a duração real das faixas', () => {
+  it('soma a duração real dos horários', () => {
+    expect(horasLivres(PADRAO_LIVRE)).toBe(40);
+  });
+
+  it('lê o formato antigo do mesmo jeito', () => {
     expect(horasLivres(PADRAO_A5)).toBe(40);
   });
 
-  it('sem bloco, zero hora', () => {
+  it('conta a meia hora', () => {
+    expect(horasLivres([{ dia: 'seg', inicio: h(14, 30), fim: h(18) }])).toBe(3.5);
+  });
+
+  it('sem horário, zero hora', () => {
     expect(horasLivres([])).toBe(0);
   });
 });
 
 describe('reposicaoMarcada', () => {
-  it('lê a data do fim do rótulo e a faixa da hora', () => {
+  it('lê a data do fim do rótulo e o trecho da hora', () => {
     expect(reposicaoMarcada(com({ agendada: { dia: 'Terça, 10/11', hora: '17h' } }))).toEqual({
       data: '10/11',
-      faixa: faixaDaHora(17),
+      inicio: h(17),
+      fim: h(18),
     });
+  });
+
+  it('lê os minutos e a duração do aluno', () => {
+    const longa = com({
+      aulaFixa: { dias: ['qua'], hora: 17, duracao: 90 },
+      agendada: { dia: 'Terça, 10/11', hora: '17h30' },
+    });
+    expect(reposicaoMarcada(longa)).toEqual({ data: '10/11', inicio: h(17, 30), fim: h(19) });
   });
 
   it('sem reposição, ou com rótulo ou hora que não se lê, é null', () => {

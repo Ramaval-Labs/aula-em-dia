@@ -223,7 +223,7 @@ describe('responder a proposta', () => {
 
 describe('informar disponibilidade', () => {
   it('envia o que está marcado na grade para a função', async () => {
-    const blocos = [{ dia: 'seg' as const, faixa: 'tarde' as const }];
+    const blocos = [{ dia: 'seg' as const, inicio: 870, fim: 1080 }];
     carregar.mockResolvedValue({ ...PAGINA, disponibilidade: blocos });
     enviar.mockResolvedValue({ ...PAGINA, disponibilidade: blocos });
     await montar();
@@ -235,5 +235,21 @@ describe('informar disponibilidade', () => {
     await waitFor(() => expect(enviar).toHaveBeenCalledWith(TOKEN, blocos));
     expect(await screen.findByText('Seu saldo')).toBeTruthy();
     expect(avisar).toHaveBeenCalledWith(avisos.alunoEnviouDisponibilidade('Caio'));
+  });
+
+  // SCRUM-101: a função publicada antes ainda devolve `{ dia, faixa }`.
+  it('a disponibilidade em faixas vira horário livre antes de ir', async () => {
+    const antigo = [{ dia: 'seg', faixa: 'tarde' }] as unknown as typeof PAGINA.disponibilidade;
+    carregar.mockResolvedValue({ ...PAGINA, disponibilidade: antigo });
+    enviar.mockResolvedValue(PAGINA);
+    await montar();
+    await screen.findByText('Seu saldo');
+
+    await fireEvent.press(botao('Informar disponibilidade'));
+    await fireEvent.press(botao('Enviar disponibilidade'));
+
+    await waitFor(() =>
+      expect(enviar).toHaveBeenCalledWith(TOKEN, [{ dia: 'seg', inicio: 840, fim: 1020 }]),
+    );
   });
 });
