@@ -240,3 +240,17 @@ describe('a semente', () => {
     expect(resumoDoDia(doDia)).toMatch(/1 saldo baixo/);
   });
 });
+
+describe('antes da aula — horário por dia (SCRUM-101)', () => {
+  it('vale o começo do dia de hoje, não o geral', () => {
+    // geral às 9h; hoje, às 18h
+    const a = com({
+      id: 'pordia',
+      aulaFixa: { dias: [DIA_DE_HOJE, OUTRO_DIA], hora: 9, porDia: { [DIA_DE_HOJE]: 18 * 60 } },
+    });
+    expect(aulasDaProximaHora([a], TUDO_LIGADO, HOJE, 17)).toEqual([
+      { id: 'pordia', nome: 'Bia Souza', hora: 18 },
+    ]);
+    expect(aulasDaProximaHora([a], TUDO_LIGADO, HOJE, 8)).toEqual([]);
+  });
+});

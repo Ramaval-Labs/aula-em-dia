@@ -189,6 +189,14 @@ export interface AulaFixa {
   minuto?: number;
   /** quanto a aula dura, em minutos, de 15 em 15; ausente = `DURACAO_PADRAO` (60) */
   duracao?: number;
+  /**
+   * O começo, em minutos desde a meia-noite, dos dias que **não** começam no
+   * horário de `hora`/`minuto` (SCRUM-101): segunda 15h15 e quarta 17h30 é
+   * `{ dias: ['seg', 'qua'], hora: 15, minuto: 15, porDia: { qua: 1050 } }`.
+   * `hora`/`minuto` são sempre os do primeiro dia da semana, e é o que o banco
+   * confere. Ausente = todo dia começa no mesmo horário.
+   */
+  porDia?: Partial<Record<DiaDaSemana, number>>;
 }
 
 export interface Folga {

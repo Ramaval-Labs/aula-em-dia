@@ -825,3 +825,49 @@ describe('reposicaoMarcada', () => {
     expect(reposicaoMarcada(com({ agendada: { dia: 'Sexta, 30/10', hora: 'à tarde' } }))).toBeNull();
   });
 });
+
+describe('candidatos — horário por dia (SCRUM-101)', () => {
+  // segunda 15h15 e quarta 17h30: as duas aulas fixas ocupam a semana dos outros
+  const porDia = com({
+    id: 'b',
+    aulaFixa: { dias: ['seg', 'qua'], hora: 15, minuto: 15, porDia: { qua: h(17, 30) } },
+  });
+  const semHora = com({ hora: '' });
+  /** O professor livre só nesses trechos: cada um rende no máximo um começo. */
+  const so = (blocos: Intervalo[]): Disponibilidade => ({
+    blocos,
+    sugereSabado: false,
+    aceitaForaDosBlocos: false,
+    folgas: [],
+  });
+
+  it('a aula da segunda ocupa 15h15–16h15 só na segunda', () => {
+    const disp = so([
+      { dia: 'seg', inicio: h(15, 15), fim: h(16, 15) },
+      { dia: 'qua', inicio: h(15, 15), fim: h(16, 15) },
+    ]);
+    const lista = candidatos(semHora, [semHora, porDia], disp, HOJE);
+    expect(comecos(lista, 'seg')).toEqual([]);
+    expect(comecos(lista, 'qua')).toEqual([h(15, 15)]);
+  });
+
+  it('a aula da quarta ocupa 17h30–18h30 só na quarta', () => {
+    const disp = so([
+      { dia: 'seg', inicio: h(17, 30), fim: h(18, 30) },
+      { dia: 'qua', inicio: h(17, 30), fim: h(18, 30) },
+    ]);
+    const lista = candidatos(semHora, [semHora, porDia], disp, HOJE);
+    expect(comecos(lista, 'qua')).toEqual([]);
+    expect(comecos(lista, 'seg')).toEqual([h(17, 30)]);
+  });
+
+  it('qualquer um dos começos do aluno conta como "o mesmo horário"', () => {
+    const disp = so([
+      { dia: 'ter', inicio: h(15, 15), fim: h(16, 15) },
+      { dia: 'ter', inicio: h(17, 30), fim: h(18, 30) },
+    ]);
+    const lista = candidatos(porDia, [porDia], disp, HOJE);
+    expect(comecos(lista, 'ter')).toEqual([h(15, 15), h(17, 30)]);
+    for (const c of doDia(lista, 'ter')) expect(c.razoes).toContain(RAZAO_MESMO_HORARIO);
+  });
+});

@@ -6,14 +6,21 @@
 
 import { estadoInicial } from '../../dados/semente';
 import {
+  aulaFixaComHorarios,
   aulaFixaDe,
+  horaNoDia,
+  iniciosDaAula,
+  inicioNoDia,
   lerAulaFixa,
   lerDias,
   lerHora,
   rotuloDaAulaFixa,
   SEM_HORARIO_FIXO,
   temAulaNoDia,
+  temHorarioPorDia,
+  trechosDaAulaFixa,
 } from '../aulaFixa';
+import type { AulaFixa, DiaDaSemana } from '../tipos';
 
 const alunosDaSemente = () => estadoInicial().alunos;
 const daSemente = (id: string) => {
@@ -137,5 +144,84 @@ describe('temAulaNoDia', () => {
     const af = { dias: ['ter' as const, 'qui' as const], hora: 18 };
     expect(temAulaNoDia(af, 'qui')).toBe(true);
     expect(temAulaNoDia(af, 'qua')).toBe(false);
+  });
+});
+
+describe('horário por dia (SCRUM-101)', () => {
+  // segunda 15h15 e quarta 17h30, como no pedido do PO
+  const SEG = 15 * 60 + 15;
+  const QUA = 17 * 60 + 30;
+  const af = aulaFixaComHorarios(['qua', 'seg'], { seg: SEG, qua: QUA });
+
+  it('o primeiro dia da semana dá a hora geral, e só o dia diferente vai para porDia', () => {
+    expect(af).toEqual({ dias: ['seg', 'qua'], hora: 15, minuto: 15, porDia: { qua: QUA } });
+  });
+
+  it('todo dia no mesmo horário não grava porDia', () => {
+    expect(aulaFixaComHorarios(['seg', 'qua'], { seg: SEG, qua: SEG })).toEqual({
+      dias: ['seg', 'qua'],
+      hora: 15,
+      minuto: 15,
+    });
+  });
+
+  it('dia sem começo fica no horário geral', () => {
+    const parcial = aulaFixaComHorarios(['seg', 'qua'], { seg: SEG });
+    expect(inicioNoDia(parcial, 'qua')).toBe(SEG);
+  });
+
+  it('sem dia ou sem começo nenhum, não há hora', () => {
+    expect(aulaFixaComHorarios([], { seg: SEG })).toEqual({ dias: [], hora: null });
+    expect(aulaFixaComHorarios(['seg'], {})).toEqual({ dias: ['seg'], hora: null });
+  });
+
+  it('a duração padrão não é gravada; outra é', () => {
+    expect(aulaFixaComHorarios(['seg'], { seg: SEG }, 60).duracao).toBeUndefined();
+    expect(aulaFixaComHorarios(['seg'], { seg: SEG }, 90).duracao).toBe(90);
+  });
+
+  it('cada dia tem o seu começo', () => {
+    expect(inicioNoDia(af, 'seg')).toBe(SEG);
+    expect(inicioNoDia(af, 'qua')).toBe(QUA);
+    expect(temHorarioPorDia(af)).toBe(true);
+    expect(iniciosDaAula(af)).toEqual([SEG, QUA]);
+  });
+
+  it('os trechos da semana usam o começo de cada dia e a mesma duração', () => {
+    const aluno = { dia: '', hora: '', aulaFixa: { ...af, duracao: 90 } };
+    expect(trechosDaAulaFixa(aluno)).toEqual([
+      { dia: 'seg', inicio: SEG, fim: SEG + 90 },
+      { dia: 'qua', inicio: QUA, fim: QUA + 90 },
+    ]);
+  });
+
+  it('o rótulo acompanha os dias na mesma ordem', () => {
+    expect(rotuloDaAulaFixa(af)).toEqual({ dia: 'segunda e quarta', hora: '15h15 e 17h30' });
+  });
+
+  it('horaNoDia devolve o horário daquele dia', () => {
+    const aluno = { dia: '', hora: '', aulaFixa: af };
+    expect(horaNoDia(aluno, 'seg')).toBe('15h15');
+    expect(horaNoDia(aluno, 'qua')).toBe('17h30');
+  });
+
+  it('a leitura descarta o porDia inútil: dia fora da aula, igual ao geral ou fora do passo', () => {
+    const lido = aulaFixaDe({
+      dia: '',
+      hora: '',
+      aulaFixa: {
+        dias: ['seg', 'qua'],
+        hora: 15,
+        minuto: 15,
+        porDia: { seg: SEG, qua: QUA, sex: 600, ter: 1001 } as AulaFixa['porDia'],
+      },
+    });
+    expect(lido.porDia).toEqual({ qua: QUA });
+  });
+
+  it('o aluno de antes, sem porDia, continua igual', () => {
+    const antigo = { dias: ['ter', 'qui'] as DiaDaSemana[], hora: 18 };
+    expect(temHorarioPorDia(antigo)).toBe(false);
+    expect(rotuloDaAulaFixa(antigo)).toEqual({ dia: 'terça e quinta', hora: '18h' });
   });
 });

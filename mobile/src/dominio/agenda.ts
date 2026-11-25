@@ -17,7 +17,7 @@
  * que passa por `lerHorario` (SCRUM-31).
  */
 
-import { aulaFixaDe, duracaoDaAula, inicioDaAula, trechosDaAulaFixa } from './aulaFixa';
+import { aulaFixaDe, duracaoDaAula, iniciosDaAula, trechosDaAulaFixa } from './aulaFixa';
 import {
   cabe,
   diaDaSemanaDe,
@@ -182,7 +182,8 @@ export function candidatos(
     .filter((m): m is { data: string; inicio: number; fim: number } => m !== null);
 
   const af = aulaFixaDe(aluno);
-  const preferido = inicioDaAula(af);
+  // com horário por dia, qualquer um dos começos dele é "o horário de sempre"
+  const preferidos = iniciosDaAula(af);
   const duracao = duracaoDaAula(af);
   const proprias = trechosDaAulaFixa(aluno);
   const doAluno = intervalosDe(aluno.disponibilidade);
@@ -221,7 +222,7 @@ export function candidatos(
       if (doAluno.length > 0 && !alunoMarcou) continue;
 
       // a mesma hora da aula fixa, em outro dia (o dia dela já saiu acima)
-      const mesmoHorarioDeSempre = preferido !== null && t === preferido;
+      const mesmoHorarioDeSempre = preferidos.includes(t);
       const encaixa = [...ocupadosHoje, ...marcadasHoje].some((o) => o.fim === t || o.inicio === fim);
       const razoes: string[] = [];
       let pontos = 100 - d; // quanto antes, melhor

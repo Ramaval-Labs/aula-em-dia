@@ -13,7 +13,7 @@
  * O dia (`dd/mm`) e a hora entram como parâmetro: o fuso é de quem chama.
  */
 
-import { aulaFixaDe, temAulaNoDia } from './aulaFixa';
+import { aulaFixaDe, inicioNoDia, temAulaNoDia } from './aulaFixa';
 import { diasEntre } from './datas';
 import { diaDaSemanaDe } from './disponibilidade';
 import { plural, primeiroNome } from './formato';
@@ -57,6 +57,16 @@ const temAulas = (a: Aluno): boolean => naLista(a) && !a.pausado;
 function temAulaHoje(a: Aluno, hoje: string): boolean {
   const dia = diaDaSemanaDe(hoje);
   return dia !== null && temAulaNoDia(aulaFixaDe(a), dia);
+}
+
+/**
+ * A hora cheia em que a aula de hoje começa: com horário por dia (SCRUM-101),
+ * é o do dia da semana de `hoje`, não o geral. `null` sem hora.
+ */
+function horaCheiaHoje(a: Aluno, hoje: string): number | null {
+  const dia = diaDaSemanaDe(hoje);
+  const inicio = dia === null ? null : inicioNoDia(aulaFixaDe(a), dia);
+  return inicio === null ? null : Math.floor(inicio / 60);
 }
 
 /**
@@ -130,7 +140,7 @@ export function aulasDaProximaHora(
   if (preferencias.antesDaAula === false) return [];
   const hora = horaAgora + HORAS_ANTES_DA_AULA;
   return alunos
-    .filter((a) => temAulas(a) && temAulaHoje(a, hoje) && aulaFixaDe(a).hora === hora)
+    .filter((a) => temAulas(a) && temAulaHoje(a, hoje) && horaCheiaHoje(a, hoje) === hora)
     .map((a) => ({ ...avisado(a), hora }));
 }
 
