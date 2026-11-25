@@ -37,7 +37,28 @@ export const LIMITE_MAXIMO_DE_REPOSICOES = 30;
 
 export const saldo = (a: Aluno): number => Math.max(0, a.total - a.usadas);
 
-export const valorPacote = (a: Aluno): number => a.total * (a.valorPorAula ?? VALOR_AULA);
+/**
+ * O valor do pacote: as aulas **compradas** vezes o preço. A renovação que
+ * soma o saldo anterior aumenta o `total`, mas as aulas herdadas já foram
+ * pagas no pacote de antes (SCRUM-101: eram cobradas de novo).
+ */
+export const valorPacote = (a: Aluno): number =>
+  (a.aulasCompradas ?? a.total) * (a.valorPorAula ?? VALOR_AULA);
+
+/**
+ * O aluno com `aulasCompradas` refeito pelo extrato: o lançamento de pacote
+ * mais recente ("Pacote de 8 aulas") diz quantas foram compradas. Só fica o
+ * campo quando o total tem mais aulas que isso (houve saldo somado).
+ */
+export function comAulasCompradas(a: Aluno, extrato: Lancamento[]): Aluno {
+  const ultimo = extrato.find((e) => /^Pacote de \d+ aulas$/.test(e.t));
+  const compradas = ultimo ? Number(/\d+/.exec(ultimo.t)?.[0]) : NaN;
+  const { aulasCompradas: _antes, ...sem } = a;
+  if (Number.isFinite(compradas) && compradas > 0 && compradas < a.total) {
+    return a.aulasCompradas === compradas ? a : { ...sem, aulasCompradas: compradas };
+  }
+  return a.aulasCompradas === undefined ? a : sem;
+}
 
 export const temPacote = (a: Aluno): boolean => !a.semPacote && a.total > 0;
 

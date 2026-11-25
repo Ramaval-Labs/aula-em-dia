@@ -90,6 +90,13 @@ export interface Aluno {
   /** sobrepõe VALOR_AULA quando o pacote deste aluno tem outro preço */
   valorPorAula?: number;
   /**
+   * As aulas compradas no pacote atual, quando o `total` inclui saldo herdado
+   * do anterior (SCRUM-101): é por elas que se cobra. Ausente = todas as do
+   * `total` foram compradas. Não tem coluna no banco: a carga o refaz pelo
+   * lançamento "Pacote de N aulas" (`comAulasCompradas`).
+   */
+  aulasCompradas?: number;
+  /**
    * Quando o aluno pode repor, em horários livres (SCRUM-101). O aluno salvo
    * antes guarda `{ dia, faixa }`: quem lê passa por `intervalosDe`.
    */

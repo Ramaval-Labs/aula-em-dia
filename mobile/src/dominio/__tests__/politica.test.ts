@@ -6,6 +6,7 @@
 import { estadoInicial, JANELA_VALIDADE_ESTENDIDA, JANELAS } from '../../dados/semente';
 import { dinheiro, dinheiroCompacto, plural, unidade } from '../formato';
 import {
+  comAulasCompradas,
   comPagamentoNaData,
   dataDaReposicao,
   diasParaVencer,
@@ -599,5 +600,36 @@ describe('registrar no dia da reposição (SCRUM-101)', () => {
     const { aluno, lancamento } = registrarAula(outroDia, 'realizada', 0, padrao, HOJE);
     expect(lancamento.t).toBe('Aula realizada');
     expect(aluno.agendada).toEqual(outroDia.agendada);
+  });
+});
+
+describe('valor do pacote renovado com saldo somado (SCRUM-101)', () => {
+  const pacote = (n: number) => ({ d: '20/08', t: `Pacote de ${n} aulas`, s: '', delta: n, saldo: n + 2 });
+
+  it('cobra só as aulas compradas, não as herdadas', () => {
+    const renovado = comAulasCompradas(alunoBase({ total: 10, usadas: 0 }), [pacote(8)]);
+    expect(renovado.aulasCompradas).toBe(8);
+    expect(valorPacote(renovado)).toBe(8 * 80);
+  });
+
+  it('sem saldo herdado, o campo não aparece e o valor é o do total', () => {
+    const novo = comAulasCompradas(alunoBase({ total: 8 }), [pacote(8)]);
+    expect(novo.aulasCompradas).toBeUndefined();
+    expect(valorPacote(novo)).toBe(8 * 80);
+  });
+
+  it('vale o lançamento de pacote mais recente (o primeiro do extrato)', () => {
+    const a = comAulasCompradas(alunoBase({ total: 14 }), [pacote(12), pacote(4)]);
+    expect(a.aulasCompradas).toBe(12);
+  });
+
+  it('sem lançamento de pacote, fica como está', () => {
+    const a = alunoBase({ total: 6 });
+    expect(comAulasCompradas(a, [])).toBe(a);
+  });
+
+  it('campo velho que não vale mais é tirado', () => {
+    const a = alunoBase({ total: 8, aulasCompradas: 6 });
+    expect(comAulasCompradas(a, [pacote(8)]).aulasCompradas).toBeUndefined();
   });
 });
