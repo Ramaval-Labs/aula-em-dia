@@ -820,7 +820,9 @@ o trigger cria as três linhas e o seed grava o perfil por cima.
   até lá `escolherRepositorio` cai no local com um aviso.
 
 **Recuperar a senha (SCRUM-62).** O link do e-mail abre o app do professor no navegador, na
-Vercel, e não depende do build (PO, 14/11). O e-mail sai pelo Resend, ligado como SMTP do Supabase.
+Vercel, e não depende do build (PO, 14/11). O e-mail sai por uma conta Gmail do projeto, ligada
+como SMTP do Supabase (PO, 24/11), que entrega a qualquer endereço sem domínio próprio. O Resend,
+com domínio verificado, fica para o `SCRUM-99`: a troca é só no painel, sem código.
 
 - **O `token_hash`, e não o PKCE.** O link é `{{ .RedirectTo }}?token_hash=…&type=recovery`, e a tela
   chama `redefinirSenha`, que faz `verifyOtp` e `updateUser`. Funciona em qualquer navegador; o PKCE
@@ -841,7 +843,7 @@ Vercel, e não depende do build (PO, 14/11). O e-mail sai pelo Resend, ligado co
     (`over_email_send_rate_limit`, `otp_expired`, `same_password`);
   - no `supabase/tests/funcoes/recuperacao.test.mjs`, de ponta a ponta no Auth local, com o
     e-mail lido no Inbucket.
-- **A configuração da nuvem** (Resend, modelo, URLs) está em `supabase/README.md`.
+- **A configuração da nuvem** (o SMTP do Gmail, o modelo e as URLs) está em `supabase/README.md`.
 
 **Onde foi testado.** Em 15/10/2026, contra o banco local: `db reset` com a `0003`, os testes pgTAP
 (o do trigger e o de RLS), e a sessão de verdade num teste temporário contra o Auth local —
