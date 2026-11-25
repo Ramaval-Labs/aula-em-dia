@@ -3,7 +3,7 @@
 <!-- impeccable:product-schema 1 -->
 
 > Derivado de `handoff-ios-glass/README.md`, `README.md`, `PROXIMOS-PASSOS.md`, `spec/acessibilidade.md` e da
-> proposta `Envio01-AulaEmDia (1).pdf`. Fonte da verdade continua sendo esses arquivos; este é o
+> proposta `docs/propostas/Envio01-AulaEmDia.pdf`. Fonte da verdade continua sendo esses arquivos; este é o
 > resumo que o Impeccable lê antes de agir.
 
 ## Platform
@@ -99,7 +99,7 @@ locação de equipamentos, não pode construir essa regra.
 
 - Dados de demonstração em `data/seed.json` (professor fictício e quatro alunos).
 - Análise competitiva, tamanho de mercado (CNAE 8599-6/99 com cerca de 685 mil empresas; 92 mil em
-  idiomas; 42 mil em música) e escopo do MVP na proposta `Envio01-AulaEmDia (1).pdf`.
+  idiomas; 42 mil em música) e escopo do MVP na proposta `docs/propostas/Envio01-AulaEmDia.pdf`.
 - **Não existem:** depoimentos, clientes reais, métricas de uso, fotografias ou ilustrações. Não
   inventar nenhum deles.
 

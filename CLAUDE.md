@@ -198,7 +198,7 @@ spec/componentes.md            inventário de componentes com props
 spec/navegacao.md              máquina de navegação (telas, transições, pilha)
 spec/acessibilidade.md         contraste, alvos de toque, leitores de tela
 data/seed.json                 dados-semente (alunos, extratos, políticas)
-Envio01-AulaEmDia (1).pdf      proposta do projeto: problema, concorrência, escopo do MVP
+docs/propostas/               a proposta (Envio 01) e a entrega de 25/09; proposta do projeto: problema, concorrência, escopo do MVP
 ```
 
 ## Divergências conhecidas entre protótipo e spec
