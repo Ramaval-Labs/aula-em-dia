@@ -13,7 +13,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { EstadoVazio } from '../componentes/Blocos';
+import { BlocoStatus, EstadoVazio } from '../componentes/Blocos';
 import { CampoDeTexto } from '../componentes/Campos';
 import { BotaoPrimario, CartaoEscolha } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
@@ -21,9 +21,11 @@ import { Sheet } from '../componentes/Sheet';
 import {
   efeito,
   geraReposicao,
+  podeRepor,
   podeRegistrar,
   saldo,
   saldoBaixo,
+  semSaldo,
   temPacote,
 } from '../dominio/politica';
 import type { Aluno, Desfecho, Politicas } from '../dominio/tipos';
@@ -32,7 +34,7 @@ import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
-import { plural, unidade } from '../dominio/formato';
+import { plural, primeiroNome, unidade } from '../dominio/formato';
 import { comEspaco, texto } from '../tema/tipografia';
 import { linhaDeHorario } from './comum/aluno';
 
@@ -47,9 +49,13 @@ const DESFECHOS: { chave: Desfecho; titulo: string; sub: string }[] = [
 const DIGITOS_DO_AVISO = 3;
 
 /** Texto de apoio do campo de horas, dependente da política salva. */
-function notaDoAviso(avisoH: number, p: Politicas): string {
+function notaDoAviso(avisoH: number, p: Politicas, aluno: Aluno): string {
   if (!p.avisadaDevolve) {
     return 'Sua política não devolve a aula em falta avisada, então o prazo não muda o resultado.';
+  }
+  // No limite de reposições, o prazo não salva a aula (SCRUM-101).
+  if (avisoH >= p.avisoHoras && !podeRepor(aluno, p)) {
+    return `Dentro do seu mínimo de ${p.avisoHoras}h, mas o limite de reposições do pacote já foi usado. A aula é debitada.`;
   }
   return avisoH >= p.avisoHoras
     ? `Dentro do seu mínimo de ${p.avisoHoras}h. A aula volta para o saldo e uma reposição é gerada.`
@@ -163,6 +169,18 @@ export function Registrar() {
         </>
       ) : (
         <>
+          {aluno && semSaldo(aluno) ? (
+            // Registrar com o saldo zerado é possível (a aula aconteceu), mas o
+            // professor fica sabendo antes, com o atalho para renovar (SCRUM-101).
+            <BlocoStatus
+              tom="ambar"
+              titulo="Sem aulas no pacote"
+              texto={`${primeiroNome(aluno.name)} já usou todas as aulas. Se registrar agora, ` +
+                'a aula entra no extrato como sem saldo.'}
+              acao={{ rotulo: 'Renovar pacote', aoTocar: () => ir('pacote'), variante: 'vidro' }}
+              estilo={estilos.blocoTopo}
+            />
+          ) : null}
           <CabecalhoGrupo titulo="O que aconteceu" />
           <View style={estilos.cartoes}>
             {DESFECHOS.map((o) => (
@@ -194,7 +212,7 @@ export function Registrar() {
                           { color: cores.tinta2 },
                         ]}
                       >
-                        {notaDoAviso(avisoH, politicas)}
+                        {notaDoAviso(avisoH, politicas, aluno)}
                       </Text>
                     )}
                   </>
@@ -231,7 +249,7 @@ function CartaoDesfecho({
   children?: React.ReactNode;
 }) {
   const { cores } = useCores();
-  const ef = efeito(chave, avisoH, politicas);
+  const ef = efeito(chave, avisoH, politicas, aluno);
   const antes = saldo(aluno);
   const depois = Math.max(0, antes + ef.delta);
 

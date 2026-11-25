@@ -52,7 +52,7 @@ export function Resultado() {
     );
   }
 
-  const ef = efeito(desfecho, avisoH, politicas);
+  const ef = efeito(desfecho, avisoH, politicas, aluno);
   // O saldo já foi aplicado pelo registro: aqui só mostramos o valor atual.
   const restam = saldo(aluno);
   const geradaReposicao = reposicaoCriada === true;
