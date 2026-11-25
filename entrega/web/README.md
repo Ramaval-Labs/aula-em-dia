@@ -64,8 +64,8 @@ Depois sirva com `npx serve -s dist` dentro de `../app`, ou copie o `dist/` para
 
 - A tela de boas-vindas abre. Em **Entrar**, qualquer e-mail válido com senha de 6 caracteres ou
   mais leva aos 4 alunos de demonstração.
-- Em produção, a página do aluno abre por um link `/a/<token>` gerado na ficha do aluno ("Enviar
-  link do saldo").
+- Em produção, a página do aluno abre por um link `/a/<token>` copiado na ficha do aluno ("Copiar
+  link do aluno").
 
 ---
 

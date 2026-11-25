@@ -101,7 +101,8 @@ scripts/         capturar telas (npm run capturar) e utilitários
 - `npm run bundle:dominio` empacota o domínio para as funções da `../api` (ver o README de lá).
 - `npm run capturar -- --tela home` tira um print de uma tela pelo navegador.
 
-O que cada tela faz, as regras de negócio e a arquitetura estão em `../docs/PROJETO.md`.
+O que cada tela faz, as regras de negócio e a arquitetura estão em `../docs/PROJETO.md`. As
+decisões de implementação (stack, estado, navegação, convenções) estão em `DESENVOLVIMENTO.md`.
 
 **Problemas comuns:**
 - **"You need to be signed in to Expo Go and Expo CLI":** logue a mesma conta no terminal
