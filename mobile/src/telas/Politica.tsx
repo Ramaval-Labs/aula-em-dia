@@ -4,28 +4,29 @@
  * muda o cálculo da tela Registrar aula no próximo registro.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { BlocoStatus, CartaoDeAjuste } from '../componentes/Blocos';
+import { CampoDeTexto } from '../componentes/Campos';
 import { TelaVidro, TituloDeConteudo } from '../componentes/Chassi';
 import { BotaoPrimario, BotaoTexto, Segmentado, Stepper, Switch } from '../componentes/Controles';
 import { plural } from '../dominio/formato';
-import { temPacote } from '../dominio/politica';
+import { LIMITE_MAXIMO_DE_REPOSICOES, temPacote } from '../dominio/politica';
 import type { Politicas } from '../dominio/tipos';
+import { prazoMinimoDigitado, somenteDigitos } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
 import { useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 
-const PRAZOS = [4, 12, 24, 48].map((h) => ({ valor: h, rotulo: `${h}h` }));
+/** O campo do prazo aceita no máximo três dígitos: o limite é 720h. */
+const DIGITOS_DO_PRAZO = 3;
 const VALIDADES = [
   { valor: 30, rotulo: '30 dias' },
   { valor: 60, rotulo: '60 dias' },
   { valor: 0, rotulo: 'sem prazo' },
 ];
-const LIMITE_MAXIMO = 5;
-
 /** Limite 0 é "sem limite" — o stepper mostra "—", que não se lê. */
 const rotuloDoLimite = (n: number) => (n === 0 ? 'sem limite' : String(n));
 
@@ -92,6 +93,20 @@ export function Politica() {
 
   const [atual, atualizar, , descartarRascunho] = useRascunho('politica', salvas);
   const mudou = JSON.stringify(atual) !== JSON.stringify(salvas);
+
+  // O prazo é digitado (SCRUM-101: eram 4h, 12h, 24h e 48h fixos). O texto
+  // morre com a tela; o rascunho guarda só o último prazo válido, e um campo
+  // vazio ou inválido segura o Salvar.
+  const [prazoTexto, setPrazoTexto] = useState(String(atual.avisoHoras));
+  const prazoLido = prazoMinimoDigitado(prazoTexto);
+  const erroDoPrazo = 'erro' in prazoLido ? prazoLido.erro : undefined;
+  const mudarPrazo = (digitado: string) => {
+    const t = somenteDigitos(digitado).slice(0, DIGITOS_DO_PRAZO);
+    setPrazoTexto(t);
+    const lido = prazoMinimoDigitado(t);
+    if ('horas' in lido) atualizar({ avisoHoras: lido.horas });
+  };
+  const podeSalvar = mudou && !erroDoPrazo;
   const impacto = mudancas(salvas, atual, alunos.filter(temPacote).length);
 
   return (
@@ -109,9 +124,9 @@ export function Politica() {
         <>
           <BotaoPrimario
             rotulo="Salvar alterações"
-            desabilitado={!mudou}
+            desabilitado={!podeSalvar}
             aoTocar={() => {
-              if (!mudou) return;
+              if (!podeSalvar) return;
               salvarPoliticas(atual);
               concluir('ajustes');
               avisar(avisos.politicaSalva);
@@ -128,12 +143,14 @@ export function Politica() {
       <TituloDeConteudo titulo="Política de faltas" />
 
       <CartaoDeAjuste titulo="Prazo mínimo de aviso" estilo={estilos.primeiro}>
-        <Segmentado
-          opcoes={PRAZOS}
-          valor={atual.avisoHoras}
-          aoTrocar={(avisoHoras) => atualizar({ avisoHoras })}
-          porte="cartao"
-          rotuloDoGrupo="Prazo mínimo de aviso"
+        <CampoDeTexto
+          rotulo="Em horas antes da aula"
+          valor={prazoTexto}
+          aoMudar={mudarPrazo}
+          placeholder="24"
+          teclado="numerico"
+          erro={erroDoPrazo}
+          ajuda="De 1 a 720 horas. Aviso com menos antecedência conta como fora do prazo."
         />
       </CartaoDeAjuste>
 
@@ -162,7 +179,7 @@ export function Politica() {
           <Stepper
             valor={atual.limiteReposicoes}
             minimo={0}
-            maximo={LIMITE_MAXIMO}
+            maximo={LIMITE_MAXIMO_DE_REPOSICOES}
             aoTrocar={(limiteReposicoes) => atualizar({ limiteReposicoes })}
             formatar={(v) => (v === 0 ? '—' : String(v))}
             rotuloDoValor={(v) => (v === 0 ? 'sem limite' : String(v))}
