@@ -484,7 +484,9 @@ export function ListaDeHorarios({
 }) {
   const [aberta, setAberta] = useState(!recolhida);
   useEffect(() => {
-    if (!recolhida) return undefined;
+    // No navegador o react-native-web responde sempre "ligado" e não há como
+    // saber: lá a linha recolhida, que é um botão, é o caminho.
+    if (!recolhida || Platform.OS === 'web') return undefined;
     let vivo = true;
     AccessibilityInfo.isScreenReaderEnabled()
       .then((ligado) => {
