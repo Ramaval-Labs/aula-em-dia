@@ -41,7 +41,7 @@ export function faixaDaLinha(a: Aluno): { tipo: TipoDeFaixa; texto: string } | u
       ? `Pausado ${f.sufixo}`
       : f.tipo === 'atraso'
         ? `Atraso de ${f.sufixo}`
-        : f.tipo === 'pendente'
+        : f.tipo === 'pendente' || f.tipo === 'vencido' || f.tipo === 'vencendo'
           ? `${f.texto} ${f.sufixo}`
           : `Reposição ${f.sufixo}`;
   return { tipo: f.tipo, texto: rotulo };

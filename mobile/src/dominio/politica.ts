@@ -4,7 +4,7 @@
  * Cobertura em src/dominio/__tests__/politica.test.ts (spec/casos-de-teste.md).
  */
 
-import { diasEntre } from './datas';
+import { diasEntre, hoje as hojeDoApp } from './datas';
 import { dinheiro } from './formato';
 import type {
   Aluno,
@@ -170,12 +170,18 @@ export function registrarAula(
   const aluno: Aluno = { ...a };
   if (ef.delta < 0) aluno.usadas = a.usadas + 1;
   if (geraReposicao(aluno, ef, p)) aluno.pendencia = { origem: hoje, dias: 0 };
+  // O registro do dia da reposição marcada é o dela: qualquer desfecho a
+  // resolve, e a aula dada vira "Reposição realizada" no extrato (SCRUM-101).
+  const daReposicao = reposicaoHoje(a, hoje);
+  if (daReposicao) aluno.agendada = null;
+  const titulo = daReposicao && desfecho === 'realizada' ? 'Reposição realizada' : ef.rotulo;
+  const base = daReposicao && desfecho === 'realizada' ? 'Reposição marcada para hoje' : ef.detalhe;
   // Debitar com o saldo zerado não tem de onde tirar: o extrato registra, para
   // a aula dada sem crédito não sumir (SCRUM-101).
-  const detalhe = ef.delta < 0 && semSaldo(a) ? `${ef.detalhe} · sem saldo no pacote` : ef.detalhe;
+  const detalhe = ef.delta < 0 && semSaldo(a) ? `${base} · sem saldo no pacote` : base;
   return {
     aluno,
-    lancamento: { d: hoje, t: ef.rotulo, s: detalhe, delta: ef.delta, saldo: novoSaldo },
+    lancamento: { d: hoje, t: titulo, s: detalhe, delta: ef.delta, saldo: novoSaldo },
     efeito: ef,
   };
 }
@@ -268,8 +274,26 @@ export function ordenar(alunos: Aluno[], filtro: Filtro): Aluno[] {
   return c.sort((x, y) => pesoUrgencia(x) - pesoUrgencia(y) || saldo(x) - saldo(y));
 }
 
-/** Uma faixa só, nesta precedência. */
-export function faixaStatus(a: Aluno): Faixa | null {
+/** Faltando isso ou menos para a validade, com aula sobrando, o pacote avisa. */
+export const DIAS_PARA_AVISAR_VALIDADE = 7;
+
+/** A data (dd/mm) da reposição marcada: o fim do rótulo "Terça, 10/11". */
+export function dataDaReposicao(a: Aluno): string | null {
+  if (!a.agendada) return null;
+  return /(\d{2}\/\d{2})\s*$/.exec(a.agendada.dia)?.[1] ?? null;
+}
+
+/** A reposição marcada é hoje: o registro de hoje é o dela (SCRUM-101). */
+export const reposicaoHoje = (a: Aluno, hoje: string): boolean => dataDaReposicao(a) === hoje;
+
+/** Dias que faltam para a validade do pacote; `null` sem pacote ou sem prazo. */
+export function diasParaVencer(a: Aluno, hoje: string): number | null {
+  if (!temPacote(a) || !/^\d{2}\/\d{2}$/.test(a.validade ?? '')) return null;
+  return diasEntre(hoje, a.validade);
+}
+
+/** Uma faixa só, nesta precedência. `hoje` entra para a reposição e a validade. */
+export function faixaStatus(a: Aluno, hoje: string = hojeDoApp()): Faixa | null {
   if (a.pausado) {
     return { tipo: 'pausado', texto: 'Aulas pausadas', sufixo: 'até regularizar' };
   }
@@ -286,6 +310,25 @@ export function faixaStatus(a: Aluno): Faixa | null {
       texto: 'Reposição pendente',
       sufixo: a.pendencia.dias > 0 ? `há ${a.pendencia.dias} dias` : 'hoje',
     };
+  }
+  // A reposição marcada cujo dia passou sem registro: ela não aconteceu, ou
+  // aconteceu e ninguém registrou. Nos dois casos, é pendência (SCRUM-101).
+  const marcadaEm = dataDaReposicao(a);
+  const passou = marcadaEm ? diasEntre(marcadaEm, hoje) : null;
+  if (a.agendada && marcadaEm && passou !== null && passou > 0) {
+    return { tipo: 'pendente', texto: `Reposição de ${marcadaEm}`, sufixo: 'sem registro' };
+  }
+  // Pacote com aula sobrando perto de vencer, ou já vencido (SCRUM-101).
+  const faltam = diasParaVencer(a, hoje);
+  if (faltam !== null && saldo(a) > 0) {
+    if (faltam < 0) return { tipo: 'vencido', texto: 'Pacote venceu', sufixo: `em ${a.validade}` };
+    if (faltam <= DIAS_PARA_AVISAR_VALIDADE) {
+      return {
+        tipo: 'vencendo',
+        texto: 'Pacote vence',
+        sufixo: faltam === 0 ? 'hoje' : faltam === 1 ? 'amanhã' : `em ${faltam} dias`,
+      };
+    }
   }
   if (a.agendada) {
     return {

@@ -360,13 +360,21 @@ export function CartaoDeDebito({
 
 /* ── Faixa de status ──────────────────────────────────────────────────── */
 
-export type TipoDeFaixa = 'pausado' | 'atraso' | 'pendente' | 'marcada';
+export type TipoDeFaixa =
+  | 'pausado'
+  | 'atraso'
+  | 'pendente'
+  | 'vencido'
+  | 'vencendo'
+  | 'marcada';
 
 /** Tom de cada faixa, na ordem de prioridade do handoff. */
 const TOM_DA_FAIXA: Record<TipoDeFaixa, TomDeStatus> = {
   pausado: 'neutro',
   atraso: 'vermelho',
   pendente: 'ambar',
+  vencido: 'vermelho',
+  vencendo: 'ambar',
   marcada: 'verde',
 };
 
@@ -375,6 +383,8 @@ export const PRIORIDADE_DA_FAIXA: readonly TipoDeFaixa[] = [
   'pausado',
   'atraso',
   'pendente',
+  'vencido',
+  'vencendo',
   'marcada',
 ];
 

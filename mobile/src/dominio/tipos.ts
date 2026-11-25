@@ -141,7 +141,13 @@ export interface EfeitoRegistro {
 
 export type Filtro = 'Urgência' | 'A–Z' | 'Hoje';
 
-export type TipoDeFaixa = 'pausado' | 'atraso' | 'pendente' | 'marcada';
+export type TipoDeFaixa =
+  | 'pausado'
+  | 'atraso'
+  | 'pendente'
+  | 'vencido'
+  | 'vencendo'
+  | 'marcada';
 
 export interface Faixa {
   tipo: TipoDeFaixa;

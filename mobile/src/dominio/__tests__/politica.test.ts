@@ -7,6 +7,9 @@ import { estadoInicial, JANELA_VALIDADE_ESTENDIDA, JANELAS } from '../../dados/s
 import { dinheiro, dinheiroCompacto, plural, unidade } from '../formato';
 import {
   comPagamentoNaData,
+  dataDaReposicao,
+  diasParaVencer,
+  reposicaoHoje,
   efeito,
   estenderValidade,
   faixaStatus,
@@ -414,7 +417,7 @@ describe('ordenação e faixa', () => {
 
   it('faixa de reposição marcada corta o dia da semana', () => {
     const a = alunoBase({ agendada: { dia: 'Sexta, 29/08', hora: '17h' } });
-    expect(faixaStatus(a)?.sufixo).toBe('29/08 · 17h');
+    expect(faixaStatus(a, HOJE)?.sufixo).toBe('29/08 · 17h');
   });
 });
 
@@ -513,5 +516,88 @@ describe('pagamentoNaData — o atraso chega sozinho (SCRUM-101)', () => {
     expect(comPagamentoNaData(emDia, '28/08')).toBe(emDia);
     const vencido = alunoBase({ pagamento: { status: 'aberto', vence: '20/08' } });
     expect(comPagamentoNaData(vencido, '28/08').pagamento.status).toBe('atraso');
+  });
+});
+
+describe('reposição marcada e validade na faixa (SCRUM-101)', () => {
+  const marcada = (dia: string) => alunoBase({ agendada: { dia, hora: '17h' } });
+
+  it('a data da reposição sai do fim do rótulo', () => {
+    expect(dataDaReposicao(marcada('Sexta, 29/08'))).toBe('29/08');
+    expect(dataDaReposicao(alunoBase())).toBeNull();
+    expect(reposicaoHoje(marcada('Quinta, 28/08'), HOJE)).toBe(true);
+    expect(reposicaoHoje(marcada('Sexta, 29/08'), HOJE)).toBe(false);
+  });
+
+  it('reposição com o dia passado e sem registro vira pendência', () => {
+    expect(faixaStatus(marcada('Terça, 26/08'), HOJE)).toEqual({
+      tipo: 'pendente',
+      texto: 'Reposição de 26/08',
+      sufixo: 'sem registro',
+    });
+    // no próprio dia ainda é "marcada"
+    expect(faixaStatus(marcada('Quinta, 28/08'), HOJE)?.tipo).toBe('marcada');
+  });
+
+  it('pacote com aula sobrando perto de vencer avisa', () => {
+    expect(faixaStatus(alunoBase({ validade: '02/09' }), HOJE)).toEqual({
+      tipo: 'vencendo',
+      texto: 'Pacote vence',
+      sufixo: 'em 5 dias',
+    });
+    expect(faixaStatus(alunoBase({ validade: '29/08' }), HOJE)?.sufixo).toBe('amanhã');
+    expect(faixaStatus(alunoBase({ validade: '28/08' }), HOJE)?.sufixo).toBe('hoje');
+    // a 8 dias ainda não avisa
+    expect(faixaStatus(alunoBase({ validade: '05/09' }), HOJE)).toBeNull();
+  });
+
+  it('pacote vencido com aula sobrando fica vermelho', () => {
+    expect(faixaStatus(alunoBase({ validade: '20/08' }), HOJE)).toEqual({
+      tipo: 'vencido',
+      texto: 'Pacote venceu',
+      sufixo: 'em 20/08',
+    });
+  });
+
+  it('sem aula sobrando, sem prazo ou sem pacote: a validade não avisa', () => {
+    expect(faixaStatus(alunoBase({ validade: '20/08', usadas: 6 }), HOJE)).toBeNull();
+    expect(faixaStatus(alunoBase({ validade: 'sem prazo' }), HOJE)).toBeNull();
+    expect(diasParaVencer(alunoBase({ semPacote: true, total: 0 }), HOJE)).toBeNull();
+  });
+
+  it('atraso e pendência vêm antes da validade', () => {
+    const atrasado = alunoBase({
+      validade: '20/08',
+      pagamento: { status: 'atraso', venceu: '10/08', dias: 18 },
+    });
+    expect(faixaStatus(atrasado, HOJE)?.tipo).toBe('atraso');
+    const pendente = alunoBase({ validade: '20/08', pendencia: { origem: '25/08', dias: 3 } });
+    expect(faixaStatus(pendente, HOJE)?.tipo).toBe('pendente');
+  });
+});
+
+describe('registrar no dia da reposição (SCRUM-101)', () => {
+  const comReposicaoHoje = alunoBase({ agendada: { dia: 'Quinta, 28/08', hora: '17h' } });
+
+  it('aula realizada no dia vira "Reposição realizada" e fecha a reposição', () => {
+    const { aluno, lancamento, efeito: ef } = registrarAula(comReposicaoHoje, 'realizada', 0, padrao, HOJE);
+    expect(lancamento.t).toBe('Reposição realizada');
+    expect(lancamento.s).toBe('Reposição marcada para hoje');
+    expect(ef.delta).toBe(-1);
+    expect(aluno.agendada).toBeNull();
+    expect(faixaStatus(aluno, HOJE)).toBeNull();
+  });
+
+  it('falta no dia da reposição também a resolve, com o lançamento da falta', () => {
+    const { aluno, lancamento } = registrarAula(comReposicaoHoje, 'sem_aviso', 0, padrao, HOJE);
+    expect(lancamento.t).toBe('Falta sem aviso');
+    expect(aluno.agendada).toBeNull();
+  });
+
+  it('em outro dia, a reposição marcada fica', () => {
+    const outroDia = alunoBase({ agendada: { dia: 'Sexta, 29/08', hora: '17h' } });
+    const { aluno, lancamento } = registrarAula(outroDia, 'realizada', 0, padrao, HOJE);
+    expect(lancamento.t).toBe('Aula realizada');
+    expect(aluno.agendada).toEqual(outroDia.agendada);
   });
 });
