@@ -118,8 +118,9 @@ card à mão. Os escopos antigos do histórico (`redesign(onda-5):`, `designer(<
 pertencem a trabalhos encerrados; não use.
 
 **PR:** um por card, contra `main`. **A `main` é protegida** desde o `SCRUM-49`: para quem não
-é administrador o GitHub recusa o push direto e exige o PR, com 1 aprovação e o check
-`Testes e tipos` verde. A aprovação é descartada quando chega commit novo, a branch precisa
+é administrador o GitHub recusa o push direto e exige o PR, com 1 aprovação e os três checks
+verdes: `Testes e tipos`, `RLS do banco` e `Função do aluno` (os dois últimos desde o
+`SCRUM-98`, depois de uma semana verde na `main`). A aprovação é descartada quando chega commit novo, a branch precisa
 estar atualizada com a `main` antes de mesclar, e force push e deleção estão fechados para
 todo mundo.
 
@@ -133,8 +134,15 @@ todo mundo.
   [`CODEOWNERS`](CODEOWNERS) faz isso valer sem ninguém precisar lembrar. Isso existe para o
   Rafael não virar fila única de aprovação — ele acumula PO e review.
 - **CI verde é obrigatório** — e agora é o GitHub que cobra, não a boa vontade de quem abriu
-  o PR. `npm test` e `npm run typecheck` rodam no Actions a cada push, e o botão de merge fica
-  bloqueado enquanto o check `Testes e tipos` não passar. "Passou aqui" não conta.
+  o PR. `npm test` e `npm run typecheck` rodam no Actions a cada push, com os testes de RLS e
+  das Edge Functions (`aluno-publico` e `avisos`) em jobs próprios, e o botão de merge fica
+  bloqueado enquanto `Testes e tipos`, `RLS do banco` e `Função do aluno` não passarem.
+  "Passou aqui" não conta.
+  - **Não renomeie esses jobs:** o nome é o que a proteção procura, e um check renomeado deixa
+    todo PR pendente para sempre. Nem ponha filtro de `paths` neles: check obrigatório com
+    filtro nunca roda no PR que não mexe no banco, e o PR trava.
+  - **Falha de infraestrutura** (o registry do Docker recusando a imagem, porta ocupada no
+    runner) não é defeito do PR: rode de novo o job pelo botão "Re-run failed jobs".
 - **Branch de verificação descartável não leva a chave do card no nome.** O GitHub for Jira
   vincula pelo nome da branch e pelo prefixo do commit, então um PR de teste chamado
   `teste/portao-scrum-49` deixou um PR `DECLINED` e uma compilação vermelha penduradas no
@@ -149,7 +157,7 @@ todo mundo.
 
 ```bash
 cd mobile
-npm test ; echo "EXIT=$?"   # hoje: 1289 testes, 48 suítes — só conta com EXIT=0
+npm test ; echo "EXIT=$?"   # hoje: 1291 testes, 49 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
 npm run lint ; echo "EXIT=$?"   # ESLint, também no CI: erro trava o PR; não acrescente aviso
 ```
@@ -261,7 +269,7 @@ As três pessoas usam Claude Code neste repositório, então vale combinar o bá
 
 ## 7. Onde a rede de segurança tem buraco
 
-1289 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
+1291 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
 confiar:
 
 - **Todo módulo de `dominio/` com lógica já tem suíte própria**, mas em `estado/dados.ts`, o maior arquivo
