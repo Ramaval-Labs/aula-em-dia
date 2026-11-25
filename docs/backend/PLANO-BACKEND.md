@@ -842,7 +842,10 @@ com domínio verificado, fica para o `SCRUM-99`: a troca é só no painel, sem c
   - no `sessao.test.ts`, com o cliente simulado e os códigos que o Auth local devolveu
     (`over_email_send_rate_limit`, `otp_expired`, `same_password`);
   - no `supabase/tests/funcoes/recuperacao.test.mjs`, de ponta a ponta no Auth local, com o
-    e-mail lido no Inbucket.
+    e-mail lido no Inbucket;
+  - na nuvem, em 25/11/2026, com o SMTP do Gmail, o modelo "Reset Password" e as URLs do Auth no
+    painel, e a `EXPO_PUBLIC_URL_DO_APP` na Vercel: pedir o link pelo "Esqueci minha senha" do
+    login, receber o e-mail, abrir o link no navegador, salvar a senha nova e entrar com ela.
 - **A configuração da nuvem** (o SMTP do Gmail, o modelo e as URLs) está em `supabase/README.md`.
 
 **Onde foi testado.** Em 15/10/2026, contra o banco local: `db reset` com a `0003`, os testes pgTAP
