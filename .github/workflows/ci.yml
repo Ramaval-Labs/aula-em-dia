@@ -54,8 +54,8 @@ jobs:
   # erro: é a falha que nenhum teste do app pega, e até aqui dependia de alguém lembrar
   # de rodar `supabase test db`. Fica num job separado para o portão do app não esperar
   # o Postgres subir. Roda sempre, sem filtro de paths: check obrigatório com filtro fica
-  # pendente para sempre no PR que não mexe no banco. Ainda NÃO é obrigatório; depois de
-  # uma semana verde, quem administra a main o promove na proteção da branch.
+  # pendente para sempre no PR que não mexe no banco. Obrigatório na proteção da main desde
+  # o SCRUM-98: não renomeie o job, que o nome é o que a proteção procura.
   banco:
     name: RLS do banco
     runs-on: ubuntu-latest
@@ -87,6 +87,7 @@ jobs:
   # precisa do gateway e do Auth, e não só do Postgres. Banco local, que morre com o job:
   # nenhuma chave nem projeto da nuvem. Desde o SCRUM-94, o mesmo job testa também a
   # função `avisos` contra um Expo Push falso: o nome do check continua o mesmo.
+  # Obrigatório na proteção da main desde o SCRUM-98: não renomeie o job.
   funcao:
     name: Função do aluno
     runs-on: ubuntu-latest
