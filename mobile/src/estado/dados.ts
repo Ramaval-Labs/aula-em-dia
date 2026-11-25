@@ -24,6 +24,7 @@ import { estadoInicial, type EstadoPersistivel } from '../dados/semente';
 import { hoje, somarDias } from '../dominio/datas';
 import { intervalosDe } from '../dominio/disponibilidade';
 import {
+  comAulasCompradas,
   comPagamentoNaData,
   estenderValidade as regraEstenderValidade,
   marcarReposicao as regraMarcarReposicao,
@@ -243,11 +244,20 @@ function comHorariosLivres<T extends { alunos?: Aluno[]; disponibilidade?: Dispo
  * dia. Pacote aberto com o vencimento passado chega como atraso, porque nada
  * mais o passa para lá.
  */
-function naCarga<T extends { alunos?: Aluno[]; disponibilidade?: Disponibilidade }>(g: T): T {
+function naCarga<
+  T extends { alunos?: Aluno[]; disponibilidade?: Disponibilidade; extratos?: Extratos },
+>(g: T): T {
   const livre = comHorariosLivres(g);
   if (!livre.alunos) return livre;
   const dia = hoje();
-  return { ...livre, alunos: livre.alunos.map((a) => comPagamentoNaData(a, dia)) };
+  // As aulas compradas não têm coluna no banco: saem do lançamento do pacote.
+  const extratos = livre.extratos ?? {};
+  return {
+    ...livre,
+    alunos: livre.alunos.map((a) =>
+      comAulasCompradas(comPagamentoNaData(a, dia), extratos[a.id] ?? []),
+    ),
+  };
 }
 
 export const useDados = create<Dados>((set, get) => {
@@ -420,6 +430,7 @@ export const useDados = create<Dados>((set, get) => {
         encerrado: undefined,
         total: AULAS_DO_PACOTE,
         usadas: 0,
+        aulasCompradas: undefined,
         validade,
         validadeEstendida: false,
         pagamento: { status: 'aberto', vence: somarDias(hoje(), 7) },
@@ -444,6 +455,8 @@ export const useDados = create<Dados>((set, get) => {
       mutar(id, (a) => ({
         ...a,
         total: a.total + AULAS_DO_PACOTE,
+        // a cobrança é das aulas novas; as herdadas já foram pagas (SCRUM-101)
+        aulasCompradas: AULAS_DO_PACOTE,
         validade,
         validadeEstendida: false,
         pagamento: { status: 'aberto', vence: somarDias(hoje(), 7) },
@@ -531,6 +544,8 @@ export const useDados = create<Dados>((set, get) => {
         encerrado: undefined,
         total: calculado.total,
         usadas: 0,
+        // só as aulas novas são cobradas; somar o saldo não as encarece (SCRUM-101)
+        aulasCompradas: calculado.total > cfg.aulas ? cfg.aulas : undefined,
         valorPorAula: cfg.valorPorAula,
         validade: calculado.validade,
         validadeEstendida: false,

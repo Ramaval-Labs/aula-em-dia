@@ -18,6 +18,7 @@ import { repositorio, type Gravado, type Mudanca, type Repositorio } from '../..
 import { ConflitoDeVersao } from '../../dados/repositorioSupabase';
 import { estadoInicial } from '../../dados/semente';
 import { hoje, somarDias } from '../../dominio/datas';
+import { valorPacote } from '../../dominio/politica';
 import type { ConfigPacote } from '../../dominio/tipos';
 import { avisos } from '../avisos';
 import { useDados } from '../dados';
@@ -583,8 +584,10 @@ describe('os movimentos só mudam o que a RPC grava', () => {
     const mudaram = [...chaves].filter(
       (k) => JSON.stringify(antes[k] ?? null) !== JSON.stringify(depois[k] ?? null),
     );
-    // A proposta mora noutra tabela, e a RPC cuida dela à parte.
-    const gravaveis: string[] = [...CAMPOS_DO_MOVIMENTO, 'proposta'];
+    // A proposta mora noutra tabela, e a RPC cuida dela à parte. As aulas
+    // compradas não vão para o banco: a carga as refaz pelo lançamento do
+    // pacote, que a RPC grava (SCRUM-101).
+    const gravaveis: string[] = [...CAMPOS_DO_MOVIMENTO, 'proposta', 'aulasCompradas'];
     expect(mudaram.filter((k) => !gravaveis.includes(k))).toEqual([]);
   });
 });
@@ -620,5 +623,26 @@ describe('as regras revistas em 25/11 (SCRUM-101)', () => {
     d().registrarAula('mar', 'avisada', 48);
     d().marcarReposicao('mar', JANELA);
     expect(d().alunoPor('mar')!.reposicoes).toBe(antes + 1);
+  });
+});
+
+describe('o valor do pacote renovado (SCRUM-101)', () => {
+  it('renovar somando o saldo cobra só as aulas novas', () => {
+    const antes = d().alunoPor('mar')!;
+    const restavam = antes.total - antes.usadas;
+    d().criarPacoteCom('mar', { ...PACOTE, somarSaldo: true });
+    const depois = d().alunoPor('mar')!;
+    expect(depois.total).toBe(PACOTE.aulas + restavam);
+    expect(depois.aulasCompradas).toBe(restavam > 0 ? PACOTE.aulas : undefined);
+    expect(valorPacote(depois)).toBe(PACOTE.aulas * PACOTE.valorPorAula);
+  });
+
+  it('a carga refaz as aulas compradas pelo lançamento do pacote', async () => {
+    d().criarPacoteCom('mar', { ...PACOTE, somarSaldo: true });
+    const esperado = d().alunoPor('mar')!.aulasCompradas;
+    await assentar();
+    voltarASemente();
+    await d().carregar();
+    expect(d().alunoPor('mar')!.aulasCompradas).toBe(esperado);
   });
 });

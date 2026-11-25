@@ -469,6 +469,8 @@ const COLUNAS_DO_CAMPO: Record<
   pagamento: ['pagamento_status', 'pagamento_em', 'pagamento_meio', 'pagamento_vencimento'],
   arquivado: ['arquivado'],
   aulaFixa: ['aula_fixa'],
+  // Sem coluna: a carga refaz pelo lançamento "Pacote de N aulas" (SCRUM-101).
+  aulasCompradas: [],
 };
 
 /** Só as colunas dos campos pedidos, com os valores do aluno como ficou. */
