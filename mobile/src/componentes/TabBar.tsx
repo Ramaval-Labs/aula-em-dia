@@ -3,11 +3,14 @@
  *
  * Barra de 66px com raio 26, a 14px das laterais e 26px da base, em vidro com
  * o **anel de refração** — a única peça do sistema que o usa. O item ativo
- * ganha gradiente vertical, borda `bordaTopo`, o reflexo interno e um brilho
- * desfocado acima; o inativo é só ícone e rótulo em `tinta3`.
+ * ganha gradiente vertical, borda `bordaTopo` e o reflexo interno; o inativo é
+ * só ícone e rótulo em `tinta3`.
  *
- * O que o handoff desenha e aqui **não** se desenha: indicador de home e
- * status bar. O sistema já os tem; redesenhá-los dobraria o traço.
+ * O que o handoff desenha e aqui **não** se desenha: indicador de home, status
+ * bar e o brilho desfocado acima da aba ativa. Os dois primeiros o sistema já
+ * tem. O brilho dependia de `filter: blur()`, que o iOS ignora: no aparelho ele
+ * virava uma elipse clara de borda dura em cima do ícone (teste no Expo Go,
+ * 25/11/2026).
  */
 
 import { LinearGradient } from 'expo-linear-gradient';
@@ -93,24 +96,6 @@ function ItemDeAba({
               colors={[...PILULA_ABA.gradiente]}
               locations={[...PILULA_ABA.paradas]}
               style={{ flex: 1 }}
-            />
-          </View>
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              left: '8%',
-              right: '8%',
-              top: '-52%',
-              height: '86%',
-              borderRadius: RAIO.circulo,
-              filter: 'blur(6px)',
-            }}
-          >
-            <LinearGradient
-              colors={[...PILULA_ABA.brilho]}
-              locations={[...PILULA_ABA.brilhoParadas]}
-              style={{ flex: 1, borderRadius: RAIO.circulo }}
             />
           </View>
         </>
