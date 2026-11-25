@@ -23,7 +23,7 @@ import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
 import { comEspaco, texto } from '../tema/tipografia';
 import { RAIO } from '../tema/tokens';
-import { linhaDeHorario } from './comum/aluno';
+import { horaDeHoje, linhaDeHorario } from './comum/aluno';
 
 export function Inadimplencia() {
   const { cores } = useCores();
@@ -92,7 +92,7 @@ export function Inadimplencia() {
           : { rotulo: 'Sem pacote', tom: 'neutro', nota: null };
 
   const proximaAula = aluno.hoje
-    ? `Aula marcada para hoje, ${aluno.hora}`
+    ? `Aula marcada para hoje, ${horaDeHoje(aluno)}`
     : aluno.hora
       ? `Próxima aula: ${aluno.dia}, ${aluno.hora}`
       : 'Sem horário fixo';

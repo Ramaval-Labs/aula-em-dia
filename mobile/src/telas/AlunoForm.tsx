@@ -12,11 +12,18 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { CartaoVidro } from '../componentes/Blocos';
 import { CampoDeTexto, SeletorDeDias } from '../componentes/Campos';
-import { BotaoPrimario, BotaoTexto, NotaDoBotao, Segmentado } from '../componentes/Controles';
+import {
+  BotaoPrimario,
+  BotaoTexto,
+  NotaDoBotao,
+  Segmentado,
+  Switch,
+} from '../componentes/Controles';
 import { mascaraDeHorario } from '../componentes/GradeLivre';
 import { Sheet } from '../componentes/Sheet';
 import { useDoisToques } from '../componentes/useDoisToques';
 import {
+  DIAS,
   DURACAO_PADRAO,
   DURACOES,
   formatarDuracao,
@@ -25,11 +32,16 @@ import {
 import { primeiroNome } from '../dominio/formato';
 import { ERRO, formatarTelefone, nomeValido } from '../dominio/validacao';
 import { avisos, useDados } from '../estado/dados';
-import { horarioDoRascunho, rascunhoDeAluno, useRascunho } from '../estado/formularios';
+import {
+  horaDoDiaNoRascunho,
+  horarioDoRascunho,
+  rascunhoDeAluno,
+  useRascunho,
+} from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useToast } from '../estado/toast';
 import { useCores } from '../tema/TemaProvider';
-import { texto } from '../tema/tipografia';
+import { texto, TIPO } from '../tema/tipografia';
 
 export function AlunoForm() {
   const { cores } = useCores();
@@ -54,12 +66,33 @@ export function AlunoForm() {
         },
   );
 
+  // "Horário diferente em cada dia" só faz sentido com dois dias ou mais.
+  const variosDias = form.dias.length > 1;
+  const porDia = variosDias && !!form.porDia;
+
   // A hora digitada que o motor não lê ("25", "abc", "18:20") era salva calada
   // como "sem hora". A regra é a do domínio (`horarioDigitado`); aqui só se avisa.
-  const lido = form.dias.length > 0 && form.hora.trim() ? horarioDigitado(form.hora) : null;
-  const erroDaHora = lido && 'erro' in lido ? lido.erro : undefined;
+  const erroDe = (valor: string): string | undefined => {
+    const lido = valor.trim() ? horarioDigitado(valor) : null;
+    return lido && 'erro' in lido ? lido.erro : undefined;
+  };
+  const erroDaHora = form.dias.length > 0 && !porDia ? erroDe(form.hora) : undefined;
+  const errosPorDia = porDia
+    ? form.dias.map((d) => erroDe(horaDoDiaNoRascunho(form, d)))
+    : [];
+  const algumErroDeHora = !!erroDaHora || errosPorDia.some(Boolean);
 
-  const pronto = nomeValido(form.nome) && !!form.disciplina && !erroDaHora;
+  const ligarPorDia = (ligado: boolean) =>
+    ligado
+      ? atualizar({
+          porDia: true,
+          // cada dia começa com a hora que já estava digitada
+          horaPorDia: Object.fromEntries(form.dias.map((d) => [d, horaDoDiaNoRascunho(form, d)])),
+        })
+      : // desligado, vale para todos a hora do primeiro dia
+        atualizar({ porDia: false, hora: horaDoDiaNoRascunho(form, form.dias[0]) });
+
+  const pronto = nomeValido(form.nome) && !!form.disciplina && !algumErroDeHora;
 
   // O erro do nome só aparece depois que a pessoa mexeu no campo: acusar
   // um campo que ela nem tocou é bronca antes da hora. Morre com a tela.
@@ -75,7 +108,7 @@ export function AlunoForm() {
   const faltando = [
     nomeValido(form.nome) ? null : 'o nome',
     form.disciplina.trim() ? null : 'a disciplina',
-    erroDaHora ? 'uma hora válida' : null,
+    algumErroDeHora ? 'uma hora válida' : null,
   ].filter(Boolean);
   const notaDoQueFalta = faltando.length
     ? `Para ${emEdicao ? 'salvar' : 'criar'}, falta informar ${faltando.join(' e ')}.`
@@ -90,7 +123,8 @@ export function AlunoForm() {
 
   const salvar = () => {
     if (!pronto) return;
-    const horario = horarioDoRascunho(form);
+    // Com um dia só o switch some, e vale o campo único que está na tela.
+    const horario = horarioDoRascunho({ ...form, porDia });
     if (emEdicao) {
       atualizarAluno(emEdicao.id, {
         name: form.nome.trim(),
@@ -165,15 +199,50 @@ export function AlunoForm() {
 
         {form.dias.length > 0 ? (
           <>
-            <CampoDeTexto
-              rotulo="Hora"
-              valor={form.hora}
-              aoMudar={(hora) => atualizar({ hora: mascaraDeHorario(hora) })}
-              placeholder="18:30"
-              teclado="numerico"
-              erro={erroDaHora}
-              ajuda="O começo da aula, de 15 em 15 minutos."
-            />
+            {variosDias ? (
+              <View style={estilos.linhaDoSwitch}>
+                <Text style={[TIPO.tituloBloco, estilos.textoDoSwitch, { color: cores.tinta }]}>
+                  Horário diferente em cada dia
+                </Text>
+                <Switch
+                  ligado={porDia}
+                  aoAlternar={ligarPorDia}
+                  rotulo="Horário diferente em cada dia"
+                />
+              </View>
+            ) : null}
+            {porDia ? (
+              form.dias.map((d, i) => (
+                <CampoDeTexto
+                  key={d}
+                  rotulo={`Hora · ${DIAS.find((x) => x.chave === d)?.longo ?? d}`}
+                  valor={horaDoDiaNoRascunho(form, d)}
+                  aoMudar={(hora) =>
+                    atualizar({
+                      horaPorDia: { ...form.horaPorDia, [d]: mascaraDeHorario(hora) },
+                    })
+                  }
+                  placeholder="18:30"
+                  teclado="numerico"
+                  erro={errosPorDia[i]}
+                  ajuda={
+                    i === form.dias.length - 1
+                      ? 'O começo de cada aula, de 15 em 15 minutos.'
+                      : undefined
+                  }
+                />
+              ))
+            ) : (
+              <CampoDeTexto
+                rotulo="Hora"
+                valor={form.hora}
+                aoMudar={(hora) => atualizar({ hora: mascaraDeHorario(hora) })}
+                placeholder="18:30"
+                teclado="numerico"
+                erro={erroDaHora}
+                ajuda="O começo da aula, de 15 em 15 minutos."
+              />
+            )}
             <View>
               <Text
                 style={[
@@ -233,4 +302,7 @@ const estilos = StyleSheet.create({
   arquivar: { marginTop: 18, alignItems: 'center', gap: 4 },
   rodape: { gap: 10 },
   duracao: { marginTop: 8 },
+  // a altura do Switch (32) mais folga: o alvo de toque é o do próprio Switch
+  linhaDoSwitch: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  textoDoSwitch: { flex: 1 },
 });

@@ -139,3 +139,64 @@ describe('horarioDoRascunho', () => {
     });
   });
 });
+
+describe('horário diferente em cada dia (SCRUM-101)', () => {
+  beforeEach(() => {
+    useNavegacao.setState({ tela: 'alunoForm', pilha: [], alunoId: 'mar' });
+  });
+
+  const interruptor = () => screen.getByRole('switch', { name: 'Horário diferente em cada dia' });
+
+  it('com um dia só, o interruptor não aparece', async () => {
+    await montar();
+    await fireEvent.press(dia('Quinta'));
+    expect(screen.queryByRole('switch', { name: 'Horário diferente em cada dia' })).toBeNull();
+  });
+
+  it('ligado, cada dia ganha o seu campo, e salvar grava o começo de cada um', async () => {
+    await montar();
+    await fireEvent.press(interruptor());
+    // os dois campos começam com a hora que já estava: 18
+    expect(screen.getAllByDisplayValue('18')).toHaveLength(2);
+    await fireEvent.changeText(screen.getByLabelText('Hora · Quinta'), '1930');
+    await fireEvent.press(screen.getByText('Salvar alterações'));
+
+    const mar = aluno('mar');
+    expect(mar?.aulaFixa).toEqual({ dias: ['ter', 'qui'], hora: 18, porDia: { qui: 19 * 60 + 30 } });
+    expect(mar?.dia).toBe('terça e quinta');
+    expect(mar?.hora).toBe('18h e 19h30');
+  });
+
+  it('um dia com hora inválida segura o botão', async () => {
+    await montar();
+    await fireEvent.press(interruptor());
+    await fireEvent.changeText(screen.getByLabelText('Hora · Terça'), '1820');
+    expect(screen.getByText('Use minutos de 15 em 15: 00, 15, 30 ou 45')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Salvar alterações'));
+    // nada foi salvo: o Mateus da semente segue sem a estrutura
+    expect(aluno('mar')?.aulaFixa).toBeUndefined();
+    expect(aluno('mar')?.hora).toBe('18h');
+  });
+
+  it('a edição de quem tem horário por dia abre com o interruptor ligado', async () => {
+    useDados.setState((s) => ({
+      alunos: s.alunos.map((a) =>
+        a.id === 'mar'
+          ? { ...a, aulaFixa: { dias: ['ter', 'qui'], hora: 18, porDia: { qui: 1170 } } }
+          : a,
+      ),
+    }));
+    useFormularios.getState().limparTudo();
+    await montar();
+    expect(interruptor().props.accessibilityState?.checked).toBe(true);
+    expect(screen.getByDisplayValue('19:30')).toBeTruthy();
+  });
+
+  it('horarioDoRascunho: desligado, vale a hora única mesmo com horaPorDia guardado', () => {
+    const r = { dias: ['ter', 'qui'] as const, hora: '18', horaPorDia: { qui: '19:30' } };
+    expect(horarioDoRascunho({ ...r, dias: [...r.dias], porDia: false }).aulaFixa).toEqual({
+      dias: ['ter', 'qui'],
+      hora: 18,
+    });
+  });
+});

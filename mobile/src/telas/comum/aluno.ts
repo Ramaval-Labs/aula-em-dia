@@ -4,6 +4,9 @@
  * o domínio (`dominio/`) decide o estado; a frase é da tela.
  */
 
+import { horaNoDia } from '../../dominio/aulaFixa';
+import { hoje } from '../../dominio/datas';
+import { diaDaSemanaDe } from '../../dominio/disponibilidade';
 import { faixaStatus } from '../../dominio/politica';
 import type { Aluno, TipoDeFaixa } from '../../dominio/tipos';
 
@@ -14,7 +17,16 @@ import type { Aluno, TipoDeFaixa } from '../../dominio/tipos';
  */
 export function linhaDeHorario(a: Aluno): string {
   if (!a.hora) return `${a.disciplina} · ${a.dia}`;
-  return `${a.disciplina} · ${a.hoje ? 'hoje' : a.dia}, ${a.hora}`;
+  return `${a.disciplina} · ${a.hoje ? `hoje, ${horaDeHoje(a)}` : `${a.dia}, ${a.hora}`}`;
+}
+
+/**
+ * A hora da aula de hoje. Com horário por dia (SCRUM-101), `a.hora` traz
+ * todos ("15h15 e 17h30"); hoje vale só o do dia da semana de hoje.
+ */
+export function horaDeHoje(a: Aluno): string {
+  const dia = diaDaSemanaDe(hoje());
+  return (dia && horaNoDia(a, dia)) || a.hora;
 }
 
 /**

@@ -19,7 +19,15 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 
-import { aulaFixaDe, duracaoDaAula, rotuloDaAulaFixa } from '../dominio/aulaFixa';
+import {
+  aulaFixaComHorarios,
+  aulaFixaDe,
+  duracaoDaAula,
+  inicioDaAula,
+  inicioNoDia,
+  rotuloDaAulaFixa,
+  temHorarioPorDia,
+} from '../dominio/aulaFixa';
 import { DURACAO_PADRAO, lerHorario } from '../dominio/disponibilidade';
 import type {
   AulaFixa,
@@ -61,6 +69,10 @@ export interface RascunhoAluno {
   hora: string;
   /** quanto a aula dura, em minutos (SCRUM-101); ausente = 1h */
   duracao?: number;
+  /** "Horário diferente em cada dia" ligado: vale `horaPorDia`, e não `hora` */
+  porDia?: boolean;
+  /** o começo de cada dia como foi digitado; dia sem valor usa `hora` */
+  horaPorDia?: Partial<Record<DiaDaSemana, string>>;
   telefone: string;
   /**
    * Para onde salvar volta, quando a edição foi aberta de dentro de outra
@@ -156,34 +168,58 @@ export const REPOSICAO_INICIAL: RascunhoReposicao = {
  * A aula fixa do aluno → os campos do rascunho. Quem lê o horário é o
  * domínio (`aulaFixaDe`): a estrutura quando o aluno tem, senão o texto de antes.
  */
-function horarioParaORascunho(aluno: Aluno): Pick<RascunhoAluno, 'dias' | 'hora' | 'duracao'> {
+/** 1110 → "18:30", 1080 → "18": o começo como o campo de hora mostra. */
+const textoDoInicio = (inicio: number | null): string => {
+  if (inicio === null) return '';
+  const hora = Math.floor(inicio / 60);
+  const minuto = inicio % 60;
+  return minuto ? `${hora}:${String(minuto).padStart(2, '0')}` : String(hora);
+};
+
+function horarioParaORascunho(
+  aluno: Aluno,
+): Pick<RascunhoAluno, 'dias' | 'hora' | 'duracao' | 'porDia' | 'horaPorDia'> {
   const af = aulaFixaDe(aluno);
-  const minuto = af.minuto ?? 0;
-  const hora =
-    af.hora === null ? '' : minuto ? `${af.hora}:${String(minuto).padStart(2, '0')}` : String(af.hora);
-  return { dias: af.dias, hora, duracao: duracaoDaAula(af) };
+  const base = { dias: af.dias, hora: textoDoInicio(inicioDaAula(af)), duracao: duracaoDaAula(af) };
+  if (!temHorarioPorDia(af)) return base;
+  return {
+    ...base,
+    porDia: true,
+    horaPorDia: Object.fromEntries(af.dias.map((d) => [d, textoDoInicio(inicioNoDia(af, d))])),
+  };
 }
+
+/**
+ * O texto que o campo de um dia mostra: o próprio do dia, senão a hora geral.
+ * É também o que `horarioDoRascunho` lê, para a tela e o salvo baterem.
+ */
+export const horaDoDiaNoRascunho = (
+  r: Pick<RascunhoAluno, 'hora' | 'horaPorDia'>,
+  dia: DiaDaSemana,
+): string => r.horaPorDia?.[dia] ?? r.hora;
 
 /**
  * Os campos do rascunho → o que a tela grava (SCRUM-90): a estrutura e o
  * texto que a lista e a página do aluno mostram, gerado dela. Sem dia
- * marcado não há aula fixa, então a hora digitada não vale sozinha.
+ * marcado não há aula fixa, então a hora digitada não vale sozinha. Com
+ * "Horário diferente em cada dia", cada dia lê o seu campo (SCRUM-101).
  */
-export function horarioDoRascunho(r: Pick<RascunhoAluno, 'dias' | 'hora' | 'duracao'>): {
+export function horarioDoRascunho(
+  r: Pick<RascunhoAluno, 'dias' | 'hora' | 'duracao' | 'porDia' | 'horaPorDia'>,
+): {
   aulaFixa: AulaFixa;
   dia: string;
   hora: string;
 } {
-  const inicio = r.dias.length > 0 ? lerHorario(r.hora) : null;
-  const minuto = inicio === null ? 0 : inicio % 60;
   // A duração padrão não é gravada: o aluno de antes, sem ela, vale 1h também.
   const duracao = r.duracao && r.duracao !== DURACAO_PADRAO ? r.duracao : undefined;
-  const aulaFixa: AulaFixa = {
-    dias: r.dias,
-    hora: inicio === null ? null : Math.floor(inicio / 60),
-    ...(minuto ? { minuto } : {}),
-    ...(duracao && r.dias.length > 0 ? { duracao } : {}),
-  };
+  const inicios = Object.fromEntries(
+    r.dias.map((d) => [d, lerHorario(r.porDia ? horaDoDiaNoRascunho(r, d) : r.hora)]),
+  );
+  const montada = aulaFixaComHorarios(r.dias, inicios, duracao);
+  // Dia marcado sem hora ainda guarda a duração escolhida, como antes.
+  const aulaFixa: AulaFixa =
+    montada.hora === null && duracao && r.dias.length > 0 ? { ...montada, duracao } : montada;
   return { aulaFixa, ...rotuloDaAulaFixa(aulaFixa) };
 }
 
