@@ -7,6 +7,7 @@ import {
   horasDeAvisoDigitadas,
   iniciaisDe,
   LIMITE_HORAS_DE_AVISO,
+  prazoMinimoDigitado,
   nomeValido,
   semErros,
   senhaValida,
@@ -168,5 +169,23 @@ describe('horasDeAvisoDigitadas (SCRUM-101)', () => {
     expect(ERRO.avisoVazio).toBe('Informe com quantas horas ele avisou');
     expect(ERRO.avisoInvalido).toBe('Use só o número de horas, como 24');
     expect(ERRO.avisoAlto).toBe('Use até 720 horas (30 dias)');
+  });
+});
+
+describe('prazoMinimoDigitado (SCRUM-101)', () => {
+  it('aceita de 1 a 720 horas: 1h para quem dá aula online', () => {
+    expect(prazoMinimoDigitado('1')).toEqual({ horas: 1 });
+    expect(prazoMinimoDigitado('36')).toEqual({ horas: 36 });
+    expect(prazoMinimoDigitado('720')).toEqual({ horas: 720 });
+  });
+
+  it('zero não é prazo', () => {
+    expect(prazoMinimoDigitado('0')).toEqual({ erro: 'Use pelo menos 1 hora' });
+  });
+
+  it('os outros erros são os da antecedência', () => {
+    expect(prazoMinimoDigitado('')).toEqual({ erro: 'Informe o prazo em horas' });
+    expect(prazoMinimoDigitado('1,5')).toEqual({ erro: ERRO.avisoInvalido });
+    expect(prazoMinimoDigitado('800')).toEqual({ erro: ERRO.avisoAlto });
   });
 });

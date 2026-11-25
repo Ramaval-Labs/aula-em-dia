@@ -70,6 +70,8 @@ export const ERRO = {
   avisoVazio: 'Informe com quantas horas ele avisou',
   avisoInvalido: 'Use só o número de horas, como 24',
   avisoAlto: 'Use até 720 horas (30 dias)',
+  prazoZero: 'Use pelo menos 1 hora',
+  prazoVazio: 'Informe o prazo em horas',
 } as const;
 
 /** O aviso mais longo que a tela aceita: 30 dias. Acima disso é engano de digitação. */
@@ -85,6 +87,17 @@ export function horasDeAvisoDigitadas(textoDigitado: string): { horas: number } 
   if (!/^\d+$/.test(t)) return { erro: ERRO.avisoInvalido };
   const horas = Number(t);
   return horas > LIMITE_HORAS_DE_AVISO ? { erro: ERRO.avisoAlto } : { horas };
+}
+
+/**
+ * O prazo mínimo de aviso da política, como o professor digitou (SCRUM-101):
+ * de 1 a 720 horas. Zero não vale: "aviso com 0h" não é aviso, e quem quer
+ * aceitar qualquer aviso põe 1h.
+ */
+export function prazoMinimoDigitado(textoDigitado: string): { horas: number } | { erro: string } {
+  if (!textoDigitado.trim()) return { erro: ERRO.prazoVazio };
+  const lido = horasDeAvisoDigitadas(textoDigitado);
+  return 'horas' in lido && lido.horas < 1 ? { erro: ERRO.prazoZero } : lido;
 }
 
 export function validarAcesso(email: string, senha: string): Erros<{

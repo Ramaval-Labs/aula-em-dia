@@ -27,6 +27,12 @@ export const POLITICAS_PADRAO: Politicas = {
   validadeDias: 60,
 };
 
+/**
+ * O teto do seletor "Reposições por pacote" (SCRUM-101: era 5). Zero continua
+ * sendo "sem limite"; 30 cobre qualquer pacote real, e o banco só exige >= 0.
+ */
+export const LIMITE_MAXIMO_DE_REPOSICOES = 30;
+
 export const saldo = (a: Aluno): number => Math.max(0, a.total - a.usadas);
 
 export const valorPacote = (a: Aluno): number => a.total * (a.valorPorAula ?? VALOR_AULA);
