@@ -98,6 +98,7 @@ export function GradeLivre({
   horarios,
   aoMudar,
   dias = DIAS_DA_SEMANA,
+  diasApagados = SEM_DIAS,
   de = INICIO_DO_DIA,
   ate = FIM_DO_DIA,
   somenteLeitura = false,
@@ -105,6 +106,8 @@ export function GradeLivre({
   horarios: Intervalo[];
   aoMudar?: (horarios: Intervalo[]) => void;
   dias?: DiaDaSemana[];
+  /** dias que aparecem mas não entram nas sugestões (o sábado, sem "Sugerir sábados") */
+  diasApagados?: DiaDaSemana[];
   /** o começo e o fim do dia que a grade mostra, em minutos */
   de?: number;
   ate?: number;
@@ -142,7 +145,7 @@ export function GradeLivre({
   );
 
   const horas: number[] = [];
-  for (let m = Math.ceil(de / 60) * 60; m < ate; m += 60) horas.push(m);
+  for (let m = Math.ceil(de / 60) * 60; m <= ate; m += 60) horas.push(m);
   const altura = ((ate - de) / PASSO_MINUTOS) * ALTURA_DO_QUARTO;
   const larguraDaColuna = largura
     ? (largura - COLUNA_DAS_HORAS - VAO * dias.length) / dias.length
@@ -249,7 +252,7 @@ export function GradeLivre({
     arrasto && previa
       ? pintar(horarios, arrasto.dia, previa.inicio, previa.fim, arrasto.ligar)
       : horarios;
-  const estiloDaHora = texto(10.5, 500, { altura: 1.2 });
+  const estiloDaHora = texto(11.5, 500, { altura: 1.2 });
   // o rótulo centra no fio da hora pela própria entrelinha, e não por um número
   const meioDoRotulo = (estiloDaHora.lineHeight ?? 0) / 2;
   const estiloDoAviso = texto(11.5, 500, { altura: 1.4 });
@@ -259,7 +262,13 @@ export function GradeLivre({
       <View style={{ width: COLUNA_DAS_HORAS }} />
       {dias.map((d) => (
         <View key={d} style={estilos.cabecalhoDoDia}>
-          <Text style={[texto(10, 600, { tracking: 0.06 }), { color: cores.tinta3 }]}>
+          <Text
+            maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+            style={[
+              texto(12, 600, { tracking: 0.04 }),
+              { color: diasApagados.includes(d) ? cores.tinta3 : cores.tinta2 },
+            ]}
+          >
             {diaCurto(d)}
           </Text>
         </View>
@@ -269,7 +278,6 @@ export function GradeLivre({
 
   return (
     <View style={estilos.grade}>
-
       {editavel ? (
         // A caixa do aviso tem sempre a altura da ajuda: se ela encolhesse quando
         // o arrasto liga, a grade subiria e a pintura sairia de baixo do dedo.
@@ -277,7 +285,6 @@ export function GradeLivre({
           <Text
             accessibilityElementsHidden={!!arrasto}
             importantForAccessibility={arrasto ? 'no-hide-descendants' : 'auto'}
-            maxFontSizeMultiplier={ESCALA_FONTE.compacta}
             style={[estiloDoAviso, { color: cores.tinta2, opacity: arrasto ? 0 : 1 }]}
           >
             {AJUDA_DA_GRADE}
@@ -286,7 +293,6 @@ export function GradeLivre({
             <Text
               accessibilityLiveRegion="polite"
               numberOfLines={2}
-              maxFontSizeMultiplier={ESCALA_FONTE.compacta}
               style={[estiloDoAviso, estilos.sobreposto, { color: cores.tint }]}
             >
               {`${arrasto.ligar ? 'Marcar' : 'Apagar'} ${nomeDoDia(arrasto.dia).toLowerCase()}, ${formatarIntervalo(previa)}`}
@@ -317,8 +323,15 @@ export function GradeLivre({
                 style={[
                   estiloDaHora,
                   estilos.rotuloDaHora,
-                  // o rótulo centra no fio da hora; o primeiro encosta no topo
-                  { top: Math.max(topo(m) - meioDoRotulo, 0), color: cores.tinta3 },
+                  // o rótulo centra no fio da hora; o primeiro e o último
+                  // encostam na borda da grade
+                  {
+                    top: Math.min(
+                      Math.max(topo(m) - meioDoRotulo, 0),
+                      altura - meioDoRotulo * 2,
+                    ),
+                    color: cores.tinta2,
+                  },
                 ]}
               >
                 {formatarHora(m)}
@@ -333,7 +346,7 @@ export function GradeLivre({
               style={[estilos.coluna, { height: altura, backgroundColor: cores.preenchimento }]}
             >
               {horas
-                .filter((m) => m > de)
+                .filter((m) => m > de && m < ate)
                 .map((m) => (
                   <View
                     key={m}
@@ -358,15 +371,12 @@ export function GradeLivre({
                       ]}
                     >
                       {comRotulo ? (
-                        <Text
-                          numberOfLines={alto >= ALTURA_DA_HORA ? 2 : 1}
-                          maxFontSizeMultiplier={ESCALA_FONTE.compacta}
-                          style={[texto(10, 600, { altura: 1.2 }), { color: cores.sobreTint }]}
-                        >
-                          {alto >= ALTURA_DA_HORA
-                            ? `${formatarHora(inicio)}\n${formatarHora(fim)}`
-                            : formatarHora(inicio)}
-                        </Text>
+                        <RotuloDoTrecho
+                          inicio={inicio}
+                          fim={fim}
+                          alto={alto}
+                          cor={cores.sobreTint}
+                        />
                       ) : null}
                     </View>
                   );
@@ -387,15 +397,12 @@ export function GradeLivre({
                   ]}
                 >
                   {/* O trecho junto do dedo: o aviso acima da grade pode estar fora da vista. */}
-                  <Text
-                    maxFontSizeMultiplier={ESCALA_FONTE.compacta}
-                    style={[
-                      texto(10, 700, { altura: 1.2 }),
-                      { color: arrasto.ligar ? cores.sobreTint : cores.tint },
-                    ]}
-                  >
-                    {`${formatarHora(previa.inicio)}\n${formatarHora(previa.fim)}`}
-                  </Text>
+                  <RotuloDoTrecho
+                    inicio={previa.inicio}
+                    fim={previa.fim}
+                    alto={topo(previa.fim) - topo(previa.inicio)}
+                    cor={arrasto.ligar ? cores.sobreTint : cores.tint}
+                  />
                 </View>
               ) : null}
             </View>
@@ -405,6 +412,47 @@ export function GradeLivre({
     </View>
   );
 }
+
+/**
+ * O começo no topo do trecho e o fim ancorado na base, onde ele termina — e
+ * não empilhados no topo, como dois itens soltos. Trecho de meia hora mostra
+ * só o começo; menor que isso, nada (a lista e o aviso dizem o resto).
+ *
+ * 11px: "14h30" a 700 mede ~35px, e o miolo da coluna a 360dp tem 36.
+ */
+function RotuloDoTrecho({
+  inicio,
+  fim,
+  alto,
+  cor,
+}: {
+  inicio: number;
+  fim: number;
+  alto: number;
+  cor: string;
+}) {
+  if (alto < ALTURA_DO_QUARTO * 2) return null;
+  const estilo = [texto(11, 700, { altura: 1.2 }), { color: cor }];
+  return (
+    <>
+      <Text numberOfLines={1} maxFontSizeMultiplier={ESCALA_FONTE.compacta} style={estilo}>
+        {formatarHora(inicio)}
+      </Text>
+      {alto >= ALTURA_DA_HORA ? (
+        <Text
+          numberOfLines={1}
+          maxFontSizeMultiplier={ESCALA_FONTE.compacta}
+          style={[estilo, estilos.fimDoTrecho]}
+        >
+          {formatarHora(fim)}
+        </Text>
+      ) : null}
+    </>
+  );
+}
+
+/** Para o padrão de `diasApagados` não ser uma lista nova a cada render. */
+const SEM_DIAS: DiaDaSemana[] = [];
 
 /** "1430" → "14:30": o teclado numérico do iOS não tem dois-pontos. */
 export const mascaraDeHorario = (v: string): string => {
@@ -600,6 +648,12 @@ const estilos = StyleSheet.create({
   // a mesma espessura do foco do campo de texto
   previa: { borderWidth: 1 },
   sobreposto: { position: 'absolute', top: 0, left: 0, right: 0 },
+  fimDoTrecho: {
+    position: 'absolute',
+    left: PAD.blocoDaGrade.paddingHorizontal,
+    right: PAD.blocoDaGrade.paddingHorizontal,
+    bottom: PAD.blocoDaGrade.paddingVertical,
+  },
   lista: { gap: 12 },
   formulario: { gap: 16 },
   campos: { flexDirection: 'row', gap: 12 },

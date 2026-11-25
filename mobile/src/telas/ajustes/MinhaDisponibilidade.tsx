@@ -31,7 +31,7 @@ import {
   periodoDaFolga,
   resumoDosHorarios,
 } from '../../dominio/disponibilidade';
-import type { Folga } from '../../dominio/tipos';
+import type { DiaDaSemana, Folga } from '../../dominio/tipos';
 import { somenteDigitos } from '../../dominio/validacao';
 import { avisos, useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
@@ -51,6 +51,9 @@ const CAMPO_DO_ERRO: Record<string, 'de' | 'ate'> = {
   [ERRO_FOLGA.fimInvalido]: 'ate',
   [ERRO_FOLGA.fimAntesDoInicio]: 'ate',
 };
+
+/** O sábado, apagado na grade enquanto "Sugerir sábados" está desligado. */
+const SO_SABADO: DiaDaSemana[] = ['sab'];
 
 export function MinhaDisponibilidade() {
   const { concluir } = useNavegacao();
@@ -127,7 +130,11 @@ export function MinhaDisponibilidade() {
       }
     >
       <CartaoVidro estilo={[proprios.cartaoGrade, estilos.primeiro]}>
-        <GradeLivre horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
+        <GradeLivre
+          horarios={d.blocos}
+          diasApagados={d.sugereSabado ? undefined : SO_SABADO}
+          aoMudar={(blocos) => atualizar({ blocos })}
+        />
         {/* Sem "Sugerir sábados", o sábado pintado não entra nas sugestões: o
             rodapé diz isso junto da grade, e não só no switch. */}
         <RodapeDaGrade

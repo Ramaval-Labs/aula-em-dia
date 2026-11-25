@@ -12,10 +12,14 @@ import {
   RodapeDaGrade,
 } from '../../componentes/GradeLivre';
 import { resumoDosHorarios } from '../../dominio/disponibilidade';
+import type { DiaDaSemana } from '../../dominio/tipos';
 import { useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
 import { useSessao } from '../../estado/sessao';
 import { PassoDoOnboarding } from './PassoDoOnboarding';
+
+/** O sábado, apagado na grade enquanto "Sugerir sábados" está desligado. */
+const SO_SABADO: DiaDaSemana[] = ['sab'];
 
 export function Disponibilidade() {
   const avancar = useSessao((s) => s.avancar);
@@ -44,7 +48,11 @@ export function Disponibilidade() {
     >
       {/* A grade pede mais largura que o padding de 17 dos cartões de ajuste. */}
       <CartaoVidro estilo={estilos.grade}>
-        <GradeLivre horarios={form.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
+        <GradeLivre
+          horarios={form.blocos}
+          diasApagados={form.sugereSabado ? undefined : SO_SABADO}
+          aoMudar={(blocos) => atualizar({ blocos })}
+        />
         <RodapeDaGrade
           esquerda={resumoDosHorarios(form.blocos)}
           direita={form.sugereSabado ? 'Domingo fechado' : 'Sábado e domingo fora'}
