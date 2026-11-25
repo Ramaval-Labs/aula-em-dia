@@ -48,19 +48,23 @@ export function mascararTelefone(telefone?: string): string {
   return `+55 ${ddd} ${inicio}${'•'.repeat(4)} ${fim}`;
 }
 
-/** Mensagem de proposta de reposição (C6). */
+/**
+ * Mensagem de proposta de reposição (C6). A regra combinada vai só na
+ * primeira reposição do pacote (SCRUM-101): da segunda em diante o aluno já a
+ * conhece, e repeti-la a cada convite soava como bronca.
+ */
 export function mensagemDeReposicao(
   aluno: Aluno,
   janela: { dia: string; hora: string },
   p: Politicas,
 ): string {
+  const regra = aluno.reposicoes === 0 ? [comoOAlunoVaiLer(p, false), ''] : [];
   return [
     `Oi, ${primeiroNome(aluno.name)}!`,
     '',
     `Consegui encaixar a reposição da sua aula em ${janela.dia}, às ${janela.hora}.`,
     '',
-    comoOAlunoVaiLer(p, false),
-    '',
+    ...regra,
     'Confirma pra mim se serve?',
   ].join('\n');
 }
@@ -72,7 +76,9 @@ const ABERTURA: Record<TomDeMensagem, (nome: string) => string> = {
 };
 
 const FECHAMENTO: Record<TomDeMensagem, string> = {
-  cordial: 'Qualquer coisa é só me chamar. Obrigado!',
+  // Sem "Obrigado!": a mensagem sai em nome do professor, e a professora
+  // assinaria "Obrigada" (SCRUM-101).
+  cordial: 'Qualquer coisa é só me chamar.',
   direto: 'Pode me avisar quando pagar?',
   formal: 'Fico à disposição para qualquer esclarecimento.',
 };

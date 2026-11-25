@@ -180,6 +180,19 @@ describe('mensagemDeReposicao(aluno, janela, politicas)', () => {
     );
   });
 
+  it('da segunda reposição do pacote em diante, a regra não se repete (SCRUM-101)', () => {
+    const jaRepos = alunoBase({ id: 'raf', name: 'Rafael Dornelas', reposicoes: 1 });
+    expect(mensagemDeReposicao(jaRepos, janela, PADRAO)).toBe(
+      [
+        'Oi, Rafael!',
+        '',
+        'Consegui encaixar a reposição da sua aula em Sexta, 29/08, às 17h.',
+        '',
+        'Confirma pra mim se serve?',
+      ].join('\n'),
+    );
+  });
+
   it('com política que não devolve, a linha da regra é a da falta debitada', () => {
     // Acontece: aula cancelada pelo professor gera reposição mesmo assim.
     const mensagem = mensagemDeReposicao(rafael, janela, comPolitica({ avisadaDevolve: false }));
@@ -201,7 +214,7 @@ describe('mensagemDeCobranca(aluno, tom, chavePix)', () => {
         '',
         'Minha chave Pix é caio@exemplo.test.',
         '',
-        'Qualquer coisa é só me chamar. Obrigado!',
+        'Qualquer coisa é só me chamar.',
       ].join('\n'),
     );
   });
