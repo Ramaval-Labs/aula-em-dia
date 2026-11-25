@@ -71,7 +71,7 @@ const ESPERA_DO_ARRASTO = 250;
 const TOLERANCIA = 8;
 
 /** A ajuda fixa acima da grade. */
-const AJUDA_DA_GRADE = 'Toque marca uma hora. Segure e arraste para marcar de 15 em 15 min.';
+const AJUDA_DA_GRADE = 'Toque marca ou apaga 1 hora. Segure e arraste: 15 em 15 min.';
 
 /** Padding do cartão que envolve a grade. */
 export const PAD_CARTAO_DA_GRADE = PAD.cartaoDaGrade;

@@ -128,7 +128,12 @@ export function MinhaDisponibilidade() {
     >
       <CartaoVidro estilo={[proprios.cartaoGrade, estilos.primeiro]}>
         <GradeLivre horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
-        <RodapeDaGrade esquerda={resumoDosHorarios(d.blocos)} direita="Domingo fechado" />
+        {/* Sem "Sugerir sábados", o sábado pintado não entra nas sugestões: o
+            rodapé diz isso junto da grade, e não só no switch. */}
+        <RodapeDaGrade
+          esquerda={resumoDosHorarios(d.blocos)}
+          direita={d.sugereSabado ? 'Domingo fechado' : 'Sábado e domingo fora'}
+        />
       </CartaoVidro>
 
       {/* Os dois switches mudam o que a grade vale, então ficam colados nela. */}

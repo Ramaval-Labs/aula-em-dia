@@ -45,7 +45,10 @@ export function Disponibilidade() {
       {/* A grade pede mais largura que o padding de 17 dos cartões de ajuste. */}
       <CartaoVidro estilo={estilos.grade}>
         <GradeLivre horarios={form.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
-        <RodapeDaGrade esquerda={resumoDosHorarios(form.blocos)} direita="Domingo fechado" />
+        <RodapeDaGrade
+          esquerda={resumoDosHorarios(form.blocos)}
+          direita={form.sugereSabado ? 'Domingo fechado' : 'Sábado e domingo fora'}
+        />
       </CartaoVidro>
       <View>
         <ListaDeHorarios recolhida horarios={form.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
