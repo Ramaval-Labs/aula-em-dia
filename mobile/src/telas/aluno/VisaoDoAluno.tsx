@@ -610,7 +610,7 @@ export function PaginaDisponibilidade({
         <RodapeDaGrade esquerda={resumoDosMarcados(blocos)} direita="Toque ou arraste" />
       </CartaoVidro>
       <View style={estilos.listaDeHorarios}>
-        <ListaDeHorarios horarios={blocos} dias={DIAS_UTEIS} aoMudar={aoMudar} />
+        <ListaDeHorarios recolhida horarios={blocos} dias={DIAS_UTEIS} aoMudar={aoMudar} />
       </View>
 
       <Text

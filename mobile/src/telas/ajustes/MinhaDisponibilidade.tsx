@@ -31,7 +31,7 @@ import {
   periodoDaFolga,
   resumoDosHorarios,
 } from '../../dominio/disponibilidade';
-import type { Folga } from '../../dominio/tipos';
+import type { DiaDaSemana, Folga } from '../../dominio/tipos';
 import { somenteDigitos } from '../../dominio/validacao';
 import { avisos, useDados } from '../../estado/dados';
 import { useRascunho } from '../../estado/formularios';
@@ -51,6 +51,9 @@ const CAMPO_DO_ERRO: Record<string, 'de' | 'ate'> = {
   [ERRO_FOLGA.fimInvalido]: 'ate',
   [ERRO_FOLGA.fimAntesDoInicio]: 'ate',
 };
+
+/** O sábado, apagado na grade enquanto "Sugerir sábados" está desligado. */
+const SO_SABADO: DiaDaSemana[] = ['sab'];
 
 export function MinhaDisponibilidade() {
   const { concluir } = useNavegacao();
@@ -127,13 +130,20 @@ export function MinhaDisponibilidade() {
       }
     >
       <CartaoVidro estilo={[proprios.cartaoGrade, estilos.primeiro]}>
-        <GradeLivre horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
-        <RodapeDaGrade esquerda={resumoDosHorarios(d.blocos)} direita="Domingo fechado" />
+        <GradeLivre
+          horarios={d.blocos}
+          diasApagados={d.sugereSabado ? undefined : SO_SABADO}
+          aoMudar={(blocos) => atualizar({ blocos })}
+        />
+        {/* Sem "Sugerir sábados", o sábado pintado não entra nas sugestões: o
+            rodapé diz isso junto da grade, e não só no switch. */}
+        <RodapeDaGrade
+          esquerda={resumoDosHorarios(d.blocos)}
+          direita={d.sugereSabado ? 'Domingo fechado' : 'Sábado e domingo fora'}
+        />
       </CartaoVidro>
-      <View style={estilos.bloco}>
-        <ListaDeHorarios horarios={d.blocos} aoMudar={(blocos) => atualizar({ blocos })} />
-      </View>
 
+      {/* Os dois switches mudam o que a grade vale, então ficam colados nela. */}
       <CartaoComSwitch
         titulo="Aceitar reposição fora desses horários"
         sub="Só quando não houver outra saída"
@@ -145,6 +155,15 @@ export function MinhaDisponibilidade() {
         sub="Entra na lista de horários possíveis"
         ligado={d.sugereSabado}
         aoAlternar={(sugereSabado) => atualizar({ sugereSabado })}
+      />
+
+      <View style={estilos.grupo}>
+        <CabecalhoGrupo titulo="Horários" />
+      </View>
+      <ListaDeHorarios
+        recolhida
+        horarios={d.blocos}
+        aoMudar={(blocos) => atualizar({ blocos })}
       />
 
       <View style={estilos.grupo}>
@@ -226,7 +245,7 @@ export function MinhaDisponibilidade() {
 }
 
 const proprios = StyleSheet.create({
-  cartaoGrade: { marginTop: 12, ...PAD_CARTAO_DA_GRADE },
+  cartaoGrade: PAD_CARTAO_DA_GRADE,
   folga: { gap: 16 },
   datas: { flexDirection: 'row', gap: 12 },
   flexivel: { flex: 1, minWidth: 0 },

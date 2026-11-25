@@ -541,6 +541,8 @@ export const PAD = {
   previaMensagem: { padding: 14 },
   /** cartão que envolve a grade semanal (`14px 8px`; a conta da grade depende dele) */
   cartaoDaGrade: { paddingVertical: 14, paddingHorizontal: 8 },
+  /** horário marcado na grade de horários livres: o rótulo de começo e fim (SCRUM-101) */
+  blocoDaGrade: { paddingVertical: 3, paddingHorizontal: 4 },
   /** caixas de valor e validade do primeiro pacote (`11px 13px`) */
   caixaDePacote: { paddingVertical: 11, paddingHorizontal: 13 },
   /** linha numerada das Boas-vindas, "01 · 02 · 03" (`14px 15px`) */

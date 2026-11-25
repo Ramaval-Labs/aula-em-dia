@@ -590,7 +590,8 @@ espalhar no `style` (`{ ...PAD.cartao, gap: 12 }`).
 | `PAD.separador` | 13 em cima | separador com fio do cartão de escolha e do débito |
 | `PAD.rodapeDoCartao` | 12 em cima | rodapé com fio dentro de um cartão (grade, pacote) |
 | `PAD.previaMensagem` | 14 | caixa da prévia de mensagem |
-| `PAD.cartaoDaGrade` | 14 · 8 | cartão da grade semanal (a conta da grade depende dele) |
+| `PAD.cartaoDaGrade` | 14 · 8 | cartão da grade de horários livres (a conta da grade depende dele) |
+| `PAD.blocoDaGrade` | 3 · 4 | horário marcado na grade: começo no topo, fim na base |
 | `PAD.caixaDePacote` | 11 · 13 | caixas de valor e validade do primeiro pacote |
 | `PAD.linhaDePasso` | 14 · 15 | linha numerada das Boas-vindas |
 | `PAD.recuo` | 0 · 6 | texto solto alinhado ao cabeçalho de grupo |
