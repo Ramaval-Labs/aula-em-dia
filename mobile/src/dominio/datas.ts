@@ -115,6 +115,16 @@ export function hoje(): string {
   return USAR_DATA_REAL ? formatarDdMm(new Date()) : HOJE_DEMO;
 }
 
+/**
+ * A hora do dia em minutos (17h30 → 1050), do mesmo relógio de `hoje()`.
+ * Na demonstração de data fixa, meio-dia.
+ */
+export function minutosAgora(): number {
+  if (!USAR_DATA_REAL) return 12 * 60;
+  const agora = new Date();
+  return agora.getHours() * 60 + agora.getMinutes();
+}
+
 /** O "hoje" do app como Date, para contas de dias. */
 export function hojeComoData(): Date {
   if (USAR_DATA_REAL) {

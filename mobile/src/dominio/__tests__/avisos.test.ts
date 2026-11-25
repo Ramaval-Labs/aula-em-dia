@@ -10,6 +10,7 @@ import { estadoInicial } from '../../dados/semente';
 import { lerAulaFixa } from '../aulaFixa';
 import {
   aulasDaProximaHora,
+  aulasSemRegistro,
   avisoDaAula,
   avisosDoDia,
   resumoDoDia,
@@ -252,5 +253,45 @@ describe('antes da aula — horário por dia (SCRUM-101)', () => {
       { id: 'pordia', nome: 'Bia Souza', hora: 18 },
     ]);
     expect(aulasDaProximaHora([a], TUDO_LIGADO, HOJE, 8)).toEqual([]);
+  });
+});
+
+describe('aulasSemRegistro — o lembrete da Home (SCRUM-101)', () => {
+  // a aula de hoje é das 18h às 19h
+  const AS_19H = 19 * 60;
+  const lancamento = (t: string, d = HOJE) => ({ d, t, s: '', delta: -1, saldo: 4 });
+
+  it('a aula de hoje que já terminou, sem registro, entra', () => {
+    expect(aulasSemRegistro([base], {}, HOJE, AS_19H)).toEqual([{ id: 'a', nome: 'Bia Souza' }]);
+  });
+
+  it('antes de terminar a aula, ainda não', () => {
+    expect(aulasSemRegistro([base], {}, HOJE, AS_19H - 1)).toEqual([]);
+  });
+
+  it('a duração conta: aula de 90 min só termina às 19h30', () => {
+    const longa = com({ aulaFixa: { dias: [DIA_DE_HOJE], hora: 18, duracao: 90 } });
+    expect(aulasSemRegistro([longa], {}, HOJE, AS_19H)).toEqual([]);
+    expect(ids(aulasSemRegistro([longa], {}, HOJE, AS_19H + 30))).toEqual(['a']);
+  });
+
+  it('qualquer registro de hoje tira da lista; o de outro dia, não', () => {
+    for (const t of ['Aula realizada', 'Falta avisada', 'Falta sem aviso', 'Aula cancelada por você']) {
+      expect(aulasSemRegistro([base], { a: [lancamento(t)] }, HOJE, AS_19H)).toEqual([]);
+    }
+    expect(ids(aulasSemRegistro([base], { a: [lancamento('Aula realizada', '21/08')] }, HOJE, AS_19H))).toEqual(['a']);
+    // pagamento não é registro de aula
+    expect(ids(aulasSemRegistro([base], { a: [lancamento('Pagamento recebido')] }, HOJE, AS_19H))).toEqual(['a']);
+  });
+
+  it('fica de fora: outro dia, sem hora, pausado, arquivado, sem pacote', () => {
+    const lista = [
+      com({ id: 'outro', aulaFixa: { dias: [OUTRO_DIA], hora: 18 } }),
+      com({ id: 'semHora', aulaFixa: { dias: [DIA_DE_HOJE], hora: null } }),
+      com({ id: 'pausado', pausado: true }),
+      com({ id: 'arquivado', arquivado: true }),
+      com({ id: 'semPacote', semPacote: true, total: 0, usadas: 0 }),
+    ];
+    expect(aulasSemRegistro(lista, {}, HOJE, 23 * 60)).toEqual([]);
   });
 });

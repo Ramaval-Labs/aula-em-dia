@@ -13,12 +13,12 @@
  * O dia (`dd/mm`) e a hora entram como parâmetro: o fuso é de quem chama.
  */
 
-import { aulaFixaDe, inicioNoDia, temAulaNoDia } from './aulaFixa';
+import { aulaFixaDe, duracaoDaAula, inicioNoDia, temAulaNoDia } from './aulaFixa';
 import { diasEntre } from './datas';
 import { diaDaSemanaDe } from './disponibilidade';
 import { plural, primeiroNome } from './formato';
-import { saldoBaixo } from './politica';
-import type { Aluno, PreferenciasDeAviso } from './tipos';
+import { podeRegistrar, saldoBaixo } from './politica';
+import type { Aluno, Extratos, PreferenciasDeAviso } from './tipos';
 
 /** "Se ficar 3 dias sem horário escolhido" (tela de Avisos). */
 export const DIAS_SEM_HORARIO = 3;
@@ -147,3 +147,43 @@ export function aulasDaProximaHora(
 /** A frase do push antes da aula: "Aula com Bia às 18h.". */
 export const avisoDaAula = (aviso: Pick<AvisoDeAula, 'nome' | 'hora'>): string =>
   `Aula com ${primeiroNome(aviso.nome)} às ${aviso.hora}h.`;
+
+/** Os títulos de lançamento que contam como "a aula de hoje foi registrada". */
+const REGISTROS_DE_AULA = new Set([
+  'Aula realizada',
+  'Reposição realizada',
+  'Falta avisada',
+  'Falta sem aviso',
+  'Aula cancelada por você',
+]);
+
+/**
+ * As aulas fixas de hoje que já terminaram e não têm registro (SCRUM-101).
+ * Registrar toda aula é o hábito do qual o saldo depende: sem ele, o extrato
+ * que o aluno vê diverge da realidade. A Home lembra, com o atalho.
+ *
+ * `minutosAgora` é a hora do dia em minutos (17h30 → 1050), de quem chama.
+ * Fica de fora quem não pode registrar (sem pacote, pausado, arquivado).
+ */
+export function aulasSemRegistro(
+  alunos: Aluno[],
+  extratos: Extratos,
+  hoje: string,
+  minutosAgora: number,
+): AlunoAvisado[] {
+  const dia = diaDaSemanaDe(hoje);
+  if (!dia) return [];
+  return alunos
+    .filter((a) => naLista(a) && podeRegistrar(a))
+    .filter((a) => {
+      const af = aulaFixaDe(a);
+      if (!temAulaNoDia(af, dia)) return false;
+      const inicio = inicioNoDia(af, dia);
+      if (inicio === null || inicio + duracaoDaAula(af) > minutosAgora) return false;
+      const registrada = (extratos[a.id] ?? []).some(
+        (e) => e.d === hoje && REGISTROS_DE_AULA.has(e.t),
+      );
+      return !registrada;
+    })
+    .map(avisado);
+}
