@@ -28,7 +28,7 @@ cd mobile
 npm install
 npx expo login        # obrigatório desde o SDK 57 (conta gratuita)
 npx expo start        # QR Code para o Expo Go
-npm test              # 1288 testes: regras, navegação, tokens e montagem das 36 telas
+npm test              # 1289 testes: regras, navegação, tokens e montagem das 36 telas
 npm run typecheck     # tsc --noEmit
 ```
 
