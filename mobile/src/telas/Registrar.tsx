@@ -22,6 +22,7 @@ import {
   efeito,
   geraReposicao,
   podeRepor,
+  reposicaoHoje,
   podeRegistrar,
   saldo,
   saldoBaixo,
@@ -34,6 +35,7 @@ import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
 import { useCores } from '../tema/TemaProvider';
+import { hoje } from '../dominio/datas';
 import { plural, primeiroNome, unidade } from '../dominio/formato';
 import { comEspaco, texto } from '../tema/tipografia';
 import { linhaDeHorario } from './comum/aluno';
@@ -187,7 +189,11 @@ export function Registrar() {
               <CartaoDesfecho
                 key={o.chave}
                 titulo={o.titulo}
-                sub={o.sub}
+                sub={
+                  o.chave === 'realizada' && aluno && reposicaoHoje(aluno, hoje())
+                    ? 'É a reposição marcada para hoje'
+                    : o.sub
+                }
                 chave={o.chave}
                 aluno={aluno}
                 politicas={politicas}

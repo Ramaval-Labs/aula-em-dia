@@ -582,6 +582,8 @@ function SecaoBlocos() {
           <FaixaStatus tipo="pausado" texto="Pausado até regularizar" />
           <FaixaStatus tipo="atraso" texto="Atraso de 12 dias" />
           <FaixaStatus tipo="pendente" texto="Reposição pendente" />
+          <FaixaStatus tipo="vencido" texto="Pacote venceu em 20/08" />
+          <FaixaStatus tipo="vencendo" texto="Pacote vence em 5 dias" />
           <FaixaStatus tipo="marcada" texto="Reposição 30/08 · 10h" />
         </View>
       </Amostra>

@@ -21,8 +21,9 @@ import {
   Segmentado,
 } from '../componentes/Controles';
 import { LinhaAluno, ListaAgrupada } from '../componentes/Listas';
-import { dataPorExtenso } from '../dominio/datas';
-import { plural, unidade } from '../dominio/formato';
+import { aulasSemRegistro } from '../dominio/avisos';
+import { dataPorExtenso, hoje, minutosAgora } from '../dominio/datas';
+import { plural, primeiroNome, unidade } from '../dominio/formato';
 import { ordenar, saldo, saldoBaixo, temPacote } from '../dominio/politica';
 import type { Filtro } from '../dominio/tipos';
 import { useDados } from '../estado/dados';
@@ -42,6 +43,7 @@ const FILTROS: { valor: Filtro; rotulo: Filtro }[] = [
 export function Home() {
   const { cores } = useCores();
   const alunos = useDados((s) => s.alunos);
+  const extratos = useDados((s) => s.extratos);
   const { filtro, definirFiltro, ir } = useNavegacao();
   const reiniciarRascunho = useFormularios((s) => s.substituir);
   const importar = usePerguntaDeImportar();
@@ -50,6 +52,17 @@ export function Home() {
   const lista = useMemo(() => ordenar(ativos, filtro), [ativos, filtro]);
 
   const aulasHoje = alunos.filter((a) => a.hoje && temPacote(a) && !a.pausado).length;
+
+  // As aulas de hoje que já terminaram e não foram registradas (SCRUM-101):
+  // registrar toda aula é o que mantém o saldo certo, então a Home lembra.
+  const semRegistro = useMemo(
+    () => aulasSemRegistro(alunos, extratos, hoje(), minutosAgora()),
+    [alunos, extratos],
+  );
+  const registrarDe = (alunoId: string) => {
+    reiniciarRascunho('registro', REGISTRO_INICIAL);
+    ir('registrar', { alunoId });
+  };
 
   // Mesmo destino do "Novo aluno" e da ação do estado vazio.
   const abrirCadastro = () => {
@@ -130,6 +143,21 @@ export function Home() {
         </View>
       ) : null}
 
+      {semRegistro.length > 0 ? (
+        <BlocoStatus
+          tom="ambar"
+          titulo={`${plural(semRegistro.length, 'aula de hoje', 'aulas de hoje')} sem registro`}
+          texto={`${juntarNomes(semRegistro.map((a) => primeiroNome(a.nome)))}. ` +
+            'Registre para o saldo continuar certo.'}
+          acao={{
+            rotulo: `Registrar ${primeiroNome(semRegistro[0].nome)}`,
+            aoTocar: () => registrarDe(semRegistro[0].id),
+            variante: 'vidro',
+          }}
+          estilo={estilos.lembrete}
+        />
+      ) : null}
+
       <Segmentado
         opcoes={FILTROS}
         valor={filtro}
@@ -193,10 +221,17 @@ export function Home() {
   );
 }
 
+/** "Bia", "Bia e Rafael", "Bia, Rafael e Mateus". */
+function juntarNomes(nomes: string[]): string {
+  if (nomes.length <= 1) return nomes.join('');
+  return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
+}
+
 const estilos = StyleSheet.create({
   // 4px do handoff: a contagem senta na linha de base do título grande, não na borda
   contagem: { alignItems: 'flex-end', paddingBottom: 4 },
   importar: { marginTop: 18, gap: 2 },
+  lembrete: { marginTop: 18 },
   filtros: { marginTop: 18 },
   lista: { marginTop: 16 },
   acoes: { gap: 10 },
