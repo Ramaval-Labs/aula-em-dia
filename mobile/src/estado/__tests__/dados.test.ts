@@ -17,6 +17,7 @@ import { CAMPOS_DO_MOVIMENTO, estadoVazio } from '../../dados/conversor';
 import { repositorio, type Gravado, type Mudanca, type Repositorio } from '../../dados/repositorio';
 import { ConflitoDeVersao } from '../../dados/repositorioSupabase';
 import { estadoInicial } from '../../dados/semente';
+import { hoje, somarDias } from '../../dominio/datas';
 import type { ConfigPacote } from '../../dominio/tipos';
 import { avisos } from '../avisos';
 import { useDados } from '../dados';
@@ -585,5 +586,39 @@ describe('os movimentos só mudam o que a RPC grava', () => {
     // A proposta mora noutra tabela, e a RPC cuida dela à parte.
     const gravaveis: string[] = [...CAMPOS_DO_MOVIMENTO, 'proposta'];
     expect(mudaram.filter((k) => !gravaveis.includes(k))).toEqual([]);
+  });
+});
+
+describe('as regras revistas em 25/11 (SCRUM-101)', () => {
+  it('na carga, pacote aberto com o vencimento passado chega como atraso', async () => {
+    const { alunos, extratos, politicas } = persistido();
+    const vence = somarDias(hoje(), -5);
+    const vencido = { ...alunos[0], pagamento: { status: 'aberto' as const, vence } };
+    await AsyncStorage.setItem(
+      CHAVE_ESTADO,
+      JSON.stringify({ alunos: [vencido, ...alunos.slice(1)], extratos, politicas }),
+    );
+
+    await d().carregar();
+
+    expect(d().alunoPor(vencido.id)?.pagamento).toEqual({
+      status: 'atraso',
+      venceu: vence,
+      dias: 5,
+    });
+  });
+
+  it('a reposição de um cancelamento do professor não gasta o limite do aluno', () => {
+    const antes = d().alunoPor('mar')!.reposicoes;
+    d().registrarAula('mar', 'cancelada_professor', 0);
+    d().marcarReposicao('mar', JANELA);
+    expect(d().alunoPor('mar')!.reposicoes).toBe(antes);
+  });
+
+  it('a reposição de uma falta avisada gasta', () => {
+    const antes = d().alunoPor('mar')!.reposicoes;
+    d().registrarAula('mar', 'avisada', 48);
+    d().marcarReposicao('mar', JANELA);
+    expect(d().alunoPor('mar')!.reposicoes).toBe(antes + 1);
   });
 });

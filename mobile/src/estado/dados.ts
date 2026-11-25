@@ -24,8 +24,10 @@ import { estadoInicial, type EstadoPersistivel } from '../dados/semente';
 import { hoje, somarDias } from '../dominio/datas';
 import { intervalosDe } from '../dominio/disponibilidade';
 import {
+  comPagamentoNaData,
   estenderValidade as regraEstenderValidade,
   marcarReposicao as regraMarcarReposicao,
+  pendenciaDoProfessor,
   registrarAula as regraRegistrarAula,
   registrarPagamento as regraRegistrarPagamento,
   saldo,
@@ -236,6 +238,18 @@ function comHorariosLivres<T extends { alunos?: Aluno[]; disponibilidade?: Dispo
   };
 }
 
+/**
+ * O que vale a cada carga (SCRUM-101): o horário livre e o pagamento lido no
+ * dia. Pacote aberto com o vencimento passado chega como atraso, porque nada
+ * mais o passa para lá.
+ */
+function naCarga<T extends { alunos?: Aluno[]; disponibilidade?: Disponibilidade }>(g: T): T {
+  const livre = comHorariosLivres(g);
+  if (!livre.alunos) return livre;
+  const dia = hoje();
+  return { ...livre, alunos: livre.alunos.map((a) => comPagamentoNaData(a, dia)) };
+}
+
 export const useDados = create<Dados>((set, get) => {
   /** Aplica uma transformação num aluno. Não muta o estado antigo. */
   const mutar = (id: string, fn: (a: Aluno) => Aluno) => {
@@ -271,13 +285,13 @@ export const useDados = create<Dados>((set, get) => {
     async carregar() {
       // O remoto mostra o cache primeiro, e o banco atualiza quando responder.
       const doCache = await repositorio.lerCache?.().catch(() => null);
-      if (doCache) set({ ...partida(), ...comHorariosLivres(doCache), carregado: true });
+      if (doCache) set({ ...partida(), ...naCarga(doCache), carregado: true });
       try {
         const gravado = await repositorio.carregar();
         // Espalhar sobre o ponto de partida, e não substituir campo a campo:
         // o estado persistido cresce a cada fase, e um payload gravado por
         // uma versão anterior deixaria os campos novos indefinidos.
-        if (gravado) set({ ...partida(), ...comHorariosLivres(gravado) });
+        if (gravado) set({ ...partida(), ...naCarga(gravado) });
       } catch (erro) {
         // Estado corrompido ou ilegível, ou banco fora sem cache: segue com
         // o que tem.
@@ -326,7 +340,13 @@ export const useDados = create<Dados>((set, get) => {
     marcarReposicao(id, janela) {
       const atual = get().alunoPor(id);
       if (!atual) return;
-      const { aluno, lancamento } = regraMarcarReposicao(atual, janela, hoje());
+      const { aluno, lancamento } = regraMarcarReposicao(
+        atual,
+        janela,
+        hoje(),
+        // a reposição de um cancelamento seu não gasta o limite do aluno
+        !pendenciaDoProfessor(atual, get().extratos[id] ?? []),
+      );
       mutar(id, () => aluno);
       lancar(id, lancamento);
       persistir({ tipo: 'marcarReposicao', aluno, lancamento });
@@ -583,7 +603,13 @@ export const useDados = create<Dados>((set, get) => {
 
       // Aceita ou confirmada pelo professor: vira reposição marcada de fato.
       // O domínio já devolve o aluno sem a proposta aberta.
-      const { aluno, lancamento } = regraMarcarReposicao(atual, janela, hoje());
+      const { aluno, lancamento } = regraMarcarReposicao(
+        atual,
+        janela,
+        hoje(),
+        // a reposição de um cancelamento seu não gasta o limite do aluno
+        !pendenciaDoProfessor(atual, get().extratos[id] ?? []),
+      );
       mutar(id, () => aluno);
       lancar(id, lancamento);
       persistirAluno(id, (marcado) => ({
