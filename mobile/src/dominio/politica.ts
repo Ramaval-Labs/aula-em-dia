@@ -4,6 +4,7 @@
  * Cobertura em src/dominio/__tests__/politica.test.ts (spec/casos-de-teste.md).
  */
 
+import { diasEntre } from './datas';
 import { dinheiro } from './formato';
 import type {
   Aluno,
@@ -14,6 +15,7 @@ import type {
   Filtro,
   Janela,
   Lancamento,
+  Pagamento,
   Politicas,
 } from './tipos';
 
@@ -46,8 +48,24 @@ export const podeRepor = (a: Aluno, p: Politicas): boolean =>
 
 export const podeRegistrar = (a: Aluno): boolean => temPacote(a) && !a.pausado;
 
-/** Núcleo da regra: o que cada desfecho faz, dada a política e a antecedência do aviso. */
-export function efeito(desfecho: Desfecho, avisoH: number, p: Politicas): EfeitoRegistro {
+/** Tem pacote e não sobrou aula nele: registrar aula debitaria o que ele não tem. */
+export const semSaldo = (a: Aluno): boolean => temPacote(a) && saldo(a) === 0;
+
+/** O título do lançamento do cancelamento do professor. */
+export const ROTULO_CANCELAMENTO = 'Aula cancelada por você';
+
+/**
+ * Núcleo da regra: o que cada desfecho faz, dada a política e a antecedência
+ * do aviso. Com o aluno, o limite de reposições entra na conta (SCRUM-101):
+ * esgotado, a falta avisada no prazo debita, como a Política e a frase que o
+ * aluno lê prometem. Sem o aluno, a resposta é a de quem ainda tem reposição.
+ */
+export function efeito(
+  desfecho: Desfecho,
+  avisoH: number,
+  p: Politicas,
+  a?: Aluno,
+): EfeitoRegistro {
   if (desfecho === 'realizada') {
     return {
       delta: -1,
@@ -69,6 +87,18 @@ export function efeito(desfecho: Desfecho, avisoH: number, p: Politicas): Efeito
       };
     }
     const emPrazo = avisoH >= p.avisoHoras;
+    if (emPrazo && a && !podeRepor(a, p)) {
+      return {
+        delta: -1,
+        nota:
+          p.limiteReposicoes === 1
+            ? 'Aviso no prazo, mas a reposição do pacote já foi usada'
+            : `Aviso no prazo, mas as ${p.limiteReposicoes} reposições do pacote já foram usadas`,
+        reposicao: false,
+        rotulo: 'Falta avisada',
+        detalhe: `Aviso com ${avisoH}h · limite de reposições atingido`,
+      };
+    }
     return emPrazo
       ? {
           delta: 0,
@@ -100,19 +130,31 @@ export function efeito(desfecho: Desfecho, avisoH: number, p: Politicas): Efeito
     delta: 0,
     nota: 'Você cancelou, então a reposição é obrigatória',
     reposicao: true,
-    rotulo: 'Aula cancelada por você',
+    doProfessor: true,
+    rotulo: ROTULO_CANCELAMENTO,
     detalhe: 'Cancelamento seu · reposição obrigatória',
   };
 }
 
 /**
  * A reposição que **este** registro cria: a regra quer reposição e o aluno
- * ainda tem direito a ela no pacote. É a mesma condição que `registrarAula`
+ * ainda tem direito a ela no pacote — ou a reposição é do professor, que não
+ * depende do limite (SCRUM-101). É a mesma condição que `registrarAula`
  * aplica; existe à parte porque a tela de Resultado precisa saber se a
  * pendência que ela vê nasceu agora ou já existia antes.
  */
 export function geraReposicao(a: Aluno, ef: EfeitoRegistro, p: Politicas): boolean {
-  return ef.reposicao && podeRepor(a, p);
+  return ef.reposicao && (!!ef.doProfessor || podeRepor(a, p));
+}
+
+/**
+ * Se a reposição pendente nasceu de um cancelamento do professor: o
+ * lançamento do dia da pendência é o do cancelamento. Essa reposição não
+ * conta no limite do aluno (SCRUM-101).
+ */
+export function pendenciaDoProfessor(a: Aluno, extrato: Lancamento[]): boolean {
+  const origem = a.pendencia?.origem;
+  return !!origem && extrato.some((e) => e.d === origem && e.t === ROTULO_CANCELAMENTO);
 }
 
 /** Aplica o registro: retorna aluno novo e lançamento. Não muta a entrada. */
@@ -123,14 +165,17 @@ export function registrarAula(
   p: Politicas,
   hoje: string,
 ): { aluno: Aluno; lancamento: Lancamento; efeito: EfeitoRegistro } {
-  const ef = efeito(desfecho, avisoH, p);
+  const ef = efeito(desfecho, avisoH, p, a);
   const novoSaldo = Math.max(0, saldo(a) + ef.delta);
   const aluno: Aluno = { ...a };
   if (ef.delta < 0) aluno.usadas = a.usadas + 1;
   if (geraReposicao(aluno, ef, p)) aluno.pendencia = { origem: hoje, dias: 0 };
+  // Debitar com o saldo zerado não tem de onde tirar: o extrato registra, para
+  // a aula dada sem crédito não sumir (SCRUM-101).
+  const detalhe = ef.delta < 0 && semSaldo(a) ? `${ef.detalhe} · sem saldo no pacote` : ef.detalhe;
   return {
     aluno,
-    lancamento: { d: hoje, t: ef.rotulo, s: ef.detalhe, delta: ef.delta, saldo: novoSaldo },
+    lancamento: { d: hoje, t: ef.rotulo, s: detalhe, delta: ef.delta, saldo: novoSaldo },
     efeito: ef,
   };
 }
@@ -138,15 +183,18 @@ export function registrarAula(
 /**
  * Marca a reposição: consome uma reposição, limpa a pendência, agenda e fecha
  * a proposta que estivesse aberta — marcada a aula, não há mais o que propor.
+ * A reposição de um cancelamento do professor não consome o limite do aluno
+ * (`contaNoLimite: false`, decidido por `pendenciaDoProfessor`).
  */
 export function marcarReposicao(
   a: Aluno,
   janela: { dia: string; hora: string },
   hoje: string,
+  contaNoLimite = true,
 ): { aluno: Aluno; lancamento: Lancamento } {
   const aluno: Aluno = {
     ...a,
-    reposicoes: a.reposicoes + 1,
+    reposicoes: a.reposicoes + (contaNoLimite ? 1 : 0),
     pendencia: null,
     agendada: { dia: janela.dia, hora: janela.hora },
     proposta: null,
@@ -247,6 +295,28 @@ export function faixaStatus(a: Aluno): Faixa | null {
     };
   }
   return null;
+}
+
+/**
+ * O pagamento como ele está hoje (SCRUM-101). O pacote nasce "aberto" com
+ * vencimento, e nada o passava para "atraso" quando a data chegava: para o
+ * professor de verdade, ninguém nunca atrasava. Aberto com o vencimento já
+ * passado é atraso, com os dias contados desde o vencimento. O resto fica
+ * como está.
+ */
+export function pagamentoNaData(pg: Pagamento, hoje: string): Pagamento {
+  if (pg.status !== 'aberto' || !pg.vence) return pg;
+  const dias = diasEntre(pg.vence, hoje);
+  if (dias === null || dias <= 0) return pg;
+  const { vence, ...resto } = pg;
+  return { ...resto, status: 'atraso', venceu: vence, dias };
+}
+
+/** O aluno com o pagamento lido na data: o mesmo objeto quando nada muda. */
+export function comPagamentoNaData(a: Aluno, hoje: string): Aluno {
+  if (!a.pagamento) return a;
+  const pagamento = pagamentoNaData(a.pagamento, hoje);
+  return pagamento === a.pagamento ? a : { ...a, pagamento };
 }
 
 /** Totais do financeiro. Alunos sem pacote não entram em nenhum total. */

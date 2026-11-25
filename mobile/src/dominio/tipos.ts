@@ -128,6 +128,11 @@ export interface EfeitoRegistro {
   nota: string;
   /** gera pendência de reposição */
   reposicao: boolean;
+  /**
+   * A reposição é do professor (ele cancelou): sai mesmo com o limite da
+   * política usado, e não conta nele. Ausente = reposição do aluno.
+   */
+  doProfessor?: boolean;
   /** título do lançamento no extrato */
   rotulo: string;
   /** subtítulo do lançamento */

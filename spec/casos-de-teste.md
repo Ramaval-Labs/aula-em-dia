@@ -43,7 +43,9 @@ Textos: o caso 2 gera nota "Aviso com 26h, dentro do mínimo de 24h" e detalhe
 |---|---|---|
 | 19 | Valentin (6/2), avisada, 26h, padrão | usadas segue 2, saldo 4, `pendencia = { origem: hoje, dias: 0 }` |
 | 20 | Valentin (6/2), realizada | usadas 3, saldo 3, sem pendência |
-| 21 | aluno com `reposicoes: 3` e limite 3, avisada 26h | delta 0, **sem** pendência (limite estourado) |
+| 21 | aluno com `reposicoes: 3` e limite 3, avisada 26h | delta **−1**, **sem** pendência (limite estourado: "Depois do limite, a falta debita" — SCRUM-101, 25/11; antes era delta 0) |
+| 21b | aluno com `reposicoes: 3` e limite 3, cancelada pelo professor | delta 0, **com** pendência: a reposição do professor não depende do limite (SCRUM-101) |
+| 21c | aluno com saldo 0, realizada | lançamento com "· sem saldo no pacote" no detalhe (SCRUM-101) |
 | 22 | qualquer registro | a entrada **não é mutada**; retorna cópia |
 | 23 | qualquer registro | lançamento entra **no topo** do extrato |
 
@@ -51,6 +53,7 @@ Textos: o caso 2 gera nota "Aviso com 26h, dentro do mínimo de 24h" e detalhe
 | # | esperado |
 |---|---|
 | 24 | `reposicoes` +1, `pendencia` null, `agendada` preenchida |
+| 24b | pendência de um cancelamento do professor: `reposicoes` **não** muda (SCRUM-101) |
 | 25 | lançamento "Reposição marcada" com "{dia}, {hora}", delta 0 |
 | 26 | toast: "Reposição de {primeiro nome} em {dia}, {hora}. Mensagem enviada." |
 

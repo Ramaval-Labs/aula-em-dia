@@ -6,12 +6,15 @@
 import { estadoInicial, JANELA_VALIDADE_ESTENDIDA, JANELAS } from '../../dados/semente';
 import { dinheiro, dinheiroCompacto, plural, unidade } from '../formato';
 import {
+  comPagamentoNaData,
   efeito,
   estenderValidade,
   faixaStatus,
   janelasDisponiveis,
   marcarReposicao,
   ordenar,
+  pagamentoNaData,
+  pendenciaDoProfessor,
   podeRepor,
   POLITICAS_PADRAO,
   geraReposicao,
@@ -19,6 +22,7 @@ import {
   registrarPagamento,
   saldo,
   saldoBaixo,
+  semSaldo,
   temPacote,
   totaisFinanceiro,
   valorPacote,
@@ -171,11 +175,61 @@ describe('registrarAula', () => {
     expect(aluno.pendencia).toBeUndefined();
   });
 
-  it('21 — no limite de reposições o direito não é criado', () => {
+  it('21 — no limite de reposições a falta avisada no prazo debita (SCRUM-101)', () => {
     const entrada = alunoBase({ reposicoes: 3 });
-    const { aluno, efeito: ef } = registrarAula(entrada, 'avisada', 26, padrao, HOJE);
-    expect(ef.delta).toBe(0);
+    const { aluno, efeito: ef, lancamento } = registrarAula(entrada, 'avisada', 26, padrao, HOJE);
+    expect(ef.delta).toBe(-1);
+    expect(aluno.usadas).toBe(entrada.usadas + 1);
     expect(aluno.pendencia).toBeUndefined();
+    expect(ef.nota).toBe('Aviso no prazo, mas as 3 reposições do pacote já foram usadas');
+    expect(lancamento.s).toBe('Aviso com 26h · limite de reposições atingido');
+  });
+
+  it('21 — com limite 1, a nota fala de uma reposição só', () => {
+    const p = { ...padrao, limiteReposicoes: 1 };
+    const ef = efeito('avisada', 26, p, alunoBase({ reposicoes: 1 }));
+    expect(ef.nota).toBe('Aviso no prazo, mas a reposição do pacote já foi usada');
+  });
+
+  it('21 — sem limite (0), a falta avisada no prazo nunca debita', () => {
+    const p = { ...padrao, limiteReposicoes: 0 };
+    const { efeito: ef, aluno } = registrarAula(alunoBase({ reposicoes: 40 }), 'avisada', 26, p, HOJE);
+    expect(ef.delta).toBe(0);
+    expect(aluno.pendencia).toEqual({ origem: HOJE, dias: 0 });
+  });
+
+  it('21 — fora do prazo, debita como sempre, com ou sem limite', () => {
+    const ef = efeito('avisada', 2, padrao, alunoBase({ reposicoes: 3 }));
+    expect(ef.delta).toBe(-1);
+    expect(ef.detalhe).toBe('Aviso com 2h · fora do prazo');
+  });
+
+  it('21b — o cancelamento do professor gera reposição mesmo no limite', () => {
+    const entrada = alunoBase({ reposicoes: 3 });
+    const { aluno, efeito: ef } = registrarAula(entrada, 'cancelada_professor', 0, padrao, HOJE);
+    expect(ef.delta).toBe(0);
+    expect(ef.doProfessor).toBe(true);
+    expect(aluno.pendencia).toEqual({ origem: HOJE, dias: 0 });
+  });
+
+  it('21c — debitar com o saldo zerado fica marcado no extrato', () => {
+    const zerado = alunoBase({ total: 6, usadas: 6 });
+    expect(semSaldo(zerado)).toBe(true);
+    const { lancamento } = registrarAula(zerado, 'realizada', 0, padrao, HOJE);
+    expect(lancamento.s).toBe('Aula do pacote · sem saldo no pacote');
+    expect(lancamento.saldo).toBe(0);
+    // com saldo, o detalhe é o de sempre; e o que não debita não ganha a marca
+    expect(registrarAula(alunoBase(), 'realizada', 0, padrao, HOJE).lancamento.s).toBe(
+      'Aula do pacote',
+    );
+    expect(registrarAula(zerado, 'cancelada_professor', 0, padrao, HOJE).lancamento.s).toBe(
+      'Cancelamento seu · reposição obrigatória',
+    );
+  });
+
+  it('semSaldo: só quem tem pacote e zerou', () => {
+    expect(semSaldo(alunoBase())).toBe(false);
+    expect(semSaldo(alunoBase({ total: 0, usadas: 0, semPacote: true }))).toBe(false);
   });
 
   it('22 — a entrada não é mutada', () => {
@@ -193,6 +247,10 @@ describe('registrarAula', () => {
     expect(
       geraReposicao(alunoBase({ reposicoes: 3 }), efeito('avisada', 26, padrao), padrao),
     ).toBe(false);
+    // a do professor sai mesmo no limite
+    expect(
+      geraReposicao(alunoBase({ reposicoes: 3 }), efeito('cancelada_professor', 0, padrao), padrao),
+    ).toBe(true);
     // O que `registrarAula` grava é exatamente isso.
     const { aluno } = registrarAula(val, 'avisada', 26, padrao, HOJE);
     expect(!!aluno.pendencia).toBe(geraReposicao(val, efeito('avisada', 26, padrao), padrao));
@@ -394,5 +452,66 @@ describe('totais do financeiro', () => {
     expect(t.emAtraso).toBe(valorPacote(alunoPor('val')));
     expect(t.aReceber).toBe(valorPacote(alunoPor('raf')));
     expect(t.recebido).toBe(valorPacote(alunoPor('mar')));
+  });
+});
+
+describe('marcarReposicao — o limite é do aluno (SCRUM-101)', () => {
+  const janela = { dia: 'Sexta, 30/10', hora: '17h' };
+
+  it('24b — a reposição de um cancelamento do professor não conta no limite', () => {
+    const a = alunoBase({ reposicoes: 2, pendencia: { origem: '20/08', dias: 8 } });
+    expect(marcarReposicao(a, janela, HOJE, false).aluno.reposicoes).toBe(2);
+    expect(marcarReposicao(a, janela, HOJE).aluno.reposicoes).toBe(3);
+  });
+
+  it('pendenciaDoProfessor lê o lançamento do dia da pendência', () => {
+    const a = alunoBase({ pendencia: { origem: '20/08', dias: 8 } });
+    const cancelou = [{ d: '20/08', t: 'Aula cancelada por você', s: '', delta: 0, saldo: 4 }];
+    const faltou = [{ d: '20/08', t: 'Falta avisada', s: '', delta: 0, saldo: 4 }];
+    expect(pendenciaDoProfessor(a, cancelou)).toBe(true);
+    expect(pendenciaDoProfessor(a, faltou)).toBe(false);
+    expect(pendenciaDoProfessor(alunoBase({ pendencia: null }), cancelou)).toBe(false);
+  });
+});
+
+describe('pagamentoNaData — o atraso chega sozinho (SCRUM-101)', () => {
+  it('aberto com o vencimento passado vira atraso, com os dias contados', () => {
+    expect(pagamentoNaData({ status: 'aberto', vence: '20/08' }, '28/08')).toEqual({
+      status: 'atraso',
+      venceu: '20/08',
+      dias: 8,
+    });
+  });
+
+  it('no dia do vencimento e antes, segue aberto', () => {
+    const noDia = { status: 'aberto' as const, vence: '28/08' };
+    expect(pagamentoNaData(noDia, '28/08')).toBe(noDia);
+    expect(pagamentoNaData({ status: 'aberto', vence: '12/09' }, '28/08').status).toBe('aberto');
+  });
+
+  it('pago, já em atraso, sem pacote ou sem vencimento: não mexe', () => {
+    for (const pg of [
+      { status: 'pago' as const, em: '01/08' },
+      { status: 'atraso' as const, venceu: '01/08', dias: 27 },
+      { status: 'sem' as const },
+      { status: 'aberto' as const },
+    ]) {
+      expect(pagamentoNaData(pg, '28/08')).toBe(pg);
+    }
+  });
+
+  it('a virada de ano conta certo', () => {
+    expect(pagamentoNaData({ status: 'aberto', vence: '28/12' }, '05/01')).toEqual({
+      status: 'atraso',
+      venceu: '28/12',
+      dias: 8,
+    });
+  });
+
+  it('comPagamentoNaData devolve o mesmo aluno quando nada muda', () => {
+    const emDia = alunoBase({ pagamento: { status: 'pago', em: '01/08' } });
+    expect(comPagamentoNaData(emDia, '28/08')).toBe(emDia);
+    const vencido = alunoBase({ pagamento: { status: 'aberto', vence: '20/08' } });
+    expect(comPagamentoNaData(vencido, '28/08').pagamento.status).toBe('atraso');
   });
 });
