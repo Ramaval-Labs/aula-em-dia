@@ -123,7 +123,13 @@ export function mesmaJanela(
 
 export interface RascunhoRegistro {
   desfecho: Desfecho | null;
+  /** a última antecedência válida digitada; é ela que vai para o registro */
   avisoH: number;
+  /**
+   * O campo como está na tela (SCRUM-101). Ausente = ainda não mexeu, e o
+   * campo mostra `avisoH`. Vazio ou inválido segura o "Confirmar".
+   */
+  avisoTexto?: string;
   /**
    * O que o registro fez de fato, guardado na hora de confirmar para a tela
    * de Resultado não reler o aluno: `null` antes de confirmar.

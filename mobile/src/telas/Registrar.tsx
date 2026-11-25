@@ -5,15 +5,17 @@
  * efeito no saldo (`antes → depois`) aparece **antes** de confirmar, e
  * recalcula ao vivo quando a antecedência do aviso muda.
  *
- * Quem decide o efeito é `dominio/politica.ts` — as três antecedências
- * (48h/26h/10h) são só o que a tela oferece; o mínimo vem da política salva.
+ * Quem decide o efeito é `dominio/politica.ts`. A antecedência do aviso é
+ * digitada em horas (SCRUM-101: eram três opções fixas, 48h/26h/10h); o mínimo
+ * vem da política salva.
  */
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { EstadoVazio } from '../componentes/Blocos';
-import { BotaoPrimario, CartaoEscolha, Segmentado } from '../componentes/Controles';
+import { CampoDeTexto } from '../componentes/Campos';
+import { BotaoPrimario, CartaoEscolha } from '../componentes/Controles';
 import { CabecalhoGrupo, LinhaAluno, ListaAgrupada } from '../componentes/Listas';
 import { Sheet } from '../componentes/Sheet';
 import {
@@ -25,6 +27,7 @@ import {
   temPacote,
 } from '../dominio/politica';
 import type { Aluno, Desfecho, Politicas } from '../dominio/tipos';
+import { horasDeAvisoDigitadas, somenteDigitos } from '../dominio/validacao';
 import { useDados } from '../estado/dados';
 import { REGISTRO_INICIAL, useFormularios, useRascunho } from '../estado/formularios';
 import { useNavegacao } from '../estado/navegacao';
@@ -40,12 +43,10 @@ const DESFECHOS: { chave: Desfecho; titulo: string; sub: string }[] = [
   { chave: 'cancelada_professor', titulo: 'Cancelei a aula', sub: 'A ausência foi sua' },
 ];
 
-/** Antecedências oferecidas no segmentado do cartão "Falta avisada". */
-const ANTECEDENCIAS: number[] = [48, 26, 10];
+/** O campo de horas aceita no máximo três dígitos: o limite é 720. */
+const DIGITOS_DO_AVISO = 3;
 
-const OPCOES_DE_AVISO = ANTECEDENCIAS.map((h) => ({ valor: h, rotulo: `${h}h` }));
-
-/** Texto de apoio do segmentado, dependente da política salva. */
+/** Texto de apoio do campo de horas, dependente da política salva. */
 function notaDoAviso(avisoH: number, p: Politicas): string {
   if (!p.avisadaDevolve) {
     return 'Sua política não devolve a aula em falta avisada, então o prazo não muda o resultado.';
@@ -58,7 +59,20 @@ function notaDoAviso(avisoH: number, p: Politicas): string {
 export function Registrar() {
   const { cores } = useCores();
   const { alunoId, definirAluno, ir } = useNavegacao();
-  const [{ desfecho, avisoH }, atualizarRegistro] = useRascunho('registro', REGISTRO_INICIAL);
+  const [{ desfecho, avisoH, avisoTexto }, atualizarRegistro] = useRascunho(
+    'registro',
+    REGISTRO_INICIAL,
+  );
+
+  // A antecedência é digitada (SCRUM-101): a regra de leitura é do domínio.
+  const textoDoAviso = avisoTexto ?? String(avisoH);
+  const avisoLido = horasDeAvisoDigitadas(textoDoAviso);
+  const erroDoAviso = 'erro' in avisoLido ? avisoLido.erro : undefined;
+  const mudarAviso = (digitado: string) => {
+    const t = somenteDigitos(digitado).slice(0, DIGITOS_DO_AVISO);
+    const lido = horasDeAvisoDigitadas(t);
+    atualizarRegistro({ avisoTexto: t, ...('horas' in lido ? { avisoH: lido.horas } : {}) });
+  };
 
   const alunos = useDados((s) => s.alunos);
   const politicas = useDados((s) => s.politicas);
@@ -69,7 +83,7 @@ export function Registrar() {
   const aluno = alunos.find((a) => a.id === alunoId);
   const selecionaveis = alunos.filter(podeRegistrar);
   const temAlunoAtivo = alunos.some((a) => !a.arquivado);
-  const pronto = !!aluno && !!desfecho;
+  const pronto = !!aluno && !!desfecho && !(desfecho === 'avisada' && erroDoAviso);
 
   // Mesmo destino do "+ Novo aluno" da lista.
   const abrirCadastro = () => {
@@ -107,7 +121,7 @@ export function Registrar() {
     );
 
   return (
-    <Sheet titulo={aluno ? aluno.name : 'Registrar aula'} rodape={rodape}>
+    <Sheet comTeclado titulo={aluno ? aluno.name : 'Registrar aula'} rodape={rodape}>
       {semNinguem ? (
         <ListaAgrupada estilo={estilos.blocoTopo}>
           {temAlunoAtivo ? (
@@ -165,25 +179,24 @@ export function Registrar() {
               >
                 {desfecho === 'avisada' && o.chave === 'avisada' ? (
                   <>
-                    <Text style={[estilos.rotuloSub, { color: cores.tinta3 }]}>
-                      Antecedência do aviso
-                    </Text>
-                    <Segmentado
-                      opcoes={OPCOES_DE_AVISO}
-                      valor={avisoH}
-                      porte="cartao"
-                      rotuloDoGrupo="Antecedência do aviso"
-                      aoTrocar={(h) => atualizarRegistro({ avisoH: h })}
-                      estilo={estilos.segmentado}
+                    <CampoDeTexto
+                      rotulo="Antecedência do aviso, em horas"
+                      valor={textoDoAviso}
+                      aoMudar={mudarAviso}
+                      placeholder="24"
+                      teclado="numerico"
+                      erro={erroDoAviso}
                     />
-                    <Text
-                      style={[
-                        comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 11 }),
-                        { color: cores.tinta2 },
-                      ]}
-                    >
-                      {notaDoAviso(avisoH, politicas)}
-                    </Text>
+                    {erroDoAviso ? null : (
+                      <Text
+                        style={[
+                          comEspaco(texto(12.5, 500, { altura: 1.45 }), { topo: 11 }),
+                          { color: cores.tinta2 },
+                        ]}
+                      >
+                        {notaDoAviso(avisoH, politicas)}
+                      </Text>
+                    )}
                   </>
                 ) : null}
               </CartaoDesfecho>
@@ -246,6 +259,4 @@ const estilos = StyleSheet.create({
   blocoTopo: { marginTop: 10 },
   listaDoGrupo: { marginTop: 9 },
   cartoes: { marginTop: 9, gap: 9 },
-  rotuloSub: texto(11.5, 600, { altura: 1.2, tracking: 0.04, maiuscula: true }),
-  segmentado: { marginTop: 9 },
 });

@@ -204,7 +204,7 @@ describe('registrar aula', () => {
     await abrirAFichaDe(app, aluno);
     await tocarNoBotao(app, 'Registrar aula');
     await fireEvent.press(app.getByRole('radio', { name: /^Falta avisada\./ }));
-    await fireEvent.press(app.getByRole('radio', { name: '10h' }));
+    await fireEvent.changeText(app.getByLabelText('Antecedência do aviso, em horas'), '10');
 
     expect(
       app.getByText(`Abaixo do seu mínimo de ${minimo}h. A aula é debitada e não gera reposição.`),
@@ -247,7 +247,8 @@ describe('registrar aula', () => {
     await abrirAFichaDe(app, aluno);
     await tocarNoBotao(app, 'Registrar aula');
     await fireEvent.press(app.getByRole('radio', { name: /^Falta avisada\./ }));
-    await fireEvent.press(app.getByRole('radio', { name: '26h' }));
+    // a antecedência é digitada (SCRUM-101): 36h, que nenhuma opção fixa tinha
+    await fireEvent.changeText(app.getByLabelText('Antecedência do aviso, em horas'), '36');
 
     expect(
       app.getByText(
@@ -258,7 +259,7 @@ describe('registrar aula', () => {
       app.getByRole('radio', {
         checked: true,
         name:
-          `Falta avisada. Aviso com 26h, dentro do mínimo de ${minimo}h. ` +
+          `Falta avisada. Aviso com 36h, dentro do mínimo de ${minimo}h. ` +
           `Saldo de ${saldo} para ${saldo}.`,
       }),
     ).toBeTruthy();
@@ -270,7 +271,7 @@ describe('registrar aula', () => {
     expect(app.getByText('sem debitar')).toBeTruthy();
     expect(
       app.getByText(
-        `Aviso com 26h, dentro do mínimo de ${minimo}h. ` +
+        `Aviso com 36h, dentro do mínimo de ${minimo}h. ` +
           `O lançamento já está no extrato de ${nome}.`,
       ),
     ).toBeTruthy();
@@ -297,7 +298,7 @@ describe('registrar aula', () => {
     expect(
       app.getByLabelText(
         new RegExp(
-          `\\. Falta avisada\\. Aviso com 26h · reposição gerada\\. ` +
+          `\\. Falta avisada\\. Aviso com 36h · reposição gerada\\. ` +
             `sem efeito no saldo\\. saldo ${saldo}$`,
         ),
       ),
