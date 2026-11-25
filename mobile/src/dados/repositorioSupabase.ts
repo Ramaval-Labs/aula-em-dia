@@ -443,17 +443,21 @@ async function gravar(mudanca: Mudanca): Promise<void> {
     // O id vem do app (`novoIdDeAluno`), e `professor_id` fica com o padrão
     // do banco, `auth.uid()`: o app não tem como gravar aluno para outro.
     case 'criarAluno': {
-      const novo = alunoParaBanco(mudanca.aluno);
-      const [criado] = exigirLinha(
-        await clienteSupabase().from('alunos').insert(novo).select('id, token_publico'),
-        'criar o aluno',
-      );
-      lembrarDatas(mudanca.aluno.id, novo);
-      // A versão inicial da coluna: o primeiro movimento do aluno novo já tem com o que comparar.
-      versoes.set(mudanca.aluno.id, 0);
-      // O token é o padrão da coluna: o link do aluno novo já sai sem recarregar.
-      tokens.set(mudanca.aluno.id, criado.token_publico);
-      return;
+      // Na fila do aluno: o onboarding e o Novo aluno criam o pacote logo em
+      // seguida, sem esperar, e o movimento tem de ver a versão que o insert dá.
+      const { id } = mudanca.aluno;
+      return emSequencia(id, async () => {
+        const novo = alunoParaBanco(mudanca.aluno);
+        const [criado] = exigirLinha(
+          await clienteSupabase().from('alunos').insert(novo).select('id, token_publico'),
+          'criar o aluno',
+        );
+        lembrarDatas(id, novo);
+        // A versão inicial da coluna: o primeiro movimento do aluno novo já tem com o que comparar.
+        versoes.set(id, 0);
+        // O token é o padrão da coluna: o link do aluno novo já sai sem recarregar.
+        tokens.set(id, criado.token_publico);
+      });
     }
 
     case 'atualizarAluno': {

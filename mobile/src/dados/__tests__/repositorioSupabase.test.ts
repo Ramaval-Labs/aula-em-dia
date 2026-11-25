@@ -529,6 +529,19 @@ describe('registrar — o que mexe em saldo vai pela RPC (Parte 5)', () => {
     expect(args().p_versao).toBe(0);
   });
 
+  it('o pacote logo depois de criar o aluno, sem esperar: espera o insert, e não é conflito', async () => {
+    // O fim do onboarding e o Novo aluno chamam `criarAluno` e `criarPacoteCom`
+    // em seguida, sem esperar a primeira gravação terminar.
+    comSemente();
+    const novo = { ...val, id: repo.novoIdDeAluno(), name: 'Ana' };
+    const criando = repo.registrar({ tipo: 'criarAluno', aluno: novo }, e);
+    const pacote = repo.registrar({ tipo: 'criarPacoteCom', aluno: { ...novo, total: 8 }, lancamento }, e);
+    await Promise.all([criando, pacote]);
+
+    expect(falso.consultas.map((c) => c.operacao)).toEqual(['insert', 'rpc']);
+    expect(args().p_versao).toBe(0);
+  });
+
   it('horário ocupado (0007) é falha comum: a frase de outro aparelho seria falsa', async () => {
     await carregado({ falhar: (c) => (c.operacao === 'rpc' ? { message: 'horario_ocupado', code: 'P0001' } : null) });
     const erro = await repo
