@@ -4,7 +4,9 @@ import {
   emailValido,
   ERRO,
   formatarTelefone,
+  horasDeAvisoDigitadas,
   iniciaisDe,
+  LIMITE_HORAS_DE_AVISO,
   nomeValido,
   semErros,
   senhaValida,
@@ -136,5 +138,35 @@ describe('ERRO — as mensagens do login de verdade (SCRUM-58)', () => {
     expect(ERRO.emailInvalido).toBe('Esse e-mail não parece certo');
     expect(ERRO.senhaVazia).toBe('Informe sua senha');
     expect(ERRO.senhaCurta).toBe('A senha precisa de pelo menos 6 caracteres');
+  });
+});
+
+describe('horasDeAvisoDigitadas (SCRUM-101)', () => {
+  it('aceita qualquer número inteiro de horas, inclusive 0 e o limite', () => {
+    expect(horasDeAvisoDigitadas('36')).toEqual({ horas: 36 });
+    expect(horasDeAvisoDigitadas(' 5 ')).toEqual({ horas: 5 });
+    expect(horasDeAvisoDigitadas('0')).toEqual({ horas: 0 });
+    expect(horasDeAvisoDigitadas(String(LIMITE_HORAS_DE_AVISO))).toEqual({ horas: 720 });
+  });
+
+  it('vazio pede o número', () => {
+    expect(horasDeAvisoDigitadas('')).toEqual({ erro: ERRO.avisoVazio });
+    expect(horasDeAvisoDigitadas('  ')).toEqual({ erro: ERRO.avisoVazio });
+  });
+
+  it('o que não é hora inteira é recusado', () => {
+    for (const t of ['abc', '2,5', '-3', '12h']) {
+      expect(horasDeAvisoDigitadas(t)).toEqual({ erro: ERRO.avisoInvalido });
+    }
+  });
+
+  it('acima de 30 dias é engano de digitação', () => {
+    expect(horasDeAvisoDigitadas('721')).toEqual({ erro: ERRO.avisoAlto });
+  });
+
+  it('as mensagens, literais', () => {
+    expect(ERRO.avisoVazio).toBe('Informe com quantas horas ele avisou');
+    expect(ERRO.avisoInvalido).toBe('Use só o número de horas, como 24');
+    expect(ERRO.avisoAlto).toBe('Use até 720 horas (30 dias)');
   });
 });

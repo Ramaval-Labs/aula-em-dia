@@ -67,7 +67,25 @@ export const ERRO = {
   emailJaCadastrado: 'Já existe uma conta com esse e-mail',
   semConexao: 'Sem conexão. Confira a internet e tente de novo',
   falhaNoAcesso: 'Não deu para entrar agora. Tente de novo em instantes',
+  avisoVazio: 'Informe com quantas horas ele avisou',
+  avisoInvalido: 'Use só o número de horas, como 24',
+  avisoAlto: 'Use até 720 horas (30 dias)',
 } as const;
+
+/** O aviso mais longo que a tela aceita: 30 dias. Acima disso é engano de digitação. */
+export const LIMITE_HORAS_DE_AVISO = 720;
+
+/**
+ * A antecedência do aviso de falta, como o professor digitou (SCRUM-101):
+ * horas inteiras, de 0 a 720. "0" vale: o aluno avisou na hora da aula.
+ */
+export function horasDeAvisoDigitadas(textoDigitado: string): { horas: number } | { erro: string } {
+  const t = textoDigitado.trim();
+  if (!t) return { erro: ERRO.avisoVazio };
+  if (!/^\d+$/.test(t)) return { erro: ERRO.avisoInvalido };
+  const horas = Number(t);
+  return horas > LIMITE_HORAS_DE_AVISO ? { erro: ERRO.avisoAlto } : { horas };
+}
 
 export function validarAcesso(email: string, senha: string): Erros<{
   email: string;
