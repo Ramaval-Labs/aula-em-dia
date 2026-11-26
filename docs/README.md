@@ -81,3 +81,8 @@ variáveis de ambiente e pelos comandos:
 | [design/](design/) | O plano do redesign *iOS Glass*, o mapa das 37 telas e os relatórios das revisões de design |
 | [jira/](jira/) | O quadro Scrum: papéis, sprints e o backlog inicial |
 | [projeto/](projeto/) | Os arquivos editáveis de especificação: o handoff de design (protótipos), `spec/` (regras, navegação, acessibilidade, casos de teste), `tokens/`, `PRODUCT.md`, `DESIGN.md` e os dados de demonstração |
+
+**Sobre as propostas do semestre anterior:** este grupo se formou em 2026/2. O grupo do primeiro
+semestre de 2026 foi desfeito por uma mudança de sala, e o projeto começou do zero neste semestre,
+como foi apresentado ao professor. Por isso a primeira proposta é o
+[Envio 01](propostas/Envio01-AulaEmDia.pdf), de setembro de 2026, e não há proposta anterior a ela.
