@@ -5,7 +5,7 @@
  * específico: trocar de aba zera a pilha, concluir um fluxo substitui a pilha,
  * e o sheet é um terceiro eixo que não empilha painel sobre painel. Manter
  * isso explícito deixa a regra testável e evita configurar um navegador
- * inteiro para 28 telas.
+ * inteiro para 29 telas.
  *
  * O tipo de cada tela (raiz, empilhada, sheet) é o contrato de
  * docs/design/redesign-ios-glass/MAPA-DE-TELAS.md e mora aqui porque a
@@ -49,7 +49,8 @@ export type Tela =
   | 'pacotesPadrao'
   | 'avisos'
   | 'chavePix'
-  | 'conta';
+  | 'conta'
+  | 'alterarSenha';
 
 export type Aba = 'home' | 'financeiro' | 'ajustes';
 
@@ -85,6 +86,7 @@ export const ABA_DA_TELA: Record<Tela, Aba> = {
   avisos: 'ajustes',
   chavePix: 'ajustes',
   conta: 'ajustes',
+  alterarSenha: 'ajustes',
 };
 
 /**
@@ -129,6 +131,7 @@ export const TIPO_DA_TELA: Record<Tela, TipoDeTela> = {
   avisos: 'empilhada',
   chavePix: 'empilhada',
   conta: 'empilhada',
+  alterarSenha: 'empilhada',
 };
 
 export const ehSheet = (tela: Tela): boolean => TIPO_DA_TELA[tela] === 'sheet';

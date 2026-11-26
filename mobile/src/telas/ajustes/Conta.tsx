@@ -18,7 +18,7 @@ import { alunosAtivos, atingiuOLimite, LIMITE_GRATUITO } from '../../dominio/pla
 import { avisos } from '../../estado/avisos';
 import { useDados } from '../../estado/dados';
 import { useNavegacao } from '../../estado/navegacao';
-import { loginReal, podeApagarConta, useSessao } from '../../estado/sessao';
+import { loginReal, podeAlterarSenha, podeApagarConta, useSessao } from '../../estado/sessao';
 import { useToast } from '../../estado/toast';
 import { useCores } from '../../tema/TemaProvider';
 import { comEspaco, texto, TIPO } from '../../tema/tipografia';
@@ -33,7 +33,7 @@ const BENEFICIOS = [
 
 export function Conta() {
   const { cores } = useCores();
-  const { concluir } = useNavegacao();
+  const { concluir, ir } = useNavegacao();
   const perfil = useDados((s) => s.perfil);
   const alunos = useDados((s) => s.alunos);
   const extratos = useDados((s) => s.extratos);
@@ -45,6 +45,7 @@ export function Conta() {
   const avisar = useToast((s) => s.avisar);
   const real = loginReal();
   const podeApagar = podeApagarConta();
+  const podeTrocarSenha = podeAlterarSenha();
   // Enquanto o servidor não responde, a linha não arma de novo: um terceiro e
   // um quarto toque mandariam um segundo pedido.
   const [apagando, setApagando] = useState(false);
@@ -165,12 +166,17 @@ export function Conta() {
           titulo="E-mail da conta"
           subtitulo={real ? (emailDaSessao ?? perfil.email) : perfil.email}
         />
-        {/* Sem chevron: não há para onde ir em nenhum dos modos. Com o login
-            de verdade a promessa já chegou, então o texto só diz que falta. */}
-        <LinhaLista
-          titulo="Alterar senha"
-          subtitulo={real ? 'Ainda não disponível' : 'Chega junto com o login de verdade'}
-        />
+        {/* Com login de verdade, leva à troca, que pede a senha atual. No
+            local não há conta: a linha segue sem ação e sem chevron. */}
+        {podeTrocarSenha ? (
+          <LinhaLista
+            titulo="Alterar senha"
+            subtitulo="Pede a senha atual"
+            aoTocar={() => ir('alterarSenha')}
+          />
+        ) : (
+          <LinhaLista titulo="Alterar senha" subtitulo="Chega junto com o login de verdade" />
+        )}
         <LinhaLista
           titulo="Exportar meus dados"
           subtitulo="Copia alunos, extratos e políticas"

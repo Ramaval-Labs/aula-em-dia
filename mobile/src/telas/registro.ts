@@ -1,8 +1,8 @@
 /**
  * Registro de telas do app.
  *
- * Fica fora do `App.tsx` porque são 28 entradas e o componente raiz não
- * deveria carregar 28 imports.
+ * Fica fora do `App.tsx` porque são 29 entradas e o componente raiz não
+ * deveria carregar 29 imports.
  *
  * O contrato é estrito: toda chave de `Tela` precisa de uma entrada aqui.
  * `App.tsx` indexa este objeto, então uma tela ausente vira tela branca
@@ -26,6 +26,7 @@ import { Registrar } from './Registrar';
 import { Reposicao } from './Reposicao';
 import { Resultado } from './Resultado';
 import {
+  AlterarSenha,
   Avisos,
   ChavePix,
   Conta,
@@ -79,6 +80,7 @@ export const REGISTRO: Record<Tela, ComponentType> = {
   avisos: Avisos,
   chavePix: ChavePix,
   conta: Conta,
+  alterarSenha: AlterarSenha,
 };
 
 /** Nunca devolve indefinido: uma tela fora do registro cai na raiz. */
