@@ -157,7 +157,7 @@ todo mundo.
 
 ```bash
 cd mobile
-npm test ; echo "EXIT=$?"   # hoje: 1313 testes, 49 suítes — só conta com EXIT=0
+npm test ; echo "EXIT=$?"   # hoje: 1330 testes, 50 suítes — só conta com EXIT=0
 npm run typecheck           # tsc --noEmit, sem saída = passou
 npm run lint ; echo "EXIT=$?"   # ESLint, também no CI: erro trava o PR; não acrescente aviso
 ```
@@ -269,13 +269,13 @@ As três pessoas usam Claude Code neste repositório, então vale combinar o bá
 
 ## 7. Onde a rede de segurança tem buraco
 
-1313 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
+1330 testes verdes não significam cobertura completa. Saiba o que não está coberto antes de
 confiar:
 
 - **Todo módulo de `dominio/` com lógica já tem suíte própria**, mas em `estado/dados.ts`, o maior arquivo
   do app, o teste cobre só o contrato de persistência (`SCRUM-17`): o que cada ação calcula na
   store segue sem asserção própria.
-- **O teste de interface é quase todo de fumaça:** `montagem.test.tsx` monta as 36 telas e
+- **O teste de interface é quase todo de fumaça:** `montagem.test.tsx` monta as 37 telas e
   afirma que nada lança exceção. Só dois fluxos têm o conteúdo conferido, em `fluxo.test.tsx`
   (`SCRUM-34`): registrar aula e confirmar reposição. O resto das telas pode mostrar um número
   errado sem que teste nenhum acuse.

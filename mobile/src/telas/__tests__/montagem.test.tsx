@@ -1,5 +1,5 @@
 /**
- * Fumaça: monta cada uma das 28 telas do app e as 7 da entrada com a semente
+ * Fumaça: monta cada uma das 29 telas do app e as 8 da entrada com a semente
  * e afirma que nenhuma lança; monta o app inteiro com um sheet aberto; e
  * cobra o contrato de tipo de tela (raiz, empilhada, sheet) de todas.
  *

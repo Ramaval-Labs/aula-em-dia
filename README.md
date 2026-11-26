@@ -15,14 +15,14 @@ turma GPE17M80081, Grupo 08.
 
 ## Estado atual
 
-O aplicativo está **implementado e navegável**, com as 36 telas do design, as regras de negócio
+O aplicativo está **implementado e navegável**, com as 37 telas do design, as regras de negócio
 cobertas por testes e estado persistido no aparelho. Os dados são mock, de propósito.
 
 | Área | Situação |
 |---|---|
-| 36 telas | prontas na direção visual *iOS Glass*, nos temas claro e escuro |
+| 37 telas | prontas na direção visual *iOS Glass*, nos temas claro e escuro |
 | Entrada e onboarding | splash, login e 4 passos que gravam dados de verdade |
-| Regras de negócio | módulos puros em `src/dominio/`, 1313 testes verdes |
+| Regras de negócio | módulos puros em `src/dominio/`, 1330 testes verdes |
 | Motor de reposição | **existe**: calcula contra agenda, folgas e aulas fixas |
 | Persistência local | AsyncStorage, chave `aulaemdia.app.v4` |
 | Backend / sincronização | fora do escopo até aqui — Supabase é a escolha registrada |
@@ -52,13 +52,13 @@ Para só conferir o visual, sem celular e sem conta: `npx expo start --web`.
 
 ```bash
 cd mobile
-npm test           # 1313 testes
+npm test           # 1330 testes
 npm run typecheck  # tsc --noEmit
 ```
 
 Os testes portam os casos tabelados de [`spec/casos-de-teste.md`](spec/casos-de-teste.md) e
 conferem as strings letra a letra, porque elas aparecem na interface. Há também um teste que
-monta as 28 telas do app em quatro estados diferentes, as 8 da entrada e o app com um sheet
+monta as 29 telas do app em quatro estados diferentes, as 8 da entrada e o app com um sheet
 aberto — é ele que pega tela quebrada antes do aparelho — e um que impede a direção visual
 anterior (amarelo, curvas) de voltar ao código.
 
@@ -67,7 +67,7 @@ anterior (amarelo, curvas) de voltar ao código.
 ```
 mobile/            o aplicativo (React Native + Expo + TypeScript)
   src/dominio/       regras de negócio puras, sem UI — comece por aqui
-  src/telas/         as 36 telas, agrupadas por fluxo
+  src/telas/         as 37 telas, agrupadas por fluxo
   src/componentes/   catálogo iOS Glass: vidro, chassi, sheet, tab bar, controles, listas
   src/tema/          tokens tipados e tipografia
   README.md          mapa interno, decisões de stack e solução de problemas
@@ -142,7 +142,7 @@ perguntas que estavam abertas (`SCRUM-45`) têm resposta:
 elas são idênticas nos nossos arquivos, nos estáticos oficiais e no variável: ascendente 1010,
 descendente −240, entrelinha 100, 1000 unidades por em. Daí saem exatamente o `1.25`
 (1010 + 240) e o `ALTURA_NORMAL` de `1.35` (1010 + 240 + 100). Trocar os arquivos pelos oficiais
-não mexe em `tipografia.ts` nem no alinhamento das 36 telas.
+não mexe em `tipografia.ts` nem no alinhamento das 37 telas.
 
 Os dois itens e os caminhos para cada um estão em **`SCRUM-56`**, que **bloqueia publicar o app
 em qualquer loja**. A decisão, de 07/10/2026, é **adiar**: o `SCRUM-57` traz a ordem de

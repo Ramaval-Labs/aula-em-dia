@@ -33,7 +33,7 @@ Rótulo do voltar = título curto da última tela **não-sheet** da pilha: "Alun
 - "Cancelar", toque fora do painel e voltar do Android → `fecharSheet()`: remove as entradas de
   sheet da pilha e volta para a última não-sheet.
 
-## As 36 telas
+## As 37 telas
 
 ### Aba Alunos — dono T1 (exceto registro e reposição, T2)
 
@@ -77,6 +77,7 @@ Rótulo do voltar = título curto da última tela **não-sheet** da pilha: "Alun
 | `avisos` | `telas/ajustes/SubTelas.tsx` | empilhada ("Ajustes") | Derivada (Fluxo E) | Modelo: cartões com switch de H§9 |
 | `chavePix` | `telas/ajustes/SubTelas.tsx` | empilhada ("Ajustes") | Derivada (Fluxo E) | Campo em cartão de vidro + `PreviaDeMensagem` |
 | `conta` | `telas/ajustes/SubTelas.tsx` | empilhada ("Ajustes") | Derivada (Fluxo E) | Lista agrupada; "Sair" como botão texto destrutivo com `useDoisToques` |
+| `alterarSenha` | `telas/ajustes/AlterarSenha.tsx` | empilhada ("Conta") | Derivada (SCRUM-103, sem fluxo no handoff) | Só com login de verdade: a linha "Alterar senha" de Conta leva até ela. Modelo: a Nova senha da entrada — três campos de senha em cartão de vidro, nota do que falta e primário "Salvar senha nova" no rodapé; a frase do servidor vai para o campo dela, e falta de rede, para um bloco vermelho |
 
 ### Entrada — dono T5 (máquina `estado/sessao.ts`, fora do `registro.ts`)
 
