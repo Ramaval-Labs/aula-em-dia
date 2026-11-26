@@ -10,7 +10,7 @@ Soluções Computacionais · Universidade Católica de Brasília · 2026/2
 | Rafael Dornelas | UC23101280 | GPE17M80081 |
 | Valentin Klein Antunes | UC23100774 | GPE17M80081 |
 
-**Vídeo de apresentação (YouTube, não listado):** _a preencher com o link_
+**Vídeo de apresentação (YouTube, não listado):** https://youtu.be/QgTN8BP72f0
 
 ---
 
