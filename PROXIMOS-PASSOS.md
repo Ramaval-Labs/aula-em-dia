@@ -99,7 +99,7 @@ montado com o catálogo, seguindo a tela desenhada mais parecida — `MAPA-DE-TE
 - Alunos: Novo/Editar aluno, Pacote, as quatro telas da visão do aluno.
 - Reposição: disponibilidade do aluno, outro horário, sem horário, confirmar, aguardando aceite.
 - Financeiro: Registrar pagamento, Lembrete de cobrança.
-- Ajustes: Meu perfil, Minha disponibilidade, Pacotes padrão, Avisos, Chave Pix, Conta.
+- Ajustes: Meu perfil, Minha disponibilidade, Pacotes padrão, Avisos, Chave Pix, Conta, Alterar senha.
 
 **P3 — acabamento**
 - Medidas soltas que ainda não são token (paddings internos de cartão, `alturaDaCelula={52}` na
@@ -142,8 +142,8 @@ os P0/P1 foram corrigidos; o que ficou é o que exige regra nova, dependência n
 
 ## Dívidas técnicas conhecidas
 
-- **Teste de interface só de fumaça.** Existe um teste que monta as 28 telas do app em quatro
-  estados, as 7 da entrada e o app com um sheet aberto, e afirma que nenhuma lança — foi ele que pegou um loop infinito de render causado por
+- **Teste de interface só de fumaça.** Existe um teste que monta as 29 telas do app em quatro
+  estados, as 8 da entrada e o app com um sheet aberto, e afirma que nenhuma lança — foi ele que pegou um loop infinito de render causado por
   seletor de store instável. Falta teste de fluxo de verdade: registrar aula e confirmar
   reposição, com asserção de conteúdo.
 - **Os módulos de domínio novos não têm teste próprio.** `agenda.ts`, `mensagens.ts` e

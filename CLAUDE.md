@@ -1,7 +1,7 @@
 # Instruções para o Claude Code — projeto Aula em Dia
 
 O app **já está implementado** em `mobile/` (React Native + Expo, TypeScript, roda no Expo Go).
-**36 telas**: 8 na máquina de entrada (login, recuperação de senha e onboarding) e 28 no app.
+**37 telas**: 8 na máquina de entrada (login, recuperação de senha e onboarding) e 29 no app.
 Este repositório é o handoff de design **mais** a implementação. Leia `mobile/README.md`
 antes de mexer no código. A especificação de design é **`handoff-ios-glass/README.md`**
 (direção *iOS Glass*); a direção anterior (*tinta chapada*: curvas, cabeçalho escuro, amarelo)
@@ -10,10 +10,10 @@ foi aposentada e está só como histórico em `docs/design/historico/tinta-chapa
 
 ## Direção iOS Glass
 
-As 36 telas estão na direção iOS Glass (plano e registro em
+As 37 telas estão na direção iOS Glass (plano e registro em
 `docs/design/redesign-ios-glass/`). O contrato de cada tela — raiz, empilhada ou sheet, e se é
 desenhada pelo handoff ou derivada — está em `docs/design/redesign-ios-glass/MAPA-DE-TELAS.md`.
-Das 36, só 9 são desenhadas pelo handoff; as outras 27 foram derivadas do mesmo sistema.
+Das 37, só 9 são desenhadas pelo handoff; as outras 28 foram derivadas do mesmo sistema.
 
 - Os `.dc.html` do histórico continuam sendo a referência de **conteúdo e comportamento** das 26
   telas derivadas (Fluxos A, C, D, E, F) — só o visual deles foi aposentado.
@@ -28,7 +28,7 @@ cd mobile
 npm install
 npx expo login        # obrigatório desde o SDK 57 (conta gratuita)
 npx expo start        # QR Code para o Expo Go
-npm test              # 1291 testes: regras, navegação, tokens e montagem das 36 telas
+npm test              # 1330 testes: regras, navegação, tokens e montagem das 37 telas
 npm run typecheck     # tsc --noEmit
 ```
 
@@ -132,7 +132,7 @@ em `docs/design/revisoes/`. A pessoa aprova, aprova parte ou descarta. O roteiro
   Os tipos **não mudam**: depois de resolvida, `Aluno.validade` segue sendo `dd/mm`.
   O gerador de `supabase/seed.sql` resolve a mesma notação, com ano completo.
   A alternativa (app sem dados de demonstração) foi recusada por agora: o teste de montagem
-  das 36 telas, a review e o `seed.sql` do backend saem todos desta fonte. Abrir vazio vale
+  das 37 telas, a review e o `seed.sql` do backend saem todos desta fonte. Abrir vazio vale
   para publicar, e pode virar um interruptor depois.
 - **O ano de uma data `dd/mm` é inferido, não fixo.** `lerDdMm` assume o ano de `hoje` e
   desloca ±1 ano quando a data cai a mais de 183 dias dele. Sem isso,

@@ -82,6 +82,14 @@ type Sessao = {
    * `null`, e a pessoa já entra, como em `entrar`. Senão, a frase para a tela.
    */
   redefinirSenha: (tokenHash: string, novaSenha: string) => Promise<string | null>;
+  /**
+   * "Alterar senha" nos Ajustes (SCRUM-103): quem já está logado troca a senha
+   * sem sair do app e sem e-mail. Confere a senha atual antes de trocar; deu
+   * certo, `null` e a pessoa continua no app. Senão, a frase para a tela, e a
+   * senha não muda. Só no modo supabase: no local não há conta, e rejeita, como
+   * `apagarConta` (a tela pergunta a `podeAlterarSenha` antes de oferecer).
+   */
+  alterarSenha: (senhaAtual: string, novaSenha: string) => Promise<string | null>;
   avancar: () => void;
   /** Devolve false quando não há para onde voltar — o SO fecha o app. */
   voltarEntrada: () => boolean;
@@ -103,14 +111,16 @@ type Sessao = {
 export const FRASE_DO_LINK_ENVIADO = 'Se houver uma conta com esse e-mail, mandamos o link.';
 
 /**
- * As frases da recuperação que `ERRO` ainda não tem. Moram aqui, ao lado do
- * mapa de códigos, até irem para `dominio/validacao.ts`, que é de onde as
- * frases de acesso saem.
+ * As frases da recuperação e da troca de senha (SCRUM-62 e SCRUM-103) que
+ * `ERRO` ainda não tem. Moram aqui, ao lado do mapa de códigos, até irem para
+ * `dominio/validacao.ts`, que é de onde as frases de acesso saem.
  */
 export const ERRO_DA_RECUPERACAO = {
   linkVencido: 'Esse link expirou ou já foi usado. Peça um novo',
   senhaIgual: 'A senha nova precisa ser diferente da atual',
   falhaNoEnvio: 'Não deu para mandar o link agora. Tente de novo em instantes',
+  senhaAtualVazia: 'Informe a senha atual',
+  senhaAtualErrada: 'A senha atual não confere',
 } as const;
 
 /** O caminho do app que o link do e-mail abre (o `App.tsx` o lê, no SCRUM-96). */
@@ -132,6 +142,9 @@ export const loginReal = (): boolean => usaSupabase();
 
 /** Se dá para apagar a conta: só com login de verdade, porque no local não há conta. */
 export const podeApagarConta = (): boolean => usaSupabase();
+
+/** Se dá para alterar a senha (SCRUM-103): só com login de verdade, pelo mesmo motivo. */
+export const podeAlterarSenha = (): boolean => usaSupabase();
 
 /**
  * Erro do Supabase Auth → frase de `ERRO`. Decide pelo `code` do erro da API
@@ -180,6 +193,17 @@ export function fraseDoErroDoPedido(erro: unknown): string | null {
 export function fraseDoErroDaNovaSenha(erro: unknown): string {
   const e = (erro ?? {}) as { code?: unknown };
   if (e.code === 'otp_expired') return ERRO_DA_RECUPERACAO.linkVencido;
+  if (e.code === 'same_password') return ERRO_DA_RECUPERACAO.senhaIgual;
+  return fraseDoErroDeAcesso(erro);
+}
+
+/**
+ * Erro da troca de senha de quem está logado (SCRUM-103) → frase. Aqui o
+ * `invalid_credentials` só pode ser a senha atual: o e-mail é o da sessão.
+ */
+export function fraseDoErroDaTroca(erro: unknown): string {
+  const e = (erro ?? {}) as { code?: unknown };
+  if (e.code === 'invalid_credentials') return ERRO_DA_RECUPERACAO.senhaAtualErrada;
   if (e.code === 'same_password') return ERRO_DA_RECUPERACAO.senhaIgual;
   return fraseDoErroDeAcesso(erro);
 }
@@ -394,6 +418,38 @@ export const useSessao = create<Sessao>((set, get) => ({
     } catch (erro) {
       avisarEmDesenvolvimento('Redefinir a senha', erro);
       return fraseDoErroDaNovaSenha(erro);
+    }
+  },
+
+  async alterarSenha(senhaAtual, novaSenha) {
+    if (!usaSupabase()) {
+      throw new Error('[sessao] alterar a senha só existe no modo supabase: no local não há conta.');
+    }
+    // A senha atual só precisa existir: a regra de tamanho pode ter mudado
+    // depois que ela foi criada, e quem decide se ela confere é o servidor.
+    if (!senhaAtual) return ERRO_DA_RECUPERACAO.senhaAtualVazia;
+    const daSenha = erroDaSenha(novaSenha);
+    if (daSenha) return daSenha;
+    if (novaSenha === senhaAtual) return ERRO_DA_RECUPERACAO.senhaIgual;
+
+    try {
+      const auth = clienteSupabase().auth;
+      const { data } = await auth.getSession();
+      const email = data.session?.user.email ?? get().email;
+      if (!email) return ERRO.falhaNoAcesso;
+
+      // Com a sessão aberta, o `updateUser` não pede a senha atual: sem esta
+      // conferência, quem pegasse o aparelho destravado trocaria a senha. A
+      // senha errada não mexe na sessão aberta, e a senha fica como estava.
+      const conferida = await auth.signInWithPassword({ email, password: senhaAtual });
+      if (conferida.error) return fraseDoErroDaTroca(conferida.error);
+
+      const { error } = await auth.updateUser({ password: novaSenha });
+      if (error) return fraseDoErroDaTroca(error);
+      return null;
+    } catch (erro) {
+      avisarEmDesenvolvimento('Alterar a senha', erro);
+      return fraseDoErroDaTroca(erro);
     }
   },
 

@@ -78,6 +78,6 @@ variáveis de ambiente e pelos comandos:
 | [DADOS.md](DADOS.md) · [PDF](DADOS.pdf) | O modelo de dados: diagrama ER, dicionário, regras de acesso e funções |
 | [propostas/](propostas/) | As entregas anteriores: a proposta (Envio 01) e a entrega de 25/09 |
 | [backend/](backend/) | O plano do backend em 8 partes (`PLANO-BACKEND.md`, com os diagramas em Mermaid) |
-| [design/](design/) | O plano do redesign *iOS Glass*, o mapa das 36 telas e os relatórios das revisões de design |
+| [design/](design/) | O plano do redesign *iOS Glass*, o mapa das 37 telas e os relatórios das revisões de design |
 | [jira/](jira/) | O quadro Scrum: papéis, sprints e o backlog inicial |
 | [projeto/](projeto/) | Os arquivos editáveis de especificação: o handoff de design (protótipos), `spec/` (regras, navegação, acessibilidade, casos de teste), `tokens/`, `PRODUCT.md`, `DESIGN.md` e os dados de demonstração |

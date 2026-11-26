@@ -54,6 +54,8 @@ export const avisos = {
     `Proposta cancelada. A reposição de ${primeiroNome(a.name)} voltou a ficar pendente.`,
   disponibilidadeSalva: 'Disponibilidade salva.',
   perfilSalvo: 'Perfil atualizado.',
+  // A sessão continua aberta: o aviso diz quando a senha nova passa a valer.
+  senhaAlterada: 'Senha alterada. Na próxima entrada, use a nova.',
   politicaSalva: 'Política salva. O registro de aula já usa a regra nova.',
   estadoZerado: 'Dados de demonstração restaurados.',
   // Gravar no banco falhou (Parte 4). A store recarrega do banco logo depois,

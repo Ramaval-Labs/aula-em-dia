@@ -2,7 +2,7 @@
 
 ## Tipos de tela
 
-Cada uma das 28 telas do app tem **um** tipo, declarado em `TIPO_DA_TELA`
+Cada uma das 29 telas do app tem **um** tipo, declarado em `TIPO_DA_TELA`
 (`mobile/src/estado/navegacao.ts`) e contratado em
 `docs/design/redesign-ios-glass/MAPA-DE-TELAS.md`:
 
