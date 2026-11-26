@@ -52,6 +52,67 @@ prefere o computador usa a versão web, que é o mesmo código.
 - **Aluno (ou responsável):** não tem conta. Abre o link que o professor manda e, por ele, vê o
   saldo, o extrato e as propostas de reposição, e informa quando pode repor.
 
+## Sugestão de avaliação: como testar
+
+Há dois caminhos, conforme o que se quer ver.
+
+### 1. Em produção: os dois perfis na mesma API (cerca de 10 minutos)
+
+Só precisa de um navegador. É o caminho que mostra o app de verdade: login real, dados na nuvem,
+e o professor e o aluno conversando pela mesma API, cada um com as próprias permissões.
+
+**Como professor** (em https://aula-em-dia-three.vercel.app):
+1. Toque em **Criar conta** e use qualquer e-mail e uma senha de 6 caracteres ou mais.
+2. Siga o onboarding em 4 passos: o seu perfil, a sua disponibilidade (pinte os horários na
+   grade), a sua política de faltas e o primeiro aluno, com um pacote de aulas.
+3. Na lista de **Alunos**, abra o aluno e toque em **Registrar aula**. Escolha **Falta avisada** e
+   digite a antecedência: o efeito no saldo aparece **antes** de confirmar, conforme a sua
+   política.
+4. No resultado, toque em **Escolher horário**: o app sugere os melhores horários de reposição,
+   cada um com o motivo. Escolha um, toque em **Propor** e, no último passo, em **Confirmar e
+   avisar o aluno**.
+5. Na ficha do aluno, toque em **Copiar link do aluno**.
+
+**Como aluno** (cole o link numa **janela anônima** ou em outro navegador, sem login):
+
+6. A página mostra só o que é desse aluno: saldo, extrato, a regra combinada e a proposta de
+   reposição.
+7. Toque em **Aceitar** a proposta, e depois marque na grade os horários em que pode repor e envie.
+
+**De volta como professor:**
+
+8. Atualize a página. A reposição aparece como **marcada** e a disponibilidade do aluno chegou:
+   tudo passou pela mesma API.
+9. Para ver as permissões: na ficha do aluno, **Gerar novo link** (toque duas vezes). O link
+   antigo para de funcionar na hora.
+
+### 2. Sem conta e sem internet: a partir deste zip (cerca de 2 minutos)
+
+Para navegar pelo app com dados de demonstração prontos, sem criar nada:
+
+```bash
+cd web
+npx serve -s dist
+```
+
+Abra o endereço que aparecer. Em **Entrar**, use qualquer e-mail com uma senha de 6 caracteres ou
+mais: o app abre com 4 alunos de demonstração, cada um num estado diferente:
+- um com pagamento em atraso;
+- um com reposição pendente e saldo baixo;
+- um em dia;
+- um sem pacote.
+
+Vale experimentar:
+- **Registrar aula**, com os quatro desfechos;
+- a **reposição**;
+- o **Financeiro**, com a cobrança pronta para o WhatsApp;
+- os **Ajustes**: política de faltas, disponibilidade e pacote padrão.
+
+Nesse modo não há login real nem página do aluno, que dependem da API: para isso vale o caminho 1.
+
+**O código-fonte e os testes** estão em [`app/`](../app/README.md): `npm install` e `npm test`
+rodam os 1330 testes automatizados das regras de negócio e das telas.
+
 ## Como executar
 
 Cada aplicação tem um README próprio, que começa pelos pré-requisitos, pelas dependências, pelas
