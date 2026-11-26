@@ -19,7 +19,7 @@ o direito a uma reposição, o app devolve os melhores horários prontos, calcul
 de todos os alunos, cada um com o motivo da sugestão.
 
 São um aplicativo (React Native + Expo) e a versão web do mesmo código, as duas sobre um backend no
-Supabase. Ficaram prontas 36 telas, nos temas claro e escuro, e 1288 testes automatizados no app,
+Supabase. Ficaram prontas 37 telas, nos temas claro e escuro, e 1330 testes automatizados no app,
 além dos testes do banco e das funções.
 
 ## 2. O problema e as dores
@@ -90,7 +90,7 @@ aula" não faz sentido para locação de equipamentos. **O Aula em Dia é vertic
 4. **Rápido no fim da aula.** O caminho mais usado cabe em dois toques.
 5. **Toda sugestão tem motivo.** Uma janela de reposição sempre diz por que foi sugerida.
 
-### Os fluxos (36 telas)
+### Os fluxos (37 telas)
 
 O app tem três abas: **Alunos**, **Financeiro** e **Ajustes**. A tela inicial abre no saldo, não na
 agenda.
@@ -101,7 +101,7 @@ agenda.
 | **B. Alunos e registro** | A lista ordenada por urgência, com o lembrete das aulas de hoje sem registro. A ficha com saldo e extrato. **Registrar aula** com os 4 desfechos e o efeito no saldo antes de confirmar. O resultado |
 | **C. Reposição** | Um assistente em 3 passos: a disponibilidade do aluno, as melhores sugestões com o motivo (ou outro horário, ou as saídas quando nada serve) e a confirmação com a mensagem pronta. Depois, o aguardo do aceite do aluno |
 | **D. Pacote e financeiro** | Novo pacote ou renovação (somando ou não o saldo), o painel do mês, a cobrança de quem atrasou, o registro de pagamento e o lembrete de cobrança em 3 tons |
-| **E. Ajustes** | Perfil, a grade de disponibilidade, a política de faltas, o pacote padrão, os avisos, a chave Pix e a conta (plano, exportar dados, apagar a conta) |
+| **E. Ajustes** | Perfil, a grade de disponibilidade, a política de faltas, o pacote padrão, os avisos, a chave Pix e a conta (plano, alterar a senha, exportar dados, apagar a conta) |
 | **F. Visão do aluno** | A página do link, sem instalar nada: saldo, extrato, a regra combinada, as propostas de reposição (aceitar ou recusar) e a disponibilidade dele, marcada numa grade |
 
 ## 5. As regras de negócio
@@ -195,7 +195,7 @@ pacote vencido, pacote vencendo, reposição marcada.
 
 | Perfil | Como entra | O que pode |
 |---|---|---|
-| **Professor** | e-mail e senha (Supabase Auth); recuperação por e-mail | tudo o que é dele, e só o que é dele |
+| **Professor** | e-mail e senha (Supabase Auth); recuperação por e-mail e troca de senha nos Ajustes, conferindo a senha atual | tudo o que é dele, e só o que é dele |
 | **Aluno ou responsável** | **sem conta:** o link `/a/<token>` que o professor manda | ver o próprio saldo, o extrato e a regra combinada; aceitar ou recusar propostas; informar quando pode repor |
 
 **Como isso é garantido:**
@@ -258,7 +258,7 @@ O modelo de dados completo está em [DADOS.md](DADOS.md).
 
 - **Direção visual iOS Glass:** material de vidro sobre um fundo de refração, um único tom de
   destaque, status sempre como fundo suave com texto escuro, um botão primário por tela, números
-  tabulares e temas **claro e escuro**. As 36 telas seguem o mesmo sistema, documentado em tokens e
+  tabulares e temas **claro e escuro**. As 37 telas seguem o mesmo sistema, documentado em tokens e
   num catálogo vivo de componentes.
 - **Acessibilidade**, documentada em `spec/acessibilidade.md`:
   - contraste medido;
@@ -273,10 +273,10 @@ O modelo de dados completo está em [DADOS.md](DADOS.md).
 ## 9. Qualidade e processo
 
 **Testes automatizados:**
-- **App:** 1288 testes em 48 suítes. Cobrem:
+- **App:** 1330 testes em 50 suítes. Cobrem:
   - as regras do domínio, com os casos tabelados em `spec/casos-de-teste.md`;
   - a navegação;
-  - a montagem das 36 telas;
+  - a montagem das 37 telas;
   - os fluxos de ponta a ponta;
   - a conversão para o banco.
 - **Banco:** testes pgTAP para a RLS, as RPCs, a trava de horário, a aula fixa e os avisos.
@@ -296,7 +296,7 @@ A `main` é protegida e só aceita merge com o CI verde.
   - regras e portões: Mauro;
   - persistência: Valentin.
 - Um commit por camada, PR com review cruzado e convenção `SCRUM-nn:`.
-- Mais de 400 commits e 55 PRs desde 08/09.
+- Mais de 400 commits e 60 PRs mesclados desde 08/09.
 - **Revisões de design** em rodadas, cada uma com relatório, capturas antes e depois e aprovação.
 
 ## 10. Limitações conhecidas

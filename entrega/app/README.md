@@ -72,7 +72,7 @@ O app abre em `http://localhost:8081`.
 ## Verificar
 
 ```bash
-npm test             # 1288 testes: regras de negócio, navegação, tokens e as 36 telas
+npm test             # 1330 testes: regras de negócio, navegação, tokens e as 37 telas
 npm run typecheck    # TypeScript sem erros
 npm run lint         # ESLint
 ```
@@ -89,7 +89,7 @@ Os três devem terminar sem erro. No `npm test`, confira o código de saída, e 
 ```
 src/dominio/     regras de negócio puras e testadas: política de faltas, motor de reposição,
                  pacote, pagamento, avisos, datas
-src/telas/       as 36 telas (entrada, alunos, registro, reposição, financeiro, ajustes, aluno)
+src/telas/       as 37 telas (entrada, alunos, registro, reposição, financeiro, ajustes, aluno)
 src/componentes/ o design system (vidro, listas, campos, grade de horários) e o catálogo
 src/estado/      os estados: dados, sessão, navegação, rascunhos de formulário
 src/dados/       a persistência: local (AsyncStorage) ou Supabase, e o conversor para o banco
