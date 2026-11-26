@@ -27,9 +27,11 @@ import {
   ERRO_DA_RECUPERACAO,
   FRASE_DO_LINK_ENVIADO,
   fraseDoErroDaNovaSenha,
+  fraseDoErroDaTroca,
   fraseDoErroDeAcesso,
   fraseDoErroDoPedido,
   loginReal,
+  podeAlterarSenha,
   podeApagarConta,
   useSessao,
 } from '../sessao';
@@ -586,6 +588,157 @@ describe('recuperar a senha no modo supabase (SCRUM-62)', () => {
     ['erro qualquer', new Error('boom'), ERRO_DA_RECUPERACAO.falhaNoEnvio],
   ])('o pedido: %s', (_nome, erro, frase) => {
     expect(fraseDoErroDoPedido(erro)).toBe(frase);
+  });
+});
+
+describe('alterar a senha logado (SCRUM-103)', () => {
+  const ATUAL = 'senha-de-antes';
+  const NOVA = 'senha-de-agora';
+  const ERRO_SENHA_IGUAL = { name: 'AuthApiError', code: 'same_password', status: 422 };
+
+  it('no modo local, rejeita sem ir à rede, e a pessoa fica no app', async () => {
+    useSessao.setState({ fase: 'app', email: EMAIL });
+
+    await expect(s().alterarSenha(ATUAL, NOVA)).rejects.toThrow('modo supabase');
+    expect(cliente).not.toHaveBeenCalled();
+    expect(s().fase).toBe('app');
+    expect(podeAlterarSenha()).toBe(false);
+  });
+
+  describe('no modo supabase', () => {
+    /** O cliente com a sessão aberta de quem está no app. */
+    function logado() {
+      const auth = simularCliente();
+      auth.getSession.mockResolvedValue({ data: { session: sessaoDe() }, error: null });
+      auth.signInWithPassword.mockResolvedValue({
+        data: { session: sessaoDe(), user: usuario() },
+        error: null,
+      });
+      return auth;
+    }
+
+    beforeEach(() => {
+      modoSupabase.mockReturnValue(true);
+      useSessao.setState({ fase: 'app', email: EMAIL });
+    });
+
+    it('podeAlterarSenha é verdadeiro, como loginReal', () => {
+      expect(podeAlterarSenha()).toBe(true);
+      expect(podeAlterarSenha()).toBe(loginReal());
+    });
+
+    it('confere a senha atual com o e-mail da sessão e só depois troca', async () => {
+      const auth = logado();
+
+      await expect(s().alterarSenha(ATUAL, NOVA)).resolves.toBeNull();
+
+      expect(auth.signInWithPassword).toHaveBeenCalledWith({ email: EMAIL, password: ATUAL });
+      expect(auth.updateUser).toHaveBeenCalledWith({ password: NOVA });
+      expect(auth.signInWithPassword.mock.invocationCallOrder[0]).toBeLessThan(
+        auth.updateUser.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('deu certo: a pessoa continua no app, logada e com os dados', async () => {
+      const auth = logado();
+      const esquecer = jest.spyOn(useDados.getState(), 'esquecer');
+
+      await s().alterarSenha(ATUAL, NOVA);
+
+      expect(s()).toMatchObject({ fase: 'app', email: EMAIL });
+      expect(auth.signOut).not.toHaveBeenCalled();
+      expect(esquecer).not.toHaveBeenCalled();
+      esquecer.mockRestore();
+    });
+
+    it('a senha atual errada é recusada, e a senha não é tocada', async () => {
+      const auth = logado();
+      auth.signInWithPassword.mockResolvedValue({
+        data: { session: null, user: null },
+        error: ERRO_CREDENCIAIS,
+      });
+
+      await expect(s().alterarSenha('chute-errado', NOVA)).resolves.toBe(
+        ERRO_DA_RECUPERACAO.senhaAtualErrada,
+      );
+      expect(auth.updateUser).not.toHaveBeenCalled();
+      expect(s()).toMatchObject({ fase: 'app', email: EMAIL });
+    });
+
+    it('sem a sessão no aparelho, usa o e-mail que a sessão do app guarda', async () => {
+      const auth = logado();
+      auth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+
+      await expect(s().alterarSenha(ATUAL, NOVA)).resolves.toBeNull();
+      expect(auth.signInWithPassword).toHaveBeenCalledWith({ email: EMAIL, password: ATUAL });
+    });
+
+    it('sem e-mail nenhum, não tenta: a falha genérica', async () => {
+      const auth = logado();
+      auth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+      useSessao.setState({ email: null });
+
+      await expect(s().alterarSenha(ATUAL, NOVA)).resolves.toBe(ERRO.falhaNoAcesso);
+      expect(auth.signInWithPassword).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['a senha atual vazia', '', NOVA, ERRO_DA_RECUPERACAO.senhaAtualVazia],
+      ['a nova vazia', ATUAL, '', ERRO.senhaVazia],
+      ['a nova curta', ATUAL, '123', ERRO.senhaCurta],
+      ['a nova igual à atual', ATUAL, ATUAL, ERRO_DA_RECUPERACAO.senhaIgual],
+    ])('%s nem vai à rede', async (_caso, atual, nova, frase) => {
+      const auth = logado();
+
+      await expect(s().alterarSenha(atual, nova)).resolves.toBe(frase);
+      expect(auth.signInWithPassword).not.toHaveBeenCalled();
+      expect(auth.updateUser).not.toHaveBeenCalled();
+    });
+
+    it('a senha atual curta pela regra de hoje ainda é conferida no servidor', async () => {
+      const auth = logado();
+
+      await expect(s().alterarSenha('123', NOVA)).resolves.toBeNull();
+      expect(auth.signInWithPassword).toHaveBeenCalledWith({ email: EMAIL, password: '123' });
+    });
+
+    it.each([
+      ['igual para o servidor', ERRO_SENHA_IGUAL, ERRO_DA_RECUPERACAO.senhaIgual],
+      ['fraca para o servidor', ERRO_SENHA_FRACA, ERRO.senhaCurta],
+      ['sem rede', ERRO_SEM_REDE, ERRO.semConexao],
+    ])('a troca recusada (%s): a frase', async (_caso, erro, frase) => {
+      const auth = logado();
+      auth.updateUser.mockResolvedValue({ data: { user: null }, error: erro });
+
+      await expect(s().alterarSenha(ATUAL, NOVA)).resolves.toBe(frase);
+      expect(s().fase).toBe('app');
+    });
+
+    it('sem rede na conferência, devolvida ou lançada: a frase de sem conexão', async () => {
+      const auth = logado();
+      auth.signInWithPassword.mockResolvedValueOnce({
+        data: { session: null, user: null },
+        error: ERRO_SEM_REDE,
+      });
+      await expect(s().alterarSenha(ATUAL, NOVA)).resolves.toBe(ERRO.semConexao);
+
+      auth.signInWithPassword.mockRejectedValueOnce(ERRO_SEM_REDE);
+      const aviso = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      await expect(s().alterarSenha(ATUAL, NOVA)).resolves.toBe(ERRO.semConexao);
+      aviso.mockRestore();
+      expect(auth.updateUser).not.toHaveBeenCalled();
+    });
+  });
+
+  it.each([
+    ['a senha atual não confere', ERRO_CREDENCIAIS, ERRO_DA_RECUPERACAO.senhaAtualErrada],
+    ['senha igual', { code: 'same_password', status: 422 }, ERRO_DA_RECUPERACAO.senhaIgual],
+    ['senha fraca', ERRO_SENHA_FRACA, ERRO.senhaCurta],
+    ['sem rede', ERRO_SEM_REDE, ERRO.semConexao],
+    ['limite de tentativas', { code: 'over_request_rate_limit', status: 429 }, ERRO.falhaNoAcesso],
+    ['erro qualquer', new Error('boom'), ERRO.falhaNoAcesso],
+  ])('fraseDoErroDaTroca: %s', (_caso, erro, frase) => {
+    expect(fraseDoErroDaTroca(erro)).toBe(frase);
   });
 });
 
